@@ -1,0 +1,11 @@
+build/
+__pycache__/
+*.pyc
+.DS_Store
+# Vivado leftovers when run from the repo root
+*.jou
+*.log
+*.str
+.Xil/
+xsim.dir/
+*.wdb
