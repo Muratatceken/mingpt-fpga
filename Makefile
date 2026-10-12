@@ -7,9 +7,9 @@ VFLAGS = --binary --timing --timescale 1ns/1ps -j 0 -Wall -Wno-fatal \
          -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-UNUSEDSIGNAL -Wno-UNUSEDPARAM
 RTL    = $(shell cat scripts/files.f)
 
-.PHONY: all model train quantize eval export sim test-arith lint clean
+.PHONY: all model train quantize eval export sim test-arith selftest lint clean
 
-all: test-arith sim
+all: test-arith sim selftest
 
 # ---------------- software (golden model) ----------------
 model: train quantize export
@@ -33,11 +33,17 @@ build/obj_top/Vtb_top: $(RTL) tb/tb_gpt_top.sv mem/tv.txt
 build/obj_arith/Vtb_arith: rtl/requant.sv rtl/div_seq.sv rtl/isqrt_seq.sv tb/tb_arith.sv
 	$(VERILATOR) $(VFLAGS) $^ --top-module tb_arith -Mdir build/obj_arith -o Vtb_arith
 
+build/obj_selftest/Vtb_selftest: $(RTL) tb/tb_selftest.sv
+	$(VERILATOR) $(VFLAGS) $(RTL) tb/tb_selftest.sv --top-module tb_selftest -Mdir build/obj_selftest -o Vtb_selftest
+
 sim: build/obj_top/Vtb_top
 	./build/obj_top/Vtb_top +NSEQ=$(NSEQ)
 
 test-arith: build/obj_arith/Vtb_arith
 	./build/obj_arith/Vtb_arith
+
+selftest: build/obj_selftest/Vtb_selftest
+	./build/obj_selftest/Vtb_selftest
 
 lint:
 	$(VERILATOR) --lint-only -Wall -Wno-fatal -Wno-WIDTHEXPAND -Wno-UNUSEDSIGNAL $(RTL) --top-module gpt_top

@@ -7,3 +7,4 @@ rtl/gemv.sv
 rtl/layernorm.sv
 rtl/attention.sv
 rtl/gpt_top.sv
+rtl/gpt_selftest.sv

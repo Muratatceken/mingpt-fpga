@@ -111,6 +111,7 @@ package gpt_pkg;
   localparam int N_VOCAB   = {V};
   localparam int VOCAB_PAD = {q['head']['W'].shape[0]};
   localparam int BLOCK     = {T};
+  localparam int SORT_LEN  = {SORT_LENGTH};      // prompt length of the sort task (self-test)
 
   // datapath
   localparam int P         = {P};      // MAC lanes in the GEMV engine

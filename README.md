@@ -13,6 +13,7 @@ tamsayı aritmetiğine (INT8/INT16) dönüştürülür ve SystemVerilog ile yaz�
 | RTL doğrulaması | 729 dizi × 11 decode adımı = 8019 adımın tamamı **bit-exact** |
 | Performans | 14 544 çevrim/token → 100 MHz'de 145 µs/token (GEMV verimi %98) |
 | Bellek | 83 KB INT8 ağırlık (BRAM), 3 KB KV önbelleği |
+| Hedef kart | **PYNQ-Z2** (Zynq-7020): yerleşik öz-test bitstream'i hazır, LED ile sonuç |
 
 ## Dokümanlar
 
@@ -20,6 +21,7 @@ tamsayı aritmetiğine (INT8/INT16) dönüştürülür ve SystemVerilog ile yaz�
    tamsayı LayerNorm/Softmax/GELU türetmeleri ve ispatlar (Samuelson sınırı, dışbükeylik, taşma sınırları).
 2. [docs/02_mimari.md](docs/02_mimari.md): Donanım mimarisi, GEMV dataflow'u, bellek haritası, çevrim analizi.
 3. [docs/03_dogrulama.md](docs/03_dogrulama.md): Doğrulama metodolojisi ve sonuçları.
+4. [docs/04_kart.md](docs/04_kart.md): Kart seçimi (PYNQ-Z2), yerleşik öz-test, kartta çalıştırma adımları.
 
 ## Dizin yapısı
 
@@ -35,11 +37,13 @@ sw/              Python akışı
 rtl/             SystemVerilog (sentezlenebilir)
   gpt_pkg.sv       (üretilir) boyutlar, sabitler, adres haritası
   gpt_top.sv       üst modül + kontrol FSM'i + tamponlar
+  gpt_selftest.sv  çip üzeri öz-test: 729 sıralama problemi, sonucu kontrol eder
   gemv.sv          P-şeritli matris-vektör motoru
   requant.sv       kanal başına yeniden kuantizasyon
   layernorm.sv     tamsayı LayerNorm
   attention.sv     KV önbellekli nedensel çok-başlı dikkat
   div_seq.sv, isqrt_seq.sv, rom.sv
+board/pynq_z2/    PYNQ-Z2 üst modülü (MMCM, buton, LED) ve pin kısıtları (XDC)
 tb/              testbench'ler (xsim ve Verilator uyumlu)
 mem/             (üretilir) ROM içerikleri ve altın test vektörleri
 scripts/         Vivado Tcl scriptleri (simülasyon, sentez), dosya listesi
@@ -59,6 +63,7 @@ make eval         # float vs tamsayı karşılaştırması (~4 dk)
 ```bash
 make test-arith   # bölücü / karekök / requant birim testleri
 make sim          # 729 dizi, bit-exact kontrol + çevrim profili
+make selftest     # çip üzeri öz-test (normal + hata enjeksiyonu)
 ```
 
 **3) Vivado (Windows veya Linux PC):**
@@ -66,6 +71,8 @@ make sim          # 729 dizi, bit-exact kontrol + çevrim profili
 vivado -source scripts/vivado_sim.tcl                              # GUI: proje + xsim + dalga formu
 vivado -mode batch -source scripts/vivado_sim.tcl -tclargs 20      # batch: 20 dizi
 vivado -mode batch -source scripts/vivado_synth.tcl -tclargs xc7z020clg400-1 10
+vivado -mode batch -source scripts/vivado_build_pynq_z2.tcl         # PYNQ-Z2 bitstream
+vivado -mode batch -source scripts/vivado_program.tcl              # JTAG ile kartı programla
 ```
 Scriptler `rtl/gpt_pkg.sv`'nin `MEM_PATH`'i mutlak yol olan bir kopyasını `build/gen/` altında üretip
 onu derler. Bu yüzden depo başka bir bilgisayara klonlandığında ek bir ayar gerekmez.
@@ -81,8 +88,9 @@ onu derler. Bu yüzden depo başka bir bilgisayara klonlandığında ek bir ayar
 - [x] Bit-exact tamsayı altın model, %100 doğruluk
 - [x] RTL: GEMV, requant, LayerNorm, attention (KV önbelleği), top FSM
 - [x] Birim + sistem testbench'leri, negatif test, çevrim profili
+- [x] Hedef kart: PYNQ-Z2, çip üzeri öz-test (simülasyonda doğrulandı)
 - [ ] Vivado xsim'de çalıştırma ve dalga formu ekran görüntüleri (rapor için)
-- [ ] Sentez: kaynak kullanımı, Fmax, güç raporu (hedef kart seçimi)
+- [ ] PYNQ-Z2 bitstream: kaynak kullanımı, Fmax, güç raporu, kartta yeşil LED
 - [ ] Tasarım uzayı deneyleri: P ∈ {4, 8, 16, 32}, tek geçişli LN, paralel dikkat
-- [ ] Kart üzerinde çalıştırma: UART veya Zynq PS/AXI arayüzü
+- [ ] PS + AXI-Lite + PYNQ (Jupyter) arayüzü, ARM CPU ile hız karşılaştırması
 - [ ] (opsiyonel) Daha büyük görev: karakter seviyesi Shakespeare
