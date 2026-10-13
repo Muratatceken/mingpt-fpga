@@ -13,8 +13,17 @@ def summary(path):
     lut_logic = g("LUT1", "LUT2", "LUT3", "LUT4", "LUT5", "LUT6", "INV")
     lut_ram = (4 * g("RAM64M", "RAM32M") + 2 * g("RAM64X1D", "RAM32X1D") + 4 * g("RAM128X1D")
                + g("RAM64X1S", "RAM32X1S") + 2 * g("RAM128X1S") + 4 * g("RAM256X1S") + g("SRL16E", "SRLC32E"))
-    return dict(lut_logic=lut_logic, lut_ram=lut_ram, lut=lut_logic + lut_ram, ff=g("FDRE", "FDSE", "FDCE", "FDPE"),
-                bram=g("RAMB36E1") + 0.5 * g("RAMB18E1"), dsp=g("DSP48E1"), carry=g("CARRY4"))
+    r = dict(lut_logic=lut_logic, lut_ram=lut_ram, lut=lut_logic + lut_ram, ff=g("FDRE", "FDSE", "FDCE", "FDPE"),
+             bram=g("RAMB36E1") + 0.5 * g("RAMB18E1"), dsp=g("DSP48E1"), carry=g("CARRY4"))
+    ltp = path.replace("stat_", "ltp_")                 # longest topological path (cells), a depth proxy
+    if ltp != path:
+        try:
+            m = re.search(r"length=(\d+)", open(ltp).read())
+            if m:
+                r["depth"] = int(m.group(1))
+        except OSError:
+            pass
+    return r
 
 
 if __name__ == "__main__":

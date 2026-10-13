@@ -15,7 +15,9 @@ import os
 import time
 from multiprocessing import get_context
 
-import torch
+for _v in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
+    os.environ.setdefault(_v, "1")          # one BLAS thread per process: many runs share 8 cores
+import torch  # noqa: E402
 import torch.nn.functional as F
 
 from configs import FAMILY, LADDER, build, make
@@ -56,6 +58,10 @@ def causality_check(model, V, T):
 
 def run_one(job):
     torch.set_num_threads(job["threads"])
+    try:
+        torch.set_num_interop_threads(1)
+    except RuntimeError:
+        pass
     torch.manual_seed(3407 + job["seed"])
     dev = job["device"]
     model = source_init(build(job["spec"]))

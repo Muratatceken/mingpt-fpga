@@ -1,0 +1,62 @@
+\textbf{The family.} Table~\ref{tab:family} lists the nine architectures. Each is re-implemented from its source repository
+with one interface (token ids in, next-token logits out), including the source's initialization. The nanochat model is its
+core architecture (parameter-free RMSNorm, also after the embedding and before the head; half-split RoPE; QK-norm with
+scale 1.2; ReLU$^2$ MLP; GQA; untied head) without its training-specific extras.
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{The nine architectures. ``State'': what inference keeps about the past.}
+\label{tab:family}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}llllll@{}}
+\toprule
+Model & Source & Mixing & Norm & Position & State \\ \midrule
+Bigram & makemore & none & -- & -- & none \\
+MLP & makemore & window of $k$ tokens & -- & window order & last $k$ tokens \\
+RNN & makemore & recurrence & -- & implicit & $h_t$ \\
+GRU & makemore & gated recurrence & -- & implicit & $h_t$ \\
+BoW & makemore & causal mean & -- & learned & running sum \\
+GPT-2 & minGPT & MHA & LayerNorm & learned & KV cache \\
+microgpt & gist & MHA & RMS (no gain) & learned & KV cache \\
+Llama~2 & llama2.c & GQA & RMSNorm & RoPE & KV cache \\
+nanochat & nanochat & GQA + QK-norm & RMS (no gain) & RoPE & KV cache \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{The feature ladder.} To isolate single ideas we use one configurable decoder (\code{Ladder}) and change one
+design choice per step (Table~\ref{tab:ladder}): from the GPT-2 block (LayerNorm, learned positions, GELU, MHA, biases)
+to RMSNorm, to RoPE, to SwiGLU, to GQA, to the Llama~2 block (no biases, tied embeddings); a branch replaces SwiGLU by
+ReLU$^2$ and adds QK-norm as in nanochat. All ladder models share one initialization scheme so that only the architecture
+changes. At every step the MLP width is re-chosen so that the parameter count stays within $\pm\zooBudgetTol$ of the budget.
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{Feature ladder: one change per step, equal parameter budget.}
+\label{tab:ladder}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Step & Change & Resulting block \\ \midrule
+L0 & -- & GPT-2 (LN, learned pos., GELU, MHA) \\
+L1 & LayerNorm $\to$ RMSNorm & \\
+L2 & learned positions $\to$ RoPE & \\
+L3 & GELU MLP $\to$ SwiGLU & \\
+L4 & MHA $\to$ GQA ($H_{kv}=H/2$) & \\
+L5 & no biases, tied embeddings & Llama~2 (llama2.c) \\
+L6 & L4 with ReLU$^2$ instead of SwiGLU & \\
+L7 & L6 + QK-norm & nanochat-like \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Tasks and budgets.} \emph{Names} (short context): makemore's 32{,}033 names, character level ($V=27$, $T=16$),
+split with seed 3407 into 30{,}033 training, 1{,}000 validation and 1{,}000 test names; budgets of 12k, 50k and 200k
+parameters. \emph{TinyStories} (long context): the GPT-4 TinyStories corpus \cite{eldan2023tinystories} tokenized with the
+512-token vocabulary of llama2.c's stories260K, $T=256$; shard 0 is held out (validation and test windows start at story
+boundaries); budget 260k parameters, the size of the pretrained stories260K, which we also run. Transformers use head size 8
+(the engine's attention lane count), four layers on names and five on TinyStories; recurrent and MLP models choose their
+widths by the same budget rule.
+
+\textbf{Training.} AdamW ($\beta=(0.9,0.99)$, weight decay 0.01), 500 warm-up steps, cosine decay to 1/30 of the peak,
+gradient clipping 1.0, batch 64. On names every model trains 20k steps; its learning rate is chosen per architecture from
+$\{10^{-3}, 3\cdot10^{-3}, 10^{-2}\}$ on the validation set, and test results are reported as mean $\pm$ standard deviation
+over \zooNamesSeeds{} seeds. On TinyStories each model trains \zooStoriesSteps{} steps (\zooStoriesTokensM{}M tokens) with one
+learning rate and one seed (compute budget).

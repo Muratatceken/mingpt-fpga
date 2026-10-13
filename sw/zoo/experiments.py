@@ -25,7 +25,7 @@ def best_lr(tag, arch):
 
 def train(tag, archs, budget, lrs, seeds):
     cmd = [sys.executable, "train.py", "--tag", tag, "--arch", ",".join(archs), "--budget", str(budget),
-           "--lrs", lrs, "--seeds", seeds, "--jobs", "4", "--threads", "2"]
+           "--lrs", lrs, "--seeds", seeds, "--jobs", "3", "--threads", "1"]
     print(" ".join(cmd), flush=True)
     subprocess.run(cmd, check=True)
 

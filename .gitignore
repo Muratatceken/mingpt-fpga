@@ -13,3 +13,10 @@ xsim.dir/
 # TinyStories (downloaded, ~1.5 GB) and per-seed checkpoints
 data/tinystories/
 model/zoo/runs/
+
+# LaTeX by-products (paper/)
+paper/*.aux
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.blg
+paper/*.out

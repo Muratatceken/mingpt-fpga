@@ -1,0 +1,22 @@
+% Results -- narrative written from the generated data (paper/data/), see sw/zoo/paper_data.py.
+\subsection{Quality and cost of the nine architectures}\label{sec:res-family}
+\begin{table}[t]
+\centering\footnotesize
+\caption{Names, 50k-parameter budget: test loss (nats/token, mean $\pm$ s.d. over seeds), INT8 loss increase, engine
+cycles per token and resources of the specialized engine (Yosys, XC7Z020).}
+\label{tab:family-res}
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Model & Params & Test loss & $\Delta_\mathrm{INT8}$ & Cycles & LUT & DSP \\ \midrule
+\tabinput{data/tab_family.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{What each idea costs: the feature ladder}\label{sec:res-ladder}
+\subsection{Context length: when does attention pay off?}\label{sec:res-context}
+\subsection{Scale}\label{sec:res-scale}
+\subsection{Where the INT8 error comes from}\label{sec:quant}
+\subsection{Engine design space and the one-bitstream engine}\label{sec:res-dse}
+\subsection{On-board measurements}\label{sec:res-board}

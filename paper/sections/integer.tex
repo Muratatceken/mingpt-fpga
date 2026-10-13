@@ -1,0 +1,36 @@
+A compiler lowers each PyTorch model to a per-token \emph{program} over a small set of operations (Table~\ref{tab:isa}).
+Affine parts of normalizations, the $1/\sqrt{d_h}$ attention scale and input scales are folded into the following
+weights, so the program contains only parameter-free normalizations. A float64 interpreter of the program reproduces the
+PyTorch logits of every model to within \zooIrErr{}, which validates the lowering. The program is then quantized; an
+integer interpreter (\code{IntRunner}) defines the hardware semantics, and the RTL must match it bit for bit.
+
+\textbf{Formats.} Weights are INT8 with one scale per output row; biases INT32. Activations between operations are INT8
+with one static scale per tensor, the residual stream is INT16 with a power-of-two scale, logits INT16. A linear layer
+accumulates INT8$\times$INT8 products in INT32 and requantizes per output with $y=\lfloor(a\,m_0+2^{sh-1})/2^{sh}\rfloor$,
+$m_0\in[2^{15},2^{16})$ \cite{jacob2018integer}. Element-wise nonlinearities (GELU, tanh, $\sigma$, SiLU, ReLU, ReLU$^2$)
+are 256-entry tables indexed by the requantized INT8 pre-activation, so they are exact for the INT8 input grid.
+
+\textbf{Normalization.} For a segment $x\in\mathbb{Z}^n$ (INT16 residual or INT8 vector) LayerNorm uses
+$Q = \sum_i (n x_i - s)^2 + E = n(n\sum_i x_i^2 - s^2) + E$ with $s=\sum_i x_i$, so one pass suffices; RMSNorm uses
+$Q=\sum_i x_i^2+E$, where $E$ is the integer image of $\varepsilon$. The inverse square root is computed as
+$\mathrm{inv}=\lfloor K 2^k/\lfloor\sqrt{Q\,4^k}\rfloor\rfloor$ with $k=\max(0,\lfloor(40-\mathrm{bitlen}(Q))/2\rfloor)$,
+i.e.\ $Q$ is normalized to 39--40 bits before the integer square root, keeping the relative precision constant even for
+the short INT8 segments of QK-norm. Since $|nx_i-s|\le\sqrt{Q}$, $|(nx_i-s)\,\mathrm{inv}|\le K < 2^{40}$: the product
+fits 64 bits. The output scale is chosen from the calibrated range but never coarser than the guaranteed bound
+($\sqrt{n-1}$ for LayerNorm, $\sqrt n$ for RMSNorm).
+
+\textbf{Softmax.} Scores $s_j=q\cdot k_j$ are exact integers. With $u_j=(m-s_j)\,C$ ($m=\max_j s_j$, $C$ a fixed-point
+constant absorbing all scales and $\log_2 e$), weights are $e_j=\mathrm{EXP}[(u_j \gg (F-8))\,\&\,255]\gg(u_j\gg F)$ from
+a table $\mathrm{EXP}[k]=\mathrm{round}(2^{15}2^{-k/256})$, so $e_j\le 2^{15}$ and $\sum_j e_j\ge 2^{15}$. One reciprocal
+$R=\lfloor 2^{32}/\sum_j e_j\rfloor$ per head normalizes the INT34 accumulation $\sum_j e_j v_j$; the result is a convex
+combination of $V$ rows, so its scale is that of $V$.
+
+\textbf{Other operations.} RoPE uses Q1.14 tables; the input scale is calibrated on the largest pair norm, so the rotation
+cannot overflow. SwiGLU multiplies two INT8 vectors and requantizes. The GRU update is
+$h\leftarrow h+\lfloor(z(\tilde h-h)+64)/2^7\rfloor$ with $z,\tilde h,h$ in Q0.7. The causal mean of the bag-of-words model
+keeps an INT32 running sum and multiplies by a table of $\lfloor 2^{20}/(t+1)\rceil$.
+
+\textbf{Calibration.} Activation scales are calibrated on 2{,}000 training names (100 TinyStories stories). We compare the
+maximum with high percentiles of $|x|$ (two passes, 4{,}096-bin histograms) and calibrated versus bound-derived
+normalization scales in \S\ref{sec:quant}; the chosen recipe (99.99th percentile, calibrated normalization scale) is used
+for all models.

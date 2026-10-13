@@ -17,7 +17,8 @@
 //   vrf        NBUF int8 vector buffers (A..G, Q, K, Vb, HS) as P-byte words:
 //              one byte-enable write port, three asynchronous read ports
 //   rmem/lmem  residual R and logits L (int16)
-//   kmem/vmem  KV cache, one P-byte word per (layer, position, kv head)
+//   kmem/vmem  KV cache, one DH-byte word per (layer, position, kv head); DH = 8 = head size,
+//              independent of the GEMV lane count P (P = 8, 16, 32: a head is a slice of a P-byte word)
 //   smem       bag-of-words running sums (int32); hist: token history
 // Units
 //   GEMV  P-lane output-stationary MAC array, shadow bank, serial requantiser
@@ -52,7 +53,9 @@ module zoo_core
   input  logic [19:0]        ld_addr,
   input  logic [255:0]       ld_data
 );
-  localparam int LP = $clog2(P);
+  localparam int LP  = $clog2(P);
+  localparam int DH  = 8;                // attention / RoPE / KV lanes = head size
+  localparam int LDH = 3;
   localparam logic [15:0] EN = SPECIALIZE ? OPS_USED : 16'hFFFF;   // enabled opcodes (GEMV always)
   localparam string F_PROG = PRELOAD ? {MEM_DIR, "/prog.mem"}    : "";
   localparam string F_W    = PRELOAD ? {MEM_DIR, "/weights.mem"} : "";
@@ -166,15 +169,16 @@ module zoo_core
   always_ff @(posedge clk) if (l_we) lmem[l_wa] <= l_wd;
 
   // KV cache (synchronous read)
-  logic [8*P-1:0]  kmem [KDEP];
-  logic [8*P-1:0]  vmem [KDEP];
+  logic [8*DH-1:0] kmem [KDEP];
+  logic [8*DH-1:0] vmem [KDEP];
   logic [KA_W-1:0] kv_ra, kv_wa;
   logic            kv_we;
-  logic [8*P-1:0]  k_rd, v_rd;
+  logic [8*DH-1:0] k_rd, v_rd;
+  logic [8*DH-1:0] kv_kd, kv_vd;          // the head slices of the K / Vb words being stored
   always_ff @(posedge clk) begin
     if (kv_we) begin
-      kmem[kv_wa] <= va_d;
-      vmem[kv_wa] <= vb_d;
+      kmem[kv_wa] <= kv_kd;
+      vmem[kv_wa] <= kv_vd;
     end
     k_rd <= kmem[kv_ra];
     v_rd <= vmem[kv_ra];
@@ -286,7 +290,7 @@ module zoo_core
   logic [15:0]        s1_j;
   logic [15:0]        e1_e;
   logic signed [23:0] a_m;
-  logic signed [33:0] att_a [P];      // sum e * v
+  logic signed [33:0] att_a [DH];     // sum e * v
   logic [33:0]        att_e;          // sum of exp weights (>= 2^15)
   logic [17:0]        att_r;          // 2^32 / att_e <= 2^17
   // ROPE / BOW
@@ -352,15 +356,16 @@ module zoo_core
   logic [5:0]         e_f;
   logic signed [63:0] att_y;
   always_comb begin
-    sc = '0;
-    for (int p = 0; p < P; p++) sc += $signed(va_d[8*p +: 8]) * $signed(k_rd[8*p +: 8]);
+    sc = '0;                                              // q: head h is a DH-byte slice of a P-byte word
+    for (int d = 0; d < DH; d++)
+      sc += $signed(va_d[8 * (((h << LDH) + d) % P) +: 8]) * $signed(k_rd[8*d +: 8]);
     e_f    = f_k[5:0];
     e_diff = 25'(a_m - sbuf[POS_W'(j)]);
     e_u    = 64'(e_diff) * 64'(f_b1[15:0]);
     e_n    = e_u >> e_f;
     e_kk   = (e_u >> (e_f - 6'd8)) & 64'hFF;
     e_val  = (e_n > 64'd15) ? 16'd0 : (exp_lut[e_kk[7:0]] >> e_n[3:0]);
-    att_y  = (64'(att_a[j[LP-1:0]]) * $signed({1'b0, att_r}) + 64'sh8000_0000) >>> 32;
+    att_y  = (64'(att_a[j[LDH-1:0]]) * $signed({1'b0, att_r}) + 64'sh8000_0000) >>> 32;
   end
 
   // ---- ROPE ----
@@ -371,8 +376,8 @@ module zoo_core
   logic signed [31:0] rp_y1, rp_y2;
   always_comb begin
     rp_half = f_mode[0];
-    rp_i1   = rp_half ? i : (i << 1);
-    rp_i2   = rp_half ? i + (f_n1 >> 1) : (i << 1) + 16'd1;
+    rp_i1   = ((h << LDH) % P) + (rp_half ? i : (i << 1));             // byte lanes inside the word
+    rp_i2   = ((h << LDH) % P) + (rp_half ? i + (f_n1 >> 1) : (i << 1) + 16'd1);
     rp_a    = lane(rp_w, rp_i1);
     rp_b    = lane(rp_w, rp_i2);
     rp_s    = t_dx[15:0];
@@ -421,7 +426,7 @@ module zoo_core
     r_ra = '0; r_we = 1'b0; r_wa = '0; r_wd = '0;
     l_we = 1'b0; l_wa = '0; l_wd = '0;
     w_a = g_wa; p_a = '0; t_a = '0; lu_a = '0;
-    kv_ra = '0; kv_we = 1'b0; kv_wa = '0;
+    kv_ra = '0; kv_we = 1'b0; kv_wa = '0; kv_kd = '0; kv_vd = '0;
     sb_we = 1'b0; sb_wa = '0; sb_wd = '0;
     sm_we = 1'b0; sm_wd = '0;
     rq_in_v = 1'b0; rq_in_idx = '0; rq_acc = '0; rq_bias = '0; rq_m0 = '0; rq_sh = '0; rq_o16 = 1'b0;
@@ -516,29 +521,31 @@ module zoo_core
 
         // ------------------------------------------------ ROPE
         OP_ROPE: if (EN[8]) begin
-          va_a = vaddr(f_src0, h << LP);
+          va_a = vaddr(f_src0, h << LDH);
           t_a  = TA_W'(((ph == 4'd1) ? f_b0 : f_b1) + 32'(t) * (f_n1 >> 1) + i);
           if (ph == 4'd4) begin
-            vw_a = vaddr(f_dst, h << LP); vw_be = '1; vw_d = rp_n;
+            vw_a = vaddr(f_dst, h << LDH); vw_be = '1; vw_d = rp_n;
           end
         end
 
         // ------------------------------------------------ KVSTORE
         OP_KVSTORE: if (EN[9]) begin
-          va_a  = vaddr(f_src0, i << LP);
-          vb_a  = vaddr(f_src1, i << LP);
+          va_a  = vaddr(f_src0, i << LDH);
+          vb_a  = vaddr(f_src1, i << LDH);
+          kv_kd = va_d[8 * ((i << LDH) % P) +: 8 * DH];
+          kv_vd = vb_d[8 * ((i << LDH) % P) +: 8 * DH];
           kv_we = 1'b1;
           kv_wa = KA_W'((32'(f_aux) * T + 32'(t)) * NKVW + i);
         end
 
         // ------------------------------------------------ ATTN
         OP_ATTN: if (EN[10]) begin
-          va_a  = vaddr(f_src0, h << LP);
+          va_a  = vaddr(f_src0, h << LDH);
           kv_ra = KA_W'((32'(f_aux) * T + 32'(j)) * NKVW + kvh);
           if (s1_v) begin sb_we = 1'b1; sb_wa = s1_j; sb_wd = sc; end
           if (ph == 4'd4) begin diva_start = 1'b1; diva_den = att_e; end
           if (ph == 4'd6) begin
-            vw_a = vaddr(f_dst, (h << LP) + j); vw_be = P'(1) << j[LP-1:0]; vw_d = {P{sat8(att_y)}};
+            vw_a = vaddr(f_dst, (h << LDH) + j); vw_be = P'(1) << ((h << LDH) + j) % P; vw_d = {P{sat8(att_y)}};
           end
         end
 
@@ -747,7 +754,7 @@ module zoo_core
             // -------------------------------------------- KVSTORE
             OP_KVSTORE: if (EN[9]) begin
               i <= i + 1'b1;
-              if (i == (f_n0 >> LP) - 1'b1) begin pc <= pc + 1'b1; st <= S_FETCH; end
+              if (i == (f_n0 >> LDH) - 1'b1) begin pc <= pc + 1'b1; st <= S_FETCH; end
             end
 
             // -------------------------------------------- ATTN
@@ -760,7 +767,7 @@ module zoo_core
                   else j <= j + 1'b1;
                 end
                 4'd1: begin                                        // last score lands
-                  for (int p = 0; p < P; p++) att_a[p] <= '0;
+                  for (int d = 0; d < DH; d++) att_a[d] <= '0;
                   att_e <= '0;
                   ph    <= 4'd2;
                 end
@@ -774,7 +781,7 @@ module zoo_core
                 4'd4: ph <= 4'd5;                                  // divider started
                 4'd5: if (diva_done) begin att_r <= diva_quo[17:0]; j <= '0; ph <= 4'd6; end
                 default: begin                                     // write P outputs
-                  if (j == 16'(P - 1)) begin
+                  if (j == 16'(DH - 1)) begin
                     j <= '0;
                     if (rc == f_n3 - 1'b1) begin rc <= '0; kvh <= kvh + 1'b1; end
                     else rc <= rc + 1'b1;
@@ -785,8 +792,8 @@ module zoo_core
               endcase
               if (s1_v) a_m <= (s1_j == '0 || sc > a_m) ? sc : a_m;
               if (e1_v) begin
-                for (int p = 0; p < P; p++)
-                  att_a[p] <= att_a[p] + $signed({1'b0, e1_e}) * $signed(v_rd[8*p +: 8]);
+                for (int d = 0; d < DH; d++)
+                  att_a[d] <= att_a[d] + $signed({1'b0, e1_e}) * $signed(v_rd[8*d +: 8]);
                 att_e <= att_e + 34'(e1_e);
               end
             end

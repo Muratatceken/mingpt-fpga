@@ -1,0 +1,49 @@
+\begin{figure}[t]
+\centering
+\resizebox{\columnwidth}{!}{\input{figs/engine}}
+\caption{The microcoded engine. A controller fetches 256-bit instructions and dispatches them to one of seven units;
+all model-specific content lives in memories that the Zynq PS loads at run time.}
+\label{fig:engine}
+\end{figure}
+
+\textbf{Instruction set.} Table~\ref{tab:isa} lists the fifteen operations. A 256-bit instruction carries an opcode,
+destination and two source buffers, a mode, four 16-bit sizes, two memory base addresses and two constants
+($m_0$/$sh$, the normalization constants $K$ and $E$, or the softmax constant $C$ and shift $F$). The compiler emits the
+program of a model (2 to 74 instructions) and its memory images; the controller executes the program once per token.
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{Engine operations.}
+\label{tab:isa}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Operation & Semantics \\ \midrule
+\code{EMB16}/\code{EMB8}/\code{EMBWIN} & embedding (+ position) / window of $k$ embeddings \\
+\code{TABLOGIT}, \code{HRESET} & bigram logits; $h\leftarrow h_0$ at $t=0$ \\
+\code{NORM} & LN/RMS over segments, INT16 or INT8 in/out \\
+\code{GEMV} & $W[x;x']+b$; INT8 out, residual add, table, logits \\
+\code{ROPE}, \code{KVSTORE}, \code{ATTN} & rotation; cache write; GQA softmax-average \\
+\code{MUL}, \code{GRUUPD}, \code{COPY}, \code{REQ}, \code{BOW} & element-wise operations \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Units.} The GEMV unit is output-stationary with $P$ MAC lanes ($P=8$ unless stated): it streams one
+$P$-byte weight word per cycle, accumulates $P$ outputs in INT32, and hands them to a shadow bank so that the serial
+requantizer of block $b$ overlaps the accumulation of block $b+1$. A layer of $n_\mathrm{in}\times n_\mathrm{out}$ takes
+$n_\mathrm{in}\lceil n_\mathrm{out}/P\rceil$ cycles; the input may be the concatenation of two buffers ($[x_t;h_{t-1}]$).
+The NORM unit makes one pass, normalizes $Q$, takes a 28-cycle integer square root and one division. The attention unit has
+8 lanes (the head size): a KV-cache word holds one head at one position, so a score and a weighted-value accumulation take
+one cycle per cached position; a head costs $2(t+1)$ cycles plus one reciprocal. Divisions use a restoring divider that
+starts at bit $Q_B$ when the quotient is known to be $<2^{Q_B}$ (41 instead of 64 cycles for normalization, 18 instead
+of 34 for the softmax reciprocal). Element-wise units read up to three INT8 vectors per cycle.
+
+\textbf{Storage.} Eleven INT8 vector buffers (P-byte words, byte-enable writes, three asynchronous read ports), the INT16
+residual and logit memories, the KV cache, the running sums of the bag-of-words model and the token history are on chip.
+Weights, requantization parameters, tables and activation tables are block RAMs.
+
+\textbf{One bitstream.} With \code{LOADABLE=1} the model memories are RAMs written through a load port; an AXI4-Lite wrapper
+exposes the load port, per-step control, a logit window, a hardware argmax and a cycle counter to the ARM cores of the
+Zynq. The \emph{universal} configuration is sized for the maximum over all models ($V=512$, $T=256$, five layers); a
+Python driver loads any model in milliseconds to seconds and runs it without re-synthesis. With \code{SPECIALIZE=1} the
+units a model does not use are removed, which we use to attribute resources to architectural features.

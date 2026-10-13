@@ -42,7 +42,7 @@ fi
 
 COV=(--x-assign fast)                                      # (bash 3.2: no empty arrays under set -u)
 if [ "$COVER" = 1 ]; then COV+=(--coverage-line --coverage-toggle); fi
-verilator --binary --timing --assert --timescale 1ns/1ps -j 0 -Wall -Wno-fatal \
+verilator --binary --timing --assert --timescale 1ns/1ps -j ${VJOBS:-0} -Wall -Wno-fatal \
   -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-UNUSEDSIGNAL -Wno-UNUSEDPARAM "${COV[@]}" \
   -GSPECIALIZE=$SPEC -GLOADTEST=$LOAD "$MEM/zoo_pkg.sv" "${SRC[@]}" --top-module tb_zoo \
   -Mdir "$OBJ" -o Vtb_zoo > "$OBJ/build.log" 2>&1 || { tail -40 "$OBJ/build.log"; exit 1; }

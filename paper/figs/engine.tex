@@ -1,0 +1,31 @@
+% Microcoded engine (paper version of report/sekiller/zoo_motor.tex)
+\begin{tikzpicture}[x=1cm,y=1cm, font=\sffamily\footnotesize,
+  box/.style={draw=black!45, rounded corners=2pt, fill=white, align=center, minimum height=9mm, inner sep=3pt},
+  acc/.style={box, draw=blue!60!black, fill=blue!7, line width=0.9pt},
+  mem/.style={box, fill=black!4},
+  ext/.style={box, draw=orange!70!black, fill=orange!8},
+  ps/.style={box, draw=green!45!black, fill=green!7},
+  flow/.style={-{Stealth[length=2mm]}, draw=black!55, line width=0.6pt}]
+  \node[ext, minimum width=26mm] (prog) at (0.8,0) {\textbf{Program}\\[-1pt]\scriptsize 256-bit microcode};
+  \node[acc, minimum width=30mm] (ctl) at (4.9,0) {\textbf{Controller}\\[-1pt]\scriptsize fetch / decode / dispatch};
+  \node[ext, minimum width=44mm] (rom) at (10.4,0) {\textbf{Model memories (BRAM)}\\[-1pt]\scriptsize weights, $m_0$/$sh$/bias, tables, LUTs};
+  \node[ps, minimum width=34mm] (ps7) at (10.4,1.55) {\textbf{Zynq PS (ARM)}\\[-1pt]\scriptsize AXI4-Lite: load, run, read};
+  \draw[flow] (prog) -- (ctl);
+  \draw[flow, draw=green!45!black, line width=0.9pt] (ps7) -- (rom);
+  \draw[flow, draw=green!45!black, line width=0.9pt] (ps7.west) -| (prog.north);
+  \foreach \n/\x/\t/\s in {emb/-0.2/EMB/{embeddings}, norm/2.2/NORM/{LN, RMS, isqrt},
+                           attn/7.3/ATTN/{GQA, exp LUT}, rope/9.6/ROPE/{Q1.14 tables}, ew/12.0/Elementwise/{MUL, GRU, BoW}}
+    {\node[box, minimum width=21mm, minimum height=12mm] (\n) at (\x,-2.3) {\textbf{\t}\\[-1pt]\scriptsize \s};}
+  \node[acc, minimum width=23mm, minimum height=12mm] (gemv) at (4.75,-2.3) {\textbf{GEMV}\\[-1pt]\scriptsize $P$ MAC lanes,\\[-3pt]\scriptsize shadow bank};
+  \draw[draw=black!55] (ctl.south) -- (4.9,-1.15);
+  \draw[draw=black!55] (-0.2,-1.15) -- (12.0,-1.15);
+  \foreach \n in {emb,norm,gemv,attn,rope,ew} \draw[flow] (\n.north |- 0,-1.15) -- (\n.north);
+  \draw[flow, draw=blue!60!black, line width=1pt] (rom.south) ++(-1.6,0) |- (5.6,-0.75) -- (5.6,-1.6);
+  \draw[draw=black!55] (-0.2,-3.55) -- (12.0,-3.55);
+  \foreach \n in {emb,norm,gemv,attn,rope,ew} \draw[flow, {Stealth[length=2mm]}-{Stealth[length=2mm]}] (\n.south) -- (\n.south |- 0,-3.55);
+  \node[mem, minimum width=50mm] (vrf) at (2.0,-4.6) {\textbf{Vector registers}\\[-1pt]\scriptsize 11 INT8 buffers, 3 read ports};
+  \node[mem, minimum width=24mm] (rl) at (6.4,-4.6) {\textbf{R, L}\\[-1pt]\scriptsize INT16 residual, logits};
+  \node[mem, minimum width=22mm] (kv) at (9.2,-4.6) {\textbf{KV cache}\\[-1pt]\scriptsize 8-byte head words};
+  \node[mem, minimum width=20mm] (st) at (11.7,-4.6) {\textbf{State}\\[-1pt]\scriptsize sums, history};
+  \foreach \m in {vrf,rl,kv,st} \draw[flow, {Stealth[length=2mm]}-{Stealth[length=2mm]}] (\m.north |- 0,-3.55) -- (\m.north);
+\end{tikzpicture}

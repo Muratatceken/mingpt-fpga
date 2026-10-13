@@ -8,7 +8,7 @@ VFLAGS = --binary --timing --timescale 1ns/1ps -j 0 -Wall -Wno-fatal \
 RTL    = $(shell cat scripts/files.f)
 
 .PHONY: all model train quantize eval export sim test-arith selftest lint synth report clean \
-        zoo-train zoo-quant zoo-sim zoo-synth
+        zoo-train zoo-quant zoo-sim zoo-synth zoo-pipeline zoo-fuzz zoo-arith zoo-dse paper
 
 all: test-arith sim selftest
 
@@ -62,6 +62,25 @@ zoo-sim:
 
 zoo-synth:
 	cd sw/zoo && $(PYTHON) hw_run.py --synth
+
+zoo-pipeline:      # every trained run: INT8 + bit-exact RTL on the test set -> model/zoo/pipeline.json
+	cd sw/zoo && $(PYTHON) pipeline.py
+
+zoo-fuzz:          # randomized differential tests RTL vs integer reference -> model/zoo/fuzz.json
+	cd sw/zoo && $(PYTHON) fuzz.py 60
+
+zoo-arith:         # exhaustive / random tests of the divider and square root
+	mkdir -p build/zoo/obj_zarith && $(VERILATOR) --binary --timing --assert --timescale 1ns/1ps -j 0 -Wno-fatal \
+	  -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC rtl/zoo/zdiv.sv rtl/isqrt_seq.sv tb/tb_zarith.sv --top-module tb_zarith \
+	  -Mdir build/zoo/obj_zarith -o Vtb && build/zoo/obj_zarith/Vtb
+
+zoo-dse:           # GEMV lane count P = 8, 16, 32 -> model/zoo/dse.json
+	cd sw/zoo && $(PYTHON) dse.py
+
+# ---------------- makale (İngilizce, IEEE) ----------------
+paper:
+	cd sw/zoo && $(PYTHON) paper_data.py
+	cd paper && latexmk -pdf -interaction=nonstopmode main.tex
 
 # ---------------- PDF rapor (XeLaTeX) ----------------
 report:

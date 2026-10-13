@@ -28,7 +28,8 @@ enum { M_O8, M_RADD, M_LUT, M_LOGIT };
 /* ------------------------------------------------------------------ model */
 static int P, V, T, NL, C, VLEN, KVD, TAB_W, PROG_DEPTH, W_DEPTH, PRM_DEPTH, TAB_DEPTH, LUT_DEPTH;
 static uint64_t (*prog)[4];      /* 256-bit instructions as four 64-bit limbs, limb 0 = bits 63:0 */
-static uint64_t *wmem, *pmem;
+static int8_t *wmem;             /* W_DEPTH words of P bytes (lane p = output p of a block) */
+static uint64_t *pmem;
 static int32_t *tab;
 static uint8_t *lut;
 static uint16_t explut[256];
@@ -78,7 +79,7 @@ static void load(const char *dir) {
   C = pkg_int(dir, "C"); VLEN = pkg_int(dir, "VLEN"); KVD = pkg_int(dir, "KVD"); TAB_W = pkg_int(dir, "TAB_W");
   PROG_DEPTH = pkg_int(dir, "PROG_DEPTH"); W_DEPTH = pkg_int(dir, "W_DEPTH"); PRM_DEPTH = pkg_int(dir, "PRM_DEPTH");
   TAB_DEPTH = pkg_int(dir, "TAB_DEPTH"); LUT_DEPTH = pkg_int(dir, "LUT_DEPTH");
-  if (P != 8) die("only P = 8 is supported", NULL);
+  if (P < 8 || P > 64 || (P & (P - 1))) die("P must be a power of two in [8, 64]", NULL);
 
   prog = calloc(PROG_DEPTH, sizeof *prog);
   FILE *fp = open_in(dir, "prog.mem");
@@ -93,7 +94,17 @@ static void load(const char *dir) {
     }
   }
   fclose(fp);
-  wmem = calloc(W_DEPTH, 8); read_hex64(dir, "weights.mem", wmem, W_DEPTH);
+  wmem = calloc((size_t)W_DEPTH * P, 1);
+  fp = open_in(dir, "weights.mem");
+  char ws[160];
+  for (int i = 0; i < W_DEPTH; i++) {               /* 2P hex digits, lane 0 = least significant byte */
+    if (fscanf(fp, "%159s", ws) != 1 || (int)strlen(ws) != 2 * P) die("bad weights.mem", NULL);
+    for (int p = 0; p < P; p++) {
+      char byte[3] = {ws[2 * (P - 1 - p)], ws[2 * (P - 1 - p) + 1], 0};
+      wmem[(size_t)i * P + p] = (int8_t)strtol(byte, NULL, 16);
+    }
+  }
+  fclose(fp);
   pmem = calloc(PRM_DEPTH, 8); read_hex64(dir, "params.mem", pmem, PRM_DEPTH);
   uint64_t *tmp = calloc(TAB_DEPTH > LUT_DEPTH ? TAB_DEPTH : LUT_DEPTH, 8);
   read_hex64(dir, "tables.mem", tmp, TAB_DEPTH);
@@ -193,20 +204,19 @@ static void step(int tok, int t) {
       break;
     }
     case OP_GEMV: {
-      int nin = n0 + n1, nblk = n2 / 8;
+      int nin = n0 + n1, nblk = n2 / P;
       static int8_t x[65536];
       for (int i = 0; i < n0; i++) x[i] = B(s0, i);
       for (int i = 0; i < n1; i++) x[n0 + i] = B(s1, i);
-      const uint64_t *wp = wmem + b0;
+      const int8_t *wp = wmem + (size_t)b0 * P;
       for (int ob = 0; ob < nblk; ob++) {
-        int64_t acc[8] = {0};
-        for (int i = 0; i < nin; i++, wp++) {
-          uint64_t ww = *wp;
+        int64_t acc[64] = {0};
+        for (int i = 0; i < nin; i++, wp += P) {
           int64_t xi = x[i];
-          for (int p = 0; p < 8; p++) acc[p] += (int8_t)(ww >> (8 * p)) * xi;
+          for (int p = 0; p < P; p++) acc[p] += wp[p] * xi;
         }
-        for (int p = 0; p < 8; p++) {
-          int o = ob * 8 + p;
+        for (int p = 0; p < P; p++) {
+          int o = ob * P + p;
           if (o >= n3) continue;
           uint64_t pr = pmem[b1 + o];
           int64_t a = acc[p] + (int32_t)(pr >> 32);

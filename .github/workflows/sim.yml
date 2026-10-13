@@ -1,0 +1,28 @@
+# Bit-exact RTL regression of the zoo engine on every push (Verilator), plus the C ISA simulator.
+name: rtl-regression
+on: [push, pull_request]
+jobs:
+  zoo:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: tools
+        run: sudo apt-get update && sudo apt-get install -y verilator g++ make
+      - name: verilator version
+        run: verilator --version
+      - name: C instruction-set simulator (all models, golden vectors)
+        run: |
+          mkdir -p build/c && gcc -O2 -std=c99 -o build/c/zoo_run sw/c/zoo_run.c
+          for m in bigram mlp rnn gru bow gpt2 microgpt llama nanochat; do build/c/zoo_run mem/zoo/$m --reps 1; done
+      - name: RTL, nine models (10 test names each, assertions on)
+        run: |
+          for m in bigram mlp rnn gru bow gpt2 microgpt llama nanochat; do
+            scripts/zoo_sim.sh $m 10 | tee log_$m.txt
+            grep -q "PASS: RTL is bit-exact" log_$m.txt
+          done
+      - name: one-bitstream engine through AXI (two models)
+        run: |
+          for m in gru llama; do
+            scripts/zoo_axi_sim.sh mem/zoo/universal/$m 3 | tee axi_$m.txt
+            grep -q "PASS: AXI system bit-exact" axi_$m.txt
+          done

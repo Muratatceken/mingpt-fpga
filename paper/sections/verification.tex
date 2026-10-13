@@ -1,0 +1,29 @@
+Every claim about the hardware rests on bit-exact equality with the integer reference. Table~\ref{tab:verif} summarizes
+the evidence.
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{Verification evidence (all simulations with assertions on address ranges, INT32 accumulator overflow and the
+divider's precondition).}
+\label{tab:verif}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{0.43\columnwidth}p{0.5\columnwidth}@{}}
+\toprule
+Check & Result \\ \midrule
+Every trained model, test set, all logits & \zooVerifRuns{} checkpoints, \zooVerifiedLogits{} logits, 0 mismatches \\
+Same, specialized engine and load port & 0 mismatches \\
+One-bitstream engine via AXI (10 models) & 0 mismatches; 200-token story identical \\
+Randomized differential tests & \zooFuzzCases{} random architectures/sizes/weights, \zooFuzzLogits{} logits, 0 mismatches \\
+4-state simulation (Icarus), X on outputs & 0 unknown logits \\
+Divider, exhaustive ($W{=}12$) + random & \zooArithCases{} cases, 0 errors \\
+Independent C implementation of the ISA & bit-exact on all models \\
+On-board (PYNQ-Z2), all models & \zooBoardVerif{} \\ \bottomrule
+\end{tabular}
+\end{table}
+
+The simulations use Verilator 5.052; the randomized tests draw an architecture, vocabulary (27--512), context (8--64),
+depth (1--3) and width at random, fill the weights with values of random scale, calibrate on random tokens, and compare
+every logit of random token sequences. The divider's skip-ahead is proven by exhaustive simulation of every valid input
+at $W=12$ and by the property $q\,b\le a<(q+1)\,b$ on random 64-bit cases; the softmax reciprocal is checked for every
+denominator in $[2^{15},2^{24})$. A third implementation, a C instruction-set simulator of the microcode, matches as well
+and serves as the CPU baseline.

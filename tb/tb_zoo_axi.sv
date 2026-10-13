@@ -83,7 +83,7 @@ module tb_zoo_axi;
     $readmemh({mdir, "/tables.mem"}, m_tab, 0, n_tab - 1);
     $readmemh({mdir, "/luts.mem"}, m_lut, 0, n_lut - 1);
     wr(16'h0030, 32'd0); for (int a = 0; a < n_prog; a++) ld_mem(0, a, m_prog[a], 8);
-    wr(16'h0030, 32'd1); for (int a = 0; a < n_w; a++)    ld_mem(1, a, 256'(m_w[a]), 2);
+    wr(16'h0030, 32'd1); for (int a = 0; a < n_w; a++)    ld_mem(1, a, 256'(m_w[a]), (8 * P + 31) / 32);
     wr(16'h0030, 32'd2); for (int a = 0; a < n_prm; a++)  ld_mem(2, a, 256'(m_prm[a]), 2);
     wr(16'h0030, 32'd3); for (int a = 0; a < n_tab; a++)  ld_mem(3, a, 256'(m_tab[a]), 1);
     wr(16'h0030, 32'd4); for (int a = 0; a < n_lut; a++)  ld_mem(4, a, 256'(m_lut[a]), 1);

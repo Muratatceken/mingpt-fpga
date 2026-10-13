@@ -4,6 +4,8 @@ On-board measurements on the PYNQ-Z2 (run as root on the board, from the reposit
     sudo python3 board/pynq_z2/run_board.py                # every model of mem/zoo/universal/
     sudo python3 board/pynq_z2/run_board.py --cpu          # + the ARM Cortex-A9 baseline (sw/c/zoo_run)
     sudo python3 board/pynq_z2/run_board.py --story 200    # + a TinyStories story generated on the FPGA
+    sudo python3 board/pynq_z2/run_board.py --power fpga 60  # 60 s of continuous FPGA generation (read the meter)
+    sudo python3 board/pynq_z2/run_board.py --power cpu 60   # 60 s of the same model on the ARM core
 
 For every model: load through AXI, run all golden vectors (bit-exactness ON THE BOARD), engine cycles
 per token (hardware counter), wall-clock time per step from Python, and optionally the same integer
@@ -62,8 +64,34 @@ def cpu_baseline(model):
     return dict(error=r.stdout[-500:] + r.stderr[-500:])
 
 
+def power_run(kind, seconds, model="stories260k"):
+    """keep the FPGA (or the ARM core) busy for `seconds` so that the board power can be read on a USB meter"""
+    print(f"{kind}: running {model} for {seconds} s -- read the power meter now", flush=True)
+    n, t0 = 0, time.time()
+    if kind == "fpga":
+        z = Zoo(OVERLAY)
+        z.load(os.path.join(UNI, model))
+        while time.time() - t0 < seconds:
+            toks, _ = z.generate(min(200, z.T), start=1)
+            n += len(toks) - 1
+    else:
+        exe = os.path.join(ROOT, "build", "c", "zoo_run")
+        cpu_baseline(model)                                   # builds the executable if needed
+        while time.time() - t0 < seconds:
+            subprocess.run([exe, os.path.join(ROOT, "mem", "zoo", model), "--gen", "200"], capture_output=True)
+            n += 200
+    dt = time.time() - t0
+    print(f"{kind}: {n} tokens in {dt:.1f} s = {n / dt:.1f} tokens/s (incl. Python / process overhead)")
+    return dict(kind=kind, model=model, tokens=n, seconds=dt, tokens_per_s=n / dt)
+
+
 def main():
     args = sys.argv[1:]
+    if "--power" in args:
+        k = args.index("--power")
+        r = power_run(args[k + 1], float(args[k + 2]))
+        json.dump(r, open(f"power_{args[k + 1]}.json", "w"), indent=1)
+        return
     models = sorted(m for m in os.listdir(UNI) if os.path.isdir(os.path.join(UNI, m)))
     z = Zoo(OVERLAY)
     res = dict(board=platform.node(), time=time.strftime("%Y-%m-%d %H:%M:%S"), engine=dict(V=z.V, T=z.T, C=z.C),
