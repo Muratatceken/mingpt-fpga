@@ -32,7 +32,9 @@
 module zoo_core
   import zoo_pkg::*;
 #(
-  parameter string MEM_DIR = MEM_PATH
+  parameter string MEM_DIR    = MEM_PATH,
+  parameter bit    SPECIALIZE = 1'b0,     // 1: drop the units this model does not use (OPS_USED)
+  parameter bit    LOADABLE   = 1'b0      // 1: model memories are RAMs filled through the ld_* port
 ) (
   input  logic               clk,
   input  logic               rst_n,
@@ -43,9 +45,14 @@ module zoo_core
   output logic               done,       // one-cycle pulse, logits valid
   input  logic [LA_W-1:0]    l_addr,     // logit read port
   output logic signed [15:0] l_data,
-  output logic [7:0]         dbg_op      // opcode in execution (16 = fetch/decode)
+  output logic [7:0]         dbg_op,     // opcode in execution (16 = fetch/decode)
+  input  logic               ld_we,      // model load (LOADABLE = 1): write one word of memory ld_sel
+  input  logic [2:0]         ld_sel,     //   0 prog, 1 weights, 2 params, 3 tables, 4 luts
+  input  logic [19:0]        ld_addr,
+  input  logic [255:0]       ld_data
 );
   localparam int LP = $clog2(P);
+  localparam logic [15:0] EN = SPECIALIZE ? OPS_USED : 16'hFFFF;   // enabled opcodes (GEMV always)
 
   localparam logic [7:0] OP_END = 8'd0, OP_EMB16 = 8'd1, OP_EMB8 = 8'd2, OP_EMBWIN = 8'd3,
                          OP_TABLOGIT = 8'd4, OP_HRESET = 8'd5, OP_NORM = 8'd6, OP_GEMV = 8'd7,
@@ -189,16 +196,21 @@ module zoo_core
   logic [PA_W-1:0]  p_a;   logic [63:0]      p_d;
   logic [TA_W-1:0]  t_a;   logic [TAB_W-1:0] t_d;
   logic [LUA_W-1:0] lu_a;  logic [7:0]       lu_d;
-  zrom #(.WIDTH(256),   .DEPTH(PROG_DEPTH), .AW(PC_W),  .INIT({MEM_DIR, "/prog.mem"}))
-    u_prog (.clk, .addr(pc), .dout(prog_dout));
-  zrom #(.WIDTH(8*P),   .DEPTH(W_DEPTH),    .AW(WA_W),  .INIT({MEM_DIR, "/weights.mem"}))
-    u_w    (.clk, .addr(w_a), .dout(w_d));
-  zrom #(.WIDTH(64),    .DEPTH(PRM_DEPTH),  .AW(PA_W),  .INIT({MEM_DIR, "/params.mem"}))
-    u_p    (.clk, .addr(p_a), .dout(p_d));
-  zrom #(.WIDTH(TAB_W), .DEPTH(TAB_DEPTH),  .AW(TA_W),  .INIT({MEM_DIR, "/tables.mem"}))
-    u_t    (.clk, .addr(t_a), .dout(t_d));
-  zrom #(.WIDTH(8),     .DEPTH(LUT_DEPTH),  .AW(LUA_W), .INIT({MEM_DIR, "/luts.mem"}))
-    u_lut  (.clk, .addr(lu_a), .dout(lu_d));
+  zrom #(.WIDTH(256),   .DEPTH(PROG_DEPTH), .AW(PC_W),  .INIT({MEM_DIR, "/prog.mem"}),    .LOADABLE(LOADABLE))
+    u_prog (.clk, .addr(pc), .dout(prog_dout),
+            .we(ld_we && ld_sel == 3'd0), .waddr(PC_W'(ld_addr)), .wdata(ld_data));
+  zrom #(.WIDTH(8*P),   .DEPTH(W_DEPTH),    .AW(WA_W),  .INIT({MEM_DIR, "/weights.mem"}), .LOADABLE(LOADABLE))
+    u_w    (.clk, .addr(w_a), .dout(w_d),
+            .we(ld_we && ld_sel == 3'd1), .waddr(WA_W'(ld_addr)), .wdata(ld_data[8*P-1:0]));
+  zrom #(.WIDTH(64),    .DEPTH(PRM_DEPTH),  .AW(PA_W),  .INIT({MEM_DIR, "/params.mem"}),  .LOADABLE(LOADABLE))
+    u_p    (.clk, .addr(p_a), .dout(p_d),
+            .we(ld_we && ld_sel == 3'd2), .waddr(PA_W'(ld_addr)), .wdata(ld_data[63:0]));
+  zrom #(.WIDTH(TAB_W), .DEPTH(TAB_DEPTH),  .AW(TA_W),  .INIT({MEM_DIR, "/tables.mem"}),  .LOADABLE(LOADABLE))
+    u_t    (.clk, .addr(t_a), .dout(t_d),
+            .we(ld_we && ld_sel == 3'd3), .waddr(TA_W'(ld_addr)), .wdata(ld_data[TAB_W-1:0]));
+  zrom #(.WIDTH(8),     .DEPTH(LUT_DEPTH),  .AW(LUA_W), .INIT({MEM_DIR, "/luts.mem"}),    .LOADABLE(LOADABLE))
+    u_lut  (.clk, .addr(lu_a), .dout(lu_d),
+            .we(ld_we && ld_sel == 3'd4), .waddr(LUA_W'(ld_addr)), .wdata(ld_data[7:0]));
 
   logic [15:0] exp_lut [256];             // 2^15 * 2^(-k/256), asynchronous LUT-ROM
   initial $readmemh({MEM_DIR, "/exp.mem"}, exp_lut);
@@ -226,12 +238,12 @@ module zoo_core
 
   logic        divn_start, divn_done;
   logic [63:0] divn_num, divn_den, divn_quo;
-  div_seq #(.W(64)) u_divn (.clk, .rst_n, .start(divn_start), .num(divn_num), .den(divn_den),
+  zdiv #(.W(64), .QB(41)) u_divn (.clk, .rst_n, .start(divn_start), .num(divn_num), .den(divn_den),
                             .done(divn_done), .quo(divn_quo));
 
   logic        diva_start, diva_done;
   logic [33:0] diva_den, diva_quo;
-  div_seq #(.W(34)) u_diva (.clk, .rst_n, .start(diva_start), .num(34'h1_0000_0000), .den(diva_den),
+  zdiv #(.W(34), .QB(18)) u_diva (.clk, .rst_n, .start(diva_start), .num(34'h1_0000_0000), .den(diva_den),
                             .done(diva_done), .quo(diva_quo));
 
   // ======================================================================
@@ -414,7 +426,7 @@ module zoo_core
     if (st == S_EXEC) begin
       case (f_op)
         // ------------------------------------------------ table streaming
-        OP_EMB16, OP_EMB8, OP_EMBWIN, OP_TABLOGIT, OP_HRESET: begin
+        OP_EMB16, OP_EMB8, OP_EMBWIN, OP_TABLOGIT, OP_HRESET: if (EN[1] || EN[2] || EN[3] || EN[4] || EN[5]) begin
           case (f_op)
             OP_EMB16:  t_a = TA_W'(sub ? f_b1 + 32'(t) * f_n0 + i : f_b0 + 32'(tok) * f_n0 + i);
             OP_EMBWIN: t_a = TA_W'(f_b0 + 32'(win_row) * f_n0 + c);
@@ -438,7 +450,7 @@ module zoo_core
         end
 
         // ------------------------------------------------ NORM
-        OP_NORM: begin
+        OP_NORM: if (EN[6]) begin
           r_ra = RA_W'(sb + j);
           va_a = vaddr(f_src0, sb + j);
           if (ph == 4'd2) begin
@@ -482,7 +494,7 @@ module zoo_core
         end
 
         // ------------------------------------------------ MUL / REQ
-        OP_MUL, OP_REQ: begin
+        OP_MUL, OP_REQ: if (EN[11] || EN[14]) begin
           va_a = vaddr(f_src0, i);
           vb_a = vaddr(f_src1, i);
           r_ra = RA_W'(i);
@@ -497,7 +509,7 @@ module zoo_core
         end
 
         // ------------------------------------------------ ROPE
-        OP_ROPE: begin
+        OP_ROPE: if (EN[8]) begin
           va_a = vaddr(f_src0, h << LP);
           t_a  = TA_W'(((ph == 4'd1) ? f_b0 : f_b1) + 32'(t) * (f_n1 >> 1) + i);
           if (ph == 4'd4) begin
@@ -506,7 +518,7 @@ module zoo_core
         end
 
         // ------------------------------------------------ KVSTORE
-        OP_KVSTORE: begin
+        OP_KVSTORE: if (EN[9]) begin
           va_a  = vaddr(f_src0, i << LP);
           vb_a  = vaddr(f_src1, i << LP);
           kv_we = 1'b1;
@@ -514,7 +526,7 @@ module zoo_core
         end
 
         // ------------------------------------------------ ATTN
-        OP_ATTN: begin
+        OP_ATTN: if (EN[10]) begin
           va_a  = vaddr(f_src0, h << LP);
           kv_ra = KA_W'((32'(f_aux) * T + 32'(j)) * NKVW + kvh);
           if (s1_v) begin sb_we = 1'b1; sb_wa = s1_j; sb_wd = sc; end
@@ -525,16 +537,16 @@ module zoo_core
         end
 
         // ------------------------------------------------ elementwise
-        OP_COPY: begin
+        OP_COPY: if (EN[13]) begin
           va_a = vaddr(f_src0, i);
           vw_a = vaddr(f_dst, i); vw_be = P'(1) << i[LP-1:0]; vw_d = {P{lane(va_d, i)}};
         end
-        OP_GRUUPD: begin
+        OP_GRUUPD: if (EN[12]) begin
           va_a = vaddr(f_src0, i);
           vb_a = vaddr(f_src1, i);
           vw_a = vaddr(B_HS, i); vw_be = P'(1) << i[LP-1:0]; vw_d = {P{sat8(64'(gnew))}};
         end
-        OP_BOW: begin
+        OP_BOW: if (EN[15]) begin
           t_a  = TA_W'(f_b0 + 32'(t));
           r_ra = RA_W'(i);
           if (ph == 4'd2) begin
@@ -596,7 +608,7 @@ module zoo_core
         S_EXEC: begin
           case (f_op)
             // -------------------------------------------- table streaming
-            OP_EMB16, OP_EMB8, OP_EMBWIN, OP_TABLOGIT, OP_HRESET: begin
+            OP_EMB16, OP_EMB8, OP_EMBWIN, OP_TABLOGIT, OP_HRESET: if (EN[1] || EN[2] || EN[3] || EN[4] || EN[5]) begin
               if (!iss_done) begin
                 d_v   <= 1'b1;
                 d_sub <= sub;
@@ -616,7 +628,7 @@ module zoo_core
             end
 
             // -------------------------------------------- NORM
-            OP_NORM: case (ph)
+            OP_NORM: if (EN[6]) case (ph)
               4'd0: begin
                 n_s  <= ((j == '0) ? 24'sd0 : n_s) + nx;
                 n_sq <= ((j == '0) ? 40'd0 : n_sq) + 40'(nx2);
@@ -672,7 +684,7 @@ module zoo_core
             end
 
             // -------------------------------------------- MUL / REQ
-            OP_MUL, OP_REQ: begin
+            OP_MUL, OP_REQ: if (EN[11] || EN[14]) begin
               if (!iss_done) begin
                 i <= i + 1'b1;
                 if (i == f_n0 - 1'b1) iss_done <= 1'b1;
@@ -682,7 +694,7 @@ module zoo_core
             end
 
             // -------------------------------------------- ROPE
-            OP_ROPE: case (ph)
+            OP_ROPE: if (EN[8]) case (ph)
               4'd0: begin rp_w <= va_d; rp_n <= va_d; i <= '0; ph <= 4'd1; end
               4'd1: ph <= 4'd2;                                    // cos address out
               4'd2: begin rp_c <= t_dx[15:0]; ph <= 4'd3; end      // sin address out, cos back
@@ -699,13 +711,13 @@ module zoo_core
             endcase
 
             // -------------------------------------------- KVSTORE
-            OP_KVSTORE: begin
+            OP_KVSTORE: if (EN[9]) begin
               i <= i + 1'b1;
               if (i == (f_n0 >> LP) - 1'b1) begin pc <= pc + 1'b1; st <= S_FETCH; end
             end
 
             // -------------------------------------------- ATTN
-            OP_ATTN: begin
+            OP_ATTN: if (EN[10]) begin
               case (ph)
                 4'd0: begin                                        // scores: K rows 0..t
                   s1_v <= 1'b1;
@@ -746,12 +758,12 @@ module zoo_core
             end
 
             // -------------------------------------------- elementwise
-            OP_COPY, OP_GRUUPD: begin
+            OP_COPY, OP_GRUUPD: if (EN[12] || EN[13]) begin
               i <= i + 1'b1;
               if (i == f_n0 - 1'b1) begin pc <= pc + 1'b1; st <= S_FETCH; end
             end
 
-            OP_BOW: case (ph)
+            OP_BOW: if (EN[15]) case (ph)
               4'd0: ph <= 4'd1;
               4'd1: begin rcp <= t_dx[21:0]; ph <= 4'd2; end
               default: begin

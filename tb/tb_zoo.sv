@@ -5,13 +5,18 @@
 // integer interpreter quant.py:IntRunner): teacher-forced test names, and for
 // every decode step the input token and all V int16 logits. Every logit of
 // every step must match exactly. Prints a cycle profile per opcode.
+// +GEN: closed-loop greedy generation (mem/zoo/<model>/gen.txt): the engine's
+// own argmax is fed back as the next token and every token must equal the one
+// produced by IntRunner; the tokens are written to build/zoo/<model>_gen_rtl.txt.
 //
-// Plusargs: +NSEQ=<n> (default: all sequences in tv.txt)
+// Plusargs: +NSEQ=<n> (default: all sequences in tv.txt)   +GEN
 // ---------------------------------------------------------------------------
 `timescale 1ns / 1ps
 
 module tb_zoo;
   import zoo_pkg::*;
+
+  parameter bit SPECIALIZE = 1'b0;   // -GSPECIALIZE=1: only the units this model uses
 
   logic clk = 1'b0, rst_n = 1'b0;
   always #5 clk = ~clk;   // 100 MHz
@@ -23,8 +28,12 @@ module tb_zoo;
   logic [LA_W-1:0]     l_addr = '0;
   logic signed [15:0]  l_data;
   logic [7:0]          dbg_op;
+  logic                ld_we = 1'b0;      // memories are preloaded from mem/zoo/<model>/
+  logic [2:0]          ld_sel = '0;
+  logic [19:0]         ld_addr = '0;
+  logic [255:0]        ld_data = '0;
 
-  zoo_core dut (.*);
+  zoo_core #(.SPECIALIZE(SPECIALIZE)) dut (.*);
 
   longint cyc = 0;
   always @(posedge clk) cyc <= cyc + 1;
@@ -49,6 +58,54 @@ module tb_zoo;
   int errors = 0, steps = 0, bad_steps = 0;
   longint t0, step_cyc, tot_cyc = 0, max_cyc = 0, min_cyc = 64'h7fffffff;
 
+  // one decode step: token tk at position tt, wait for done
+  task automatic run_step(input int tk, input int tt);
+    @(posedge clk);
+    start  <= 1'b1;
+    tok_in <= TOK_W'(tk);
+    pos    <= POS_W'(tt);
+    t0 = cyc;
+    @(posedge clk);
+    start <= 1'b0;
+    do @(posedge clk); while (!done);
+    step_cyc = cyc - t0;
+  endtask
+
+  // closed-loop greedy generation, checked token by token
+  task automatic generate_check();
+    int gfd, ofd, n, tk, exp_tok, best, bi, ok;
+    longint gcyc;
+    gfd = $fopen({MEM_PATH, "/gen.txt"}, "r");
+    if (gfd == 0) begin $display("GEN: no %s/gen.txt", MEM_PATH); return; end
+    ofd = $fopen({"build/zoo/", NAME, "_gen_rtl.txt"}, "w");
+    rc = $fscanf(gfd, "%d %d", n, tk);
+    $fwrite(ofd, "%0d", tk);
+    ok = 0;
+    gcyc = 0;
+    for (int tt = 0; tt < n; tt++) begin
+      run_step(tk, tt);
+      gcyc += step_cyc;
+      best = -1 << 30;
+      bi = 0;
+      for (int k = 0; k < V; k++) begin
+        l_addr = LA_W'(k);
+        #1;
+        if (int'(l_data) > best) begin best = int'(l_data); bi = k; end
+      end
+      rc = $fscanf(gfd, "%d", exp_tok);
+      if (bi == exp_tok) ok++;
+      else if (ok == tt) $display("GEN: first divergence at step %0d: rtl %0d, reference %0d", tt, bi, exp_tok);
+      $fwrite(ofd, " %0d", bi);
+      tk = bi;
+    end
+    $fwrite(ofd, "\n");
+    $fclose(ofd);
+    $fclose(gfd);
+    $display("GEN %s steps %0d match %0d avg_cycles %0d", NAME, n, ok, gcyc / n);
+    if (ok == n) $display("GEN PASS: %0d greedy tokens identical to the integer reference", n);
+    else         $display("GEN FAIL: %0d / %0d tokens identical", ok, n);
+  endtask
+
   initial begin
     if (!$value$plusargs("NSEQ=%d", maxseq)) maxseq = 1 << 30;
     fd = $fopen({MEM_PATH, "/tv.txt"}, "r");
@@ -67,15 +124,7 @@ module tb_zoo;
         int step_err;
         rc = $fscanf(fd, "%d", tok);
         for (int k = 0; k < V; k++) rc = $fscanf(fd, "%d", gold[k]);
-        @(posedge clk);
-        start  <= 1'b1;
-        tok_in <= TOK_W'(tok);
-        pos    <= POS_W'(tt);
-        t0 = cyc;
-        @(posedge clk);
-        start <= 1'b0;
-        do @(posedge clk); while (!done);
-        step_cyc = cyc - t0;
+        run_step(tok, tt);
         tot_cyc += step_cyc;
         if (step_cyc > max_cyc) max_cyc = step_cyc;
         if (step_cyc < min_cyc) min_cyc = step_cyc;
@@ -95,9 +144,10 @@ module tb_zoo;
       end
     end
     $fclose(fd);
+    if (steps == 0) steps = 1;
 
     $display("");
-    $display("=== %s: %0d sequences, %0d decode steps, %0d x %0d logits checked ===", NAME, nseq, steps, steps, V);
+    $display("=== %s%s: %0d sequences, %0d decode steps, %0d x %0d logits checked ===", NAME, SPECIALIZE ? " (specialised)" : "", nseq, steps, steps, V);
     $display("cycles/token: avg %0d  min %0d  max %0d   (%.1f us/token @ 100 MHz)",
              tot_cyc / steps, min_cyc, max_cyc, real'(tot_cyc) / steps / 100.0);
     $display("cycle profile:");
@@ -110,6 +160,7 @@ module tb_zoo;
       if (prof[k] != 0) $display("PROF %s %s %0d", NAME, op_name(k), prof[k]);
     if (errors == 0) $display("PASS: RTL is bit-exact with the integer reference");
     else             $display("FAIL: %0d logit mismatches in %0d steps", errors, bad_steps);
+    if ($test$plusargs("GEN")) generate_check();
     $finish;
   end
 endmodule

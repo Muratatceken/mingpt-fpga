@@ -1,0 +1,9 @@
+x y label anchor
+6632 1.9874 MLP {west}
+6374 1.9671 RNN {south east}
+6515 1.9563 GRU {north west}
+6277 2.0445 BoW {west}
+8620 2.0016 GPT-2 {south east}
+8657 1.9738 microgpt {north}
+9396 2.0039 Llama~2 {south west}
+10711 1.9750 nanochat {north}

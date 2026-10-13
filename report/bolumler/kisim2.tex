@@ -693,8 +693,8 @@ Mevcut tasarım, işlevsel doğruluğu kanıtlanmış bir temel sürümdür. Bir
 \begin{enumerate}
   \item \textbf{Kartta çalıştırma ve ölçüm:} PYNQ-Z2 bitstream'i, kaynak/Fmax/güç raporları ve yeşil LED.
   \item \textbf{Paralellik taraması:} $P \in \{4, 8, 12, 16, 24\}$ için çevrim, BRAM, DSP ve Fmax değişimi (Şekil~\ref{fig:ptarama}). $P$, \code{quantize.py} içinde tek bir parametredir.
-  \item \textbf{Tek geçişli LayerNorm:} $\sum d^2 = N(N\sum x^2 - s^2)$ özdeşliğiyle LN başına 48 çevrim kazancı.
-  \item \textbf{Paralel dikkat:} SCORE ve AV aşamalarında $d_h=16$ boyutu üzerinden paralel MAC; dikkat süresinde yaklaşık 16 kat azalma.
+  \item \textbf{Tek geçişli LayerNorm:} $\sum d^2 = N(N\sum x^2 - s^2)$ özdeşliğiyle LN başına 48 çevrim kazancı. (Kısım~IV'teki motorda gerçeklenmiştir.)
+  \item \textbf{Paralel dikkat:} SCORE ve AV aşamalarında $d_h=16$ boyutu üzerinden paralel MAC; dikkat süresinde yaklaşık 16 kat azalma. (Kısım~IV'teki motorda $d_h=8$ şeritle gerçeklenmiştir.)
   \item \textbf{Bit genişliği analizi:} Bölüm~\ref{sec:cekirdek}'teki sınırlardan türetilen dar operandlar ve boru hattı bölme ile daha yüksek Fmax.
   \item \textbf{PS entegrasyonu:} AXI4-Lite sarmalayıcı, Vivado blok tasarımı ve PYNQ Python sürücüsü. Böylece aynı karttaki ARM işlemciyle (NumPy/PyTorch) gecikme ve enerji karşılaştırması yapılabilir.
   \item \textbf{Daha büyük görev:} minGPT'nin \code{projects/chargpt} örneğiyle karakter düzeyinde metin üretimi. Mimari aynı kalır; büyük modellerde ağırlıklar DDR'dan akış hâlinde okunur.

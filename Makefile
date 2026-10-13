@@ -7,7 +7,8 @@ VFLAGS = --binary --timing --timescale 1ns/1ps -j 0 -Wall -Wno-fatal \
          -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-UNUSEDSIGNAL -Wno-UNUSEDPARAM
 RTL    = $(shell cat scripts/files.f)
 
-.PHONY: all model train quantize eval export sim test-arith selftest lint synth report clean
+.PHONY: all model train quantize eval export sim test-arith selftest lint synth report clean \
+        zoo-train zoo-quant zoo-sim zoo-synth
 
 all: test-arith sim selftest
 
@@ -49,9 +50,23 @@ selftest: build/obj_selftest/Vtb_selftest
 synth:
 	scripts/yosys_synth.sh gpt_top
 
+# ---------------- Karpathy model ailesi (sw/zoo, rtl/zoo) ----------------
+zoo-train:
+	cd sw/zoo && $(PYTHON) train.py
+
+zoo-quant:
+	cd sw/zoo && $(PYTHON) check_ir.py && $(PYTHON) evaluate.py && $(PYTHON) stories.py && $(PYTHON) export_hw.py
+
+zoo-sim:
+	cd sw/zoo && $(PYTHON) hw_run.py
+
+zoo-synth:
+	cd sw/zoo && $(PYTHON) hw_run.py --synth
+
 # ---------------- PDF rapor (XeLaTeX) ----------------
 report:
 	cd sw && $(PYTHON) report_data.py
+	cd sw/zoo && $(PYTHON) report_zoo.py
 	cd report && latexmk -xelatex -interaction=nonstopmode -outdir=build rapor.tex && cp build/rapor.pdf rapor.pdf
 
 lint:

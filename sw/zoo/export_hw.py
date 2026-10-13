@@ -55,7 +55,8 @@ class Tables:
         return self.base[key]
 
 
-def export(name, nseq, d):
+def export(name, seqs, gen=0, gen_start=0):
+    """seqs: input token sequences for the teacher-forced golden vectors; gen: greedy steps for gen.txt."""
     q = pickle.load(open(os.path.join(ROOT, "build", "zoo", f"{name}.qprog.pkl"), "rb"))
     out = os.path.join(ROOT, "mem", "zoo", name)
     os.makedirs(out, exist_ok=True)
@@ -193,11 +194,10 @@ def export(name, nseq, d):
     d_l = w("luts.mem", [hexw(v, 8) for lut in luts for v in lut])
     w("exp.mem", [hexw(int(v), 16) for v in EXP_LUT])
 
-    # golden vectors: teacher-forced test names, every logit of every step
-    seqs = seqs_of(*d["test"])[:nseq]
+    # golden vectors: teacher-forced test sequences, every logit of every step
     lines = [f"{len(seqs)} {q.V}"]
     nsteps = 0
-    for x, _ in seqs:
+    for x in seqs:
         ir = IntRunner(q)
         lines.append(str(len(x)))
         for t, tok in enumerate(x):
@@ -205,6 +205,11 @@ def export(name, nseq, d):
             lines.append(" ".join(map(str, [tok] + [int(v) for v in lg])))
             nsteps += 1
     w("tv.txt", lines)
+    if gen:                                    # greedy generation from gen_start (closed loop in tb_zoo +GEN)
+        ir, toks = IntRunner(q), [gen_start]
+        for t in range(gen):
+            toks.append(int(np.argmax(ir.step(toks[-1], t))))
+        w("gen.txt", [f"{gen} {gen_start}", " ".join(map(str, toks[1:]))])
 
     aw = lambda n: max(1, math.ceil(math.log2(n)))
     nl = max(1, q.n_layer)
@@ -243,6 +248,7 @@ package zoo_pkg;
   localparam int    LA_W       = {aw(q.V)};
   localparam int    RA_W       = {aw(C)};
   localparam int    N_INSTR    = {len(prog)};
+  localparam logic [15:0] OPS_USED = 16'h{sum(1 << op for op in sorted({x & 0xFF for x in prog}) if op):04x};
   localparam int    N_PARAMS   = {sum(L["W"].size + L["b"].size for L in q.lin.values()) + sum(q.tab[k].size for k in q.tab)};
 endpackage
 """
@@ -270,7 +276,7 @@ def _buflen_of(q, o, n):
 
 def main():
     args = sys.argv[1:]
-    nseq = 50
+    nseq = None
     if "--nseq" in args:
         k = args.index("--nseq")
         nseq = int(args[k + 1])
@@ -278,7 +284,11 @@ def main():
     d = load()
     names = args or [f[:-10] for f in sorted(os.listdir(os.path.join(ROOT, "build", "zoo"))) if f.endswith(".qprog.pkl")]
     for name in names:
-        export(name, nseq, d)
+        if name == "stories260k":              # TinyStories: 2 test stories + a 200-token greedy story
+            from stories import BOS, split
+            export(name, [s[:-1] for s in split()[1][:nseq or 2]], gen=200, gen_start=BOS)
+        else:                                  # names.txt: 50 test names
+            export(name, [x for x, _ in seqs_of(*d["test"])[:nseq or 50]])
 
 
 if __name__ == "__main__":

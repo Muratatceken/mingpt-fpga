@@ -1,0 +1,14 @@
+% Kalite (INT8 test kaybı) ve hız (çevrim/token) -- names.txt ailesi; veri: sw/zoo/report_zoo.py
+\begin{tikzpicture}
+\begin{axis}[
+    width=12.4cm, height=7.2cm, enlarge x limits=0.12, enlarge y limits=0.15,
+    xlabel={çevrim / token}, ylabel={INT8 test kaybı (nat/token)},
+    xmajorgrids, ymajorgrids, axis x line*=bottom, axis y line*=left, scaled x ticks=false,
+    y tick label style={/pgf/number format/.cd, fixed, precision=2, use comma},
+    nodes near coords, point meta=explicit symbolic,
+    visualization depends on={value \thisrow{anchor}\as\lblanchor},
+    every node near coord/.append style={font=\sffamily\scriptsize, text=ink, anchor=\lblanchor, inner sep=3pt},
+  ]
+  \addplot[only marks, mark=*, mark size=2.6pt, color=accent] table[x=x, y=y, meta=label] {data/zoo_pareto.dat};
+\end{axis}
+\end{tikzpicture}

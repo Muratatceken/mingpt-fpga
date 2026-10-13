@@ -1,0 +1,22 @@
+% Eğitim eğrileri: test kaybı (names.txt, 20k adım) -- veri: model/zoo/metrics.json
+\begin{tikzpicture}
+\begin{axis}[
+    width=12.4cm, height=7.0cm, xmin=2000, xmax=20000, ymin=1.94, ymax=2.48,
+    xlabel={eğitim adımı}, ylabel={test kaybı (nat/token)},
+    xmajorgrids, ymajorgrids, axis x line*=bottom, axis y line*=left, scaled x ticks=false,
+    y tick label style={/pgf/number format/.cd, fixed, precision=2, use comma},
+    legend style={at={(1.02,0.5)}, anchor=west}, legend cell align=left,
+    every axis plot/.append style={line width=1pt, mark=none},
+  ]
+  \addplot[color=muted, dashed]  table[x=step, y=test] {data/zoo_egitim_bigram.dat};
+  \addplot[color=warm]           table[x=step, y=test] {data/zoo_egitim_mlp.dat};
+  \addplot[color=warm!55]        table[x=step, y=test] {data/zoo_egitim_rnn.dat};
+  \addplot[color=good!60]        table[x=step, y=test] {data/zoo_egitim_gru.dat};
+  \addplot[color=rule!80!ink]    table[x=step, y=test] {data/zoo_egitim_bow.dat};
+  \addplot[color=accent]         table[x=step, y=test] {data/zoo_egitim_gpt2.dat};
+  \addplot[color=accent!55]      table[x=step, y=test] {data/zoo_egitim_microgpt.dat};
+  \addplot[color=good]           table[x=step, y=test] {data/zoo_egitim_llama.dat};
+  \addplot[color=ink]            table[x=step, y=test] {data/zoo_egitim_nanochat.dat};
+  \legend{Bigram, MLP, RNN, GRU, BoW, GPT-2, microgpt, Llama~2, nanochat}
+\end{axis}
+\end{tikzpicture}

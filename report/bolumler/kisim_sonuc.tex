@@ -1,0 +1,204 @@
+% ===========================================================================
+\section{Mikrokodlu motor: tek RTL, dokuz mimari}\label{sec:motor}
+% ===========================================================================
+
+Kısım~III'teki hızlandırıcının kontrol FSM'i minGPT'nin işlem sırasını sabit olarak kodlar. Ailenin dokuz mimarisini aynı donanımla çalıştırmak için bu FSM, küçük bir \emph{mikrokod} yorumlayıcısıyla değiştirilmiştir (\code{rtl/zoo/zoo\_core.sv}). Python derleyicisi her modeli token başına çalışan düz bir komut listesine çevirir. Denetleyici bu listeyi program belleğinden okur, her komutu ilgili birime dağıtır ve birim bitince bir sonrakine geçer (Şekil~\ref{fig:zoo-motor}). Modele özgü her şey (program, ağırlıklar, yeniden kuantizasyon sabitleri, gömme ve RoPE tabloları, aktivasyon tabloları) belleklerde durur. RTL kaynağı bütün modeller için aynıdır.
+
+\begin{figure}[h]
+  \centering
+  \sekil{zoo_motor}
+  \caption[Mikrokodlu zoo motoru]{Mikrokodlu motorun blok şeması. Denetleyici 256 bitlik komutları çözüp yedi birimden birine verir. Birimler ortak bir vektör yazmaç dosyasını, INT16 artık/logit belleklerini, KV önbelleğini ve durum belleklerini paylaşır. Model belleği, Zynq'in ARM çekirdeği tarafından çalışma anında doldurulabilir (\code{LOADABLE}).}
+  \label{fig:zoo-motor}
+\end{figure}
+
+\paragraph{Komut kümesi.} Her komut 256 bittir. Komutta işlem kodu, hedef ve iki kaynak tampon, bir mod alanı, dört adet 16 bitlik boyut alanı, iki bellek taban adresi ve iki sabit (64 ve 32 bit) bulunur. Sabitler; yeniden kuantizasyon çarpanı $(m_0, sh)$, NORM'un $K$ ve $E$ sabitleri ya da softmax'ın üs ölçeği gibi derleme anında bilinen değerleri taşır. Tablo~\ref{tab:isa}, on beş işlemi ve onları kullanan modelleri listeler. Her işlemin tamsayı semantiği \code{sw/zoo/quant.py} içindeki \code{IntRunner} tarafından tanımlanır. RTL bu tanımla bit düzeyinde eşleşmek zorundadır.
+
+\begin{table}[h]
+  \centering\small
+  \caption{Mikrokod işlemleri. $R$: INT16 artık akış, $L$: INT16 logitler, $h$: tekrarlayan durum (Q0.7).}
+  \label{tab:isa}
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabularx}{\textwidth}{@{}lLl@{}}
+    \toprule
+    \thead{İşlem} & \thead{Anlamı} & \thead{Kullanan modeller} \\ \midrule
+    \code{EMB16} & $R \leftarrow \mathrm{wte}[x_t]\;(+\,\mathrm{wpe}[t])$, INT16 doyurmalı & BoW, transformerler \\
+    \code{EMB8} / \code{EMBWIN} & INT8 gömme / son $k$ tokenın gömmelerinin birleşimi & RNN, GRU / MLP \\
+    \code{TABLOGIT} & $L \leftarrow T[x_t]$ (logit tablosu) & Bigram \\
+    \code{HRESET} & $t=0$ iken $h \leftarrow h_0$ & RNN, GRU \\
+    \code{NORM} & LayerNorm veya RMSNorm, $n$ uzunluklu segmentler; INT16 ya da INT8 kaynak/hedef & transformerler \\
+    \code{GEMV} & $y = W[x;\,x'] + b$; mod: INT8 çıkış, artığa ekleme, tablo aktivasyonu, logit & Bigram hariç hepsi \\
+    \code{ROPE} & baş başına döndürme, ardışık ya da yarım bölmeli çiftler & Llama~2, nanochat \\
+    \code{KVSTORE} / \code{ATTN} & $k_t, v_t$'yi önbelleğe yaz / GQA'lı tamsayı softmax ve ağırlıklı ortalama & transformerler \\
+    \code{MUL} & $z = \mathrm{rq}(a \odot b)$ & GRU, Llama~2 \\
+    \code{GRUUPD} & $h \leftarrow h + \lfloor (z\,(\tilde h - h) + 64) / 2^7 \rfloor$ & GRU \\
+    \code{COPY}, \code{REQ} & tampon kopyalama; INT16 $\to$ INT8 yeniden kuantizasyon & RNN; BoW, microgpt \\
+    \code{BOW} & $S \mathrel{+}= R$, \;$R \mathrel{+}= \lfloor S \cdot \lfloor 2^{20}/(t+1) \rceil / 2^{20} \rceil$ & BoW \\ \bottomrule
+  \end{tabularx}
+\end{table}
+
+\paragraph{GEMV birimi.} minGPT tasarımındaki çıkış-durgun motor (Bölüm~\ref{sec:gemv}) olduğu gibi kullanılır: 8 MAC şeridi, INT32 akümülatörler, gölge banka ve seri yeniden kuantizasyon birimi. Bir bloğun yeniden kuantizasyonu, sonraki bloğun birikimiyle örtüşür. İki genelleme eklenmiştir. (i)~Giriş vektörü iki tamponun birleşimi olabilir; RNN ve GRU hücrelerindeki $W[x_t;\,h_{t-1}]$ çarpımı tek komutla yapılır. (ii)~Çıkış sayısı 8'in katına tamamlanır, fazla çıkışların yazımı maskelenir. Ağırlık belleği her çevrimde 8 bayt verir. Bir $n_\text{in}\times n_\text{out}$ katman $n_\text{in}\lceil n_\text{out}/8\rceil$ çevrim sürer.
+
+\paragraph{NORM birimi.} minGPT'deki üç geçişli LayerNorm, Bölüm~\ref{sec:sinir}'de önerilen özdeşlikle tek geçişe indirilmiştir:
+\begin{equation}
+  Q = \sum_{i=1}^{n} (n x_i - s)^2 + E = n\Big(n\sum_i x_i^2 - s^2\Big) + E, \qquad s = \sum_i x_i .
+\end{equation}
+Böylece $\sum x_i$ ve $\sum x_i^2$ aynı geçişte toplanır. RMSNorm'da $Q=\sum x_i^2 + E$'dir. Karekökten önce $Q$, $k=\max(0,\lfloor(40-\mathrm{bitlen}(Q))/2\rfloor)$ kadar kaydırılarak 39--40 bite normalize edilir. Ardından $\mathrm{inv} = \lfloor K 2^k / \lfloor\sqrt{Q\,4^k}\rfloor\rfloor$ hesaplanır. Bu normalizasyon, $Q$ küçük olduğunda karekökün göreli hassasiyetini sabit tutar. INT8 çıkışlı QK-norm gibi küçük segmentlerde bu önemlidir. Segment başına maliyet $2n$ çevrim artı 28 çevrimlik karekök ve bölmedir.
+
+\paragraph{Sınırlı bölümlü bölücü.} Bölme sonucunun $2^{Q_B}$'den küçük olduğu biliniyorsa, $W$ bitlik bir restoring bölmenin ilk $W-Q_B$ bölüm biti sıfırdır. Bu adımlardan sonraki kısmi kalan da tam olarak $\lfloor \mathrm{num}/2^{Q_B}\rfloor$'dur. \code{zdiv.sv} bölmeye doğrudan bu noktadan başlar ve yalnızca $Q_B$ çevrim harcar. NORM'da $\mathrm{inv} < 2^{40}$ olduğu için 64 yerine 41 çevrim yeter. Softmax'ın $2^{32}/E$ karşılığında $E \ge 2^{15}$ olduğu için 34 yerine 18 çevrim yeter. Bu değişiklik GPT-2'de token başına çevrimi \%5, nanochat'te \%9 azaltmıştır.
+
+\paragraph{Dikkat ve RoPE.} Bütün transformerlerde baş boyutu $d_h = 8 = P$'dir. KV önbelleğinin her kelimesi bir başın bir konumdaki 8 baytını tutar. Böylece $q\cdot k_j$ skoru ve $e_j v_j$ birikimi tek çevrimde 8 şeritle hesaplanır. Bir baş $2(t+1)$ çevrim, 18 çevrimlik bölme ve 8 çıkış çevrimi sürer. GQA'da $H/H_{kv}$ ardışık sorgu başı aynı KV kelimelerini okur. Softmax, minGPT'deki tamsayı yöntemin aynısıdır (Bölüm~\ref{sec:cekirdek}): $2^{-k/256}$ tablosu ve tek karşılık. RoPE birimi bir başın kelimesini okur, $\cos$ ve $\sin$ değerlerini Q1.14 tablolardan alır, çiftleri ardışık (llama2.c) ya da yarım bölmeli (nanochat) düzende döndürüp kelimeyi geri yazar.
+
+\paragraph{Özelleştirme ve yüklenebilir bellekler.} İki sentez parametresi vardır. \code{SPECIALIZE=1} olduğunda, derleyicinin ürettiği \code{OPS\_USED} maskesinde bulunmayan birimler sabit koşullarla devre dışı kalır ve sentezde silinir. \code{LOADABLE=1} olduğunda ise model bellekleri ROM yerine bir yazma portlu RAM olur. Bu port Zynq'in işlemci tarafından (PS) sürülür; tek bitstream bütün modelleri çalıştırabilir. Bu ayrımın ölçüm açısından önemli bir sonucu vardır. Bellekler sabit ROM olarak bırakıldığında Yosys programı da sabit kabul eder ve kullanılmayan bütün mantığı katlar. Örneğin Bigram için ``genel'' motor 82 LUT'a inmiştir. Bu yüzden bu bölümdeki bütün kaynak sayıları \code{LOADABLE=1} ile alınmıştır.
+
+% ===========================================================================
+\section{Derleyici ve doğrulama zinciri}\label{sec:zincir}
+% ===========================================================================
+
+minGPT için kurulan doğrulama zinciri (Bölüm~\ref{sec:katlama}--\ref{sec:cekirdek}) her model için otomatik olarak çalıştırılmıştır. Zincirin halkaları şunlardır:
+\begin{enumerate}
+  \item \textbf{PyTorch $\to$ IR.} \code{ir.py} her modeli token başına çalışan bir programa derler. Bu adımda doğrusal olmayan katmanların afin kısımları ve dikkat ölçeği ağırlıklara katlanır. Float64 IR yorumlayıcısının logitleri, PyTorch modelininkilerle her modelde en fazla $2\cdot10^{-5}$ farklıdır (stories260K'da $9\cdot10^{-5}$).
+  \item \textbf{IR $\to$ tamsayı program.} Kalibrasyon kümesi üzerinde aralıklar ölçülür (Bölüm~\ref{sec:nicem-aile}). \code{quant.py} ağırlıkları satır başına INT8'e çevirir; giriş ölçeklerini ağırlıklara katlar ve çıkış kanalı başına $(m_0, sh)$ üretir. \code{IntRunner} bu programı yalnızca tamsayılarla çalıştırır ve donanımın spesifikasyonu olarak kullanılır.
+  \item \textbf{Tamsayı program $\to$ bellekler.} \code{export\_hw.py} programı 256 bitlik komutlara, ağırlıkları 64 bitlik kelimelere, sabitleri ve tabloları ayrı belleklere yazar. Model başına bir \code{zoo\_pkg.sv} paketi de üretir. Ayrıca \code{IntRunner}'dan altın test vektörleri çıkarır.
+  \item \textbf{RTL.} \code{tb\_zoo.sv}, Verilator'da her adımın \emph{bütün} logitlerini altın vektörlerle karşılaştırır. Her isim modeli için 50 test ismi (\zooGptSteps{} adım $\times$ 27 logit) hem genel hem özelleşmiş motorda çalıştırılmıştır. stories260K için iki test hikâyesi (\zooStoriesSteps{} adım $\times$ 512 logit) kullanılmıştır. Ek olarak motor, kendi ürettiği tokenı geri besleyerek 200 tokenlık bir hikâye üretmiştir.
+\end{enumerate}
+
+\begin{ozet}[Sonuç]
+On modelin (dokuz isim modeli ve stories260K) hepsinde RTL, tamsayı referansla \emph{bit düzeyinde} aynıdır: hiçbir adımda tek bir logit bile farklı değildir. Kapalı döngü üretimde \zooStoriesGenSteps{} tokenın \zooStoriesGenMatch{} tanesi referansla aynıdır.
+\end{ozet}
+
+% ===========================================================================
+\section{Nicemleme: kalibrasyon ve hata kaynakları}\label{sec:nicem-aile}
+% ===========================================================================
+
+minGPT'de aktivasyon ölçekleri kalibrasyon kümesindeki en büyük mutlak değerden seçilmişti. Normalize edilmiş vektörlerin ölçeği ise ispatlanmış sınırdan geliyordu ($|\hat x_i| \le \sqrt{n}$; Tablo~\ref{tab:esleme}). Bu yöntem isim modellerinde iyi çalışmıştır. stories260K'da ise INT8 kaybı $+0{,}052$ nat/token'a çıkmıştır. Kaybın kaynağını bulmak için float IR'da tek seferde bir tensör türü, tamsayı programın kullandığı ızgaraya yuvarlanmıştır (\code{ablate.py}). Sonuçlar Tablo~\ref{tab:zoo-ablasyon}'dadır.
+
+\begin{table}[h]
+  \centering\small
+  \caption[Nicemleme hatasının kaynakları]{Sahte nicemleme ablasyonu: yalnızca belirtilen tensör türü nicemlendiğinde test kaybındaki artış (nat/token; maksimum kalibrasyon, sınırdan NORM ölçeği; isim modelleri için 200 test ismi, stories260K için 20 test hikâyesi). Ağırlıkların payı ihmal edilebilir; kaybın neredeyse tamamı aktivasyonlardan gelir. ``--'': modelde bu işlem yok.}
+  \label{tab:zoo-ablasyon}
+  \begin{tabular}{@{}lrrr@{}}
+    \toprule
+    \tabinput{data/zoo_ablasyon_bas.tex} \\ \midrule
+    \tabinput{data/zoo_ablasyon.tex}
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Tablo iki şeyi gösterir. Birincisi, satır başına INT8 ağırlıkların maliyeti $10^{-3}$ düzeyindedir; INT16 artık akış ve logitlerin maliyeti ise sıfırdır. İkincisi, kayıp INT8 aktivasyonlara dağılmıştır: SwiGLU çarpımı, $q,k,v$ çıkışları ve normalize edilmiş vektörler. Normalize vektörlerin sınırı $\sqrt{64}=8$'dir ve ölçek bu sınırdan $2^{-3}$ seçilir. Oysa gerçek değerler bu sınıra nadiren yaklaşır; birim başına yalnızca 8 seviye kalır. Buna karşı iki standart yöntem denenmiştir: (i)~aktivasyon ölçeğini en büyük değer yerine $|x|$'in yüksek bir yüzdeliğinden seçmek (iki geçişli kalibrasyon, 4\,096 kutulu histogram); (ii)~normalize çıkışların ölçeğini ölçülen aralıktan seçmek, ama sınırdan türetilen ölçekten kaba olmamak şartıyla. İkisi de donanımda değişiklik gerektirmez; değişen yalnızca $(m_0, sh)$ ve kaydırma sabitleridir. Tamsayı programın kendisiyle ölçülen sonuçlar Tablo~\ref{tab:zoo-kalib}'dadır.
+
+\begin{table}[h]
+  \centering\small
+  \caption[Kalibrasyon yöntemleri]{Kalibrasyon yöntemleri, stories260K (bit-exact tamsayı program, 20 test hikâyesi). ``Yüzdelik'': INT8 aktivasyon ölçeğinin seçildiği $|x|$ yüzdeliği.}
+  \label{tab:zoo-kalib}
+  \begin{tabular}{@{}llrrr@{}}
+    \toprule
+    \thead{Yüzdelik} & \thead{NORM ölçeği} & \thead{INT8 kayıp} & \thead{$\Delta$} & \thead{argmax uyumu (\%)} \\ \midrule
+    \tabinput{data/zoo_kalib_stories260k.tex}
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\%99,99 yüzdelik ve kalibre NORM ölçeği birlikte stories260K'nın kuantizasyon kaybını yarıdan fazla azaltır. Bu yapılandırma \emph{bütün} modeller için seçilmiştir (\code{quant.CALIB}); sonraki tablolar onunla üretilmiştir. Yöntemin tamamı aynı kaldığı için mimariler arası karşılaştırma adildir. Etkisi küçük modellerde karışıktır: GPT-2'nin kaybı azalmış, microgpt'ninki biraz artmıştır. Ama her durumda $10^{-2}$'nin altında kalır.
+
+% ===========================================================================
+\section{Hat A: names.txt üzerinde dokuz mimari}\label{sec:hatA}
+% ===========================================================================
+
+Dokuz model makemore'un \code{names.txt} verisinde aynı koşullarla eğitilmiştir. Veri 32\,033 isimdir; tohum 3407 ile karıştırılıp 31\,033 eğitim ve 1\,000 test ismine ayrılmıştır ($V=27$, $T=16$). Her model 20\,000 adım eğitilmiştir: yığın 64, AdamW, öğrenme oranı $3\cdot10^{-3}$'ten kosinüsle $10^{-4}$'e, 500 adım ısınma, ağırlık sönümü 0,01, gradyan kırpma 1,0. Bigram dışındaki bütün modeller yaklaşık 50 bin parametreye ayarlanmıştır (Tablo~\ref{tab:zoo-kalite}). Eğitim eğrileri Şekil~\ref{fig:zoo-egitim}'dadır.
+
+\begin{figure}[h]
+  \centering
+  \sekil{zoo_egitim}
+  \caption[Eğitim eğrileri]{names.txt üzerinde test kaybı (nat/token, her 2\,000 adımda bir ölçülmüştür). Bütün modeller aynı optimizasyon ayarlarıyla ve yaklaşık aynı parametre bütçesiyle eğitilmiştir.}
+  \label{fig:zoo-egitim}
+\end{figure}
+
+\begin{table}[h]
+  \centering\small
+  \caption[Kalite: float ve INT8]{Test kaybı (nat/token, 1\,000 test ismi, ${\approx}7$\,500 token). $\Delta$: INT8 tamsayı programın kaybı eksi float kayıp. ``argmax'': iki modelin en olası sonraki karakter konusunda anlaştığı adımların oranı. Son satır Hat~B'dir (50 TinyStories hikâyesi).}
+  \label{tab:zoo-kalite}
+  \begin{tabular}{@{}lrrrrr@{}}
+    \toprule
+    \thead{Model} & \thead{Parametre} & \thead{Float} & \thead{INT8} & \thead{$\Delta$} & \thead{argmax (\%)} \\ \midrule
+    \tabinput{data/zoo_kalite.tex}
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Kalite.} Aynı bütçede en iyi model GRU'dur (float \zooGruFloat). Onu RNN (\zooRnnFloat), nanochat (\zooNanoFloat) ve microgpt (\zooMicroFloat) izler. Bu ölçekte dikkat mekanizmasının üstünlüğü görünmez. İsimler kısadır ($T=16$) ve 50 bin parametrelik bir RNN, bu kadar kısa bir geçmişi sabit boyutlu durumda kayıpsıza yakın özetleyebilir. Transformerler arasında nanochat (RMSNorm, ReLU$^2$, QK-norm) ve microgpt klasik GPT-2'den iyidir. Llama~2 ise bu bütçede GPT-2 ile aynı düzeydedir: SwiGLU'nun üç matrisi, aynı parametre sayısında daha dar bir gizli katman demektir. Nedensel ortalama (BoW) ise sırayı yalnızca konum gömmesiyle görebildiği için en zayıf öğrenen modeldir. INT8 kaybı bütün modellerde $10^{-2}$'nin altındadır; Bigram'da sıfırdır, çünkü tablo doğrudan INT16 logittir.
+
+\paragraph{Performans.} Tablo~\ref{tab:zoo-donanim} her modelin donanım maliyetini verir. GEMV verimi, ideal çevrim sayısının ($n_\text{in}\lceil n_\text{out}/8\rceil$ toplamı) ölçülen GEMV çevrimlerine oranıdır. Yeniden kuantizasyon gölge bankada sonraki blokla örtüştüğü için verim \%\zooEffMin{} ile \%\zooEffMax{} arasındadır. Kayıp, her GEMV komutunun sonundaki birkaç çevrimlik boşaltmadan gelir; bu yüzden küçük katmanları çok olan transformerlerde biraz daha düşüktür. Parametre bütçesi eşit olduğu için GEMV süresi de yaklaşık eşittir (6\,000--6\,700 çevrim). Mimariler arasındaki farkı GEMV dışındaki işlemler belirler (Şekil~\ref{fig:zoo-profil}). Transformerlerde NORM ve dikkat birlikte token süresinin \%20--40'ını alır. Tekrarlayan modellerin ek yükü ise birkaç yüz çevrimdir.
+
+\begin{table}[h]
+  \centering\small
+  \caption[Donanım performansı]{Token başına donanım maliyeti (Verilator, test dizilerinin ortalaması). ``Komut'': mikrokod programının uzunluğu. ``Durum'': çıkarım sırasında saklanan bayt; KV önbelleği konum başına büyür, diğerleri sabittir.}
+  \label{tab:zoo-donanim}
+  \setlength{\tabcolsep}{4.5pt}
+  \begin{tabular}{@{}lrrrrrl@{}}
+    \toprule
+    \thead{Model} & \thead{Komut} & \thead{GEMV MAC} & \thead{Çevrim} & \thead{µs @ 100\,MHz} & \thead{GEMV verimi (\%)} & \thead{Durum} \\ \midrule
+    \tabinput{data/zoo_donanim.tex}
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[h]
+  \centering
+  \sekil{zoo_profil}
+  \caption[Model başına çevrim profili]{Token başına çevrimlerin işlem türlerine dağılımı (50 test ismi ortalaması). Parametre bütçesi eşit olduğundan GEMV payı yaklaşık sabittir; mimariyi ayıran, normalizasyon ve dikkatin ek maliyetidir. nanochat'te QK-norm, katman başına altı ek NORM segmenti getirir.}
+  \label{fig:zoo-profil}
+\end{figure}
+
+\paragraph{Kaynaklar.} Tablo~\ref{tab:zoo-kaynak}'te iki yapılandırma yan yana verilmiştir. Genel motor bütün birimleri içerir ve her modeli çalıştırabilir. Mantık maliyeti yaklaşık 5\,900--8\,900 LUT ve 60 DSP'dir; farklar çoğunlukla bellek boyutlarından kaynaklanır. Özelleşmiş motorda yalnızca modelin kullandığı birimler kalır. Dikkat öncesi modellerin özelleşmiş motoru 2\,100--4\,300 LUT ve 14--19 DSP'ye iner. Transformerlerinki ise NORM ve dikkat birimleri yüzünden 50 civarında DSP tutar. DSP'lerin çoğu bu birimlerin geniş çarpıcılarındadır: NORM'un $26\times42$ bitlik ölçekleme çarpımı ve dikkat çıkışının $34\times19$ bitlik çarpımı gibi. BRAM kullanımı Bigram dışında 14--20 RAMB36'dır; ağırlıklar her modelde yaklaşık 50\,KB'tır.
+
+\begin{table}[h]
+  \centering\small
+  \caption[FPGA kaynakları]{Yosys sentezi (Xilinx 7-serisi, xc7z020 hedefi; zamanlama yok). ``Genel'': bütün birimler; ``özel'': yalnızca modelin kullandığı birimler. İki yapılandırmada da model bellekleri yüklenebilir RAM'dir; BRAM sayısı iki yapılandırmada aynıdır.}
+  \label{tab:zoo-kaynak}
+  \setlength{\tabcolsep}{5pt}
+  \begin{tabular}{@{}lrrrrrrr@{}}
+    \toprule
+    & \multicolumn{3}{c}{\thead{Genel motor}} & \multicolumn{3}{c}{\thead{Özelleşmiş motor}} & \\
+    \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+    \thead{Model} & \thead{LUT} & \thead{FF} & \thead{DSP} & \thead{LUT} & \thead{FF} & \thead{DSP} & \thead{BRAM} \\ \midrule
+    \tabinput{data/zoo_kaynak.tex}
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Kalite--hız ilişkisi.} Şekil~\ref{fig:zoo-pareto} iki ekseni birleştirir. Bu ölçekte Pareto sınırını Bigram (en hızlı, en kötü), BoW, RNN ve GRU oluşturur. GRU hem en düşük kayba sahiptir hem de transformerlerden \%24--39 daha az çevrim harcar. Transformerlerin ek maliyeti bu görevde kaliteye dönüşmemektedir. Bu sonuç bağlam uzunluğuna bağlıdır. Tekrarlayan modelin durumu sabittir ve uzun bağlamlarda geçmişi sıkıştırmak zorundadır; dikkat ise geçmişi KV önbelleğinde saklar. Hat~B bu yüzden uzun bir bağlamla ($T=512$) ele alınmıştır.
+
+\begin{figure}[h]
+  \centering
+  \sekil{zoo_pareto}
+  \caption[Kalite ve hız]{INT8 test kaybı ile token başına çevrim (names.txt, $T=16$). Sol alt köşe iyidir. Bigram (\zooBigramCyc{} çevrim, \zooBigramInt{} nat/token) ölçeği bozmamak için gösterilmemiştir.}
+  \label{fig:zoo-pareto}
+\end{figure}
+
+% ===========================================================================
+\section{Hat B: stories260K ile hikâye üretimi}\label{sec:hatB}
+% ===========================================================================
+
+Karpathy'nin TinyStories serisinin en küçük modeli olan stories260K, llama2.c biçiminde hazır eğitilmiş olarak alınmıştır \cite{llama2c}. Yapılandırması şöyledir: 5 katman, $C=64$, 8 sorgu ve 4 KV başı ($d_h=8$), SwiGLU gizli boyutu 172, 512 tokenlık BPE sözlüğü, bağlam 512; toplam \zooStoriesParams{} parametre. Model, Hat~A'daki \code{Llama} sınıfına doğrudan yüklenir. Bu sınıf llama2.c'nin \code{model.py}'sini birebir izler. Tokenizer, \code{run.c}'deki \code{encode} fonksiyonunun Python karşılığıdır. Ağırlıklar ve tokenizer \code{data/stories260K/} altındadır. Doğrulama için TinyStories doğrulama kümesinin ilk 400 hikâyesi kullanılmıştır: ilk 100'ü kalibrasyon, 200. hikâyeden sonrakiler test içindir.
+
+\paragraph{Kalite.} 50 test hikâyesinde (\zooStoriesTokens{} token) float kayıp \zooStoriesFloat, INT8 kayıp \zooStoriesInt{} nat/token'dır ($\Delta$ \zooStoriesDelta); argmax uyumu \%\zooStoriesAgree'dir. Isim modellerine göre büyük olan bu fark, daha uzun bağlam ve daha geniş aktivasyon dağılımlarından kaynaklanır (Bölüm~\ref{sec:nicem-aile}).
+
+\paragraph{Donanım.} Aynı RTL, yalnızca daha büyük belleklerle stories260K'yı çalıştırır. Bellekler \zooStoriesGenBram{} RAMB36 tutar; bu, xc7z020'nin 140 BRAM'inin neredeyse tamamıdır. Bunun yaklaşık 260\,KB'ı INT8 ağırlıklar, 160\,KB'ı ise 512 konumluk KV önbelleğidir ($2 \times 5 \times 512 \times 32$ bayt). Bağlamı 256'ya indirmek KV önbelleğini yarıya düşürür. Mantık tarafı isim modelleriyle aynı düzeydedir (genel motor \zooStoriesGenLut{} LUT, \zooStoriesGenDsp{} DSP). Token başına süre konuma bağlıdır. $t=0$'da \zooStoriesCycMin{} çevrimdir; dikkatin her başta $2(t+1)$ çevrim harcaması nedeniyle test hikâyelerinin en uzun konumunda \zooStoriesCycMax{} çevrime çıkar. 200 tokenlık üretimin ortalaması \zooStoriesGenCyc{} çevrim/token'dır; bu, 100\,MHz'de saniyede yaklaşık \zooStoriesTps{} token demektir.
+
+\begin{ozet}[RTL'in ürettiği hikâye (açgözlü kod çözme; BOS'tan başlayarak 200 token)]
+\small\itshape
+\input{data/zoo_hikaye.tex}
+\end{ozet}
+
+Yukarıdaki metin Verilator'da çalışan RTL'in çıktısıdır. Motor her adımda kendi logitlerinin argmax'ını bir sonraki tokene çevirmiştir. Metin, tamsayı referans modelin açgözlü çıktısıyla token token aynıdır. Float modelin açgözlü çıktısı ise ilk \zooStoriesSame{} tokendan sonra ayrışır. Açgözlü kod çözme küçük logit farklarını büyüttüğü için bu beklenen bir durumdur; iki metin de dil bilgisi açısından düzgündür.
+
+% ===========================================================================
+\section{Değerlendirme}\label{sec:tartisma}
+% ===========================================================================
+
+\begin{itemize}
+  \item \textbf{Bir RTL, on model.} Bigram'dan Llama~2'ye kadar bütün mimariler aynı donanımda, yalnızca bellek içerikleri değiştirilerek çalışır. Bütün modeller bit düzeyinde doğrulanmıştır. Donanımın tek mimari kısıtı baş boyutunun $d_h = P = 8$ olmasıdır.
+  \item \textbf{Maliyet nereden geliyor?} Eşit parametre bütçesinde GEMV süresi mimariden bağımsızdır. Farkı normalizasyon, dikkat ve bunların genişlik gerektiren çarpıcıları yapar. Transformer özelliklerinin donanım maliyeti DSP sayısında açıkça görünür: özelleşmiş motorda yaklaşık 15'e karşılık 50.
+  \item \textbf{Kuantizasyonun maliyeti nerede?} Ağırlıklarda değil, aktivasyonlarda. Yüzdelik kalibrasyon ve kalibre NORM ölçeği, donanıma dokunmadan stories260K'daki kaybı yarıdan fazla azaltır.
+  \item \textbf{Sınırlamalar.} Hat~B'de yalnızca hazır eğitilmiş Llama~2 modeli çalıştırılmıştır; diğer varyantların TinyStories'te eğitilmesi gelecek çalışmadır. Kaynak sayıları zamanlama içermeyen Yosys tahminleridir; Fmax, güç ve kart üzerindeki ölçümler Vivado gerektirir. DSP kullanımı paylaşımlı çarpıcılarla azaltılabilir: NORM ve dikkat birimleri hiçbir zaman aynı anda çalışmaz.
+\end{itemize}

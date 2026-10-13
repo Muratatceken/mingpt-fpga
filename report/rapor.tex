@@ -5,6 +5,7 @@
 \documentclass[a4paper,11pt,oneside,parskip=half-]{scrartcl}
 
 \input{stil}
+\input{data/zoo_sayilar}
 
 % ===========================================================================
 \begin{document}
@@ -45,6 +46,7 @@
 \textcolor{muted}{Aritmetik} & INT8 ağırlık ve aktivasyon, INT16 artık akış, yalnızca tamsayı \\
 \textcolor{muted}{Doğruluk} & 729 / 729 girdi doğru; RTL, referans modelle 8\,019 adımda bit-exact \\
 \textcolor{muted}{Performans} & 14\,544 çevrim/token — 100 MHz'de 145\,µs \\
+\textcolor{muted}{Model ailesi} & 9 mimari + stories260K, tek mikrokodlu RTL; hepsi bit-exact \\
 \textcolor{muted}{Hedef kart} & PYNQ-Z2 (Zynq-7020, xc7z020clg400-1) \\
 \textcolor{muted}{Kaynak kod} & \gh \\
 \end{tabularx}
@@ -72,6 +74,9 @@
 
 \kisim{III}{FPGA İmplementasyonu}
 \input{bolumler/kisim2}
+
+\kisim{IV}{Model Ailesi Donanımda: Mikrokodlu Motor ve Karşılaştırma}
+\input{bolumler/kisim_sonuc}
 
 \clearpage
 \input{bolumler/kaynaklar}

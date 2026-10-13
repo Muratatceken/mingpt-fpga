@@ -42,6 +42,9 @@ ACTS = {
 }
 
 
+HIST_BINS = 4096
+
+
 def npw(t):
     return t.detach().double().cpu().numpy()
 
@@ -298,10 +301,15 @@ class FloatRunner:
         self.S = None
         self.hist = []
 
+    calhist = None                   # (ranges, histograms): second calibration pass for percentiles
+
     def note(self, key, val):
         if self.rec is not None:
             v = float(np.max(np.abs(val))) if np.size(val) else 0.0
             self.rec[key] = max(self.rec.get(key, 0.0), v)
+        if self.calhist is not None and key in self.calhist[0] and self.calhist[0][key] > 0:
+            h = self.calhist[1].setdefault(key, np.zeros(HIST_BINS))
+            h += np.histogram(np.abs(val), bins=HIST_BINS, range=(0.0, self.calhist[0][key]))[0]
 
     def step(self, tok, t):
         p = self.p
@@ -344,6 +352,8 @@ class FloatRunner:
                 buf[o["dst"]] = out
                 if o["dst"] == "R":
                     self.note(("R",), out)
+                else:
+                    self.note((i, "out"), out)
             elif op == "GEMV":
                 W, b = p.lin[o["lin"]]
                 x = np.concatenate([buf[s] for s in o["srcs"]])

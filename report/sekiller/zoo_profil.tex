@@ -1,0 +1,21 @@
+% Token başına çevrim profili, model başına (Verilator, test dizileri ortalaması) -- veri: sw/zoo/report_zoo.py
+\pgfplotsset{
+  zoogemv/.style={fill=accent, draw=none}, zoonorm/.style={fill=warm, draw=none},
+  zooattn/.style={fill=good, draw=none}, zoorope/.style={fill=good!45, draw=none},
+  zooew/.style={fill=warm!45, draw=none}, zooemb/.style={fill=rule, draw=none},
+  zoofetch/.style={fill=muted, draw=none}}
+\input{data/zoo_profil_etiket.tex}
+\begin{tikzpicture}
+\begin{axis}[
+    xbar stacked, width=12.6cm, height=8.2cm, bar width=10pt,
+    xmin=0, ymin=0.3, ymax=9.7, ytick={1,...,9},
+    yticklabels/.expand once=\zooproflabels,
+    y tick label style={font=\sffamily\small, text=ink},
+    xlabel={çevrim / token}, xmajorgrids, axis x line*=bottom, axis y line*=left, scaled x ticks=false,
+    legend style={at={(0.5,1.02)}, anchor=south, legend columns=7, /tikz/every even column/.append style={column sep=6pt}},
+    legend cell align=left, reverse legend=false,
+  ]
+  \input{data/zoo_profil_veri.tex}
+  \legend{GEMV, NORM, ATTN+KV, ROPE, eleman bazlı, gömme, getir/çöz}
+\end{axis}
+\end{tikzpicture}

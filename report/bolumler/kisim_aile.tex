@@ -215,18 +215,18 @@ Ailedeki her mimari özellik, küçük bir donanım işlemleri kümesine eşleni
   \label{fig:bellek}
 \end{figure}
 
-\paragraph{Tek mimari, çok model.} minGPT hızlandırıcısındaki kontrol FSM'i, \code{model.py}'nin işlem sırasını sabit olarak kodlar (Bölüm~\ref{sec:mimari}). Ailenin tamamı için bu FSM yerine küçük bir \emph{komut dizisi} (mikrokod) çalıştıran bir denetleyici kullanılması planlanmaktadır. Python tarafındaki derleyici her model için komut listesini üretir; örneğin \code{EMB}, \code{NORM(tip)}, \code{GEMV(katman, hedef)}, \code{ROPE}, \code{ATTN(gqa)}, \code{ACT(tablo)}, \code{MUL}, \code{ADD} ve \code{ARGMAX}. Donanıma eklenecek birimler şunlardır: LN biriminde RMSNorm modu, bir RoPE birimi, eleman bazlı çarpma birimi (SwiGLU ve GRU kapıları için) ve tekrarlayan durum tamponu. GEMV motoru, yeniden kuantizasyon, tablolar ve doğrulama akışı olduğu gibi kullanılır.
+\paragraph{Tek mimari, çok model.} minGPT hızlandırıcısındaki kontrol FSM'i, \code{model.py}'nin işlem sırasını sabit olarak kodlar (Bölüm~\ref{sec:mimari}). Ailenin tamamı için bu FSM, küçük bir \emph{komut dizisi} (mikrokod) çalıştıran bir denetleyiciyle değiştirilmiştir (Bölüm~\ref{sec:motor}). Python tarafındaki derleyici her model için komut listesini üretir. Donanıma eklenen birimler şunlardır: NORM biriminde RMSNorm ve segment modu, bir RoPE birimi, eleman bazlı işlemler (SwiGLU ve GRU kapıları, BoW ortalaması) ve tekrarlayan durum tamponu. GEMV motoru, yeniden kuantizasyon, tablolar ve doğrulama akışı minGPT'den olduğu gibi alınmıştır.
 
 % ===========================================================================
 \section{Karşılaştırma yöntemi}\label{sec:yontem}
 % ===========================================================================
 
-Karşılaştırma, minGPT için kurulan akışın (eğitim, katlama, kuantizasyon, tamsayı referans model, RTL, bit-exact doğrulama) her modele aynen uygulanmasıyla yapılacaktır. Bu bölüm yöntemi tanımlar; sonuçlar raporun sonraki sürümünde eklenecektir.
+Karşılaştırma, minGPT için kurulan akışın (eğitim, katlama, kuantizasyon, tamsayı referans model, RTL, bit-exact doğrulama) her modele aynen uygulanmasıyla yapılmıştır. Bu bölüm yöntemi tanımlar; sonuçlar Kısım~IV'tedir.
 
 \paragraph{İki deney hattı.}
 \begin{enumerate}
   \item \textbf{Hat A: tüm aile, ortak veri.} Dokuz mimarinin hepsi makemore'un \code{names.txt} veri kümesinde (32\,033 isim, $V=27$, karakter düzeyi) eşleştirilmiş parametre bütçeleriyle eğitilir. Aynı veri ve bütçe, mimariler arasında adil bir karşılaştırma sağlar.
-  \item \textbf{Hat B: gerçek metin üretimi.} Transformer varyantları (GPT-2, microgpt, Llama~2, nanochat çekirdeği) TinyStories üzerinde yaklaşık 260\,K parametreyle karşılaştırılır. Hazır eğitilmiş stories260K modeli bu hattın referansıdır ve kart üzerinde hikâye üretimi demosunun temelidir.
+  \item \textbf{Hat B: gerçek metin üretimi.} Karpathy'nin TinyStories üzerinde hazır eğittiği stories260K (Llama~2 mimarisi, 260\,K parametre, 512 token bağlam) aynı akıştan geçirilir. Bu hat, kart üzerindeki hikâye üretimi demosunun temelidir. Diğer transformer varyantlarının aynı ölçekte eğitilip karşılaştırılması gelecek çalışmadır.
 \end{enumerate}
 
 \begin{table}[h]

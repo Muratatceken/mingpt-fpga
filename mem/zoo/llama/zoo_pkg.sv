@@ -31,5 +31,6 @@ package zoo_pkg;
   localparam int    LA_W       = 5;
   localparam int    RA_W       = 5;
   localparam int    N_INSTR    = 60;
+  localparam logic [15:0] OPS_USED = 16'h0fc2;
   localparam int    N_PARAMS   = 52187;
 endpackage

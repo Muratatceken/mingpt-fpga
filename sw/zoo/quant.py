@@ -52,12 +52,33 @@ def isqrt(n):
 
 
 # ----------------------------------------------------------------------------- calibration
-def calibrate(prog, seqs):
+# Calibration method for the INT8 activation scales (the same for every model):
+#   PCT   None -> max |x| over the calibration set; p -> p-th percentile of |x| (second pass, histograms)
+#   NORM  "bound" -> NORM output scale from the proven bound (never saturates);
+#         "cal"   -> from the calibrated range, never coarser than the bound
+CALIB = dict(PCT=99.99, NORM="cal")
+
+
+def calibrate(prog, seqs, pct=None):
+    pct = CALIB["PCT"] if pct is None else pct
     rec = {}
     fr = FloatRunner(prog, rec)
     for s in seqs:
         for t, tok in enumerate(s):
             fr.step(int(tok), t)
+    if not pct:
+        return rec
+    # INT8 quantisation points only; R / L (INT16) and HS (fixed Q0.7) keep their maxima
+    keys = {k: v for k, v in rec.items() if len(k) == 2 and k[1] in ("out", "pre", "post", "pair")}
+    fr = FloatRunner(prog)
+    fr.calhist = (keys, {})
+    for s in seqs:
+        for t, tok in enumerate(s):
+            fr.step(int(tok), t)
+    for k, h in fr.calhist[1].items():
+        c = np.cumsum(h)
+        b = int(np.searchsorted(c, pct / 100.0 * c[-1]))
+        rec[k] = min(rec[k], keys[k] * (b + 1) / len(h))
     return rec
 
 
@@ -106,6 +127,8 @@ def quantize(prog, rec):
                 assert 2.0 ** (15 - q.FR) > bound, "residual format too narrow for a normalised vector"
             else:
                 zf = int(math.floor(math.log2(127.0 / bound)))
+                if CALIB["NORM"] == "cal" and rec.get((i, "out"), 0) > 0:
+                    zf = max(zf, int(math.floor(math.log2(127.0 / rec[(i, "out")]))))
                 o["shift"], o["bits"] = NORM_P - zf, 8
                 sc[o["dst"]] = 2.0 ** -zf
         elif op == "GEMV":

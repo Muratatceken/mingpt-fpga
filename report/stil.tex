@@ -149,6 +149,7 @@
   pdfauthor={Murat Atceken},pdfsubject={Bitirme projesi teknik raporu}}
 
 \newcommand{\code}[1]{\texttt{#1}}
+\makeatletter\newcommand{\tabinput}[1]{\@@input #1 }\makeatother   % expandable \input for table rows
 \newcommand{\sekil}[1]{\begin{adjustbox}{max width=\linewidth}\input{sekiller/#1}\end{adjustbox}}
 \newcommand{\nohyph}{\hyphenpenalty=10000\exhyphenpenalty=10000\raggedright}
 \newcommand{\gh}{\href{https://github.com/Muratatceken/mingpt-fpga}{\texttt{github.com/Muratatceken/mingpt-fpga}}}

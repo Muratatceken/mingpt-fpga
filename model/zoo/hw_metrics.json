@@ -9,6 +9,25 @@
   "profile": {
    "TABLOGIT": 29.0,
    "FETCH": 5.0
+  },
+  "spec_sim_ok": true,
+  "yosys": {
+   "lut_logic": 5323,
+   "lut_ram": 532,
+   "lut": 5855,
+   "ff": 2530,
+   "bram": 0.5,
+   "dsp": 60,
+   "carry": 412
+  },
+  "yosys_spec": {
+   "lut_logic": 1241,
+   "lut_ram": 288,
+   "lut": 1529,
+   "ff": 1137,
+   "bram": 0.5,
+   "dsp": 14,
+   "carry": 95
   }
  },
  "mlp": {
@@ -22,6 +41,25 @@
    "EMBWIN": 258.0,
    "GEMV": 6363.0,
    "FETCH": 9.0
+  },
+  "spec_sim_ok": true,
+  "yosys": {
+   "lut_logic": 6234,
+   "lut_ram": 1860,
+   "lut": 8094,
+   "ff": 2439,
+   "bram": 14.5,
+   "dsp": 60,
+   "carry": 423
+  },
+  "yosys_spec": {
+   "lut_logic": 1782,
+   "lut_ram": 720,
+   "lut": 2502,
+   "ff": 1049,
+   "bram": 14.5,
+   "dsp": 14,
+   "carry": 102
   }
  },
  "rnn": {
@@ -37,6 +75,25 @@
    "GEMV": 6099.0,
    "COPY": 184.0,
    "FETCH": 13.0
+  },
+  "spec_sim_ok": true,
+  "yosys": {
+   "lut_logic": 5847,
+   "lut_ram": 1348,
+   "lut": 7195,
+   "ff": 2441,
+   "bram": 14.0,
+   "dsp": 60,
+   "carry": 441
+  },
+  "yosys_spec": {
+   "lut_logic": 1629,
+   "lut_ram": 532,
+   "lut": 2161,
+   "ff": 1051,
+   "bram": 14.0,
+   "dsp": 14,
+   "carry": 113
   }
  },
  "gru": {
@@ -53,6 +110,25 @@
    "MUL": 103.0,
    "GRUUPD": 100.0,
    "FETCH": 19.0
+  },
+  "spec_sim_ok": true,
+  "yosys": {
+   "lut_logic": 6248,
+   "lut_ram": 916,
+   "lut": 7164,
+   "ff": 2436,
+   "bram": 15.5,
+   "dsp": 60,
+   "carry": 442
+  },
+  "yosys_spec": {
+   "lut_logic": 2475,
+   "lut_ram": 764,
+   "lut": 3239,
+   "ff": 1128,
+   "bram": 15.5,
+   "dsp": 16,
+   "carry": 135
   }
  },
  "bow": {
@@ -68,74 +144,209 @@
    "REQ": 134.0,
    "BOW": 66.0,
    "FETCH": 17.0
+  },
+  "spec_sim_ok": true,
+  "yosys": {
+   "lut_logic": 6477,
+   "lut_ram": 2440,
+   "lut": 8917,
+   "ff": 2420,
+   "bram": 16.0,
+   "dsp": 62,
+   "carry": 462
+  },
+  "yosys_spec": {
+   "lut_logic": 2475,
+   "lut_ram": 1772,
+   "lut": 4247,
+   "ff": 1143,
+   "bram": 16.0,
+   "dsp": 19,
+   "carry": 183
   }
  },
  "gpt2": {
   "steps": 354,
   "bad_steps": 0,
   "errors": 0,
-  "cycles_avg": 9083,
-  "cycles_min": 8982,
-  "cycles_max": 9270,
+  "cycles_avg": 8620,
+  "cycles_min": 8519,
+  "cycles_max": 8807,
   "profile": {
    "EMB16": 66.0,
-   "NORM": 1440.0,
+   "NORM": 1233.0,
    "GEMV": 6601.0,
    "KVSTORE": 16.0,
-   "ATTN": 869.3,
+   "ATTN": 613.3,
    "FETCH": 89.0
+  },
+  "spec_sim_ok": true,
+  "yosys": {
+   "lut_logic": 6066,
+   "lut_ram": 1140,
+   "lut": 7206,
+   "ff": 2273,
+   "bram": 19.5,
+   "dsp": 60,
+   "carry": 428
+  },
+  "yosys_spec": {
+   "lut_logic": 4926,
+   "lut_ram": 924,
+   "lut": 5850,
+   "ff": 2140,
+   "bram": 19.5,
+   "dsp": 49,
+   "carry": 337
   }
  },
  "microgpt": {
   "steps": 354,
   "bad_steps": 0,
   "errors": 0,
-  "cycles_avg": 9120,
-  "cycles_min": 9019,
-  "cycles_max": 9307,
+  "cycles_avg": 8657,
+  "cycles_min": 8556,
+  "cycles_max": 8844,
   "profile": {
    "EMB16": 66.0,
-   "NORM": 1440.0,
+   "NORM": 1233.0,
    "GEMV": 6601.0,
    "KVSTORE": 16.0,
-   "ATTN": 869.3,
+   "ATTN": 613.3,
    "REQ": 35.0,
    "FETCH": 91.0
+  },
+  "spec_sim_ok": true,
+  "yosys": {
+   "lut_logic": 6022,
+   "lut_ram": 1140,
+   "lut": 7162,
+   "ff": 2273,
+   "bram": 19.5,
+   "dsp": 60,
+   "carry": 428
+  },
+  "yosys_spec": {
+   "lut_logic": 5066,
+   "lut_ram": 924,
+   "lut": 5990,
+   "ff": 2140,
+   "bram": 19.5,
+   "dsp": 50,
+   "carry": 338
   }
  },
  "llama": {
   "steps": 354,
   "bad_steps": 0,
   "errors": 0,
-  "cycles_avg": 9859,
-  "cycles_min": 9758,
-  "cycles_max": 10046,
+  "cycles_avg": 9396,
+  "cycles_min": 9295,
+  "cycles_max": 9583,
   "profile": {
    "EMB16": 34.0,
-   "NORM": 1440.0,
+   "NORM": 1233.0,
    "GEMV": 6653.0,
    "ROPE": 336.0,
    "KVSTORE": 8.0,
-   "ATTN": 869.3,
+   "ATTN": 613.3,
    "MUL": 396.0,
    "FETCH": 121.0
+  },
+  "spec_sim_ok": true,
+  "yosys": {
+   "lut_logic": 6266,
+   "lut_ram": 1012,
+   "lut": 7278,
+   "ff": 2272,
+   "bram": 19.0,
+   "dsp": 60,
+   "carry": 448
+  },
+  "yosys_spec": {
+   "lut_logic": 5698,
+   "lut_ram": 924,
+   "lut": 6622,
+   "ff": 2267,
+   "bram": 19.0,
+   "dsp": 57,
+   "carry": 410
   }
  },
  "nanochat": {
   "steps": 354,
   "bad_steps": 0,
   "errors": 0,
-  "cycles_avg": 11749,
-  "cycles_min": 11648,
-  "cycles_max": 11936,
+  "cycles_avg": 10711,
+  "cycles_min": 10610,
+  "cycles_max": 10898,
   "profile": {
    "EMB16": 34.0,
-   "NORM": 4288.0,
+   "NORM": 3506.0,
    "GEMV": 6089.0,
    "ROPE": 336.0,
    "KVSTORE": 8.0,
-   "ATTN": 869.3,
+   "ATTN": 613.3,
    "FETCH": 123.0
+  },
+  "spec_sim_ok": true,
+  "yosys": {
+   "lut_logic": 5814,
+   "lut_ram": 1140,
+   "lut": 6954,
+   "ff": 2270,
+   "bram": 18.0,
+   "dsp": 60,
+   "carry": 428
+  },
+  "yosys_spec": {
+   "lut_logic": 5255,
+   "lut_ram": 924,
+   "lut": 6179,
+   "ff": 2265,
+   "bram": 18.0,
+   "dsp": 56,
+   "carry": 392
+  }
+ },
+ "stories260k": {
+  "steps": 1024,
+  "bad_steps": 0,
+  "errors": 0,
+  "cycles_avg": 59092,
+  "cycles_min": 38652,
+  "cycles_max": 79532,
+  "profile": {
+   "EMB16": 66.0,
+   "NORM": 2211.0,
+   "GEMV": 33209.0,
+   "ROPE": 840.0,
+   "KVSTORE": 20.0,
+   "ATTN": 21720.0,
+   "MUL": 875.0,
+   "FETCH": 149.0
+  },
+  "gen_steps": 200,
+  "gen_match": 200,
+  "gen_cycles_avg": 46612,
+  "spec_sim_ok": true,
+  "yosys": {
+   "lut_logic": 6506,
+   "lut_ram": 1412,
+   "lut": 7918,
+   "ff": 2103,
+   "bram": 134.0,
+   "dsp": 60,
+   "carry": 462
+  },
+  "yosys_spec": {
+   "lut_logic": 6082,
+   "lut_ram": 1112,
+   "lut": 7194,
+   "ff": 2097,
+   "bram": 134.0,
+   "dsp": 57,
+   "carry": 423
   }
  }
 }

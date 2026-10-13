@@ -1,0 +1,53 @@
+% Mikrokodlu zoo motoru (rtl/zoo/zoo_core.sv): denetleyici, birimler, bellekler
+\begin{tikzpicture}[x=1cm,y=1cm, every node/.append style={minimum height=10mm}]
+  % --- üst sıra: program, denetleyici, model belleği
+  \node[warmbox, minimum width=31mm] (prog) at (0.9,0)
+    {\bfseries Program belleği\\[-1pt]\scriptsize\mdseries 256 bit komut · 2--62 komut};
+  \node[accbox, minimum width=38mm] (ctl) at (5.6,0)
+    {\bfseries Denetleyici\\[-1pt]\scriptsize\mdseries getir · çöz · birime dağıt};
+  \node[warmbox, minimum width=54mm] (rom) at (12.0,0)
+    {\bfseries Model belleği (BRAM)\\[-1pt]\scriptsize\mdseries ağırlık $8\times$INT8 · bias/$m_0$/$sh$ · tablolar · LUT'lar};
+  \draw[flow] (prog) -- node[lbl, above] {pc} (ctl);
+
+  % --- birimler
+  \node[box, minimum width=22mm, minimum height=15mm] (emb) at (-0.2,-2.7)
+    {\bfseries EMB\\[-1pt]\scriptsize\mdseries gömme · pencere\\[-3pt]\scriptsize\mdseries tablo logit};
+  \node[box, minimum width=22mm, minimum height=15mm] (norm) at (2.4,-2.7)
+    {\bfseries NORM\\[-1pt]\scriptsize\mdseries LN / RMS · segment\\[-3pt]\scriptsize\mdseries isqrt + bölücü};
+  \node[accbox, minimum width=27mm, minimum height=15mm] (gemv) at (5.35,-2.7)
+    {\bfseries GEMV\\[-1pt]\scriptsize\mdseries $8$ MAC şeridi\\[-3pt]\scriptsize\mdseries gölge banka · requant};
+  \node[box, minimum width=22mm, minimum height=15mm] (attn) at (8.3,-2.7)
+    {\bfseries ATTN\\[-1pt]\scriptsize\mdseries GQA · exp tablosu\\[-3pt]\scriptsize\mdseries $8$ şerit $q\cdot k$, $e\,v$};
+  \node[box, minimum width=20mm, minimum height=15mm] (rope) at (10.8,-2.7)
+    {\bfseries ROPE\\[-1pt]\scriptsize\mdseries ardışık / yarım\\[-3pt]\scriptsize\mdseries Q1.14 cos, sin};
+  \node[box, minimum width=27mm, minimum height=15mm] (ew) at (13.65,-2.7)
+    {\bfseries Eleman bazlı\\[-1pt]\scriptsize\mdseries MUL · GRUUPD · REQ\\[-3pt]\scriptsize\mdseries COPY · BOW · KVSTORE};
+
+  % --- bellekler
+  \node[membox, minimum width=58mm] (vrf) at (2.4,-5.3)
+    {\bfseries Vektör yazmaç dosyası\\[-1pt]\scriptsize\mdseries 11 INT8 tampon (A--G, Q, K, Vb, HS) · 3 okuma portu};
+  \node[membox, minimum width=30mm] (res) at (7.35,-5.3)
+    {\bfseries R \,·\, L\\[-1pt]\scriptsize\mdseries INT16 artık · logitler};
+  \node[membox, minimum width=27mm] (kv) at (10.75,-5.3)
+    {\bfseries KV önbelleği\\[-1pt]\scriptsize\mdseries $L\times T\times H_{kv}$ kelime};
+  \node[membox, minimum width=25mm] (st) at (13.75,-5.3)
+    {\bfseries Durum\\[-1pt]\scriptsize\mdseries BoW toplamı · geçmiş};
+
+  % --- bağlantılar
+  \draw[wire] (ctl.south) -- (5.6,-1.35);
+  \draw[wire] (-0.2,-1.35) -- (13.65,-1.35);
+  \foreach \u in {emb,norm,gemv,attn,rope,ew} \draw[flow] (\u.north |- 0,-1.35) -- (\u.north);
+  \node[lbl, anchor=south west] at (5.75,-1.33) {komut alanları: op · hedef · kaynak · boyut · taban · sabitler};
+  \draw[accflow] ([xshift=-18mm]rom.south) -- ++(0,-0.38) -| ([xshift=7mm]gemv.north)
+    node[pos=0.25, lbl, above, text=accent] {8 bayt / çevrim};
+  \draw[wire] (-0.2,-4.05) -- (13.65,-4.05);
+  \foreach \u in {emb,norm,gemv,attn,rope,ew} \draw[flow, <->] (\u.south) -- (\u.south |- 0,-4.05);
+  \foreach \m in {vrf,res,kv,st} \draw[flow, <->] (\m.north |- 0,-4.05) -- (\m.north);
+  \node[lbl, fill=white, inner sep=1pt] at (11.8,-4.05) {okuma / yazma portları};
+
+  % --- yükleme portu
+  \node[goodbox, minimum width=40mm] (ps) at (12.0,1.75)
+    {\bfseries Zynq PS (ARM)\\[-1pt]\scriptsize\mdseries model yükleme · \code{ld\_*} portu};
+  \draw[flow, draw=good, line width=1pt] (ps.south) -- (rom.north);
+  \draw[flow, draw=good, line width=1pt] (ps.west) -| (prog.north);
+\end{tikzpicture}
