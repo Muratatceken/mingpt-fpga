@@ -1,0 +1,37 @@
+% ===========================================================================
+\section{İlgili çalışmalar ve bu çalışmanın yeri}\label{sec:ilgili}
+% ===========================================================================
+
+Bu bölüm, çalışmayı literatürdeki yakın işlerle karşılaştırır. Kaynakların hepsi yayımlandıkları yerden doğrulanmıştır
+(\code{paper/related\_work.md}).
+
+\paragraph{Yalnızca tamsayıyla çıkarım.} Kanal başına ağırlık ölçekleri ve sabit noktalı yeniden kuantizasyon
+\cite{jacob2018integer,wu2020integer,nagel2021white} veri yolumuzun temelidir. Transformerler için GELU, softmax,
+LayerNorm ve RMSNorm'un tamsayı yaklaşımlarını I-BERT \cite{kim2021ibert}, I-ViT \cite{li2023ivit} ve I-LLM
+\cite{hu2024illm} vermiştir. Donanım odaklı softmax birimleri arasında Softermax \cite{stevens2021softermax} ve SOLE
+\cite{wang2023sole} sayılabilir. 8 bitlik transformerlerde doğruluğu ağırlıkların değil aktivasyonların ve aykırı
+değerlerin sınırladığı bilinmektedir \cite{bondarenko2021understanding,dettmers2022llmint8,xiao2023smoothquant}.
+Yüzdelik kalibrasyon da yerleşik bir uygulamadır \cite{migacz2017tensorrt,mckinstry2019discovering}. Bölüm~\ref{sec:nicem-aile}'deki
+bulgu bu etkileri çok daha küçük bir ölçekte \emph{doğrular}; yeni bir bulgu olarak sunulmamalıdır. Bizim katkımız,
+bütün işlemler için ispatlı aralık sınırları ve bu çekirdeklerin RTL'de bit düzeyinde doğrulanmış olmasıdır.
+
+\paragraph{FPGA'de dil modeli hızlandırıcıları.} DFX \cite{hong2022dfx}, GPT-2'yi birden çok FPGA'de bir komut kümesiyle
+çalıştırır. FlightLLM \cite{zeng2024flightllm} büyük dil modellerini büyük bir FPGA'ye eşler. En yakın ölçekteki çalışma
+HLSTransform'dur \cite{he2024hlstransform}: llama2.c'nin 110M parametreli TinyStories modelini VU9P üzerinde INT8
+matris çarpımlarıyla çalıştırır, normalizasyonları ise kayan noktada tutar. LlamaF \cite{xu2024llamaf} ve TeLLMe
+\cite{qiao2026tellme} gömülü FPGA'leri hedefler. SECDA-LLM \cite{haris2024secdallm} TinyLlama'nın yalnızca matris
+çarpımlarını bir PYNQ-Z1'e taşır. Aynı XC7Z020 üzerinde bir RNN dil modeli de daha önce çalıştırılmıştır
+\cite{hao2017drnn}. Bu çalışmaların her biri tek bir modeli hedefler.
+
+\paragraph{Programlanabilir katmanlar (overlay).} Tek bitstream ile birçok ağı çalıştıran komut tabanlı motorlar
+yerleşik bir çizgidir: Angel-Eye \cite{guo2018angeleye} (yine XC7Z020 üzerinde), Brainwave \cite{fowers2018brainwave},
+VTA \cite{moreau2019vta} ve doğal dil işleme için NPE \cite{khan2021npe}. Bizim motorumuz bu geleneğin bir örneğidir.
+Amacı en yüksek verim değil, mimarilerin karşılaştırılabileceği ortak ve bit düzeyinde doğrulanmış bir zemindir.
+
+\paragraph{Mimari ve maliyet.} Narang ve ark. \cite{narang2021transformer}, transformer değişikliklerini kalite açısından
+karşılaştırır. HAT \cite{wang2020hat} mimariyi genel amaçlı donanımda gecikmeyle ilişkilendirir. Eşit parametre
+bütçesinde \emph{her bir mimari yeniliğin} çevrim ve FPGA kaynak maliyetini raporlayan bir çalışma bulunamamıştır. Bu,
+çalışmanın en savunulabilir katkısıdır.
+
+\paragraph{Sınırlar.} Sonuçlar küçük ölçektedir (12k--260k parametre). Narang ve ark. mimari sonuçların ölçekler arası
+her zaman aktarılmadığını göstermiştir; aykırı değer davranışı da ölçekle değişir \cite{dettmers2022llmint8}.

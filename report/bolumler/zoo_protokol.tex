@@ -1,0 +1,56 @@
+% ===========================================================================
+\section{Deney protokolü}\label{sec:protokol}
+% ===========================================================================
+
+Mimariler arası bir karşılaştırma ancak koşullar eşitse anlamlıdır. Bu bölüm, bütün sonuçların dayandığı kuralları
+tanımlar. Kurallar kodda sabittir (\code{sw/zoo/configs.py}, \code{train.py}, \code{experiments.py}).
+
+\paragraph{Parametre bütçesi.} Her mimari, aynı parametre sayısına göre boyutlandırılır. Transformerlerde katman sayısı
+veri setine göre sabittir (names'te 4, TinyStories'te 5). Baş boyutu 8'dir; bu, motorun dikkat şeridi sayısıdır. Genişlik
+$C$ bütçe kademesinden gelir. MLP'nin gizli genişliği ise parametre sayısı bütçeye en yakın olacak şekilde aranır.
+GQA kullanan modellerde $H_{kv}=H/2$'dir. MLP, RNN, GRU ve BoW modellerinde gömme boyutu kademeden gelir, gizli genişlik
+aynı kuralla aranır. Bu kural bütün modelleri bütçenin $\pm\%3$'ü içine yerleştirir. Bütçeler names için 12k, 50k ve 200k,
+TinyStories için 260k parametredir; sonuncusu Karpathy'nin hazır stories260K modelinin boyutudur. Bu modelin
+yapılandırması (5 katman, $C=64$, 8 baş, 4 KV başı, gizli 172) kuralımızın Llama için ürettiği yapılandırmayla birebir
+aynıdır.
+
+\paragraph{Başlatma.} Her model, kaynak deposundaki başlatma şemasıyla başlatılır (\code{models.source\_init}).
+makemore modelleri PyTorch'un varsayılanını kullanır (makemore da öyle yapar). GPT-2 ve Llama~2, $\mathcal{N}(0, 0{,}02)$
+ile ve artık izdüşümleri $0{,}02/\sqrt{2L}$ ile başlatılır; microgpt bütün matrisleri $\mathcal{N}(0, 0{,}08)$ ile
+başlatır. nanochat'te gömme $\mathcal{N}(0, 0{,}8)$, çıkış $\mathcal{N}(0, 0{,}001)$ ile başlatılır ve izdüşümler sıfırdır.
+Özellik merdiveninin bütün adımları tek bir şema (GPT-2/llama2.c tarzı) kullanır; böylece adımlar arasında yalnızca
+mimari değişir.
+
+\paragraph{Eğitim.} AdamW ($\beta=(0{,}9;\,0{,}99)$, ağırlık sönümü 0,01), 500 adım ısınma, tepe değerin 1/30'una kosinüs
+azalma, gradyan kırpma 1,0 ve yığın 64 kullanılır. names'te her model 20\,000 adım eğitilir. Öğrenme oranı her mimari
+için $\{10^{-3},\;3\cdot10^{-3},\;10^{-2}\}$ kümesinden \emph{doğrulama} kümesinde seçilir. Bunun için names verisi
+30\,033 eğitim, 1\,000 doğrulama ve 1\,000 test ismine bölünmüştür; test kümesi önceki sürümlerdekiyle aynıdır. 50k
+bütçede seçilen oranla üç tohum (0, 1, 2) eğitilir ve sonuçlar test kümesinde ortalama $\pm$ standart sapma olarak
+verilir. Hesap bütçesi nedeniyle 12k bütçede yalnızca oran taraması (tohum 0), 200k bütçede ise 50k'da seçilen oranla
+tek tohum çalıştırılır. TinyStories'te her model tek tohum ve tek oranla ($3\cdot10^{-3}$) eğitilir. Bunun için 49
+eğitim parçasından rastgele 256 tokenlık pencereler çekilir. Doğrulama ve test pencereleri ise ayrılmış 0 numaralı
+parçadan, hikâye başlangıçlarından seçilir.
+
+\paragraph{Özellik merdiveni.} Mimari yeniliklerin her birini ayrı ölçmek için tek bir yapılandırılabilir transformer
+(\code{Ladder}) kullanılır. Her adımda tek bir tasarım tercihi değişir:
+\begin{enumerate}[label=L\arabic*:, start=0]
+  \item GPT-2 bloğu: LayerNorm, öğrenilmiş konum, GELU ve MHA.
+  \item LayerNorm yerine RMSNorm.
+  \item Öğrenilmiş konum yerine RoPE.
+  \item GELU MLP yerine SwiGLU.
+  \item MHA yerine GQA.
+  \item Bias kaldırılır ve gömme paylaşılır; bu, llama2.c'nin bloğudur.
+\end{enumerate}
+L6 ve L7 ise nanochat'e uzanan bir yan daldır: L6, L4'te SwiGLU yerine ReLU$^2$ kullanır; L7, L6'ya QK-norm ekler. Her
+adımda MLP genişliği bütçe kuralıyla yeniden seçilir. Böylece kalitedeki ve maliyetteki her fark tek bir fikre
+bağlanabilir.
+
+\paragraph{Değerlendirme hattı.} Her eğitim koşusu otomatik olarak aynı hattan geçer (\code{pipeline.py}):
+\begin{enumerate}
+  \item Program derlenir ve INT8'e çevrilir.
+  \item names'te test kümesinin tamamında (1\,000 isim), TinyStories'te 64 test penceresinde float ve INT8 kayıp ölçülür.
+  \item Model dışa aktarılır ve bir doğrulama motorunda RTL ile çalıştırılır. names'te test kümesinin tamamı, TinyStories'te
+  4 tam pencere kullanılır; her logit karşılaştırılır.
+\end{enumerate}
+Doğrulama motoru, bütün modelleri sığdıracak boyutta tek bir Verilator derlemesidir; modeller \code{ld\_*} portundan
+yüklenir. Çevrim sayıları model başına derlemeyle birebir aynıdır.

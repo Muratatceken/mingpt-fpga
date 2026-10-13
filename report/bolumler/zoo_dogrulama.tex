@@ -1,0 +1,60 @@
+% ===========================================================================
+\section{Doğrulama}\label{sec:dogrulama-aile}
+% ===========================================================================
+
+Donanımla ilgili her iddia, tamsayı referansla bit düzeyinde eşitliğe dayanır. Tablo~\ref{tab:dogrulama-aile} bu
+eşitliğin hangi yollarla gösterildiğini özetler. Bütün Verilator simülasyonları doğrulamalar (assertion) açık olarak
+çalışır. Bu doğrulamalar şunları kontrol eder:
+\begin{itemize}
+  \item bellek adreslerinin aralık içinde kalması,
+  \item INT32 akümülatörünün hiçbir şeritte taşmaması,
+  \item bağlam konumunun $T$'den küçük olması,
+  \item sınırlı bölümlü bölücünün ön koşulu ($\mathrm{num}\gg Q_B < \mathrm{den}$).
+\end{itemize}
+
+\begin{table}[h]
+  \centering\small
+  \caption[Doğrulama kanıtları]{Doğrulama kanıtları. Bütün satırlarda hata sayısı sıfırdır.}
+  \label{tab:dogrulama-aile}
+  \begin{tabularx}{\textwidth}{@{}lL@{}}
+    \toprule
+    \thead{Kontrol} & \thead{Kapsam} \\ \midrule
+    Eğitilmiş her model (pipeline) & \zooVerifRuns{} model; test kümesinin tamamı, \zooVerifiedLogits{} logit \\
+    Özelleşmiş motor, yükleme portu & aynı test vektörleri \\
+    Tek bitstream motoru, AXI üzerinden & 10 model; 200 tokenlık kapalı döngü hikâye, token token aynı \\
+    Rastgele farklılık testi (\code{fuzz.py}) & \zooFuzzCases{} rastgele mimari/boyut/ağırlık, \zooFuzzLogits{} logit \\
+    4 durumlu simülasyon (Icarus) & çıktılarda belirsiz (X) değer yok \\
+    Aritmetik birimler (\code{tb\_zarith.sv}) & 12 bitlik bölücüde bütün geçerli girişler; toplam \zooArithCases{} vaka \\
+    Bağımsız C ISA simülatörü & 10 modelin altın vektörleri \\
+    Sürekli entegrasyon (GitHub Actions) & her commit'te 9 model + C simülatörü + AXI sistemi \\
+    Kart üzerinde (PYNQ-Z2) & \zooBoardVerif{} \\ \bottomrule
+  \end{tabularx}
+\end{table}
+
+\paragraph{Rastgele farklılık testi.} Eğitilmiş modeller, ağırlık uzayının yalnızca küçük bir bölgesini dener. Fuzzing
+her vakada rastgele seçimler yapar: bir mimari, sözlük boyutu (27--512), bağlam (8--64), derinlik (1--3) ve genişlik.
+Ağırlıklar rastgele ölçekli değerlerle doldurulur; böylece doyma ve kırpma yolları da sınanır. Model rastgele tokenlarla
+kalibre edilir ve rastgele uzunluktaki rastgele dizilerin her logiti karşılaştırılır. Derleyicinin donanım biçimlerine
+sığmadığı için reddettiği vakalar ayrıca sayılır. İlk sürümde bir vaka böyle reddedildi: artık akış çok küçük
+değerlerdeyken derleyici, normalize vektörün INT16'ya sığmayacağı bir ölçek seçiyordu. Derleyici bu durum için
+düzeltildi.
+
+\paragraph{Aritmetik birimler.} Sınırlı bölümlü bölücünün doğruluğu iki yoldan gösterilir. (i)~$W=12$, $Q_B=6$ için ön
+koşulu sağlayan \emph{bütün} giriş çiftleri simüle edilir; algoritma genişlikten bağımsız olduğu için bu bir kanıt
+yerine geçer. (ii)~Gerçek genişliklerde rastgele ve sınır vakalar denenir. Softmax'ın karşılığı ise $[2^{15}, 2^{24})$
+aralığındaki her payda için kontrol edilir. Sonuçlar ikinci bir uygulamayla değil, tanımlayıcı özelliklerle denetlenir:
+$q\,b\le a<(q+1)\,b$ ve $r^2\le n<(r+1)^2$.
+
+\paragraph{Üç bağımsız uygulama.} Tamsayı semantiğinin üç ayrı uygulaması vardır:
+\begin{itemize}
+  \item Python referansı (\code{IntRunner}),
+  \item RTL,
+  \item mikrokodu yorumlayan bir C programı (\code{sw/c/zoo\_run.c}).
+\end{itemize}
+C programı aynı bellek görüntülerini okur ve on modelin hepsinde altın vektörlerle bit düzeyinde aynıdır. Kartta ARM
+çekirdeğinde de aynı program çalışır; bu yüzden CPU karşılaştırması, birebir aynı tamsayı işinin karşılaştırmasıdır.
+
+\paragraph{Sentez sonrası.} Yosys'in Xilinx hücre modelleriyle yapılan netlist simülasyonu, bu modellerin ilk değeri
+atanmamış iç yazmaçlarından kaynaklanan belirsiz (X) değerler nedeniyle sonuç vermedi. Gerçek FPGA'de yazmaçlar sıfırla
+başlar ve RTL düzeyindeki 4 durumlu simülasyon temizdir. Sentez sonrası kontrol, Vivado'nun hücre modelleriyle yapılacak
+şekilde betik olarak hazırlanmıştır (\code{scripts/vivado\_zoo\_postsynth\_sim.tcl}).

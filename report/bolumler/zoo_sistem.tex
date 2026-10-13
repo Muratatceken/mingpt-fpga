@@ -1,0 +1,56 @@
+% ===========================================================================
+\section{Çevrim modeli, tasarım uzayı ve tek bitstream}\label{sec:sistem}
+% ===========================================================================
+
+\paragraph{Kapalı biçimli çevrim modeli.} Motorun her birimi sabit bir durum makinesidir. Bu yüzden $t$ konumundaki
+tokenın süresi, simülasyona gerek kalmadan mikrokoddan hesaplanabilir:
+\begin{equation}
+\begin{aligned}
+C(t) ={}& 3 + 2N_\mathrm{komut} + \textstyle\sum_\mathrm{NORM} S\,(2n + 73) + C_\mathrm{diğer}\\
+&+ \textstyle\sum_\mathrm{GEMV}\big[n_\mathrm{in} + (B-1)\max(n_\mathrm{in},P{+}2) + P + 5\big]
+ + \textstyle\sum_\mathrm{ATTN} H\,\big(2(t+1) + 30\big).
+\end{aligned}
+\label{eq:cevrim}
+\end{equation}
+Burada $B=\lceil n_\mathrm{out}/P\rceil$ katman başına blok sayısı, $S$ uzunluğu $n$ olan normalizasyon segmenti sayısı,
+$H$ baş sayısıdır. Terimler doğrudan RTL'den gelir:
+\begin{itemize}
+  \item \textbf{NORM:} Bir segment $n$ çevrim toplama, 1+1 çevrim hazırlık, 29 çevrim karekök, 42 çevrim bölme ve $n$
+  çevrim çıkış sürer.
+  \item \textbf{Dikkat:} Bir baş $t+1$ çevrim skor, $t+1$ çevrim üs ve birikim, 19 çevrim karşılık, 8 çevrim çıkış ve
+  3 çevrim geçiş sürer.
+  \item \textbf{GEMV:} Bir blok, birikim süresi $n_\mathrm{in}$ ile seri yeniden kuantizasyonun süresi ($P+2$) arasındaki
+  büyük olan kadar sürer.
+  \item \textbf{Diğer işlemler ($C_\mathrm{diğer}$):} Gömmeler $N{+}2$, RoPE baş başına $2+3d_h/2$, eleman bazlı işlemler
+  $n$ ya da $n{+}3$ çevrim sürer.
+\end{itemize}
+Denklem~\eqref{eq:cevrim} bütün modellerde ve bütün konumlarda simülasyonla birebir aynı sonucu verir
+(\zooPerfPairs{} (koşu, konum) çifti, en büyük sapma \zooPerfMaxErr{} çevrim). Bunun pratik anlamı şudur: bir
+mimarinin bu motordaki maliyeti, programı derlenir derlenmez, sentez ya da simülasyon olmadan okunabilir.
+
+\paragraph{Tasarım uzayı: şerit sayısı $P$.} GEMV şerit sayısı $P$ tek bir derleme parametresidir. Dikkat, RoPE ve KV
+önbelleği ise baş boyutuna bağlı 8 şeritte kalır. Bir baş, $P$ baytlık bir vektör kelimesinin bir dilimidir; bu ayrım
+$P\in\{8, 16, 32\}$ değerlerini mümkün kılar. Her $P$ için modeller yeniden dışa aktarılıp bit-exact simüle edilir ve
+Yosys ile sentezlenir. Sonuçlar \zooDseNote.
+
+\paragraph{Tek bitstream.} \code{export\_hw.py --universal} bütün modelleri kapsayan en büyük boyutlarla tek bir motor
+üretir: $V=512$, $T=256$, 5 katman. Bu motor, bütün birimleri içerir ve bellekleri yüklenebilirdir (\code{LOADABLE=1},
+\code{PRELOAD=0}). Yosys tahmini \zooUniLut{} LUT, \zooUniFf{} FF, \zooUniBram{} RAMB36 ve \zooUniDsp{} DSP'dir; bu,
+xc7z020'ye rahatça sığar. Bu sonuca bir iyileştirmeyle ulaşıldı: başta yalnızca BoW'un karşılık tablosu 21 bit
+gerektirdiği için bütün tablolar 32 bit genişliğindeydi ve motor 140 BRAM'in 132'sini kullanıyordu. Karşılık tablosu iki
+16 bitlik kelimeye bölündü; tablo genişliği her modelde 16 bite indi ve BRAM kullanımı 114'e düştü.
+
+\paragraph{Kart entegrasyonu.} \code{rtl/zoo/zoo\_axi.sv}, motoru bir AXI4-Lite bağımlısı olarak Zynq'in işlemci
+tarafına bağlar. Sarmalayıcı şunları sağlar:
+\begin{itemize}
+  \item adım başlatma (token, konum),
+  \item 256 bitlik model yükleme penceresi,
+  \item logit penceresi,
+  \item donanımda argmax (modelin sözlüğüyle sınırlı, \code{NVOCAB}),
+  \item adım başına çevrim sayacı.
+\end{itemize}
+PYNQ sürücüsü (\code{board/pynq\_z2/zoo.py}) bir modeli bellek görüntülerinden yükler ve adımları çalıştırır. Aynı
+protokol, simülasyonda \code{tb\_zoo\_axi.sv} ile on modelin hepsinde ve 200 tokenlık kapalı döngü hikâye üretiminde
+bit düzeyinde doğrulanmıştır. Bu tezgâhtaki AXI el sıkışmaları düşen kenarda örneklenir; böylece sonuç simülatörün olay
+sıralamasından bağımsızdır. Kartta yapılacak ölçümler (gecikme, ARM ile karşılaştırma, güç) betik olarak hazırdır
+(\code{board/pynq\_z2/run\_board.py}); kart için bir Jupyter demo defteri de vardır (\code{zoo\_demo.ipynb}).
