@@ -1,0 +1,313 @@
+{
+ "mlp_P8": {
+  "P": 8,
+  "model": "mlp",
+  "steps": 71,
+  "errors": 0,
+  "cycles": 6632,
+  "gemv": 6363.0,
+  "yosys": {
+   "lut_logic": 6378,
+   "lut_ram": 1860,
+   "lut": 8238,
+   "ff": 2439,
+   "bram": 14.5,
+   "dsp": 60,
+   "carry": 423,
+   "depth": 1489
+  }
+ },
+ "gru_P8": {
+  "P": 8,
+  "model": "gru",
+  "steps": 71,
+  "errors": 0,
+  "cycles": 6515,
+  "gemv": 6227.0,
+  "yosys": {
+   "lut_logic": 6374,
+   "lut_ram": 916,
+   "lut": 7290,
+   "ff": 2436,
+   "bram": 15.5,
+   "dsp": 60,
+   "carry": 442,
+   "depth": 1776
+  }
+ },
+ "gpt2_P8": {
+  "P": 8,
+  "model": "gpt2",
+  "steps": 71,
+  "errors": 0,
+  "cycles": 8620,
+  "gemv": 6601.0,
+  "yosys": {
+   "lut_logic": 6195,
+   "lut_ram": 1140,
+   "lut": 7335,
+   "ff": 2273,
+   "bram": 19.5,
+   "dsp": 60,
+   "carry": 428,
+   "depth": 1592
+  }
+ },
+ "llama_P8": {
+  "P": 8,
+  "model": "llama",
+  "steps": 71,
+  "errors": 0,
+  "cycles": 9396,
+  "gemv": 6653.0,
+  "yosys": {
+   "lut_logic": 6469,
+   "lut_ram": 1012,
+   "lut": 7481,
+   "ff": 2272,
+   "bram": 19.0,
+   "dsp": 60,
+   "carry": 449,
+   "depth": 1550
+  }
+ },
+ "nanochat_P8": {
+  "P": 8,
+  "model": "nanochat",
+  "steps": 71,
+  "errors": 0,
+  "cycles": 10711,
+  "gemv": 6089.0,
+  "yosys": {
+   "lut_logic": 5952,
+   "lut_ram": 1140,
+   "lut": 7092,
+   "ff": 2270,
+   "bram": 18.0,
+   "dsp": 60,
+   "carry": 428,
+   "depth": 1447
+  }
+ },
+ "stories260k_P8": {
+  "P": 8,
+  "model": "stories260k",
+  "steps": 5120,
+  "errors": 0,
+  "cycles": 59092,
+  "gemv": 33209.0,
+  "yosys": {
+   "lut_logic": 6697,
+   "lut_ram": 1412,
+   "lut": 8109,
+   "ff": 2125,
+   "bram": 134.0,
+   "dsp": 62,
+   "carry": 474
+  }
+ },
+ "mlp_P16": {
+  "P": 16,
+  "model": "mlp",
+  "steps": 71,
+  "errors": 0,
+  "cycles": 3480,
+  "gemv": 3211.0,
+  "yosys": {
+   "lut_logic": 6942,
+   "lut_ram": 1856,
+   "lut": 8798,
+   "ff": 3094,
+   "bram": 16.5,
+   "dsp": 70,
+   "carry": 434
+  }
+ },
+ "gru_P16": {
+  "P": 16,
+  "model": "gru",
+  "steps": 71,
+  "errors": 0,
+  "cycles": 3683,
+  "gemv": 3395.0,
+  "yosys": {
+   "lut_logic": 7010,
+   "lut_ram": 1040,
+   "lut": 8050,
+   "ff": 3091,
+   "bram": 17.5,
+   "dsp": 70,
+   "carry": 453
+  }
+ },
+ "gpt2_P16": {
+  "P": 16,
+  "model": "gpt2",
+  "steps": 71,
+  "errors": 0,
+  "cycles": 5684,
+  "gemv": 3665.0,
+  "yosys": {
+   "lut_logic": 7096,
+   "lut_ram": 1136,
+   "lut": 8232,
+   "ff": 2928,
+   "bram": 21.5,
+   "dsp": 70,
+   "carry": 439
+  }
+ },
+ "llama_P16": {
+  "P": 16,
+  "model": "llama",
+  "steps": 71,
+  "errors": 0,
+  "cycles": 6492,
+  "gemv": 3749.0,
+  "yosys": {
+   "lut_logic": 7127,
+   "lut_ram": 1136,
+   "lut": 8263,
+   "ff": 2927,
+   "bram": 21.0,
+   "dsp": 70,
+   "carry": 459
+  }
+ },
+ "nanochat_P16": {
+  "P": 16,
+  "model": "nanochat",
+  "steps": 71,
+  "errors": 0,
+  "cycles": 8031,
+  "gemv": 3409.0,
+  "yosys": {
+   "lut_logic": 7228,
+   "lut_ram": 1136,
+   "lut": 8364,
+   "ff": 2929,
+   "bram": 17.5,
+   "dsp": 70,
+   "carry": 439
+  }
+ },
+ "stories260k_P16": {
+  "P": 16,
+  "model": "stories260k",
+  "steps": 5120,
+  "errors": 0,
+  "cycles": 43012,
+  "gemv": 17129.0,
+  "yosys": {
+   "lut_logic": 7877,
+   "lut_ram": 1412,
+   "lut": 9289,
+   "ff": 2765,
+   "bram": 130.0,
+   "dsp": 70,
+   "carry": 472
+  }
+ },
+ "mlp_P32": {
+  "P": 32,
+  "model": "mlp",
+  "steps": 71,
+  "errors": 0,
+  "cycles": 2056,
+  "gemv": 1787.0,
+  "yosys": {
+   "lut_logic": 9348,
+   "lut_ram": 1856,
+   "lut": 11204,
+   "ff": 4371,
+   "bram": 16.0,
+   "dsp": 86,
+   "carry": 437
+  }
+ },
+ "gru_P32": {
+  "P": 32,
+  "model": "gru",
+  "steps": 71,
+  "errors": 0,
+  "cycles": 2315,
+  "gemv": 2027.0,
+  "yosys": {
+   "lut_logic": 8437,
+   "lut_ram": 1296,
+   "lut": 9733,
+   "ff": 4368,
+   "bram": 17.0,
+   "dsp": 86,
+   "carry": 438
+  }
+ },
+ "gpt2_P32": {
+  "P": 32,
+  "model": "gpt2",
+  "steps": 71,
+  "errors": 0,
+  "cycles": 4540,
+  "gemv": 2521.0,
+  "yosys": {
+   "lut_logic": 8615,
+   "lut_ram": 1392,
+   "lut": 10007,
+   "ff": 4205,
+   "bram": 21.0,
+   "dsp": 86,
+   "carry": 443
+  }
+ },
+ "llama_P32": {
+  "P": 32,
+  "model": "llama",
+  "steps": 71,
+  "errors": 0,
+  "cycles": 5548,
+  "gemv": 2805.0,
+  "yosys": {
+   "lut_logic": 8651,
+   "lut_ram": 1392,
+   "lut": 10043,
+   "ff": 4204,
+   "bram": 20.5,
+   "dsp": 86,
+   "carry": 461
+  }
+ },
+ "nanochat_P32": {
+  "P": 32,
+  "model": "nanochat",
+  "steps": 71,
+  "errors": 0,
+  "cycles": 7143,
+  "gemv": 2521.0,
+  "yosys": {
+   "lut_logic": 8596,
+   "lut_ram": 1392,
+   "lut": 9988,
+   "ff": 4204,
+   "bram": 20.5,
+   "dsp": 86,
+   "carry": 442
+  }
+ },
+ "stories260k_P32": {
+  "P": 32,
+  "model": "stories260k",
+  "steps": 5120,
+  "errors": 0,
+  "cycles": 35724,
+  "gemv": 9841.0,
+  "yosys": {
+   "lut_logic": 10817,
+   "lut_ram": 1924,
+   "lut": 12741,
+   "ff": 4044,
+   "bram": 136.5,
+   "dsp": 86,
+   "carry": 479
+  }
+ }
+}

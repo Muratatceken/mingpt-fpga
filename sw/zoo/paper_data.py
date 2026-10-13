@@ -208,6 +208,37 @@ def main():
         y = e["yosys"]
         lines.append(f"{e['model']} {e['P']} {e['cycles']} {e['gemv']} {y['lut']} {y['dsp']} {y['bram']}")
     write("dse.dat", lines)
+    col = dict(mlp="orange!60", gru="red!85!black", gpt2="blue!45", llama="blue!80!black",
+               nanochat="green!50!black", stories260k="black")
+    lab2 = dict(LABEL, stories260k="stories260K")
+    cyc, res_ = [], []
+    for m in col:
+        pts = sorted((e["P"], e["cycles"]) for e in dse.values() if e["model"] == m)
+        if pts:
+            c8 = pts[0][1]
+            cyc += [f"\\addplot[color={col[m]}, mark=*] coordinates {{" +
+                    " ".join(f"({p},{c / c8:.4f})" for p, c in pts) + "};", f"\\addlegendentry{{{lab2[m]}}}"]
+    g = sorted((e["P"], e["yosys"]) for e in dse.values() if e["model"] == "gpt2")
+    if g:
+        res_ = ["\\addplot[color=blue!70!black, mark=*] coordinates {" +
+                " ".join(f"({p},{y['lut'] / 1000:.2f})" for p, y in g) + "};", "\\addlegendentry{kLUT}",
+                "\\addplot[color=orange!80!black, mark=square*] coordinates {" +
+                " ".join(f"({p},{y['dsp'] / 10:.1f})" for p, y in g) + "};", "\\addlegendentry{DSP/10}",
+                "\\addplot[color=green!50!black, mark=triangle*] coordinates {" +
+                " ".join(f"({p},{y['ff'] / 1000:.2f})" for p, y in g) + "};", "\\addlegendentry{kFF}"]
+    write("fig_dse_cycles.tex", cyc or ["\\addplot coordinates {(8,1) (32,1)};"])
+    write("fig_dse_res.tex", res_ or ["\\addplot coordinates {(8,1) (32,1)};"])
+    if dse:
+        e8 = {e["model"]: e for e in dse.values() if e["P"] == 8}
+        e32 = {e["model"]: e for e in dse.values() if e["P"] == 32}
+        if "stories260k" in e8 and "stories260k" in e32:
+            mac["zooDseStoriesSpeedup"] = num(e8["stories260k"]["cycles"] / e32["stories260k"]["cycles"], 2)
+            mac["zooDseStoriesGemvSpeedup"] = num(e8["stories260k"]["gemv"] / e32["stories260k"]["gemv"], 2)
+        if "mlp" in e8 and "mlp" in e32:
+            mac["zooDseMlpSpeedup"] = num(e8["mlp"]["cycles"] / e32["mlp"]["cycles"], 2)
+        if "gpt2" in e8 and "gpt2" in e32:
+            mac["zooDseLut"] = f"{num(e8['gpt2']['yosys']['lut'] / 1000, 1)}k$\\to${num(e32['gpt2']['yosys']['lut'] / 1000, 1)}k"
+            mac["zooDseDsp"] = f"{e8['gpt2']['yosys']['dsp']}$\\to${e32['gpt2']['yosys']['dsp']}"
 
     # ------------------------------------------------------------------ quantization study
     qs = js("quant_study.json", {})

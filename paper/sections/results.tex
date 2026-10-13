@@ -93,6 +93,13 @@ Percentile & Norm scale & INT8 loss & $\Delta$ & argmax agr. (\%) \\ \midrule
 \end{table}
 
 \subsection{Engine design space and the one-bitstream engine}\label{sec:res-dse}
+\begin{figure}[t]
+\centering
+\input{figs/dse}
+\caption{GEMV lane count $P$: cycles per token relative to $P=8$ (left; every point bit-exact in RTL) and engine
+resources (right, GPT-2 engine, Yosys). Attention and normalization keep 8 lanes, so attention-heavy models gain less.}
+\label{fig:dse}
+\end{figure}
 
 \subsection{On-board measurements}\label{sec:res-board}
 \begin{table}[t]
