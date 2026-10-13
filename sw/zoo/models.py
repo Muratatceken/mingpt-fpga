@@ -9,6 +9,8 @@ Each class follows its source repository (see report Part II):
     llama                        karpathy/llama2.c model.py
     nanochat                     karpathy/nanochat gpt.py, core architecture only
                                  (no value embeddings, smear, lambdas, backout, sliding window)
+    Ladder                       configurable transformer for single-feature ablations
+                                 (GPT-2 -> Llama 2 / nanochat, one change per step)
 """
 import math
 
@@ -88,6 +90,7 @@ def merge_heads(x):
 class Bigram(nn.Module):
     def __init__(self, V, T):
         super().__init__()
+        self.T = T
         self.logits = nn.Parameter(torch.zeros(V, V))
 
     def forward(self, idx):
@@ -95,19 +98,19 @@ class Bigram(nn.Module):
 
 
 class MLP(nn.Module):
-    """Bengio et al. 2003 as in makemore: embeddings of the last T tokens (current first)."""
+    """Bengio et al. 2003 as in makemore: embeddings of the last k tokens (current first), k = T by default."""
 
-    def __init__(self, V, T, n_embd, n_hidden):
+    def __init__(self, V, T, n_embd, n_hidden, k=None):
         super().__init__()
-        self.V, self.T = V, T
+        self.V, self.T, self.k = V, T, k or T
         self.wte = nn.Embedding(V + 1, n_embd)            # +1: <BLANK> padding token
-        self.fc1 = nn.Linear(T * n_embd, n_hidden)
+        self.fc1 = nn.Linear(self.k * n_embd, n_hidden)
         self.fc2 = nn.Linear(n_hidden, V)
 
     def forward(self, idx):
         idx = idx.clone()
         embs = []
-        for _ in range(self.T):
+        for _ in range(self.k):
             embs.append(self.wte(idx))
             idx = torch.roll(idx, 1, 1)
             idx[:, 0] = self.V
@@ -119,7 +122,7 @@ class RNN(nn.Module):
 
     def __init__(self, V, T, n_embd, n_hidden, cell="rnn"):
         super().__init__()
-        self.cell = cell
+        self.cell, self.T = cell, T
         self.start = nn.Parameter(torch.zeros(1, n_hidden))
         self.wte = nn.Embedding(V, n_embd)
         n_in = n_embd + n_hidden
@@ -175,17 +178,18 @@ class BoW(nn.Module):
 class GPT2(nn.Module):
     """GPT-2 block (minGPT/makemore): LayerNorm, GELU, learned positions, biases; lm_head without bias."""
 
-    def __init__(self, V, T, n_layer, n_embd, n_head):
+    def __init__(self, V, T, n_layer, n_embd, n_head, hidden=None):
         super().__init__()
         self.n_head = n_head
         C = n_embd
+        Hd = hidden or 4 * C
         self.wte = nn.Embedding(V, C)
         self.wpe = nn.Embedding(T, C)
         self.h = nn.ModuleList()
         for _ in range(n_layer):
             self.h.append(nn.ModuleDict(dict(
                 ln_1=nn.LayerNorm(C), c_attn=nn.Linear(C, 3 * C), c_proj=nn.Linear(C, C),
-                ln_2=nn.LayerNorm(C), c_fc=nn.Linear(C, 4 * C), mlp_proj=nn.Linear(4 * C, C))))
+                ln_2=nn.LayerNorm(C), c_fc=nn.Linear(C, Hd), mlp_proj=nn.Linear(Hd, C))))
         self.ln_f = nn.LayerNorm(C)
         self.lm_head = nn.Linear(C, V, bias=False)
 
@@ -203,10 +207,11 @@ class GPT2(nn.Module):
 class MicroGPT(nn.Module):
     """microgpt: GPT-2 with RMSNorm (no params), ReLU, no biases, no final norm; normalized embedding."""
 
-    def __init__(self, V, T, n_layer, n_embd, n_head):
+    def __init__(self, V, T, n_layer, n_embd, n_head, hidden=None):
         super().__init__()
         self.n_head = n_head
         C = n_embd
+        Hd = hidden or 4 * C
         self.wte = nn.Embedding(V, C)
         self.wpe = nn.Embedding(T, C)
         self.h = nn.ModuleList()
@@ -214,7 +219,7 @@ class MicroGPT(nn.Module):
             self.h.append(nn.ModuleDict(dict(
                 wq=nn.Linear(C, C, bias=False), wk=nn.Linear(C, C, bias=False),
                 wv=nn.Linear(C, C, bias=False), wo=nn.Linear(C, C, bias=False),
-                fc1=nn.Linear(C, 4 * C, bias=False), fc2=nn.Linear(4 * C, C, bias=False))))
+                fc1=nn.Linear(C, Hd, bias=False), fc2=nn.Linear(Hd, C, bias=False))))
         self.lm_head = nn.Linear(C, V, bias=False)
 
     def forward(self, idx):
@@ -270,9 +275,10 @@ class NanoChat(nn.Module):
     """nanochat core: param-free RMSNorm (also after embedding and before head), RoPE (half split),
     QK-norm with 1.2 scale, GQA, ReLU^2 MLP, untied head, no biases."""
 
-    def __init__(self, V, T, n_layer, n_embd, n_head, n_kv_head, eps=1e-6):
+    def __init__(self, V, T, n_layer, n_embd, n_head, n_kv_head, eps=1e-6, hidden=None):
         super().__init__()
         C = n_embd
+        Hd = hidden or 4 * C
         self.n_head, self.n_kv, self.dh, self.eps = n_head, n_kv_head, C // n_head, eps
         self.wte = nn.Embedding(V, C)
         self.h = nn.ModuleList()
@@ -280,7 +286,7 @@ class NanoChat(nn.Module):
             self.h.append(nn.ModuleDict(dict(
                 c_q=nn.Linear(C, C, bias=False), c_k=nn.Linear(C, n_kv_head * self.dh, bias=False),
                 c_v=nn.Linear(C, n_kv_head * self.dh, bias=False), c_proj=nn.Linear(C, C, bias=False),
-                c_fc=nn.Linear(C, 4 * C, bias=False), mlp_proj=nn.Linear(4 * C, C, bias=False))))
+                c_fc=nn.Linear(C, Hd, bias=False), mlp_proj=nn.Linear(Hd, C, bias=False))))
         self.lm_head = nn.Linear(C, V, bias=False)
         cos, sin = rope_tables(self.dh, T)
         self.register_buffer("cos", cos, persistent=False)
@@ -300,6 +306,78 @@ class NanoChat(nn.Module):
         return self.lm_head(rms(x, e))
 
 
+# ----------------------------------------------------------------------------- feature ladder
+class Ladder(nn.Module):
+    """Decoder-only transformer whose design choices are switches, for one-change-at-a-time ablations.
+    norm: ln (LayerNorm, affine) | rms (RMSNorm, gain) | rms0 (parameter-free RMSNorm)
+    pos: learned | rope (interleaved, llama2.c) | rope_half (nanochat);  mlp: gelu | relu | relu2 | swiglu
+    bias: biases in attention/MLP linears; qk_norm: RMSNorm(q), RMSNorm(k) x 1.2 (nanochat);
+    tied: head = wte; emb_norm: RMSNorm after the embedding; final_norm: norm before the head."""
+
+    def __init__(self, V, T, n_layer, n_embd, n_head, n_kv_head=None, hidden=None, norm="ln", pos="learned",
+                 mlp="gelu", bias=True, qk_norm=False, tied=False, emb_norm=False, final_norm=True, eps=1e-5):
+        super().__init__()
+        C = n_embd
+        self.T, self.n_head, self.n_kv, self.dh = T, n_head, n_kv_head or n_head, C // n_head
+        self.cfg = dict(norm=norm, pos=pos, mlp=mlp, bias=bias, qk_norm=qk_norm, tied=tied, emb_norm=emb_norm,
+                        final_norm=final_norm, eps=eps)
+        Hd = hidden or (4 * C if mlp != "swiglu" else 8 * C // 3)
+        mk_norm = lambda: (nn.LayerNorm(C, eps=eps) if norm == "ln" else RMSNorm(C, eps) if norm == "rms"
+                           else nn.Identity())
+        self.wte = nn.Embedding(V, C)
+        if pos == "learned":
+            self.wpe = nn.Embedding(T, C)
+        kvd = self.n_kv * self.dh
+        self.h = nn.ModuleList()
+        for _ in range(n_layer):
+            blk = dict(n1=mk_norm(), wq=nn.Linear(C, C, bias=bias), wk=nn.Linear(C, kvd, bias=bias),
+                       wv=nn.Linear(C, kvd, bias=bias), wo=nn.Linear(C, C, bias=bias), n2=mk_norm(),
+                       fc1=nn.Linear(C, Hd, bias=bias), fc2=nn.Linear(Hd, C, bias=bias))
+            if mlp == "swiglu":
+                blk["fc3"] = nn.Linear(C, Hd, bias=bias)
+            self.h.append(nn.ModuleDict(blk))
+        self.nf = mk_norm() if final_norm else nn.Identity()
+        self.lm_head = nn.Linear(C, V, bias=False)
+        if tied:
+            self.lm_head.weight = self.wte.weight
+        if pos.startswith("rope"):
+            cos, sin = rope_tables(self.dh, T)
+            self.register_buffer("cos", cos, persistent=False)
+            self.register_buffer("sin", sin, persistent=False)
+
+    def _n(self, mod, x):
+        return rms(x, self.cfg["eps"]) if self.cfg["norm"] == "rms0" and isinstance(mod, nn.Identity) else mod(x)
+
+    def forward(self, idx):
+        c = self.cfg
+        T = idx.size(1)
+        x = self.wte(idx)
+        if c["pos"] == "learned":
+            x = x + self.wpe(torch.arange(T, device=idx.device))
+        if c["emb_norm"]:
+            x = rms(x, c["eps"])
+        rope = dict(rope=rope_interleaved, rope_half=rope_half).get(c["pos"])
+        for b in self.h:
+            a = self._n(b["n1"], x)
+            q, k, v = split_heads(b["wq"](a), self.n_head), split_heads(b["wk"](a), self.n_kv), \
+                split_heads(b["wv"](a), self.n_kv)
+            if rope:
+                q, k = rope(q, self.cos, self.sin), rope(k, self.cos, self.sin)
+            if c["qk_norm"]:
+                q, k = rms(q, c["eps"]) * 1.2, rms(k, c["eps"]) * 1.2
+            x = x + b["wo"](merge_heads(causal_attention(q, k, v, self.n_head // self.n_kv)))
+            f = self._n(b["n2"], x)
+            if c["mlp"] == "swiglu":
+                h = F.silu(b["fc1"](f)) * b["fc3"](f)
+            else:
+                h = b["fc1"](f)
+                h = new_gelu(h) if c["mlp"] == "gelu" else F.relu(h) if c["mlp"] == "relu" else F.relu(h).square()
+            x = x + b["fc2"](h)
+        if c["final_norm"]:
+            x = self._n(self.nf, x)
+        return self.lm_head(x)
+
+
 # ----------------------------------------------------------------------------- the zoo (~50k params each)
 V, T = 27, 16
 ZOO = {
@@ -313,6 +391,45 @@ ZOO = {
     "llama":    lambda: Llama(V, T, n_layer=4, n_embd=32, n_head=4, n_kv_head=2, hidden=96),
     "nanochat": lambda: NanoChat(V, T, n_layer=4, n_embd=32, n_head=4, n_kv_head=2),
 }
+
+
+def source_init(model):
+    """Initialise as the source repository does (makemore models keep PyTorch's default, as makemore does);
+    the Ladder uses one scheme for every variant (minGPT / llama2.c style) so that only the architecture changes."""
+    L = lambda: len(model.h) if hasattr(model, "h") else len(model.layers)
+
+    def gpt_style(proj_names):
+        for mod in model.modules():
+            if isinstance(mod, (nn.Linear, nn.Embedding)):
+                nn.init.normal_(mod.weight, 0.0, 0.02)
+                if getattr(mod, "bias", None) is not None:
+                    nn.init.zeros_(mod.bias)
+        for pn, p in model.named_parameters():
+            if any(pn.endswith(f"{x}.weight") for x in proj_names):
+                nn.init.normal_(p, 0.0, 0.02 / math.sqrt(2 * L()))
+
+    with torch.no_grad():
+        if isinstance(model, GPT2):                       # minGPT / nanoGPT
+            gpt_style(["c_proj", "mlp_proj"])
+        elif isinstance(model, Llama):                    # llama2.c (scales w3 and wo)
+            gpt_style(["w3", "wo"])
+        elif isinstance(model, Ladder):
+            gpt_style(["wo", "fc2"])
+        elif isinstance(model, MicroGPT):                 # microgpt: every matrix N(0, 0.08)
+            for p in model.parameters():
+                nn.init.normal_(p, 0.0, 0.08)
+        elif isinstance(model, NanoChat):                 # nanochat gpt.py init_weights
+            C = model.wte.weight.shape[1]
+            s = 3 ** 0.5 * C ** -0.5
+            nn.init.normal_(model.wte.weight, 0.0, 0.8)
+            nn.init.normal_(model.lm_head.weight, 0.0, 0.001)
+            for b in model.h:
+                for k in ("c_q", "c_k", "c_v"):
+                    nn.init.uniform_(b[k].weight, -s, s)
+                nn.init.uniform_(b["c_fc"].weight, -0.4 * s, 0.4 * s)
+                nn.init.zeros_(b["c_proj"].weight)
+                nn.init.zeros_(b["mlp_proj"].weight)
+    return model
 
 
 def n_params(model):

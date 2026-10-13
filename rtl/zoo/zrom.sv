@@ -24,7 +24,7 @@ module zrom #(
 );
   logic [WIDTH-1:0] mem [DEPTH];
 
-  initial $readmemh(INIT, mem);
+  initial if (INIT != "") $readmemh(INIT, mem);    // INIT = "": loaded through the write port
 
   always_ff @(posedge clk) begin
     if (LOADABLE && we) mem[waddr] <= wdata;

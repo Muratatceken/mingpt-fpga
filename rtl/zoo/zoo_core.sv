@@ -34,7 +34,8 @@ module zoo_core
 #(
   parameter string MEM_DIR    = MEM_PATH,
   parameter bit    SPECIALIZE = 1'b0,     // 1: drop the units this model does not use (OPS_USED)
-  parameter bit    LOADABLE   = 1'b0      // 1: model memories are RAMs filled through the ld_* port
+  parameter bit    LOADABLE   = 1'b0,     // 1: model memories are RAMs filled through the ld_* port
+  parameter bit    PRELOAD    = 1'b1      // 0: model memories start empty (must be loaded via ld_*)
 ) (
   input  logic               clk,
   input  logic               rst_n,
@@ -53,6 +54,11 @@ module zoo_core
 );
   localparam int LP = $clog2(P);
   localparam logic [15:0] EN = SPECIALIZE ? OPS_USED : 16'hFFFF;   // enabled opcodes (GEMV always)
+  localparam string F_PROG = PRELOAD ? {MEM_DIR, "/prog.mem"}    : "";
+  localparam string F_W    = PRELOAD ? {MEM_DIR, "/weights.mem"} : "";
+  localparam string F_PRM  = PRELOAD ? {MEM_DIR, "/params.mem"}  : "";
+  localparam string F_TAB  = PRELOAD ? {MEM_DIR, "/tables.mem"}  : "";
+  localparam string F_LUT  = PRELOAD ? {MEM_DIR, "/luts.mem"}    : "";
 
   localparam logic [7:0] OP_END = 8'd0, OP_EMB16 = 8'd1, OP_EMB8 = 8'd2, OP_EMBWIN = 8'd3,
                          OP_TABLOGIT = 8'd4, OP_HRESET = 8'd5, OP_NORM = 8'd6, OP_GEMV = 8'd7,
@@ -196,19 +202,19 @@ module zoo_core
   logic [PA_W-1:0]  p_a;   logic [63:0]      p_d;
   logic [TA_W-1:0]  t_a;   logic [TAB_W-1:0] t_d;
   logic [LUA_W-1:0] lu_a;  logic [7:0]       lu_d;
-  zrom #(.WIDTH(256),   .DEPTH(PROG_DEPTH), .AW(PC_W),  .INIT({MEM_DIR, "/prog.mem"}),    .LOADABLE(LOADABLE))
+  zrom #(.WIDTH(256),   .DEPTH(PROG_DEPTH), .AW(PC_W),  .INIT(F_PROG), .LOADABLE(LOADABLE))
     u_prog (.clk, .addr(pc), .dout(prog_dout),
             .we(ld_we && ld_sel == 3'd0), .waddr(PC_W'(ld_addr)), .wdata(ld_data));
-  zrom #(.WIDTH(8*P),   .DEPTH(W_DEPTH),    .AW(WA_W),  .INIT({MEM_DIR, "/weights.mem"}), .LOADABLE(LOADABLE))
+  zrom #(.WIDTH(8*P),   .DEPTH(W_DEPTH),    .AW(WA_W),  .INIT(F_W),    .LOADABLE(LOADABLE))
     u_w    (.clk, .addr(w_a), .dout(w_d),
             .we(ld_we && ld_sel == 3'd1), .waddr(WA_W'(ld_addr)), .wdata(ld_data[8*P-1:0]));
-  zrom #(.WIDTH(64),    .DEPTH(PRM_DEPTH),  .AW(PA_W),  .INIT({MEM_DIR, "/params.mem"}),  .LOADABLE(LOADABLE))
+  zrom #(.WIDTH(64),    .DEPTH(PRM_DEPTH),  .AW(PA_W),  .INIT(F_PRM),  .LOADABLE(LOADABLE))
     u_p    (.clk, .addr(p_a), .dout(p_d),
             .we(ld_we && ld_sel == 3'd2), .waddr(PA_W'(ld_addr)), .wdata(ld_data[63:0]));
-  zrom #(.WIDTH(TAB_W), .DEPTH(TAB_DEPTH),  .AW(TA_W),  .INIT({MEM_DIR, "/tables.mem"}),  .LOADABLE(LOADABLE))
+  zrom #(.WIDTH(TAB_W), .DEPTH(TAB_DEPTH),  .AW(TA_W),  .INIT(F_TAB),  .LOADABLE(LOADABLE))
     u_t    (.clk, .addr(t_a), .dout(t_d),
             .we(ld_we && ld_sel == 3'd3), .waddr(TA_W'(ld_addr)), .wdata(ld_data[TAB_W-1:0]));
-  zrom #(.WIDTH(8),     .DEPTH(LUT_DEPTH),  .AW(LUA_W), .INIT({MEM_DIR, "/luts.mem"}),    .LOADABLE(LOADABLE))
+  zrom #(.WIDTH(8),     .DEPTH(LUT_DEPTH),  .AW(LUA_W), .INIT(F_LUT),  .LOADABLE(LOADABLE))
     u_lut  (.clk, .addr(lu_a), .dout(lu_d),
             .we(ld_we && ld_sel == 3'd4), .waddr(LUA_W'(ld_addr)), .wdata(ld_data[7:0]));
 
@@ -558,6 +564,34 @@ module zoo_core
       endcase
     end
   end
+
+`ifndef SYNTHESIS
+  // ======================================================================
+  // simulation-only checks (Verilator --assert): addresses in range, no
+  // INT32 accumulator overflow, step position inside the context
+  // ======================================================================
+  function automatic logic acc_overflow(input logic signed [31:0] a, input logic signed [7:0] w,
+                                        input logic signed [7:0] x);
+    logic signed [63:0] s;
+    s = 64'(a) + 64'(w) * 64'(x);
+    return (s > 64'sd2147483647) || (s < -64'sd2147483648);
+  endfunction
+
+  always @(posedge clk) if (rst_n) begin
+    if (st == S_IDLE && start)
+      assert (int'(pos) < T) else $error("position %0d outside the context T=%0d", pos, T);
+    if (|vw_be) assert (int'(vw_a) < NBUF * VW) else $error("vector write address %0d out of range", vw_a);
+    if (r_we)   assert (int'(r_wa) < C)         else $error("residual write address %0d out of range", r_wa);
+    if (l_we)   assert (int'(l_wa) < V)         else $error("logit write address %0d out of range", l_wa);
+    if (kv_we)  assert (int'(kv_wa) < KDEP)     else $error("KV write address %0d out of range", kv_wa);
+    if (st == S_EXEC && f_op == OP_ATTN)
+      assert (int'(kv_ra) < KDEP) else $error("KV read address %0d out of range", kv_ra);
+    if (a_v)
+      for (int p = 0; p < P; p++)
+        assert (!acc_overflow(a_first ? 32'sd0 : acc[p], $signed(w_d[8*p +: 8]), a_x))
+          else $error("GEMV accumulator overflow (lane %0d)", p);
+  end
+`endif
 
   // ======================================================================
   // sequencer

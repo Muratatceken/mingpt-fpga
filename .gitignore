@@ -9,3 +9,7 @@ __pycache__/
 .Xil/
 xsim.dir/
 *.wdb
+
+# TinyStories (downloaded, ~1.5 GB) and per-seed checkpoints
+data/tinystories/
+model/zoo/runs/

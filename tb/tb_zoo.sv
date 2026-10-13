@@ -9,7 +9,11 @@
 // own argmax is fed back as the next token and every token must equal the one
 // produced by IntRunner; the tokens are written to build/zoo/<model>_gen_rtl.txt.
 //
-// Plusargs: +NSEQ=<n> (default: all sequences in tv.txt)   +GEN
+// Plusargs: +NSEQ=<n> (default: all sequences)  +TV=<file> (default MEM_PATH/tv.txt)  +GEN
+// Parameters: SPECIALIZE   only the units this model uses
+//             LOADTEST     memories start empty and are written through the
+//                          ld_* port from the .mem files before the test
+// `define XCHECK: every logit is also checked for X/Z (4-state simulators)
 // ---------------------------------------------------------------------------
 `timescale 1ns / 1ps
 
@@ -17,6 +21,7 @@ module tb_zoo;
   import zoo_pkg::*;
 
   parameter bit SPECIALIZE = 1'b0;   // -GSPECIALIZE=1: only the units this model uses
+  parameter bit LOADTEST   = 1'b0;   // -GLOADTEST=1: load the model through the ld_* port
 
   logic clk = 1'b0, rst_n = 1'b0;
   always #5 clk = ~clk;   // 100 MHz
@@ -28,12 +33,43 @@ module tb_zoo;
   logic [LA_W-1:0]     l_addr = '0;
   logic signed [15:0]  l_data;
   logic [7:0]          dbg_op;
-  logic                ld_we = 1'b0;      // memories are preloaded from mem/zoo/<model>/
+  logic                ld_we = 1'b0;
   logic [2:0]          ld_sel = '0;
   logic [19:0]         ld_addr = '0;
   logic [255:0]        ld_data = '0;
 
-  zoo_core #(.SPECIALIZE(SPECIALIZE)) dut (.*);
+  zoo_core #(.SPECIALIZE(SPECIALIZE), .LOADABLE(LOADTEST), .PRELOAD(!LOADTEST)) dut (.*);
+
+  // ---- model loading through the ld_* port (what the PS does on the board) ----
+  logic [255:0]     m_prog [PROG_DEPTH];
+  logic [8*P-1:0]   m_w    [W_DEPTH];
+  logic [63:0]      m_prm  [PRM_DEPTH];
+  logic [TAB_W-1:0] m_tab  [TAB_DEPTH];
+  logic [7:0]       m_lut  [LUT_DEPTH];
+
+  task automatic ld_word(input int sel, input int addr, input logic [255:0] data);
+    @(posedge clk);
+    ld_we   <= 1'b1;
+    ld_sel  <= 3'(sel);
+    ld_addr <= 20'(addr);
+    ld_data <= data;
+    @(posedge clk);
+    ld_we   <= 1'b0;
+  endtask
+
+  task automatic load_model();
+    $readmemh({MEM_PATH, "/prog.mem"}, m_prog);
+    $readmemh({MEM_PATH, "/weights.mem"}, m_w);
+    $readmemh({MEM_PATH, "/params.mem"}, m_prm);
+    $readmemh({MEM_PATH, "/tables.mem"}, m_tab);
+    $readmemh({MEM_PATH, "/luts.mem"}, m_lut);
+    for (int a = 0; a < PROG_DEPTH; a++) ld_word(0, a, m_prog[a]);
+    for (int a = 0; a < W_DEPTH; a++)    ld_word(1, a, 256'(m_w[a]));
+    for (int a = 0; a < PRM_DEPTH; a++)  ld_word(2, a, 256'(m_prm[a]));
+    for (int a = 0; a < TAB_DEPTH; a++)  ld_word(3, a, 256'(m_tab[a]));
+    for (int a = 0; a < LUT_DEPTH; a++)  ld_word(4, a, 256'(m_lut[a]));
+    $display("model loaded through ld_*: %0d words", PROG_DEPTH + W_DEPTH + PRM_DEPTH + TAB_DEPTH + LUT_DEPTH);
+  endtask
 
   longint cyc = 0;
   always @(posedge clk) cyc <= cyc + 1;
@@ -53,8 +89,10 @@ module tb_zoo;
     endcase
   endfunction
 
-  int fd, rc, nseq, nv, len, tok, maxseq;
+  int fd = 0, rc = 0, nseq = 0, nv = 0, len = 0, tok = 0, maxseq = 0, xerr = 0;   // initialised: sv2v
+  string tvfile;                                                                  // keeps them variables
   int gold [V];
+  initial for (int k = 0; k < V; k++) gold[k] = 0;
   int errors = 0, steps = 0, bad_steps = 0;
   longint t0, step_cyc, tot_cyc = 0, max_cyc = 0, min_cyc = 64'h7fffffff;
 
@@ -73,7 +111,7 @@ module tb_zoo;
 
   // closed-loop greedy generation, checked token by token
   task automatic generate_check();
-    int gfd, ofd, n, tk, exp_tok, best, bi, ok;
+    int gfd = 0, ofd = 0, n = 0, tk = 0, exp_tok = 0, best = 0, bi = 0, ok = 0;
     longint gcyc;
     gfd = $fopen({MEM_PATH, "/gen.txt"}, "r");
     if (gfd == 0) begin $display("GEN: no %s/gen.txt", MEM_PATH); return; end
@@ -108,8 +146,9 @@ module tb_zoo;
 
   initial begin
     if (!$value$plusargs("NSEQ=%d", maxseq)) maxseq = 1 << 30;
-    fd = $fopen({MEM_PATH, "/tv.txt"}, "r");
-    if (fd == 0) $fatal(1, "cannot open %s/tv.txt", MEM_PATH);
+    if (!$value$plusargs("TV=%s", tvfile)) tvfile = {MEM_PATH, "/tv.txt"};
+    fd = $fopen(tvfile, "r");
+    if (fd == 0) $fatal(1, "cannot open %s", tvfile);
     rc = $fscanf(fd, "%d %d", nseq, nv);
     if (nv != V) $fatal(1, "tv.txt has V=%0d, package V=%0d", nv, V);
     if (nseq > maxseq) nseq = maxseq;
@@ -117,6 +156,7 @@ module tb_zoo;
     repeat (4) @(posedge clk);
     rst_n <= 1'b1;
     @(posedge clk);
+    if (LOADTEST) load_model();
 
     for (int s = 0; s < nseq; s++) begin
       rc = $fscanf(fd, "%d", len);
@@ -132,6 +172,9 @@ module tb_zoo;
         for (int k = 0; k < V; k++) begin
           l_addr = LA_W'(k);
           #1;
+`ifdef XCHECK
+          if ($isunknown(l_data)) xerr++;
+`endif
           if (int'(l_data) != gold[k]) begin
             if (errors < 10)
               $display("MISMATCH seq %0d t %0d logit %0d: rtl %0d gold %0d", s, tt, k, l_data, gold[k]);
@@ -158,6 +201,10 @@ module tb_zoo;
              NAME, steps, bad_steps, errors, tot_cyc / steps, min_cyc, max_cyc);
     for (int k = 0; k < 17; k++)
       if (prof[k] != 0) $display("PROF %s %s %0d", NAME, op_name(k), prof[k]);
+`ifdef XCHECK
+    $display("XCHECK %s unknown_logits %0d", NAME, xerr);
+    if (xerr != 0) errors += xerr;
+`endif
     if (errors == 0) $display("PASS: RTL is bit-exact with the integer reference");
     else             $display("FAIL: %0d logit mismatches in %0d steps", errors, bad_steps);
     if ($test$plusargs("GEN")) generate_check();

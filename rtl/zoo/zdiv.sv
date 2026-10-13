@@ -31,6 +31,13 @@ module zdiv #(
   assign r_sh = {r[W-1:0], q[QB-1]};
   assign quo  = W'(q);
 
+`ifndef SYNTHESIS
+  // the skip-ahead is exact only if the quotient fits in QB bits
+  always @(posedge clk)
+    if (rst_n && start)
+      assert ((num >> QB) < den) else $error("zdiv: quotient does not fit in %0d bits (num %0h den %0h)", QB, num, den);
+`endif
+
   always_ff @(posedge clk) begin
     done <= 1'b0;
     if (!rst_n) begin

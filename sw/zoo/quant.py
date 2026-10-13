@@ -93,6 +93,10 @@ def quantize(prog, rec):
     q.ops = [dict(o) for o in prog.ops]
     rmax = rec.get(("R",), 0.0)
     q.FR = int(math.floor(math.log2(32767.0 / rmax))) if rmax > 0 else 12
+    for o in prog.ops:                     # a NORM writing the residual needs 2^(15-FR) > its bound
+        if o["op"] == "NORM" and o["dst"] == "R":
+            bound = math.sqrt(o["n"] - 1) if o["kind"] == "ln" else math.sqrt(o["n"])
+            q.FR = min(q.FR, math.ceil(15 - math.log2(bound)) - 1)
     sR = 2.0 ** -q.FR
     lmax = rec[("L",)]
     q.s_logit = lmax / 32767.0

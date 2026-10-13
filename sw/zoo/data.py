@@ -1,7 +1,7 @@
 """
 names.txt dataset exactly as in makemore: vocabulary = 26 letters + token 0 (start/end),
 x = [0, w...] padded with 0, y = [w..., 0] padded with -1, block size = max length + 1 = 16.
-Split: torch.manual_seed(3407); randperm; last 1000 names are the test set.
+Split: torch.manual_seed(3407); randperm; last 1000 names = test, the 1000 before = validation.
 """
 import os
 
@@ -20,7 +20,8 @@ def load(seed=3407):
     torch.manual_seed(seed)
     rp = torch.randperm(len(words)).tolist()
     n_test = min(1000, int(len(words) * 0.1))
-    train = [words[i] for i in rp[:-n_test]]
+    train = [words[i] for i in rp[:-2 * n_test]]                 # validation: the 1000 names before the
+    val = [words[i] for i in rp[-2 * n_test:-n_test]]            # test set (test set unchanged)
     test = [words[i] for i in rp[-n_test:]]
 
     def tensors(ws):
@@ -35,5 +36,5 @@ def load(seed=3407):
 
     itos = {i: c for c, i in stoi.items()}
     itos[0] = "."
-    return dict(train=tensors(train), test=tensors(test), test_words=test,
+    return dict(train=tensors(train), val=tensors(val), test=tensors(test), test_words=test,
                 stoi=stoi, itos=itos, V=len(chars) + 1, T=T)

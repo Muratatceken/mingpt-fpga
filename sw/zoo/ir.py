@@ -30,7 +30,7 @@ import math
 import numpy as np
 import torch
 
-from models import Bigram, MLP, RNN, BoW, GPT2, MicroGPT, Llama, NanoChat
+from models import Bigram, MLP, RNN, BoW, GPT2, MicroGPT, Llama, NanoChat, Ladder
 
 ACTS = {
     "tanh": np.tanh,
@@ -75,7 +75,7 @@ def fold_affine(W, b, gamma, beta=None):
 
 
 def compile_bigram(m):
-    p = Program("bigram", *m.logits.shape[:1], 16)
+    p = Program("bigram", *m.logits.shape[:1], getattr(m, "T", 16))
     p.V = m.logits.shape[0]
     p.tab["logit"] = npw(m.logits)
     p.add("TABLOGIT", table="logit")
@@ -86,7 +86,7 @@ def compile_mlp(m):
     p = Program("mlp", m.V, m.T)
     p.tab["wte"] = npw(m.wte.weight)
     n_e = m.wte.weight.shape[1]
-    p.add("EMBWIN", table="wte", k=m.T, dst="A", n=n_e)
+    p.add("EMBWIN", table="wte", k=m.k, dst="A", n=n_e)
     p.add("GEMV", lin=p.linear("fc1", npw(m.fc1.weight), npw(m.fc1.bias)), srcs=["A"], dst="B", mode="lut", act="tanh")
     p.add("GEMV", lin=p.linear("fc2", npw(m.fc2.weight), npw(m.fc2.bias)), srcs=["B"], dst="L", mode="logit")
     return p
@@ -94,7 +94,7 @@ def compile_mlp(m):
 
 def compile_rnn(m):
     name = m.cell
-    p = Program(name, m.lm_head.weight.shape[0], 16)
+    p = Program(name, m.lm_head.weight.shape[0], getattr(m, "T", 16))
     p.tab["wte"] = npw(m.wte.weight)
     p.tab["h0"] = npw(m.start)[0]
     p.add("HRESET", table="h0")
@@ -243,7 +243,63 @@ def compile_nanochat(m):
     return p
 
 
+def compile_ladder(m):
+    """Any Ladder configuration; norm gains/biases are folded into the following linear layers."""
+    c = m.cfg
+    C = m.wte.weight.shape[1]
+    nh, nkv, dh, eps = m.n_head, m.n_kv, m.dh, c["eps"]
+    p = Program("ladder", m.lm_head.weight.shape[0], m.T)
+    p.n_layer = len(m.h)
+    p.tab["wte"] = npw(m.wte.weight)
+    if c["pos"] == "learned":
+        p.tab["wpe"] = npw(m.wpe.weight)
+        p.add("EMB16", tok="wte", pos="wpe")
+    else:
+        p.add("EMB16", tok="wte")
+    if c["emb_norm"]:
+        p.add("NORM", kind="rms", src="R", dst="R", n=C, eps=eps)
+    kind = "ln" if c["norm"] == "ln" else "rms"
+
+    def aff(norm):                       # (gain, bias) of a norm module, ones/None if parameter-free
+        g = npw(norm.weight) if hasattr(norm, "weight") else np.ones(C)
+        return g, (npw(norm.bias) if getattr(norm, "bias", None) is not None else None)
+
+    def lin(mod, norm=None, scale=1.0):
+        W, b = npw(mod.weight), (npw(mod.bias) if mod.bias is not None else None)
+        if norm is not None:
+            W, b = fold_affine(W, b, *aff(norm))
+        return W * scale, (None if b is None else b * scale)
+
+    rope = dict(rope="inter", rope_half="half").get(c["pos"])
+    qs = 1.0 if c["qk_norm"] else 1.0 / math.sqrt(dh)
+    alpha = 1.2 * 1.2 / math.sqrt(dh) if c["qk_norm"] else 1.0
+    for l, b in enumerate(m.h):
+        p.add("NORM", kind=kind, src="R", dst="A", n=C, eps=eps)
+        _attn_block(p, l, "A", *lin(b["wq"], b["n1"], qs), *lin(b["wk"], b["n1"]), *lin(b["wv"], b["n1"]),
+                    nh, nkv, dh, rope=rope, qknorm=c["qk_norm"], alpha=alpha, eps=eps)
+        p.add("GEMV", lin=p.linear(f"l{l}.wo", *lin(b["wo"])), srcs=["B"], dst="R", mode="radd")
+        p.add("NORM", kind=kind, src="R", dst="A", n=C, eps=eps)
+        if c["mlp"] == "swiglu":
+            p.add("GEMV", lin=p.linear(f"l{l}.fc1", *lin(b["fc1"], b["n2"])), srcs=["A"], dst="F", mode="lut",
+                  act="silu")
+            p.add("GEMV", lin=p.linear(f"l{l}.fc3", *lin(b["fc3"], b["n2"])), srcs=["A"], dst="G", mode="o8")
+            p.add("MUL", a="F", b="G", dst="F")
+        else:
+            p.add("GEMV", lin=p.linear(f"l{l}.fc1", *lin(b["fc1"], b["n2"])), srcs=["A"], dst="F", mode="lut",
+                  act=c["mlp"])
+        p.add("GEMV", lin=p.linear(f"l{l}.fc2", *lin(b["fc2"])), srcs=["F"], dst="R", mode="radd")
+    if c["final_norm"]:
+        p.add("NORM", kind=kind, src="R", dst="A", n=C, eps=eps)
+        p.add("GEMV", lin=p.linear("head", *lin(m.lm_head, m.nf)), srcs=["A"], dst="L", mode="logit")
+    else:
+        p.add("REQ", src="R", dst="A")
+        p.add("GEMV", lin=p.linear("head", *lin(m.lm_head)), srcs=["A"], dst="L", mode="logit")
+    return p
+
+
 def compile_model(name, m):
+    if isinstance(m, Ladder):
+        return compile_ladder(m)
     if isinstance(m, Bigram):
         return compile_bigram(m)
     if isinstance(m, MLP):
