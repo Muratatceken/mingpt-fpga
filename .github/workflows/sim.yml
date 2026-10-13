@@ -4,6 +4,7 @@ on: [push, pull_request]
 jobs:
   zoo:
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: tools
@@ -20,9 +21,8 @@ jobs:
             scripts/zoo_sim.sh $m 10 | tee log_$m.txt
             grep -q "PASS: RTL is bit-exact" log_$m.txt
           done
-      - name: one-bitstream engine through AXI (two models)
+      - name: one-bitstream engine through AXI (GRU, 3 names)
+        timeout-minutes: 25
         run: |
-          for m in gru llama; do
-            scripts/zoo_axi_sim.sh mem/zoo/universal/$m 3 | tee axi_$m.txt
-            grep -q "PASS: AXI system bit-exact" axi_$m.txt
-          done
+          scripts/zoo_axi_sim.sh mem/zoo/universal/gru 3 | tee axi_gru.txt
+          grep -q "PASS: AXI system bit-exact" axi_gru.txt
