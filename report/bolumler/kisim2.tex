@@ -1,5 +1,5 @@
 % ===========================================================================
-\section{Tasarım hedefleri ve kısıtları}
+\section{Tasarım hedefleri ve kısıtları}\label{sec:hedef}
 % ===========================================================================
 
 Donanımın amacı, Bölüm~\ref{sec:kv}'deki KV önbellekli decode adımını yalnızca tamsayı aritmetiğiyle ve bütün ağırlıkları çip üzerinde tutarak gerçekleştirmektir. Bu yapılırken bir yazılım referansıyla bit düzeyinde eşdeğerlik korunur.
@@ -408,7 +408,7 @@ Bir GEMV çağrısı $(n_{out}/P)\cdot n_{in} + 14$ çevrim sürer. Ek 14 çevri
 Tüm token için ideal toplam $3\cdot3456 + 48 = 10\,416$ çevrimdir; bu, ağırlık ROM'unun derinliğine eşittir, çünkü motor her çevrimde bir ROM kelimesi tüketir.
 
 % ===========================================================================
-\section{LayerNorm ve dikkat birimleri}
+\section{LayerNorm ve dikkat birimleri}\label{sec:lnatt}
 % ===========================================================================
 
 LayerNorm ve dikkat hesap yükünün küçük bir kısmını oluşturur. Bu yüzden ikisi de çevrim başına bir işlem yapan ardışık birimler olarak tasarlanmıştır: LN başına 234 çevrim, dikkat için katman başına ortalama 752 çevrim.
@@ -531,9 +531,9 @@ Bir token ortalama 14\,544 çevrimde işlenir. Bu, 100\,MHz'de 145\,µs/token, y
   \label{fig:profil}
 \end{figure}
 
-MLP'nin iki katmanı (FC ve MPROJ) tek başına sürenin yaklaşık yarısını alır; bu oran Bölüm~8'deki parametre dağılımıyla ($8C^2/12C^2$) uyumludur. Dikkat (\%15,5) ve LayerNorm (\%11,3) ardışık birimler oldukları için işlem paylarından (\%4'ün altında) daha fazla süre alır.
+MLP'nin iki katmanı (FC ve MPROJ) tek başına sürenin yaklaşık yarısını alır; bu oran Bölüm~\ref{sec:param}'deki parametre dağılımıyla ($8C^2/12C^2$) uyumludur. Dikkat (\%15,5) ve LayerNorm (\%11,3) ardışık birimler oldukları için işlem paylarından (\%4'ün altında) daha fazla süre alır.
 
-\paragraph{Analitik çevrim modeli.} Bölüm~\ref{sec:gemv} ve 16'daki çevrim sayıları birleştirilince, $t$ konumundaki bir tokenın süresi kapalı biçimde yazılabilir:
+\paragraph{Analitik çevrim modeli.} Bölüm~\ref{sec:gemv} ve~\ref{sec:lnatt}'daki çevrim sayıları birleştirilince, $t$ konumundaki bir tokenın süresi kapalı biçimde yazılabilir:
 \begin{equation}
 \begin{aligned}
   T_{token}(t) &= \underbrace{49}_{\mathrm{EMB}} + \underbrace{7\cdot234}_{\mathrm{LN}} + \underbrace{3\,(878+302+1166+1166)+62}_{\mathrm{GEMV}\,=\,10\,598} + \underbrace{9\,\big(33\,(t+1) + 53\big)}_{\text{dikkat}} + 1 \\
@@ -655,7 +655,7 @@ VCO frekansı, -1 hız sınıfı 7-serisi MMCM'nin 600--1200\,MHz aralığındad
 Bir çalıştırma 116,6 milyon çevrim sürer: 50\,MHz'de yaklaşık 2,3\,s, 100\,MHz'de 1,17\,s. Kart akışı iki komuttan oluşur: \code{scripts/vivado\_build\_pynq\_z2.tcl} sentez, yerleştirme, yönlendirme ve bitstream üretimini yapar ve kaynak, zamanlama, güç raporlarını yazar; \code{scripts/vivado\_program.tcl} kartı JTAG üzerinden programlar. Beklenen sonuç: LD4 yaklaşık 2,3\,s mavi yanar, sonra yeşil olur. Bu adımlar hazırdır, ancak raporun tarihinde henüz çalıştırılmamıştır.
 
 % ===========================================================================
-\section{Sınırlamalar ve gelecek çalışmalar}
+\section{Sınırlamalar ve gelecek çalışmalar}\label{sec:sinir}
 % ===========================================================================
 
 Mevcut tasarım, işlevsel doğruluğu kanıtlanmış bir temel sürümdür. Bir sonraki adım onu kart üzerinde çalıştırmak, ardından ölçerek iyileştirmektir.

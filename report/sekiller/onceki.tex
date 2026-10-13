@@ -1,0 +1,44 @@
+% Dikkat öncesi dil modelleri (makemore)
+\begin{tikzpicture}[x=1cm,y=1cm,
+  mb/.style={box, minimum width=27mm, minimum height=7.5mm, inner ysep=1.5pt, font=\sffamily\scriptsize},
+  tb/.style={accbox, minimum width=28mm, text width=28mm, align=flush center, minimum height=11mm, inner sep=2pt, font=\sffamily\scriptsize},
+  tok/.style={membox, minimum width=7mm, minimum height=6mm, inner sep=1pt, font=\sffamily\scriptsize}]
+  \foreach \x/\t in {0/Bigram, 3.4/{MLP (Bengio 2003)}, 6.8/RNN, 10.2/GRU, 13.6/BoW} { \node[hdr] at (\x,4.65) {\t}; }
+  % ---- Bigram ----
+  \node[tok] (b0) at (0,0) {$x_t$};
+  \node[tb] (bw) at (0,2.2) {tablo okuması\\$z = W[x_t]$, \; $V \times V$};
+  \node[mb] (bz) at (0,3.7) {logit $z$};
+  \draw[flow] (b0) -- (bw); \draw[flow] (bw) -- (bz);
+  % ---- MLP ----
+  \node[tok] (m1) at (2.65,0) {$x_{t-2}$}; \node[tok] (m2) at (3.4,0) {$x_{t-1}$}; \node[tok] (m3) at (4.15,0) {$x_t$};
+  \node[mb] (me) at (3.4,1.0) {$e = [E x_{t-2}; E x_{t-1}; E x_t]$};
+  \node[tb] (mh) at (3.4,2.2) {$h = \tanh(W_1 e + b_1)$};
+  \node[mb] (mz) at (3.4,3.7) {$z = W_2 h + b_2$};
+  \foreach \i in {1,2,3} { \draw[flow] (m\i) -- (m\i |- me.south); }
+  \draw[flow] (me) -- (mh); \draw[flow] (mh) -- (mz);
+  % ---- RNN ----
+  \node[tok] (r0) at (6.45,0) {$x_t$};
+  \node[mb, minimum width=20mm] (re) at (6.45,0.95) {$E x_t$};
+  \node[tb] (rh) at (6.8,2.2) {$u_t = [E x_t;\, h_{t-1}]$\\$h_t = \tanh(W u_t + b)$};
+  \node[mb] (rz) at (6.8,3.7) {$z = W_o h_t + b_o$};
+  \draw[flow] (r0) -- (re); \draw[flow] (re) -- (re |- rh.south); \draw[flow] (rh) -- (rz);
+  \draw[flow, accent] (rh.east) -- ++(0.25,0) |- ([xshift=9mm]rh.south |- 0,1.5) -- ([xshift=9mm]rh.south);
+  % ---- GRU ----
+  \node[tok] (g0) at (9.85,0) {$x_t$};
+  \node[mb, minimum width=20mm] (ge) at (9.85,0.95) {$E x_t$};
+  \node[tb] (gh) at (10.2,2.2) {kapılar $r, z = \sigma(\cdot)$\\aday $\bar h = \tanh(\cdot)$\\$h_t = (1{-}z)\,h_{t-1} + z\,\bar h$};
+  \node[mb] (gz) at (10.2,3.7) {$z = W_o h_t + b_o$};
+  \draw[flow] (g0) -- (ge); \draw[flow] (ge) -- (ge |- gh.south); \draw[flow] (gh) -- (gz);
+  \draw[flow, accent] (gh.east) -- ++(0.25,0) |- ([xshift=9mm]gh.south |- 0,1.5) -- ([xshift=9mm]gh.south);
+  % ---- BoW ----
+  \node[tok] (w1) at (12.9,0) {$x_0$}; \node[lbl] at (13.6,0) {$\cdots$}; \node[tok] (w3) at (14.3,0) {$x_t$};
+  \node[mb] (we) at (13.6,1.0) {$x_j = E x_j + P_j$};
+  \node[tb] (wa) at (13.6,2.2) {$x \mathrel{+}= \tfrac{1}{t+1}\sum_{j\le t} x_j$\\$x \mathrel{+}= \mathrm{MLP}_{\tanh}(x)$};
+  \node[mb] (wz) at (13.6,3.7) {$z = W_o x + b_o$};
+  \draw[flow] (w1) -- (w1 |- we.south); \draw[flow] (w3) -- (w3 |- we.south);
+  \draw[flow] (we) -- (wa); \draw[flow] (wa) -- (wz);
+  % çıkarım belleği
+  \foreach \x/\t in {0/{durum: yok}, 3.4/{durum: son $k$ token}, 6.8/{durum: $h$ (sabit)}, 10.2/{durum: $h$ (sabit)}, 13.6/{durum: $\sum_j x_j$ (sabit)}} {
+    \node[lbl, text=warm] at (\x,-0.7) {\t};
+  }
+\end{tikzpicture}

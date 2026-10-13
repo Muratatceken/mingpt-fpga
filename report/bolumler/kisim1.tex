@@ -1,5 +1,5 @@
 % ===========================================================================
-\section{Giriş: dil modelleme ve minGPT}
+\section{Giriş: dil modelleme ve minGPT}\label{sec:giris}
 % ===========================================================================
 
 Bir dil modeli, sonlu bir sözlük $\mathcal{V}$ üzerindeki token dizilerine olasılık atayan bir fonksiyondur. Olasılığın zincir kuralı, bu ortak dağılımı koşullu dağılımların çarpımına kesin olarak ayırır:
@@ -71,7 +71,7 @@ minGPT'nin gövdesi $L$ adet özdeş transformer bloğunun art arda bağlanması
 \begin{equation}
   X^{(L)} = X^{(0)} + \sum_{\ell=1}^{L} \left[ \Delta^{\mathrm{attn}}_{\ell} + \Delta^{\mathrm{mlp}}_{\ell} \right].
 \end{equation}
-Bu yapının iki sonucu vardır. Birincisi, $\partial X''/\partial X = I + (\text{alt katman türevleri})$ olduğu için birim matris terimi gradyanın derin ağlarda sönmeden geri yayılmasını sağlar \cite{he16}. İkincisi donanımla ilgilidir: akış, ağın en geniş dinamik aralığa sahip tensörüdür, çünkü düzeltmeler birikir. Kısım~II'de bu yüzden artık akış INT8 yerine INT16 ile temsil edilecektir.
+Bu yapının iki sonucu vardır. Birincisi, $\partial X''/\partial X = I + (\text{alt katman türevleri})$ olduğu için birim matris terimi gradyanın derin ağlarda sönmeden geri yayılmasını sağlar \cite{he16}. İkincisi donanımla ilgilidir: akış, ağın en geniş dinamik aralığa sahip tensörüdür, çünkü düzeltmeler birikir. Kısım~III'te bu yüzden artık akış INT8 yerine INT16 ile temsil edilecektir.
 
 \paragraph{Pre-LN ve post-LN.} Orijinal transformer'da LayerNorm toplamadan sonra uygulanır (post-LN). Xiong ve ark.\ \cite{xiong20}, pre-LN yapıda öğrenme oranı ısınması (\emph{warm-up}) olmadan da kararlı eğitim yapılabildiğini göstermiştir. Pre-LN'de artık yol üzerinde hiçbir normalizasyon bulunmaz.
 
@@ -81,7 +81,7 @@ Bu yapının iki sonucu vardır. Birincisi, $\partial X''/\partial X = I + (\tex
   \sigma^2 = \frac{1}{C}\sum_{i=1}^{C} (x_i - \mu)^2, \qquad
   \mathrm{LN}(x)_i = \gamma_i\, \frac{x_i - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta_i .
 \end{equation}
-Burada $\gamma, \beta \in \mathbb{R}^C$ öğrenilebilir parametrelerdir ve $\epsilon = 10^{-5}$'tir. Normalize edilmiş ara vektörü $\hat z = (x-\mu)/\sqrt{\sigma^2+\epsilon}$ ile gösterelim. Kısım~II'de kullanılacak üç özellik şunlardır:
+Burada $\gamma, \beta \in \mathbb{R}^C$ öğrenilebilir parametrelerdir ve $\epsilon = 10^{-5}$'tir. Normalize edilmiş ara vektörü $\hat z = (x-\mu)/\sqrt{\sigma^2+\epsilon}$ ile gösterelim. Kısım~III'te kullanılacak üç özellik şunlardır:
 \begin{itemize}
   \item \textbf{Ölçek ve kaydırma değişmezliği:} $a>0$ ve $b$ sabiti için $\hat z(a x + b) \approx \hat z(x)$ olur ($\epsilon$ ihmal edilince eşitlik tamdır). Girdinin sabit nokta ölçeği bu yüzden normalizasyon sonucunu etkilemez.
   \item \textbf{Küre üzerinde olma:} $\sum_i \hat z_i = 0$ ve $\sum_i \hat z_i^2 \approx C$; yani $\hat z$, yarıçapı $\sqrt{C}$ olan bir kürenin üzerindedir.
@@ -277,7 +277,7 @@ Bu formda bütün doğrusal katmanlar matris-matris çarpımı (GEMM) yerine \te
 Önerme~\ref{on:nedensel} matematiksel bir garantidir. Ek olarak deneysel olarak da doğrulanmıştır: adım adım çalışan tamsayı modelin ürettiği tokenlar, minGPT'nin önbelleksiz \code{generate()} çıktısıyla 729 girdinin tamamında aynıdır.
 
 % ===========================================================================
-\section{Parametre ve işlem sayısı analizi}
+\section{Parametre ve işlem sayısı analizi}\label{sec:param}
 % ===========================================================================
 
 Bir minGPT modelinin parametre sayısı ve token başına işlem sayısı yalnızca $(L, C, V, T)$ boyutlarının kapalı bir fonksiyonudur. Bir bloktaki dört doğrusal katman ve iki LayerNorm şu parametreleri taşır:
@@ -320,7 +320,7 @@ minGPT başlatılırken ``number of parameters: 0.09M'' yazar; bu sayı \code{lm
 \paragraph{Ölçek karşılaştırması.} Aynı formüller GPT-2 small ($L=12$, $C=768$, $V=50\,257$, $T=1024$) için \code{lm\_head} hariç yaklaşık 124 milyon parametre verir (GPT-2'de \code{lm\_head} token gömmesiyle paylaşılır). Bu model INT8 ile bile yaklaşık 124\,MB tutar ve FPGA içindeki SRAM'e sığmaz; harici DRAM ve bant genişliği yönetimi gerektirir. Bu çalışmadaki tasarım ilkeleri aynı kalır; değişen, ağırlıkların nereden ve hangi hızla okunduğudur.
 
 % ===========================================================================
-\section{Deney görevi: sıralama}
+\section{Deney görevi: sıralama}\label{sec:deney}
 % ===========================================================================
 
 Model, minGPT'nin \code{demo.ipynb} örneğindeki sıralama görevinde eğitilmiştir: $\{0,1,2\}$ rakamlarından oluşan 6 uzunluğundaki bir diziyi küçükten büyüğe sıralamak. Eğitim sonunda model, olası $3^6 = 729$ girdinin tamamını doğru sıralar.
@@ -364,4 +364,15 @@ Model, minGPT'nin \code{demo.ipynb} örneğindeki sıralama görevinde eğitilmi
   \end{tabularx}
 \end{table}
 
-\paragraph{Sonuçlar.} Başlangıç kaybı $1{,}089$'dur ve rastgele tahminin kaybı olan $\ln 3 = 1{,}0986$'ya çok yakındır. Kayıp 500. iterasyonda $0{,}0104$'e, sonraki iterasyonlarda $10^{-3}$ mertebesine iner. Açgözlü kod çözmeyle model 729 girdinin \textbf{tamamını} doğru sıralar. Eğitilmiş ağırlıklar depoda \code{model/gpt\_sort.pt} dosyasında saklanır; böylece Kısım~II'deki bütün adımlar yeniden eğitim yapılmadan tekrarlanabilir.
+\paragraph{Sonuçlar.} Başlangıç kaybı $1{,}089$'dur ve rastgele tahminin kaybı olan $\ln 3 = 1{,}0986$'ya çok yakındır. Kayıp 500. iterasyonda $0{,}0104$'e, sonraki iterasyonlarda $10^{-3}$ mertebesine iner. Açgözlü kod çözmeyle model 729 girdinin \textbf{tamamını} doğru sıralar. Eğitilmiş ağırlıklar depoda \code{model/gpt\_sort.pt} dosyasında saklanır; böylece Kısım~III'teki bütün adımlar yeniden eğitim yapılmadan tekrarlanabilir.
+
+\paragraph{Model sıralamayı nasıl yapıyor? Dikkat haritaları.} Şekil~\ref{fig:harita}, eğitilmiş modelin \code{2 0 1 0 2 1} girdisini \code{0 0 1 1 2 2} olarak sıralarken her katmandaki her başın dikkat ağırlıklarını gösterir. Her hücre, $t$ satırındaki sorgunun $j$ sütunundaki anahtara verdiği ağırlıktır; satır toplamı 1'dir. Kesikli çizgiler girdi ile üretilen çıktıyı ayırır.
+
+\begin{figure}[h]
+  \centering
+  \sekil{dikkat_harita}
+  \caption[Eğitilmiş modelin dikkat haritaları]{\code{2 0 1 0 2 1} girdisi için dokuz dikkat başının ağırlıkları (float model). Eksen etiketleri konumlardaki tokenlardır. Sağ alt çeyrekteki satırlar sıralı çıktının üretildiği adımlardır. Beyaz 0, koyu mavi 1 ağırlığa karşılık gelir.}
+  \label{fig:harita}
+\end{figure}
+
+Haritalardan iki gözlem çıkar. Birincisi, çıktı adımlarında dikkat tek bir konuma odaklanmaz; en büyük ağırlık bu örnekte 0,14 ile 0,64 arasındadır ve ağırlık girdinin geneline yayılır. İkincisi, 729 dizinin tamamında ölçüldüğünde ilk katmanın başları çıktı adımlarında dikkatin \%84--92'sini girdi konumlarına verir. Düzgün dağılım bu oran için \%77,5 verirdi. Daha derin katmanlarda oran \%72--82'ye iner; bu katmanlar daha önce üretilmiş çıktılara daha çok bakar. Bu gözlemler, modelin her rakamın girdideki ve çıktıdaki sayısını karşılaştırarak çalıştığı hipoteziyle uyumludur. Hipotezin kesin olarak doğrulanması ayrı bir yorumlanabilirlik çalışması gerektirir.

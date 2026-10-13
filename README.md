@@ -17,7 +17,7 @@ tamsayı aritmetiğine (INT8/INT16) dönüştürülür ve SystemVerilog ile yaz�
 
 ## Dokümanlar
 
-**Teknik rapor (PDF):** [report/rapor.pdf](report/rapor.pdf), 38 sayfa: minGPT'nin matematiksel anlatımı, kuantizasyon teorisi ve ispatlar, donanım mimarisi, performans ve doğrulama. `make report` ile yeniden üretilir (XeLaTeX).
+**Teknik rapor (PDF):** [report/rapor.pdf](report/rapor.pdf), 48 sayfa: minGPT'nin matematiksel ve görsel anlatımı (eğitilmiş modelin dikkat haritaları dahil), Karpathy'nin bigram'dan nanochat'e dil modeli ailesi (RMSNorm, RoPE, SwiGLU, GQA, QK-norm; ispatlı tamsayı sınırları), kuantizasyon teorisi, donanım mimarisi, performans ve doğrulama. `make report` ile yeniden üretilir (XeLaTeX).
 
 1. [docs/01_teori.md](docs/01_teori.md): Matematiksel model, KV önbelleği, kuantizasyon teorisi,
    tamsayı LayerNorm/Softmax/GELU türetmeleri ve ispatlar (Samuelson sınırı, dışbükeylik, taşma sınırları).

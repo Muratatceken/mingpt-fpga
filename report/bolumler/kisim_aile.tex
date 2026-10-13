@@ -1,0 +1,248 @@
+% ===========================================================================
+\section{Model ailesine genel bakış}\label{sec:aile}
+% ===========================================================================
+
+Andrej Karpathy'nin açık kaynak depoları, dil modeli mimarisinin 2003'ten 2026'ya kadarki evrimini adım adım izleyen eğitsel bir seri oluşturur. Her depo bir öncekine tek bir fikir ekler ve hepsi aynı problemi çözer: bir sonraki tokenın olasılığını tahmin etmek. Bu ortak arayüz (Bölüm~\ref{sec:giris}'deki $p_\theta(x_t \mid x_{<t})$), modellerin aynı kayıp, aynı kod çözme yöntemi ve aynı donanım akışıyla karşılaştırılmasını mümkün kılar.
+
+\begin{figure}[h]
+  \centering
+  \sekil{zaman}
+  \caption[Karpathy'nin dil modeli depoları]{Karpathy'nin dil modeli depolarının zaman çizelgesi (GitHub oluşturulma tarihleri; microgpt için açıklama yazısının tarihi). Mavi olanlar bu çalışmada ele alınan mimarileri taşır. Gri olanlar ya aynı mimarinin tekrarıdır (llm.c, char-rnn) ya da bir dil modeli değildir (micrograd).}
+  \label{fig:zaman}
+\end{figure}
+
+Seriden dokuz mimari seçilmiştir (Tablo~\ref{tab:aile}). makemore'un \cite{makemore} beş modeli dikkat öncesi dönemi temsil eder. minGPT ve nanoGPT \cite{nanogpt} çıkarım matematiği açısından aynı olan GPT-2 mimarisini taşır: nanoGPT'nin farkları isteğe bağlı bias, ağırlık paylaşımı ve Flash Attention'dır; üçü de çıkarımda aynı işlemleri yapar. microgpt (2026) \cite{microgpt} GPT-2'nin sadeleştirilmiş hâlidir. llama2.c \cite{llama2c} Llama~2 \cite{llama2} mimarisini, nanochat \cite{nanochat} ise 2025 itibarıyla güncel tasarım tercihlerini taşır. llm.c (GPT-2'nin C/CUDA ile eğitimi), char-rnn (RNN/GRU'nun 2015 tarihli Lua sürümü) ve micrograd (skaler otomatik türev motoru) ayrı satır olarak alınmamıştır.
+
+\begin{table}[h]
+  \centering\footnotesize
+  \caption{Ele alınan mimarilerin özellik matrisi. ``Durum'', çıkarım sırasında geçmişin nasıl saklandığını gösterir.}
+  \label{tab:aile}
+  \setlength{\tabcolsep}{3.5pt}
+  \begin{tabularx}{\textwidth}{@{}l l L l l l L@{}}
+    \toprule
+    \thead{Model} & \thead{Kaynak} & \thead{Geçmişi özetleme} & \thead{Normalizasyon} & \thead{Konum} & \thead{Aktivasyon} & \thead{Durum} \\ \midrule
+    Bigram & makemore & yok (yalnız $x_t$) & -- & -- & -- & yok \\
+    MLP & makemore & sabit pencere & -- & pencere sırası & tanh & son $k$ token \\
+    RNN & makemore & tekrarlama & -- & örtük & tanh & $h_t$, sabit \\
+    GRU & makemore & kapılı tekrarlama & -- & örtük & $\sigma$, tanh & $h_t$, sabit \\
+    BoW & makemore & nedensel ortalama & -- & öğrenilmiş & tanh & $\sum_j x_j$, sabit \\
+    GPT-2 & minGPT, nanoGPT & çok başlı dikkat & LayerNorm & öğrenilmiş & GELU & KV önbelleği \\
+    microgpt & gist (2026) & çok başlı dikkat & RMSNorm, $g$ yok & öğrenilmiş & ReLU & KV önbelleği \\
+    Llama 2 & llama2.c & GQA & RMSNorm, $g$ var & RoPE & SwiGLU & KV, GQA ile küçük \\
+    nanochat & nanochat & GQA + QK-norm & RMSNorm, $g$ yok & RoPE & ReLU$^2$ & KV, GQA ile küçük \\ \bottomrule
+  \end{tabularx}
+\end{table}
+
+% ===========================================================================
+\section{Dikkat öncesi modeller}\label{sec:onceki}
+% ===========================================================================
+
+makemore'un beş modeli aynı soruyu farklı biçimde yanıtlar: geçmiş tokenlar sabit boyutlu bir vektöre nasıl özetlenir? Şekil~\ref{fig:onceki} beşini aynı görsel dille gösterir. $E$ token gömme tablosudur.
+
+\begin{figure}[h]
+  \centering
+  \sekil{onceki}
+  \caption[Dikkat öncesi dil modelleri]{makemore'daki dikkat öncesi dil modelleri. Mavi kutular geçmişi özetleyen bileşendir; turuncu satır, çıkarımda saklanması gereken durumu gösterir. RNN ve GRU'da geri besleme oku önceki gizli durumu taşır.}
+  \label{fig:onceki}
+\end{figure}
+
+\paragraph{Bigram.} Model yalnızca son tokena bakar: $p(x_{t+1} = j \mid x_t = i) = \mathrm{softmax}(W_{i,:})_j$, $W\in\mathbb{R}^{V\times V}$. En büyük olabilirlik çözümü kapalı biçimdedir: $W_{ij} = \log N_{ij} + c_i$; burada $N_{ij}$, eğitim verisinde $i$'den sonra $j$ gelme sayısıdır. Donanımda tek bir tablo satırı okunur.
+
+\paragraph{MLP (Bengio ve ark., 2003).} Bengio ve ark.\ \cite{bengio03} önerisinde son $k$ tokenın gömmeleri birleştirilir ve iki katmanlı bir ağdan geçirilir:
+\begin{equation}
+  e_t = [\,E x_{t-k+1};\, \dots;\, E x_t\,] \in \mathbb{R}^{kC}, \qquad h_t = \tanh(W_1 e_t + b_1), \qquad z_t = W_2 h_t + b_2 .
+\end{equation}
+Pencerenin dışında kalan geçmiş tamamen unutulur. makemore, pencere başındaki boş konumlar için ayrı bir dolgu tokenı kullanır.
+
+\paragraph{RNN.} Geçmiş, her adımda güncellenen bir gizli durumda özetlenir:
+\begin{equation}
+  h_t = \tanh\!\big(W\,[E x_t;\, h_{t-1}] + b\big), \qquad z_t = W_o h_t + b_o .
+\end{equation}
+Başlangıç durumu $h_0$ öğrenilebilir bir parametredir. Bellek, bağlam uzunluğundan bağımsızdır; buna karşılık $h_t$, $h_{t-1}$ olmadan hesaplanamaz. Ön ek (prompt) bu yüzden paralel işlenemez.
+
+\paragraph{GRU.} GRU \cite{gru} kapılar kullanır. Kapılar, eski durumun ne kadarının korunacağını öğrenir. $u_t = [E x_t;\, h_{t-1}]$ olmak üzere:
+\begin{equation}
+\begin{aligned}
+  r_t &= \sigma(W_r u_t + b_r), \qquad z_t = \sigma(W_z u_t + b_z), \\
+  \bar h_t &= \tanh\!\big(W_h\,[E x_t;\, r_t \odot h_{t-1}] + b_h\big), \qquad
+  h_t = (1 - z_t) \odot h_{t-1} + z_t \odot \bar h_t .
+\end{aligned}
+\end{equation}
+
+\paragraph{BoW (nedensel kelime torbası).} Geçmişin düzgün ortalaması alınır:
+\begin{equation}
+  y_t = \frac{1}{t+1} \sum_{j \le t} x_j = \sum_{j\le t} \mathrm{softmax}(\mathbf{0})_j\, x_j .
+\end{equation}
+Sağdaki eşitlik BoW'un, bütün skorları sıfır olan bir dikkat olduğunu gösterir: dikkatin ``içerikten bağımsız'' özel durumudur. makemore bunu bir artık blok içinde $x \leftarrow x + \mathrm{BoW}(x)$, $x \leftarrow x + \mathrm{MLP}_{\tanh}(x)$ biçiminde kullanır. Çıkarımda koşan toplam $S_t = S_{t-1} + x_t$ yeterlidir; durum bağlamdan bağımsızdır.
+
+\begin{onerme}[Tekrarlayan durumun sınırlılığı]\label{on:rnn}
+RNN'de her $t \ge 1$ için $h_t \in (-1,1)^d$ sağlanır. GRU'da $h_0 \in [-1,1]^d$ ise her $t$ için $h_t \in [-1,1]^d$ sağlanır.
+\end{onerme}
+\begin{proof}
+RNN için $\tanh$'ın değer kümesi $(-1,1)$'dir. GRU için tümevarım: $h_{t-1} \in [-1,1]^d$ ve $\bar h_t \in (-1,1)^d$ olsun. $z_t \in (0,1)^d$ olduğundan $h_t$, her bileşende $h_{t-1}$ ile $\bar h_t$'nin dışbükey birleşimidir ve $[-1,1]$ aralığında kalır.
+\end{proof}
+
+\noindent Bu sonuç, Önerme~\ref{on:samuelson} ve~\ref{on:disbukey}'ün tekrarlayan modellerdeki karşılığıdır. Gizli durum kalibrasyon gerekmeden sabit bir biçimle (örneğin INT8, Q0.7) doyma olmadan temsil edilebilir. Tek koşul, eğitim sonunda öğrenilen $h_0$'ın $[-1,1]$ aralığında olmasıdır; bu kontrol edilmeli, değilse kırpılmalıdır. $\sigma$ ve $\tanh$ ise GELU gibi INT8 girişli 256 elemanlı tablolarla tam olarak hesaplanır.
+
+% ===========================================================================
+\section{Transformer varyantları}\label{sec:varyant}
+% ===========================================================================
+
+Dört transformer varyantı aynı iskeleti paylaşır: gömme, $L$ adet pre-norm blok, son normalizasyon ve çıkış katmanı. Farklar normalizasyonda, konum kodlamasında, aktivasyonda ve dikkat başlarının paylaşımındadır (Şekil~\ref{fig:varyant}).
+
+\begin{figure}[h]
+  \centering
+  \sekil{varyant}
+  \caption[Transformer varyantları]{Dört transformer varyantında tek bir blok. Turuncu kutular GPT-2'den farklı olan bileşenlerdir. nanochat'in eğitim verimliliği için eklediği ek mekanizmalar (değer gömmeleri, kayan pencere vb.) ``çekirdek'' sürüme dahil değildir.}
+  \label{fig:varyant}
+\end{figure}
+
+\subsection{RMSNorm}
+RMSNorm, LayerNorm'daki ortalama çıkarmayı kaldırır ve yalnızca ölçekler \cite{rmsnorm}:
+\begin{equation}
+  \mathrm{RMS}(x) = \sqrt{\frac{1}{N}\sum_{i=1}^{N} x_i^2 + \epsilon}, \qquad \mathrm{RMSNorm}(x)_i = g_i\, \frac{x_i}{\mathrm{RMS}(x)} .
+\end{equation}
+Llama~2 öğrenilebilir bir kazanç $g$ kullanır; microgpt ve nanochat'te $g$ yoktur. Kazanç, LayerNorm'un $\gamma$'sı gibi bir sonraki doğrusal katmana katlanabilir (Bölüm~\ref{sec:katlama}).
+
+\begin{onerme}[RMSNorm sınırı]\label{on:rms}
+$\hat x = x/\mathrm{RMS}(x)$ için her bileşende $|\hat x_i| \le \sqrt N$ sağlanır.
+\end{onerme}
+\begin{proof}
+$x_i^2 \le \sum_j x_j^2 = N\,(\mathrm{RMS}(x)^2 - \epsilon) \le N\,\mathrm{RMS}(x)^2$.
+\end{proof}
+
+\noindent LayerNorm'daki sınır $\sqrt{N-1}$'di (Önerme~\ref{on:samuelson}); RMSNorm'da bir derece serbestlik kaybolmadığı için sınır $\sqrt N$'dir. Donanım açısından RMSNorm daha ucuzdur. Toplam $s$ ve fark $d_i$ hesaplanmaz; $Q = \sum x_i^2 + E$ tek geçişte toplanır. Karekök ve bölme aynı kalır.
+
+\subsection{Döner konum kodlaması (RoPE)}
+RoPE \cite{rope}, konum bilgisini gömmeye eklemek yerine sorgu ve anahtarları konuma bağlı bir açıyla döndürür. $q$'nun $(q_{2i}, q_{2i+1})$ çiftleri, $m$ konumunda $m\theta_i$ açısıyla döndürülür:
+\begin{equation}
+  \begin{bmatrix} q'_{2i} \\ q'_{2i+1} \end{bmatrix} =
+  \begin{bmatrix} \cos m\theta_i & -\sin m\theta_i \\ \sin m\theta_i & \cos m\theta_i \end{bmatrix}
+  \begin{bmatrix} q_{2i} \\ q_{2i+1} \end{bmatrix}, \qquad \theta_i = 10000^{-2i/d_h}.
+\end{equation}
+Bu dönüşümü $R_m$ ile gösterelim.
+
+\begin{onerme}[Göreli konum]\label{on:rope}
+$(R_m q)^\top (R_n k) = q^\top R_{n-m}\, k$. Yani dikkat skoru yalnızca göreli konuma $n-m$ bağlıdır.
+\end{onerme}
+\begin{proof}
+Döndürme matrisleri ortogonaldir ve açıları toplanır: $R_m^\top = R_{-m}$ ve $R_{-m} R_n = R_{n-m}$.
+\end{proof}
+
+\noindent Donanım için iki önemli özellik vardır. Birincisi, dönme normu korur ($\|R_m q\| = \|q\|$); tamsayı aralığı büyümez. İkincisi, anahtarlar önbelleğe döndürülmüş hâlde yazılır; her adımda yalnızca yeni $q_t$ ve $k_t$ döndürülür. Maliyet çift başına 4 çarpma ve 2 toplamadır. $\cos$ ve $\sin$ değerleri $T\times d_h/2$ girişlik bir tablodan (ör. Q1.14) okunur. Şekil~\ref{fig:rope}(a) dönmeyi gösterir. llama2.c bitişik çiftleri, nanochat ise vektörün iki yarısını eşler; iki kural bir permütasyon kadar farklıdır.
+
+\begin{figure}[h]
+  \centering
+  \sekil{rope_gqa}
+  \caption[RoPE ve GQA]{(a) RoPE: $q$ ve $k$ konumlarına göre döndürülür; skor yalnızca aradaki açıya, yani göreli konuma bağlıdır. (b) GQA: llama2.c'nin stories260K modelinde 8 sorgu başı 4 KV başını paylaşır; KV önbelleği yarıya iner.}
+  \label{fig:rope}
+\end{figure}
+
+\subsection{Aktivasyonlar: ReLU, ReLU$^2$ ve SwiGLU}
+microgpt GELU yerine $\mathrm{ReLU}(a) = \max(0,a)$ kullanır; bu tamsayıda tamdır ve tablo bile gerektirmez. nanochat, Primer çalışmasında \cite{primer} önerilen $\mathrm{ReLU}(a)^2$'yi kullanır. Kare alma INT8 girişi INT16'ya genişletir, bu yüzden ardından yeniden kuantizasyon gerekir. Llama~2'nin SwiGLU'su \cite{swiglu} ise kapılı bir yapıdır:
+\begin{equation}
+  \mathrm{FFN}(x) = W_2\big(\mathrm{SiLU}(W_1 x) \odot W_3 x\big), \qquad \mathrm{SiLU}(a) = a\,\sigma(a).
+\end{equation}
+Üç matris olduğu için ara genişlik $4C$ yerine yaklaşık $\tfrac{2}{3}\cdot 4C$ seçilir; toplam ağırlık sayısı GELU'lu MLP ile aynı mertebede kalır. Donanımda iki GEMV ($W_1$, $W_3$), bir SiLU tablosu ve eleman bazlı bir INT8$\times$INT8 çarpım gerekir.
+
+\subsection{Gruplanmış sorgu dikkati (GQA)}
+GQA \cite{gqa}, $H$ sorgu başının $H_{kv}$ anahtar-değer başını paylaştığı dikkattir. $g = H/H_{kv}$ sorgu başı aynı $K$ ve $V$'yi kullanır. KV önbelleği $2\,L\,T\,H\,d_h$ yerine $2\,L\,T\,H_{kv}\,d_h$ değer tutar. $H_{kv}=1$ özel durumuna MQA denir. stories260K'da $H=8$, $H_{kv}=4$'tür (Şekil~\ref{fig:rope}(b)).
+
+\subsection{QK-norm}
+QK-norm \cite{qknorm} uygulayan nanochat, skor hesaplanmadan önce her başın $q$ ve $k$ vektörlerini parametresiz RMSNorm'dan geçirir ve her birini $c = 1{,}2$ ile ölçekler.
+
+\begin{onerme}[QK-norm ile sınırlı skorlar]\label{on:qknorm}
+QK-norm ve $1/\sqrt{d_h}$ ölçeği altında her dikkat skoru $|s| \le c^2\sqrt{d_h}$ sağlar.
+\end{onerme}
+\begin{proof}
+Önerme~\ref{on:rms}'in ispatından $\|\hat q\|^2 = \sum_i \hat q_i^2 \le d_h$, benzer şekilde $\|\hat k\|^2 \le d_h$ elde edilir. Cauchy--Schwarz ile $|c\hat q \cdot c\hat k| \le c^2 d_h$, buradan $|s| = |c\hat q\cdot c\hat k|/\sqrt{d_h} \le c^2\sqrt{d_h}$ bulunur.
+\end{proof}
+
+\noindent Bu sonucun donanım için önemi şudur: Bölüm~\ref{sec:cekirdek}'teki tamsayı softmax'ın giriş ölçeği $S_qS_k$ kalibrasyonla değil, \emph{analitik olarak} sabitlenebilir. Örneğin $d_h = 16$ için $|s| \le 5{,}76$ olur. Softmax'ın üstel tablosunun kapsaması gereken aralık önceden bilinir.
+
+\subsection{nanochat'in ek mekanizmaları ve llama2.c modeli}
+nanochat'in güncel sürümü, eğitim verimliliği için şu ek mekanizmaları da içerir: alternatif katmanlarda değer gömmeleri (ResFormer), önceki tokenın gömmesini karıştıran ``smear'', katman başına artık ve $x_0$ ölçekleri, ``backout'' çıkarma ve kayan pencereli dikkat. Bunlar hesap yapısını değiştirmez, ama ek tablolar ve skaler karışımlar getirir. Bu çalışmada nanochat'in \emph{çekirdek} mimarisi (Şekil~\ref{fig:varyant}) temel alınır; ek mekanizmalar isteğe bağlı ablasyon olarak ele alınabilir.
+
+llama2.c, TinyStories veri kümesinde \cite{tinystories} önceden eğitilmiş hazır modeller sunar. Bunların en küçüğü, bu çalışmanın donanım bütçesine doğrudan uyan \textbf{stories260K}'dır (Tablo~\ref{tab:260k}).
+
+\begin{table}[h]
+  \centering\small
+  \caption{llama2.c stories260K yapılandırması (llama2.c README).}
+  \label{tab:260k}
+  \begin{tabular}{@{}lcccccc@{}}
+    \toprule
+    \thead{Boyut $C$} & \thead{Katman} & \thead{Sorgu başı} & \thead{KV başı} & \thead{Bağlam} & \thead{Parametre} & \thead{Doğrulama kaybı} \\ \midrule
+    64 & 5 & 8 & 4 & 512 & 260\,K & 1,297 \\ \bottomrule
+  \end{tabular}
+\end{table}
+
+INT8 ile ağırlıklar yaklaşık 260\,KB, tam bağlamda KV önbelleği $2\cdot5\cdot512\cdot32 = 163\,840$ değer (160\,KB) tutar. Toplam, Zynq-7020'nin yaklaşık 630\,KB'lık BRAM'ine sığar. Bu, gerçek bir önceden eğitilmiş modelin kart üzerinde hikâye üretebileceği anlamına gelir.
+
+% ===========================================================================
+\section{Donanım açısından model ailesi}\label{sec:aile-donanim}
+% ===========================================================================
+
+Ailedeki her mimari özellik, küçük bir donanım işlemleri kümesine eşlenir (Tablo~\ref{tab:esleme}). Bu işlemlerin çoğu, Kısım~III'te minGPT için gerçeklenen birimlerin doğrudan genellemesidir. Bu yüzden ailenin tamamı \emph{tek ve yapılandırılabilir} bir hızlandırıcıyla kapsanabilir.
+
+\begin{table}[h]
+  \centering\small
+  \caption{Mimari özelliklerin donanım işlemlerine eşlenmesi.}
+  \label{tab:esleme}
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabularx}{\textwidth}{@{}llLl@{}}
+    \toprule
+    \thead{Özellik} & \thead{Modeller} & \thead{Tamsayı yöntemi} & \thead{Garanti} \\ \midrule
+    LayerNorm & GPT-2 & 3 geçiş, karekök, tek bölme (Bölüm~\ref{sec:cekirdek}) & $|\hat z|\le\sqrt{N-1}$ \\
+    RMSNorm & microgpt, Llama, nanochat & 2 geçiş, karekök, tek bölme & $|\hat x|\le\sqrt{N}$ \\
+    Öğrenilmiş konum & GPT-2, microgpt, BoW & ROM okuma + INT16 toplama & -- \\
+    RoPE & Llama, nanochat & $\cos/\sin$ tablosu (Q1.14), çift başına 4 çarpma & normu korur \\
+    GELU, tanh, $\sigma$, SiLU & çeşitli & 256 girişlik tablo (tam) & -- \\
+    ReLU / ReLU$^2$ & microgpt / nanochat & $\max(0,x)$ / INT16 kare + requant & -- \\
+    SwiGLU & Llama & 2 GEMV + INT8$\times$INT8 çarpım + requant & -- \\
+    MHA / GQA & transformerler & KV önbelleği + tamsayı softmax & dışbükeylik \\
+    QK-norm & nanochat & $q,k$ için RMSNorm & $|s|\le c^2\sqrt{d_h}$ \\
+    RNN / GRU hücresi & makemore & ardışık GEMV + kapı tabloları & $|h|\le 1$ \\
+    Nedensel ortalama & BoW & INT32 koşan toplam + karşılık & dışbükeylik \\ \bottomrule
+  \end{tabularx}
+\end{table}
+
+\paragraph{Bellek ve bağlam.} Aileyi ayıran en belirgin donanım özelliği, çıkarım durumunun bağlamla nasıl büyüdüğüdür (Şekil~\ref{fig:bellek}). Dikkat tabanlı modellerde KV önbelleği bağlamla doğrusal büyür; GQA bu eğimi $H_{kv}/H$ oranında düşürür. RNN, GRU ve BoW'un durumu sabittir; MLP ise yalnızca son $k$ tokenı tutar. Bunun bedeli de vardır. Sabit durum, geçmişin sıkıştırılması demektir ve modelin kalitesini sınırlar. Bu takası ölçmek, karşılaştırmanın ana sorularından biridir.
+
+\begin{figure}[h]
+  \centering
+  \sekil{bellek}
+  \caption[Çıkarım durum belleği ve bağlam]{Çıkarım sırasında saklanan değer sayısının bağlam uzunluğuyla değişimi ($L=5$, $C=64$, $d_h=8$; stories260K boyutları). Dikey eksen logaritmiktir. Dikkat tabanlı modellerde bellek doğrusal büyür, tekrarlayan ve ortalama tabanlı modellerde sabit kalır.}
+  \label{fig:bellek}
+\end{figure}
+
+\paragraph{Tek mimari, çok model.} minGPT hızlandırıcısındaki kontrol FSM'i, \code{model.py}'nin işlem sırasını sabit olarak kodlar (Bölüm~\ref{sec:mimari}). Ailenin tamamı için bu FSM yerine küçük bir \emph{komut dizisi} (mikrokod) çalıştıran bir denetleyici kullanılması planlanmaktadır. Python tarafındaki derleyici her model için komut listesini üretir; örneğin \code{EMB}, \code{NORM(tip)}, \code{GEMV(katman, hedef)}, \code{ROPE}, \code{ATTN(gqa)}, \code{ACT(tablo)}, \code{MUL}, \code{ADD} ve \code{ARGMAX}. Donanıma eklenecek birimler şunlardır: LN biriminde RMSNorm modu, bir RoPE birimi, eleman bazlı çarpma birimi (SwiGLU ve GRU kapıları için) ve tekrarlayan durum tamponu. GEMV motoru, yeniden kuantizasyon, tablolar ve doğrulama akışı olduğu gibi kullanılır.
+
+% ===========================================================================
+\section{Karşılaştırma yöntemi}\label{sec:yontem}
+% ===========================================================================
+
+Karşılaştırma, minGPT için kurulan akışın (eğitim, katlama, kuantizasyon, tamsayı referans model, RTL, bit-exact doğrulama) her modele aynen uygulanmasıyla yapılacaktır. Bu bölüm yöntemi tanımlar; sonuçlar raporun sonraki sürümünde eklenecektir.
+
+\paragraph{İki deney hattı.}
+\begin{enumerate}
+  \item \textbf{Hat A: tüm aile, ortak veri.} Dokuz mimarinin hepsi makemore'un \code{names.txt} veri kümesinde (32\,033 isim, $V=27$, karakter düzeyi) eşleştirilmiş parametre bütçeleriyle eğitilir. Aynı veri ve bütçe, mimariler arasında adil bir karşılaştırma sağlar.
+  \item \textbf{Hat B: gerçek metin üretimi.} Transformer varyantları (GPT-2, microgpt, Llama~2, nanochat çekirdeği) TinyStories üzerinde yaklaşık 260\,K parametreyle karşılaştırılır. Hazır eğitilmiş stories260K modeli bu hattın referansıdır ve kart üzerinde hikâye üretimi demosunun temelidir.
+\end{enumerate}
+
+\begin{table}[h]
+  \centering\small
+  \caption{Her model için ölçülecek büyüklükler.}
+  \label{tab:olcut}
+  \begin{tabularx}{\textwidth}{@{}lL@{}}
+    \toprule
+    \thead{Eksen} & \thead{Ölçüt} \\ \midrule
+    Kalite & test kaybı (nat/token), float ve INT8 için; kuantizasyon kaybı $\Delta$ \\
+    Boyut & parametre sayısı, INT8 ağırlık belleği \\
+    Hesap & token başına MAC; ardışık bağımlılık (paralel ön ek yapılabilir mi?) \\
+    Durum & KV önbelleği veya gizli durum büyüklüğü, bağlama göre büyüme \\
+    Donanım & çevrim/token, Fmax, LUT/FF/BRAM/DSP, güç, token başına enerji \\
+    Referans & aynı karttaki ARM Cortex-A9 üzerinde NumPy ile gecikme; hızlanma \\ \bottomrule
+  \end{tabularx}
+\end{table}
+
+\paragraph{Beklenen katkı.} Literatürde transformer hızlandırıcıları genellikle tek bir modelle değerlendirilir. Bu çalışma ise aynı yazarın aynı eğitsel üslupla yazdığı bir model serisini, aynı tamsayı metodolojisi ve aynı donanım üzerinde karşılaştırır. Böylece her mimari fikrin (dikkat, RMSNorm, RoPE, GQA, SwiGLU, QK-norm) donanım maliyeti ile kaliteye katkısı ayrı ayrı görünür hâle gelir.

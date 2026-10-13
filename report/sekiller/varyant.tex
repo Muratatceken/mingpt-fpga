@@ -1,0 +1,60 @@
+% Transformer varyantları: tek bloğun yan yana karşılaştırması
+\begin{tikzpicture}[x=1cm,y=1cm,
+   cb/.style={box, minimum width=31mm, minimum height=7mm, inner ysep=1.5pt, font=\sffamily\scriptsize},
+   df/.style={cb, draw=warm, fill=warmsoft, line width=0.9pt},
+   op2/.style={op, minimum size=5mm, font=\sffamily\scriptsize}]
+  % sütun: x, başlık, alt başlık, gömme, norm1, dikkat, norm2, mlp, son
+  \newcommand{\sutun}[9]{%
+    \node[hdr, align=center] at (#1,8.15) {#2\\[-2pt]{\scriptsize\mdseries\color{muted}#3}};
+    #4 (e#1) at (#1,7.0) {};
+    #5 (n#1) at (#1,5.85) {};
+    #6 (a#1) at (#1,4.8) {};
+    \node[op2] (p#1) at (#1,3.95) {$+$};
+    #7 (m#1) at (#1,2.95) {};
+    \node[op2] (q#1) at (#1,1.9) {$+$};
+    #8 (o#1) at (#1,0.9) {};
+    #9
+    \draw[accflow] (e#1) -- (p#1); \draw[accflow] (p#1) -- (q#1); \draw[accflow] (q#1) -- (o#1);
+  }
+  % GPT-2 (referans)
+  \node[cb] (e0) at (0,7.0) {gömme: $W_{te} + W_{pe}$};
+  \node[cb] (n0) at (0,5.85) {LayerNorm ($\gamma,\beta$)};
+  \node[cb] (a0) at (0,4.8) {MHA, bias};
+  \node[op2] (p0) at (0,3.95) {$+$};
+  \node[cb] (m0) at (0,2.95) {LN + MLP (GELU)};
+  \node[op2] (q0) at (0,1.9) {$+$};
+  \node[cb] (o0) at (0,0.9) {LN$_f$ + lm\_head};
+  \node[hdr, align=center] at (0,8.15) {GPT-2\\[-2pt]{\scriptsize\mdseries\color{muted}minGPT · nanoGPT · llm.c}};
+  % microgpt
+  \node[cb] (e4) at (4,7.0) {gömme: $W_{te} + W_{pe}$};
+  \node[df] (n4) at (4,5.85) {RMSNorm (param. yok)};
+  \node[df] (a4) at (4,4.8) {MHA, bias yok};
+  \node[op2] (p4) at (4,3.95) {$+$};
+  \node[df] (m4) at (4,2.95) {RMSNorm + MLP (ReLU)};
+  \node[op2] (q4) at (4,1.9) {$+$};
+  \node[cb] (o4) at (4,0.9) {lm\_head (ayrı)};
+  \node[hdr, align=center] at (4,8.15) {microgpt\\[-2pt]{\scriptsize\mdseries\color{muted}gist, 2026}};
+  % Llama 2
+  \node[df] (e8) at (8,7.0) {gömme: yalnız $W_{te}$};
+  \node[df] (n8) at (8,5.85) {RMSNorm ($g$)};
+  \node[df] (a8) at (8,4.8) {GQA + RoPE};
+  \node[op2] (p8) at (8,3.95) {$+$};
+  \node[df] (m8) at (8,2.95) {RMSNorm + SwiGLU};
+  \node[op2] (q8) at (8,1.9) {$+$};
+  \node[df] (o8) at (8,0.9) {RMSNorm + bağlı head};
+  \node[hdr, align=center] at (8,8.15) {Llama 2\\[-2pt]{\scriptsize\mdseries\color{muted}llama2.c}};
+  % nanochat
+  \node[df] (e12) at (12,7.0) {gömme $W_{te}$ + RMSNorm};
+  \node[df] (n12) at (12,5.85) {RMSNorm (param. yok)};
+  \node[df] (a12) at (12,4.8) {GQA + RoPE + QK-norm};
+  \node[op2] (p12) at (12,3.95) {$+$};
+  \node[df] (m12) at (12,2.95) {RMSNorm + MLP (ReLU²)};
+  \node[op2] (q12) at (12,1.9) {$+$};
+  \node[cb] (o12) at (12,0.9) {RMSNorm + lm\_head};
+  \node[hdr, align=center] at (12,8.15) {nanochat (çekirdek)\\[-2pt]{\scriptsize\mdseries\color{muted}nanochat, 2025}};
+  \foreach \c in {0,4,8,12} {
+    \draw[accflow] (e\c) -- (n\c); \draw[flow] (n\c) -- (a\c); \draw[accflow] (a\c) -- (p\c);
+    \draw[accflow] (p\c) -- (m\c); \draw[accflow] (m\c) -- (q\c); \draw[accflow] (q\c) -- (o\c);
+  }
+  \node[lbl, anchor=west] at (-1.55,0.0) {\tikz\node[df, minimum width=4mm, minimum height=3mm]{};\; GPT-2'den farklı olan bileşen \qquad mavi: artık akış};
+\end{tikzpicture}

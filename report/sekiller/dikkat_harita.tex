@@ -1,0 +1,54 @@
+% Eğitilmiş modelin dikkat haritaları (girdi 2 0 1 0 2 1)
+\begin{tikzpicture}
+\begin{groupplot}[
+    group style={group size=3 by 3, horizontal sep=5mm, vertical sep=8mm,
+      xticklabels at=edge bottom, yticklabels at=edge left,
+      xlabels at=edge bottom, ylabels at=edge left},
+    width=5.1cm, height=5.1cm, scale only axis=false, enlargelimits=false, axis on top,
+    colormap={att}{color(0)=(white) color(0.35)=(accent!40) color(1)=(accent!80!black)},
+    point meta min=0, point meta max=1,
+    xtick={0,...,10}, ytick={0,...,10},
+    xticklabels={2,0,1,0,2,1,0,0,1,1,2}, yticklabels={2,0,1,0,2,1,0,0,1,1,2},
+    tick label style={font=\sffamily\tiny, text=muted}, tick style={draw=none},
+    y dir=reverse, title style={font=\sffamily\scriptsize\bfseries, yshift=-1.2ex},
+    xlabel={anahtar $j$}, ylabel={sorgu $t$}, label style={font=\sffamily\scriptsize},
+    axis line style={draw=rule},
+  ]
+  \nextgroupplot[title={katman 0 · baş 0}]
+  \addplot[matrix plot*, mesh/cols=11, point meta=explicit] table[meta=z] {data/att_l0_h0.dat};
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:5.5,-0.5) -- (axis cs:5.5,10.5);
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:-0.5,5.5) -- (axis cs:10.5,5.5);
+  \nextgroupplot[title={katman 0 · baş 1}]
+  \addplot[matrix plot*, mesh/cols=11, point meta=explicit] table[meta=z] {data/att_l0_h1.dat};
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:5.5,-0.5) -- (axis cs:5.5,10.5);
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:-0.5,5.5) -- (axis cs:10.5,5.5);
+  \nextgroupplot[title={katman 0 · baş 2}]
+  \addplot[matrix plot*, mesh/cols=11, point meta=explicit] table[meta=z] {data/att_l0_h2.dat};
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:5.5,-0.5) -- (axis cs:5.5,10.5);
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:-0.5,5.5) -- (axis cs:10.5,5.5);
+  \nextgroupplot[title={katman 1 · baş 0}]
+  \addplot[matrix plot*, mesh/cols=11, point meta=explicit] table[meta=z] {data/att_l1_h0.dat};
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:5.5,-0.5) -- (axis cs:5.5,10.5);
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:-0.5,5.5) -- (axis cs:10.5,5.5);
+  \nextgroupplot[title={katman 1 · baş 1}]
+  \addplot[matrix plot*, mesh/cols=11, point meta=explicit] table[meta=z] {data/att_l1_h1.dat};
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:5.5,-0.5) -- (axis cs:5.5,10.5);
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:-0.5,5.5) -- (axis cs:10.5,5.5);
+  \nextgroupplot[title={katman 1 · baş 2}]
+  \addplot[matrix plot*, mesh/cols=11, point meta=explicit] table[meta=z] {data/att_l1_h2.dat};
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:5.5,-0.5) -- (axis cs:5.5,10.5);
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:-0.5,5.5) -- (axis cs:10.5,5.5);
+  \nextgroupplot[title={katman 2 · baş 0}]
+  \addplot[matrix plot*, mesh/cols=11, point meta=explicit] table[meta=z] {data/att_l2_h0.dat};
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:5.5,-0.5) -- (axis cs:5.5,10.5);
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:-0.5,5.5) -- (axis cs:10.5,5.5);
+  \nextgroupplot[title={katman 2 · baş 1}]
+  \addplot[matrix plot*, mesh/cols=11, point meta=explicit] table[meta=z] {data/att_l2_h1.dat};
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:5.5,-0.5) -- (axis cs:5.5,10.5);
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:-0.5,5.5) -- (axis cs:10.5,5.5);
+  \nextgroupplot[title={katman 2 · baş 2}]
+  \addplot[matrix plot*, mesh/cols=11, point meta=explicit] table[meta=z] {data/att_l2_h2.dat};
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:5.5,-0.5) -- (axis cs:5.5,10.5);
+  \draw[warm, line width=0.7pt, densely dashed] (axis cs:-0.5,5.5) -- (axis cs:10.5,5.5);
+\end{groupplot}
+\end{tikzpicture}

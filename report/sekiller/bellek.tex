@@ -1,0 +1,16 @@
+% Çıkarım durum belleği ve bağlam uzunluğu (L = 5, C = 64, d_h = 8)
+\begin{tikzpicture}
+\begin{axis}[
+    width=11.8cm, height=6.6cm, xmin=0, xmax=512, ymin=30, ymax=600000, ymode=log,
+    xlabel={bağlam uzunluğu $t$ (token)}, ylabel={saklanan değer sayısı},
+    ymajorgrids, axis x line*=bottom, axis y line*=left, legend pos=outer north east,
+    legend cell align=left, xtick={0,128,256,384,512},
+  ]
+  \addplot[accent, line width=1.4pt, domain=1:512, samples=50] {2*5*x*64};
+  \addplot[accent, dashed, line width=1.4pt, domain=1:512, samples=50] {2*5*x*32};
+  \addplot[warm, line width=1.2pt, domain=0:512] {3*64};
+  \addplot[good, line width=1.2pt, domain=0:512] {64};
+  \addplot[muted, line width=1.2pt, dotted, domain=0:512] {5*64};
+  \legend{MHA KV önbelleği, GQA KV ($H_{kv}{=}H/2$), MLP penceresi ($k{=}3$), RNN/GRU durumu, BoW toplamları}
+\end{axis}
+\end{tikzpicture}

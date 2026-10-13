@@ -1,0 +1,24 @@
+% Karpathy'nin dil modeli depoları: zaman çizelgesi
+\begin{tikzpicture}[x=1.22cm,y=1cm]
+  \def\yr#1{(#1-2015)}
+  \draw[rule, line width=1.2pt] (0,0) -- (11.75,0);
+  \foreach \y in {2015,2016,...,2026} {
+    \draw[rule, line width=0.6pt] ({\y-2015},-0.08) -- ({\y-2015},0.08);
+    \node[lbl, below=1mm] at ({\y-2015},-0.08) {\y};
+  }
+  % olay: yıl-ondalık, yükseklik, başlık, açıklama, stil (dahil / referans)
+  \newcommand{\olay}[5]{%
+    \draw[#5, line width=0.8pt] ({#1-2015},0) -- ({#1-2015},#2);
+    \fill[#5] ({#1-2015},0) circle (2.2pt);
+    \node[#5, anchor=\ifdim#2pt>0pt south\else north\fi, align=center, font=\sffamily\scriptsize, inner sep=1.5pt]
+      at ({#1-2015},#2) {\textbf{#3}\\[-1pt]{\color{muted}#4}};}
+  \olay{2015.39}{1.25}{char-rnn}{RNN/LSTM/GRU}{muted}
+  \olay{2020.28}{2.65}{micrograd}{skaler autograd}{muted}
+  \olay{2020.63}{-1.25}{minGPT}{GPT-2, 300 satır}{accent}
+  \olay{2022.44}{-1.25}{makemore}{bigram → transformer}{accent}
+  \olay{2022.99}{1.75}{nanoGPT}{GPT-2 124M}{accent}
+  \olay{2023.56}{-2.45}{llama2.c}{RMSNorm, RoPE, SwiGLU}{accent}
+  \olay{2024.27}{1.05}{llm.c}{GPT-2, C/CUDA}{muted}
+  \olay{2025.78}{-1.25}{nanochat}{QK-norm, ReLU², GQA}{accent}
+  \olay{2026.12}{2.0}{microgpt}{saf Python, 4\,192 param.}{accent}
+\end{tikzpicture}
