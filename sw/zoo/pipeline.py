@@ -79,8 +79,13 @@ def rtl(vdir, imgdir):
 def process(run, d_names):
     spec, tag = run["spec"], run["tag"]
     ds = "stories" if run["data"] == "stories" else "names"
-    m = build(spec)
-    m.load_state_dict(torch.load(run["path"] + ".pt", map_location="cpu"))
+    if run.get("pretrained"):                       # Karpathy's stories260K checkpoint (llama2.c .bin)
+        from stories import load_model
+        m = load_model()
+        spec = dict(cls="Llama", kwargs=dict(T=256))
+    else:
+        m = build(spec)
+        m.load_state_dict(torch.load(run["path"] + ".pt", map_location="cpu"))
     m.eval()
     prog = attach_rope(compile_model(run["arch"], m))
     res = dict(arch=run["arch"], tag=tag, seed=run["seed"], lr=run["lr"], params=run["params"],
@@ -131,6 +136,25 @@ def main():
     tags = sys.argv[1:] or sorted(os.listdir(RUNS))
     res = json.load(open(PATH)) if os.path.exists(PATH) else {}
     d = load()
+    key = "stories260k/pretrained"                  # reference point: the pretrained stories260K, same test windows
+    if key not in res or "rtl_errors" not in res[key]:
+        from models import n_params
+        from stories import load_model
+        mm = load_model()
+        run = dict(arch="stories260k", tag="stories260k", seed=0, lr=0, params=n_params(mm), data="stories",
+                   spec=None, pretrained=True, path=os.path.join(OUT, "stories260k", "pretrained"))
+        from tinystories import val_windows
+        Xt, Yt = val_windows(256, "test")
+        with torch.no_grad():
+            run["test_loss"] = float(np.mean([F.cross_entropy(mm(Xt[i:i + 50]).transpose(1, 2), Yt[i:i + 50]).item()
+                                              for i in range(0, len(Xt), 50)]))
+        Xv, Yv = val_windows(256, "val")
+        with torch.no_grad():
+            run["val_loss"] = float(np.mean([F.cross_entropy(mm(Xv[i:i + 50]).transpose(1, 2), Yv[i:i + 50]).item()
+                                             for i in range(0, len(Xv), 50)]))
+        res[key] = process(run, d)
+        json.dump(res, open(PATH, "w"), indent=1)
+        print(key, res[key].get("test_loss"), res[key].get("int_delta"), res[key].get("rtl_errors"), flush=True)
     for tag in tags:
         if not os.path.isdir(os.path.join(RUNS, tag)):
             continue

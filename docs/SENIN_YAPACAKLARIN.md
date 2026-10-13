@@ -85,6 +85,14 @@ Betik sırasıyla şunları yapar:
 - **Zamanlama tutmazsa:** Betiği daha düşük bir saatle yeniden çalıştır: `-tclargs 80` (ya da 75). Yeni frekansı not et; kartta ölçülen süreler bu frekansa göre olacak.
 - **Kaydetmen gerekenler:** `zoo.bit`, `zoo.hwh` ve `overlay.json` dosyalarını depoda `board/pynq_z2/overlay/` klasörüne kopyalayıp commit et. Kart bu dosyaları oradan alacak, rapor da `overlay.json`'u okuyacak.
 
+### V6. (İsteğe bağlı) Sentez sonrası simülasyon
+Sentezlenmiş devrenin (netlist) RTL ile aynı sonucu verdiğini Vivado'nun kendi hücre modelleriyle kontrol eder:
+```bash
+vivado -mode batch -source scripts/vivado_zoo_postsynth_sim.tcl -tclargs gru 5
+vivado -mode batch -source scripts/vivado_zoo_postsynth_sim.tcl -tclargs llama 3
+```
+**Beklenen:** Konsolda `PASS: RTL is bit-exact with the integer reference`. Mac'te aynı kontrolü açık kaynak Yosys hücre modelleriyle denedim, ama o modeller belirsiz (X) değer ürettiği için sonuç alınamadı. Vivado ile yapılması gerekiyor. Bu adım makale için şart değil, ama yapılırsa "Doğrulama" tablosuna bir satır eklenir.
+
 ### V Sorun giderme
 - **"PYNQ-Z2 board files not found":** V2 adımı eksik. Ayrıca klasör adının tam `pynq-z2` olduğunu kontrol et.
 - **`apply_bd_automation` hata verirse:** Vivado sürümün çok eskidir. 2022.1 veya sonrası bir sürüm kur.

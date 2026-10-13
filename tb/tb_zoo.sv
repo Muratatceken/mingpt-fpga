@@ -41,7 +41,11 @@ module tb_zoo;
   logic [19:0]         ld_addr = '0;
   logic [255:0]        ld_data = '0;
 
+`ifdef NETLIST
+  zoo_core dut (.*);                 // post-synthesis netlist (scripts/zoo_netlist_sim.sh): no parameters
+`else
   zoo_core #(.SPECIALIZE(SPECIALIZE), .LOADABLE(LOADTEST), .PRELOAD(!LOADTEST)) dut (.*);
+`endif
 
   // ---- model loading through the ld_* port (what the PS does on the board) ----
   logic [255:0]     m_prog [PROG_DEPTH];

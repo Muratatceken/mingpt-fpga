@@ -2,7 +2,8 @@
 The names.txt training campaign (resumable; finished runs are skipped).
   python3 experiments.py [phase ...]       phases: lr50k seeds50k lr12k seeds12k s200k
 Protocol: learning rate chosen per architecture on the validation set (seed 0, LR in {1e-3, 3e-3, 1e-2}),
-then seeds 1 and 2 at that learning rate (3 seeds); 200k: the 50k learning rate, seeds 0 and 1.
+then seeds 1 and 2 at that learning rate (3 seeds) at 50k; 12k: sweep only (seed 0); 200k: the 50k
+learning rate, seed 0 (compute budget).
 Results are reported on the test set (mean +- std over seeds).
 """
 import glob
@@ -31,7 +32,7 @@ def train(tag, archs, budget, lrs, seeds):
 
 
 def phase(name):
-    """lr*: learning-rate sweep (seed 0); seeds*: seeds 1, 2 at the best LR; s200k: seeds 0, 1 at the
+    """lr*: learning-rate sweep (seed 0); seeds*: seeds 1, 2 at the best LR; s200k: seed 0 at the
     best LR found at 50k (no sweep at 200k: compute budget)."""
     budget = dict(lr50k=50000, seeds50k=50000, lr12k=12000, seeds12k=12000, s200k=200000)[name]
     archs = FAMILY + list(LADDER) if budget == 50000 else FAMILY
@@ -40,7 +41,7 @@ def phase(name):
         train(tag, archs, budget, LRS, "0")
     elif name == "s200k":
         for a in archs:
-            train(tag, [a], budget, f"{best_lr('names50k', a):g}", "0,1")
+            train(tag, [a], budget, f"{best_lr('names50k', a):g}", "0")
     else:
         for a in archs:                                   # one call per arch: each has its own best LR
             train(tag, [a], budget, f"{best_lr(tag, a):g}", "1,2")
@@ -55,5 +56,5 @@ def wait_for_running():
 
 if __name__ == "__main__":
     wait_for_running()
-    for p in sys.argv[1:] or ["lr50k", "seeds50k", "lr12k", "seeds12k", "s200k"]:
+    for p in sys.argv[1:] or ["lr50k", "seeds50k", "lr12k", "s200k"]:
         phase(p)

@@ -31,30 +31,39 @@ module tb_zoo_axi;
     .s_axi_rdata(rdata), .s_axi_rresp(rresp), .s_axi_rvalid(rvalid), .s_axi_rready(rready));
 
   // ---------------- AXI4-Lite master ----------------
+  // race-free across simulators: inputs change and handshakes are sampled at the falling edge,
+  // the DUT registers everything at the rising edge
   task automatic wr(input logic [15:0] a, input logic [31:0] d);
-    bit aw_done = 0, w_done = 0;
-    @(posedge aclk);
-    awaddr <= a; awvalid <= 1'b1; wdata <= d; wvalid <= 1'b1;
-    while (!(aw_done && w_done)) begin
-      @(posedge aclk);
-      if (awvalid && awready) begin aw_done = 1; awvalid <= 1'b0; end
-      if (wvalid && wready)   begin w_done = 1;  wvalid  <= 1'b0; end
+    bit aw_hs, w_hs;
+    @(negedge aclk);
+    awaddr = a; awvalid = 1'b1; wdata = d; wvalid = 1'b1;
+    while (awvalid || wvalid) begin
+      aw_hs = awvalid && awready;              // what the DUT sees at the next rising edge
+      w_hs  = wvalid && wready;
+      @(negedge aclk);
+      if (aw_hs) awvalid = 1'b0;
+      if (w_hs)  wvalid  = 1'b0;
     end
-    bready <= 1'b1;
-    do @(posedge aclk); while (!bvalid);
-    bready <= 1'b0;
+    bready = 1'b1;
+    while (!bvalid) @(negedge aclk);
+    @(negedge aclk);
+    bready = 1'b0;
   endtask
 
   task automatic rd(input logic [15:0] a, output logic [31:0] d);
-    @(posedge aclk);
-    araddr <= a; arvalid <= 1'b1;
-    do @(posedge aclk); while (!arready);
-    arvalid <= 1'b0;
-    rready  <= 1'b1;
-    while (!rvalid) @(posedge aclk);
+    bit hs;
+    @(negedge aclk);
+    araddr = a; arvalid = 1'b1;
+    do begin
+      hs = arready;
+      @(negedge aclk);
+    end while (!hs);
+    arvalid = 1'b0;
+    rready  = 1'b1;
+    while (!rvalid) @(negedge aclk);
     d = rdata;
-    @(posedge aclk);
-    rready <= 1'b0;
+    @(negedge aclk);
+    rready = 1'b0;
   endtask
 
   // ---------------- model loading ----------------
