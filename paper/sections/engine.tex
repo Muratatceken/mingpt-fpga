@@ -16,6 +16,7 @@ program of a model (2 to 74 instructions) and its memory images; the controller 
 \caption{Engine operations.}
 \label{tab:isa}
 \setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}ll@{}}
 \toprule
 Operation & Semantics \\ \midrule
@@ -25,7 +26,7 @@ Operation & Semantics \\ \midrule
 \code{GEMV} & $W[x;x']+b$; INT8 out, residual add, table, logits \\
 \code{ROPE}, \code{KVSTORE}, \code{ATTN} & rotation; cache write; GQA softmax-average \\
 \code{MUL}, \code{GRUUPD}, \code{COPY}, \code{REQ}, \code{BOW} & element-wise operations \\ \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \textbf{Units.} The GEMV unit is output-stationary with $P$ MAC lanes ($P=8$ unless stated): it streams one

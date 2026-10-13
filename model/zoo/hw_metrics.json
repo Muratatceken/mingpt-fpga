@@ -348,5 +348,17 @@
    "dsp": 57,
    "carry": 423
   }
+ },
+ "universal": {
+  "yosys": {
+   "lut_logic": 7072,
+   "lut_ram": 2372,
+   "lut": 9444,
+   "ff": 2125,
+   "bram": 114.0,
+   "dsp": 62,
+   "carry": 473
+  },
+  "note": "one-bitstream engine, PRELOAD=0, LOADABLE=1, all units"
  }
 }

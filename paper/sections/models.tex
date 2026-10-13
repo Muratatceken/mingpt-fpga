@@ -8,6 +8,7 @@ scale 1.2; ReLU$^2$ MLP; GQA; untied head) without its training-specific extras.
 \caption{The nine architectures. ``State'': what inference keeps about the past.}
 \label{tab:family}
 \setlength{\tabcolsep}{2.5pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}llllll@{}}
 \toprule
 Model & Source & Mixing & Norm & Position & State \\ \midrule
@@ -20,7 +21,7 @@ GPT-2 & minGPT & MHA & LayerNorm & learned & KV cache \\
 microgpt & gist & MHA & RMS (no gain) & learned & KV cache \\
 Llama~2 & llama2.c & GQA & RMSNorm & RoPE & KV cache \\
 nanochat & nanochat & GQA + QK-norm & RMS (no gain) & RoPE & KV cache \\ \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \textbf{The feature ladder.} To isolate single ideas we use one configurable decoder (\code{Ladder}) and change one
@@ -33,6 +34,7 @@ changes. At every step the MLP width is re-chosen so that the parameter count st
 \centering\footnotesize
 \caption{Feature ladder: one change per step, equal parameter budget.}
 \label{tab:ladder}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}lll@{}}
 \toprule
 Step & Change & Resulting block \\ \midrule
@@ -44,7 +46,7 @@ L4 & MHA $\to$ GQA ($H_{kv}=H/2$) & \\
 L5 & no biases, tied embeddings & Llama~2 (llama2.c) \\
 L6 & L4 with ReLU$^2$ instead of SwiGLU & \\
 L7 & L6 + QK-norm & nanochat-like \\ \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \textbf{Tasks and budgets.} \emph{Names} (short context): makemore's 32{,}033 names, character level ($V=27$, $T=16$),

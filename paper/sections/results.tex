@@ -1,22 +1,110 @@
-% Results -- narrative written from the generated data (paper/data/), see sw/zoo/paper_data.py.
-\subsection{Quality and cost of the nine architectures}\label{sec:res-family}
+% Results. Numbers and plots come from paper/data/ (sw/zoo/paper_data.py); the narrative is written from them.
+
+\subsection{The nine architectures}\label{sec:res-family}
+\begin{table*}[t]
+\centering\footnotesize
+\caption{Quality and cost at an equal parameter budget. Names: 50k parameters, test loss (nats/token, mean $\pm$ s.d.
+over seeds), INT8 loss increase $\Delta$, engine cycles per token. TinyStories: 260k parameters, $T=256$, test loss and
+mean cycles per token over the 256 positions. Resources: specialized engine for the names model (Yosys, XC7Z020).}
+\label{tab:family-res}
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+& \multicolumn{3}{c}{Names (short context)} & \multicolumn{2}{c}{TinyStories (long context)} & \multicolumn{2}{c}{Engine} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-6}\cmidrule(l){7-8}
+Model & Test loss & $\Delta_\mathrm{INT8}$ & Cycles & Test loss & Cycles & LUT & DSP \\ \midrule
+\tabinput{data/tab_family.tex}
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{figure}[t]
+\centering
+\input{figs/profile}
+\caption{Cycles per token by operation (names, 50k parameters).}
+\label{fig:profile}
+\end{figure}
+
+\subsection{What each idea costs: the feature ladder}\label{sec:res-ladder}
 \begin{table}[t]
 \centering\footnotesize
-\caption{Names, 50k-parameter budget: test loss (nats/token, mean $\pm$ s.d. over seeds), INT8 loss increase, engine
-cycles per token and resources of the specialized engine (Yosys, XC7Z020).}
-\label{tab:family-res}
-\setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{@{}lrrrrrr@{}}
+\caption{Feature ladder (one change per step, equal budget): test loss and its change with respect to L0 on names
+(mean over seeds) and TinyStories, engine cycles per token (names) and resources of the specialized engine.}
+\label{tab:ladder-res}
+\setlength{\tabcolsep}{2.2pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lrrrrrrrr@{}}
 \toprule
-Model & Params & Test loss & $\Delta_\mathrm{INT8}$ & Cycles & LUT & DSP \\ \midrule
-\tabinput{data/tab_family.tex}
+& \multicolumn{2}{c}{Names} & \multicolumn{2}{c}{TinyStories} & \multicolumn{2}{c}{Cycles} & & \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Step & Loss & $\Delta$ & Loss & $\Delta$ & /token & $\Delta$ & DSP & LUT \\ \midrule
+\tabinput{data/tab_ladder.tex}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\input{figs/ladder}
+\caption{Feature ladder: change of test loss with respect to L0 (top) and engine cycles per token on names (bottom).}
+\label{fig:ladder}
+\end{figure}
+
+\subsection{Context length: when does attention pay off?}\label{sec:res-context}
+\begin{figure}[t]
+\centering
+\input{figs/context}
+\caption{TinyStories: test loss at each position of a 256-token window (top) and engine cycles for the token at that
+position (bottom). Attention costs grow linearly with the position; recurrent and window models are constant.}
+\label{fig:context}
+\end{figure}
+
+\subsection{Scale}\label{sec:res-scale}
+\begin{figure}[t]
+\centering
+\input{figs/scale}
+\caption{Names: test loss versus parameter count (12k, 50k, 200k).}
+\label{fig:scale}
+\end{figure}
+
+\subsection{Where the INT8 error comes from}\label{sec:quant}
+\begin{table}[t]
+\centering\footnotesize
+\caption{Fake-quantization ablation: loss increase when only one tensor class is quantized (max calibration,
+bound-derived normalization scale).}
+\label{tab:ablation}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Quantized tensors & GPT-2 & Llama~2 & stories260K \\ \midrule
+\tabinput{data/tab_ablation.tex}
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{What each idea costs: the feature ladder}\label{sec:res-ladder}
-\subsection{Context length: when does attention pay off?}\label{sec:res-context}
-\subsection{Scale}\label{sec:res-scale}
-\subsection{Where the INT8 error comes from}\label{sec:quant}
+\begin{table}[t]
+\centering\footnotesize
+\caption{Calibration of the INT8 program, stories260K (20 test stories).}
+\label{tab:calib}
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Percentile & Norm scale & INT8 loss & $\Delta$ & argmax agr. (\%) \\ \midrule
+\tabinput{data/tab_calib.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Engine design space and the one-bitstream engine}\label{sec:res-dse}
+
 \subsection{On-board measurements}\label{sec:res-board}
+\begin{table}[t]
+\centering\footnotesize
+\caption{PYNQ-Z2: engine latency per token, the same integer program on the ARM Cortex-A9, speed-up and energy per
+token (dynamic power above idle).}
+\label{tab:board}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Model & FPGA (\si{\micro\second}) & ARM (\si{\micro\second}) & Speed-up & FPGA (\si{\micro\joule}) & ARM (\si{\micro\joule}) \\ \midrule
+\tabinput{data/tab_board.tex}
+\bottomrule
+\end{tabular}
+\end{table}

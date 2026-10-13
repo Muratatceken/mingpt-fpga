@@ -2,6 +2,7 @@
 Compiler check: the float IR program of every trained model must reproduce PyTorch logits.
   python3 check_ir.py [model ...]
 """
+import json
 import os
 import sys
 
@@ -16,7 +17,14 @@ CKPT = os.path.join(ROOT, "model", "zoo")
 
 
 def load_trained(name):
-    m = ZOO[name]()
+    """the main checkpoint of an architecture; its configuration comes from <name>.spec.json when the
+    model was promoted from the training campaign (hw_final.py promote), else from the original ZOO table"""
+    spec = os.path.join(CKPT, f"{name}.spec.json")
+    if os.path.exists(spec):
+        from configs import build
+        m = build(json.load(open(spec))["spec"])
+    else:
+        m = ZOO[name]()
     m.load_state_dict(torch.load(os.path.join(CKPT, f"{name}.pt"), map_location="cpu"))
     m.eval()
     return m
