@@ -13,6 +13,7 @@
  *   ./zoo_run mem/zoo/stories260k --gen 200   greedy generation from BOS (token 1)
  * Assumes arithmetic right shift of negative integers (gcc/clang on ARM and x86).
  */
+#define _POSIX_C_SOURCE 200809L   /* clock_gettime with -std=c99 on glibc (PYNQ Linux) */
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
