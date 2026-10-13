@@ -1,1 +1,18 @@
-% written once the results are final
+% Discussion: the result-dependent paragraphs are written from paper/data once the campaigns are complete.
+\input{sections/discussion_results}
+
+\textbf{Limitations.} The models are small (12k--260k parameters) and the conclusions about architectures are drawn at
+this scale; Narang et al.\ \cite{narang2021transformer} show that architectural conclusions do not always transfer across
+scales, and outlier behaviour changes with scale \cite{dettmers2022llmint8}. On TinyStories every model is trained once
+(one seed, one learning rate) for compute reasons. All weights and the KV cache are on chip, which bounds the model size on
+the XC7Z020 at roughly the size of stories260K; larger models need weights streamed from DDR, which changes the
+performance model from compute-bound to bandwidth-bound. The attention unit assumes a head size of 8. Resource numbers
+for every model come from open-source synthesis (Yosys) without timing; post-route utilization, timing and power for the
+one-bitstream engine come from Vivado (\S\ref{sec:res-board}). Energy is measured at the board input with a USB meter,
+which includes the PS and the DDR; we therefore report dynamic power above idle.
+
+\textbf{Reproducibility.} The repository contains the training campaigns (seeds, learning-rate sweeps, logs), the
+compiler, the integer reference, the generated memories and golden vectors of every model, the RTL and testbenches, the
+Vivado scripts for the overlay and the out-of-context sweep, the PYNQ driver and measurement scripts, and the scripts that
+generate every table and figure of this paper from the raw results. A continuous-integration job re-runs the bit-exact
+regression on every commit.

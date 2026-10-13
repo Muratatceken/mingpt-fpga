@@ -218,7 +218,8 @@ def export(name, seqs, gen=0, gen_start=0, q=None, out=None, quiet=False):
     dims = dict(V=q.V, T=q.T, NL=max(1, q.n_layer), C=C, VLEN=vlen, KVD=kvd, TAB_W=tab_w, PROG_DEPTH=d_prog,
                 W_DEPTH=d_w, PRM_DEPTH=d_p, TAB_DEPTH=d_t, LUT_DEPTH=d_l, N_INSTR=len(prog),
                 OPS_USED=sum(1 << op for op in sorted({x & 0xFF for x in prog}) if op),
-                N_PARAMS=sum(L["W"].size + L["b"].size for L in q.lin.values()) + sum(q.tab[k].size for k in q.tab))
+                N_PARAMS=sum(L["W"].size + L["b"].size for L in q.lin.values()) + sum(q.tab[k].size for k in q.tab),
+                S_LOGIT=float(q.s_logit))                    # real value of one INT16 logit step (for sampling)
     json.dump(dims, open(os.path.join(out, "dims.json"), "w"), indent=1)
     write_pkg(out, name, dims)
     if not quiet:
@@ -291,6 +292,7 @@ def make_images(src, dst, d, tab_w, T):
     """images of one exported model for an engine with wider tables (tab_w) and context T: loaded at run time
     through ld_* (sizes.txt gives the number of words), golden vectors cut to T positions"""
     os.makedirs(dst, exist_ok=True)
+    json.dump(d, open(os.path.join(dst, "dims.json"), "w"), indent=1)
     for f in ("prog.mem", "weights.mem", "params.mem", "luts.mem"):
         open(os.path.join(dst, f), "w").write(open(os.path.join(src, f)).read())
     tw = d["TAB_W"]
@@ -322,7 +324,7 @@ def universal(models, T=256, out=None):
     out = out or os.path.join(ROOT, "mem", "zoo", "universal")
     os.makedirs(out, exist_ok=True)
     dims = {m: json.load(open(os.path.join(ROOT, "mem", "zoo", m, "dims.json"))) for m in models}
-    u = {k: max(d[k] for d in dims.values()) for k in dims[models[0]] if k not in ("N_PARAMS", "OPS_USED")}
+    u = {k: max(d[k] for d in dims.values()) for k in dims[models[0]] if k not in ("N_PARAMS", "OPS_USED", "S_LOGIT")}
     u.update(T=min(u["T"], T), OPS_USED=0xFFFE, N_PARAMS=max(d["N_PARAMS"] for d in dims.values()))
     write_pkg(out, "universal", u)
     json.dump(dict(u, models=models), open(os.path.join(out, "dims.json"), "w"), indent=1)

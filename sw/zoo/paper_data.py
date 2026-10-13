@@ -99,6 +99,18 @@ def main():
     mac["zooFuzzCases"] = num(sum(c["status"] == "pass" for c in fc)) if fc else TBD
     mac["zooFuzzLogits"] = num(sum(c.get("logits", 0) for c in fc)) if fc else TBD
     mac["zooArithCases"] = num(36421426)                # tb/tb_zarith.sv (fixed test set)
+    # closed-form cycle model (perf_model.py) against the RTL, every measured (run, position) pair
+    from perf_model import cycles, program
+    npairs, worst = 0, 0
+    for k, r in pipe.items():
+        d = os.path.join(ROOT, "build", "zoo", "pipe", k)
+        if "pos_cycles" in r and os.path.exists(os.path.join(d, "prog.mem")):
+            prog_, P_ = program(d)
+            for t, c in enumerate(r["pos_cycles"]):
+                worst = max(worst, abs(sum(cycles(prog_, P_, t).values()) - c))
+                npairs += 1
+    mac["zooPerfPairs"] = num(npairs) if npairs else TBD
+    mac["zooPerfMaxErr"] = num(worst) if npairs else TBD
     board = js("board_results.json")
     mac["zooBoardVerif"] = (f"{len(board['models'])} models, "
                             f"{sum(m.get('errors', 0) for m in board['models'].values())} mismatches") if board else TBD

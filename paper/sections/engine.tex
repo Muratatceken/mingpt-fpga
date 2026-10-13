@@ -39,6 +39,22 @@ one cycle per cached position; a head costs $2(t+1)$ cycles plus one reciprocal.
 starts at bit $Q_B$ when the quotient is known to be $<2^{Q_B}$ (41 instead of 64 cycles for normalization, 18 instead
 of 34 for the softmax reciprocal). Element-wise units read up to three INT8 vectors per cycle.
 
+\textbf{Cycle model.} Because every unit is a fixed state machine, the cycles of the token at position $t$ follow
+from the microcode in closed form:
+\begin{equation}
+\begin{aligned}
+C(t) ={}& 3 + 2N_\mathrm{instr} + \textstyle\sum_\mathrm{NORM} S\,(2n + 73) + C_\mathrm{other}\\
+&+ \textstyle\sum_\mathrm{GEMV}\big[n_\mathrm{in} + (B-1)\max(n_\mathrm{in},P{+}2) + P + 5\big]\\
+&+ \textstyle\sum_\mathrm{ATTN} H\,\big(2(t+1) + 30\big),
+\end{aligned}
+\label{eq:cycles}
+\end{equation}
+with $B=\lceil n_\mathrm{out}/P\rceil$ blocks per layer, $S$ normalization segments of length $n$, $H$ heads, and small
+linear terms for the remaining operations ($C_\mathrm{other}$: embeddings $N{+}2$, RoPE $2+3d_h/2$ per head, element-wise
+$n$ or $n{+}3$). Eq.~\eqref{eq:cycles} reproduces the simulated cycles of every model at every position exactly
+(\zooPerfPairs{} (run, position) pairs, maximum deviation \zooPerfMaxErr{} cycles), so the hardware cost of an
+architecture can be read off its program without simulation or synthesis.
+
 \textbf{Storage.} Eleven INT8 vector buffers (P-byte words, byte-enable writes, three asynchronous read ports), the INT16
 residual and logit memories, the KV cache, the running sums of the bag-of-words model and the token history are on chip.
 Weights, requantization parameters, tables and activation tables are block RAMs.
