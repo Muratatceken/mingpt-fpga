@@ -1,0 +1,17 @@
+{
+ "V": 27,
+ "T": 16,
+ "NL": 1,
+ "C": 1,
+ "VLEN": 100,
+ "KVD": 1,
+ "TAB_W": 16,
+ "PROG_DEPTH": 9,
+ "W_DEPTH": 6172,
+ "PRM_DEPTH": 344,
+ "TAB_DEPTH": 1396,
+ "LUT_DEPTH": 768,
+ "N_INSTR": 9,
+ "OPS_USED": 6308,
+ "N_PARAMS": 48823
+}

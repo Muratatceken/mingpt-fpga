@@ -9,7 +9,9 @@
 // own argmax is fed back as the next token and every token must equal the one
 // produced by IntRunner; the tokens are written to build/zoo/<model>_gen_rtl.txt.
 //
-// Plusargs: +NSEQ=<n> (default: all sequences)  +TV=<file> (default MEM_PATH/tv.txt)  +GEN
+// Plusargs: +NSEQ=<n> (default: all sequences)  +TV=<file> (default <model dir>/tv.txt)  +GEN
+//           +MODELDIR=<dir>: model images to load (LOADTEST; default MEM_PATH), e.g. one model of
+//           the universal one-bitstream engine (mem/zoo/universal/<model>/)
 // Parameters: SPECIALIZE   only the units this model uses
 //             LOADTEST     memories start empty and are written through the
 //                          ld_* port from the .mem files before the test
@@ -57,18 +59,25 @@ module tb_zoo;
     ld_we   <= 1'b0;
   endtask
 
+  string mdir;                                  // directory of the model images
   task automatic load_model();
-    $readmemh({MEM_PATH, "/prog.mem"}, m_prog);
-    $readmemh({MEM_PATH, "/weights.mem"}, m_w);
-    $readmemh({MEM_PATH, "/params.mem"}, m_prm);
-    $readmemh({MEM_PATH, "/tables.mem"}, m_tab);
-    $readmemh({MEM_PATH, "/luts.mem"}, m_lut);
-    for (int a = 0; a < PROG_DEPTH; a++) ld_word(0, a, m_prog[a]);
-    for (int a = 0; a < W_DEPTH; a++)    ld_word(1, a, 256'(m_w[a]));
-    for (int a = 0; a < PRM_DEPTH; a++)  ld_word(2, a, 256'(m_prm[a]));
-    for (int a = 0; a < TAB_DEPTH; a++)  ld_word(3, a, 256'(m_tab[a]));
-    for (int a = 0; a < LUT_DEPTH; a++)  ld_word(4, a, 256'(m_lut[a]));
-    $display("model loaded through ld_*: %0d words", PROG_DEPTH + W_DEPTH + PRM_DEPTH + TAB_DEPTH + LUT_DEPTH);
+    int sfd = 0, n_prog = PROG_DEPTH, n_w = W_DEPTH, n_prm = PRM_DEPTH, n_tab = TAB_DEPTH, n_lut = LUT_DEPTH, r = 0;
+    sfd = $fopen({mdir, "/sizes.txt"}, "r");      // image sizes (universal engine: smaller than the memories)
+    if (sfd != 0) begin
+      r = $fscanf(sfd, "%d %d %d %d %d", n_prog, n_w, n_prm, n_tab, n_lut);
+      $fclose(sfd);
+    end
+    $readmemh({mdir, "/prog.mem"}, m_prog, 0, n_prog - 1);
+    $readmemh({mdir, "/weights.mem"}, m_w, 0, n_w - 1);
+    $readmemh({mdir, "/params.mem"}, m_prm, 0, n_prm - 1);
+    $readmemh({mdir, "/tables.mem"}, m_tab, 0, n_tab - 1);
+    $readmemh({mdir, "/luts.mem"}, m_lut, 0, n_lut - 1);
+    for (int a = 0; a < n_prog; a++) ld_word(0, a, m_prog[a]);
+    for (int a = 0; a < n_w; a++)    ld_word(1, a, 256'(m_w[a]));
+    for (int a = 0; a < n_prm; a++)  ld_word(2, a, 256'(m_prm[a]));
+    for (int a = 0; a < n_tab; a++)  ld_word(3, a, 256'(m_tab[a]));
+    for (int a = 0; a < n_lut; a++)  ld_word(4, a, 256'(m_lut[a]));
+    $display("model %s loaded through ld_*: %0d words", mdir, n_prog + n_w + n_prm + n_tab + n_lut);
   endtask
 
   longint cyc = 0;
@@ -113,8 +122,8 @@ module tb_zoo;
   task automatic generate_check();
     int gfd = 0, ofd = 0, n = 0, tk = 0, exp_tok = 0, best = 0, bi = 0, ok = 0;
     longint gcyc;
-    gfd = $fopen({MEM_PATH, "/gen.txt"}, "r");
-    if (gfd == 0) begin $display("GEN: no %s/gen.txt", MEM_PATH); return; end
+    gfd = $fopen({mdir, "/gen.txt"}, "r");
+    if (gfd == 0) begin $display("GEN: no %s/gen.txt", mdir); return; end
     ofd = $fopen({"build/zoo/", NAME, "_gen_rtl.txt"}, "w");
     rc = $fscanf(gfd, "%d %d", n, tk);
     $fwrite(ofd, "%0d", tk);
@@ -125,7 +134,7 @@ module tb_zoo;
       gcyc += step_cyc;
       best = -1 << 30;
       bi = 0;
-      for (int k = 0; k < V; k++) begin
+      for (int k = 0; k < nv; k++) begin
         l_addr = LA_W'(k);
         #1;
         if (int'(l_data) > best) begin best = int'(l_data); bi = k; end
@@ -146,11 +155,12 @@ module tb_zoo;
 
   initial begin
     if (!$value$plusargs("NSEQ=%d", maxseq)) maxseq = 1 << 30;
-    if (!$value$plusargs("TV=%s", tvfile)) tvfile = {MEM_PATH, "/tv.txt"};
+    if (!$value$plusargs("MODELDIR=%s", mdir)) mdir = MEM_PATH;
+    if (!$value$plusargs("TV=%s", tvfile)) tvfile = {mdir, "/tv.txt"};
     fd = $fopen(tvfile, "r");
     if (fd == 0) $fatal(1, "cannot open %s", tvfile);
     rc = $fscanf(fd, "%d %d", nseq, nv);
-    if (nv != V) $fatal(1, "tv.txt has V=%0d, package V=%0d", nv, V);
+    if (nv > V) $fatal(1, "tv.txt has V=%0d > engine V=%0d", nv, V);   // universal engine: nv <= V
     if (nseq > maxseq) nseq = maxseq;
 
     repeat (4) @(posedge clk);
@@ -163,13 +173,13 @@ module tb_zoo;
       for (int tt = 0; tt < len; tt++) begin
         int step_err;
         rc = $fscanf(fd, "%d", tok);
-        for (int k = 0; k < V; k++) rc = $fscanf(fd, "%d", gold[k]);
+        for (int k = 0; k < nv; k++) rc = $fscanf(fd, "%d", gold[k]);
         run_step(tok, tt);
         tot_cyc += step_cyc;
         if (step_cyc > max_cyc) max_cyc = step_cyc;
         if (step_cyc < min_cyc) min_cyc = step_cyc;
         step_err = 0;
-        for (int k = 0; k < V; k++) begin
+        for (int k = 0; k < nv; k++) begin
           l_addr = LA_W'(k);
           #1;
 `ifdef XCHECK

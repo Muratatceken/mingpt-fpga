@@ -1,0 +1,29 @@
+{
+ "V": 512,
+ "T": 256,
+ "NL": 5,
+ "C": 64,
+ "VLEN": 352,
+ "KVD": 32,
+ "TAB_W": 32,
+ "PROG_DEPTH": 74,
+ "W_DEPTH": 32736,
+ "PRM_DEPTH": 3552,
+ "TAB_DEPTH": 36864,
+ "LUT_DEPTH": 1280,
+ "N_INSTR": 74,
+ "OPS_USED": 65534,
+ "N_PARAMS": 295608,
+ "models": [
+  "bigram",
+  "mlp",
+  "rnn",
+  "gru",
+  "bow",
+  "gpt2",
+  "microgpt",
+  "llama",
+  "nanochat",
+  "stories260k"
+ ]
+}

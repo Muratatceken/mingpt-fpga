@@ -1,0 +1,682 @@
+% =====================================================================
+% A. Integer-only / quantized inference foundations
+% =====================================================================
+
+% verified: https://doi.org/10.1109/CVPR.2018.00286 (Crossref record)
+@inproceedings{jacob2018integer,
+  author    = {Jacob, Benoit and Kligys, Skirmantas and Chen, Bo and Zhu, Menglong and Tang, Matthew and Howard, Andrew and Adam, Hartwig and Kalenichenko, Dmitry},
+  title     = {Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference},
+  booktitle = {Proc. IEEE/CVF Conf. Computer Vision and Pattern Recognition (CVPR)},
+  pages     = {2704--2713},
+  year      = {2018},
+  doi       = {10.1109/CVPR.2018.00286}
+}
+
+% verified: https://arxiv.org/abs/1806.08342
+@misc{krishnamoorthi2018quantizing,
+  author        = {Krishnamoorthi, Raghuraman},
+  title         = {Quantizing Deep Convolutional Networks for Efficient Inference: A Whitepaper},
+  howpublished  = {arXiv:1806.08342},
+  year          = {2018},
+  eprint        = {1806.08342},
+  archivePrefix = {arXiv}
+}
+
+% verified: https://arxiv.org/abs/2004.09602 (percentile calibration 99.9%-99.9999% confirmed in the PDF, Table 5 / App. A)
+@misc{wu2020integer,
+  author        = {Wu, Hao and Judd, Patrick and Zhang, Xiaojie and Isaev, Mikhail and Micikevicius, Paulius},
+  title         = {Integer Quantization for Deep Learning Inference: Principles and Empirical Evaluation},
+  howpublished  = {arXiv:2004.09602},
+  year          = {2020},
+  eprint        = {2004.09602},
+  archivePrefix = {arXiv}
+}
+
+% verified: https://arxiv.org/abs/2106.08295
+@misc{nagel2021white,
+  author        = {Nagel, Markus and Fournarakis, Marios and Amjad, Rana Ali and Bondarenko, Yelysei and van Baalen, Mart and Blankevoort, Tijmen},
+  title         = {A White Paper on Neural Network Quantization},
+  howpublished  = {arXiv:2106.08295},
+  year          = {2021},
+  eprint        = {2106.08295},
+  archivePrefix = {arXiv}
+}
+
+% verified: https://proceedings.mlr.press/v139/kim21d.html
+@inproceedings{kim2021ibert,
+  author    = {Kim, Sehoon and Gholami, Amir and Yao, Zhewei and Mahoney, Michael W. and Keutzer, Kurt},
+  title     = {{I-BERT}: Integer-only {BERT} Quantization},
+  booktitle = {Proc. 38th Int. Conf. Machine Learning (ICML)},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {139},
+  pages     = {5506--5518},
+  year      = {2021},
+  url       = {https://proceedings.mlr.press/v139/kim21d.html}
+}
+
+% verified: https://proceedings.neurips.cc/paper_files/paper/2022/hash/c3ba4962c05c49636d4c6206a97e9c8a-Abstract-Conference.html
+% NOTE: the NeurIPS proceedings title is "GPT3.int8()"; the arXiv version (2208.07339) is titled "LLM.int8()".
+@inproceedings{dettmers2022llmint8,
+  author    = {Dettmers, Tim and Lewis, Mike and Belkada, Younes and Zettlemoyer, Luke},
+  title     = {{GPT3.int8()}: 8-bit Matrix Multiplication for Transformers at Scale},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {35},
+  pages     = {30318--30332},
+  year      = {2022},
+  note      = {arXiv:2208.07339 (as ``LLM.int8()'')}
+}
+
+% verified: https://proceedings.mlr.press/v202/xiao23c.html
+@inproceedings{xiao2023smoothquant,
+  author    = {Xiao, Guangxuan and Lin, Ji and Seznec, Mickael and Wu, Hao and Demouth, Julien and Han, Song},
+  title     = {{SmoothQuant}: Accurate and Efficient Post-Training Quantization for Large Language Models},
+  booktitle = {Proc. 40th Int. Conf. Machine Learning (ICML)},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {202},
+  pages     = {38087--38099},
+  year      = {2023},
+  url       = {https://proceedings.mlr.press/v202/xiao23c.html}
+}
+
+% verified: https://iclr.cc/virtual/2023/poster/10855 and https://research-explorer.ista.ac.at/record/17378 ; arXiv https://arxiv.org/abs/2210.17323
+% NOTE: published at ICLR 2023 under the name "OPTQ"; arXiv/code name is "GPTQ".
+@inproceedings{frantar2023gptq,
+  author    = {Frantar, Elias and Ashkboos, Saleh and Hoefler, Torsten and Alistarh, Dan},
+  title     = {{OPTQ}: Accurate Quantization for Generative Pre-trained Transformers},
+  booktitle = {Proc. 11th Int. Conf. Learning Representations (ICLR)},
+  year      = {2023},
+  note      = {arXiv:2210.17323 (as ``GPTQ'')}
+}
+
+% verified: https://doi.org/10.1109/EMC2-NIPS53020.2019.00016 (Crossref) ; https://arxiv.org/abs/1910.06188
+@inproceedings{zafrir2019q8bert,
+  author    = {Zafrir, Ofir and Boudoukh, Guy and Izsak, Peter and Wasserblat, Moshe},
+  title     = {{Q8BERT}: Quantized 8Bit {BERT}},
+  booktitle = {Proc. 5th Workshop on Energy Efficient Machine Learning and Cognitive Computing -- NeurIPS Edition (EMC2-NIPS)},
+  pages     = {36--39},
+  year      = {2019},
+  doi       = {10.1109/EMC2-NIPS53020.2019.00016}
+}
+
+% verified: original URL https://on-demand.gputechconf.com/gtc/2017/presentation/s7310-8-bit-inference-with-tensorrt.pdf now redirects;
+%           archived copy opened and read: http://web.archive.org/web/20240728112810/https://on-demand.gputechconf.com/gtc/2017/presentation/s7310-8-bit-inference-with-tensorrt.pdf
+%           (title slide: "8-bit Inference with TensorRT, Szymon Migacz, NVIDIA, May 8, 2017")
+@misc{migacz2017tensorrt,
+  author       = {Migacz, Szymon},
+  title        = {8-bit Inference with {TensorRT}},
+  howpublished = {NVIDIA GPU Technology Conference (GTC), San Jose, CA, presentation S7310},
+  month        = may,
+  year         = {2017},
+  url          = {http://web.archive.org/web/20240728112810/https://on-demand.gputechconf.com/gtc/2017/presentation/s7310-8-bit-inference-with-tensorrt.pdf}
+}
+
+% verified: https://doi.org/10.1109/EMC2-NIPS53020.2019.00009 (Crossref) ; arXiv https://arxiv.org/abs/1809.04191
+% NOTE: published title ends "...for Efficient Inference"; arXiv title ends "...for Efficient Embedded Inference".
+%       99.99th-percentile activation range calibration confirmed in the PDF.
+@inproceedings{mckinstry2019discovering,
+  author    = {McKinstry, Jeffrey L. and Esser, Steven K. and Appuswamy, Rathinakumar and Bablani, Deepika and Arthur, John V. and Yildiz, Izzet B. and Modha, Dharmendra S.},
+  title     = {Discovering Low-Precision Networks Close to Full-Precision Networks for Efficient Inference},
+  booktitle = {Proc. 5th Workshop on Energy Efficient Machine Learning and Cognitive Computing -- NeurIPS Edition (EMC2-NIPS)},
+  pages     = {6--9},
+  year      = {2019},
+  doi       = {10.1109/EMC2-NIPS53020.2019.00009}
+}
+
+% verified: https://doi.org/10.18653/v1/2021.emnlp-main.627 (Crossref) ; https://arxiv.org/abs/2109.12948
+@inproceedings{bondarenko2021understanding,
+  author    = {Bondarenko, Yelysei and Nagel, Markus and Blankevoort, Tijmen},
+  title     = {Understanding and Overcoming the Challenges of Efficient Transformer Quantization},
+  booktitle = {Proc. Conf. Empirical Methods in Natural Language Processing (EMNLP)},
+  pages     = {7947--7969},
+  year      = {2021},
+  doi       = {10.18653/v1/2021.emnlp-main.627}
+}
+
+% verified: https://arxiv.org/abs/2405.17849
+@misc{hu2024illm,
+  author        = {Hu, Xing and Cheng, Yuan and Yang, Dawei and Yuan, Zhihang and Yu, Jiangyong and Xu, Chen and Zhou, Sifan},
+  title         = {{I-LLM}: Efficient Integer-Only Inference for Fully-Quantized Low-Bit Large Language Models},
+  howpublished  = {arXiv:2405.17849},
+  year          = {2024},
+  eprint        = {2405.17849},
+  archivePrefix = {arXiv}
+}
+
+% =====================================================================
+% B. FPGA/ASIC transformer & LLM accelerators, overlays, edge LLM on FPGA
+% =====================================================================
+
+% verified: https://doi.org/10.1145/3370748.3406567 (Crossref) ; https://arxiv.org/abs/2007.08563
+@inproceedings{li2020ftrans,
+  author    = {Li, Bingbing and Pandey, Santosh and Fang, Haowen and Lyv, Yanjun and Li, Ji and Chen, Jieyang and Xie, Mimi and Wan, Lipeng and Liu, Hang and Ding, Caiwen},
+  title     = {{FTRANS}: Energy-Efficient Acceleration of Transformers using {FPGA}},
+  booktitle = {Proc. ACM/IEEE Int. Symp. Low Power Electronics and Design (ISLPED)},
+  pages     = {175--180},
+  year      = {2020},
+  doi       = {10.1145/3370748.3406567}
+}
+
+% verified: https://doi.org/10.1109/HPCA47549.2020.00035 (Crossref)
+@inproceedings{ham2020a3,
+  author    = {Ham, Tae Jun and Jung, Sung Jun and Kim, Seonghak and Oh, Young H. and Park, Yeonhong and Song, Yoonho and Park, Jung-Hun and Lee, Sanghee and Park, Kyoung and Lee, Jae W. and Jeong, Deog-Kyoon},
+  title     = {{A}$^3$: Accelerating Attention Mechanisms in Neural Networks with Approximation},
+  booktitle = {Proc. IEEE Int. Symp. High Performance Computer Architecture (HPCA)},
+  pages     = {328--341},
+  year      = {2020},
+  doi       = {10.1109/HPCA47549.2020.00035}
+}
+
+% verified: https://doi.org/10.1109/HPCA51647.2021.00018 (Crossref) ; https://arxiv.org/abs/2012.09852
+@inproceedings{wang2021spatten,
+  author    = {Wang, Hanrui and Zhang, Zhekai and Han, Song},
+  title     = {{SpAtten}: Efficient Sparse Attention Architecture with Cascade Token and Head Pruning},
+  booktitle = {Proc. IEEE Int. Symp. High-Performance Computer Architecture (HPCA)},
+  pages     = {97--110},
+  year      = {2021},
+  doi       = {10.1109/HPCA51647.2021.00018}
+}
+
+% verified: https://doi.org/10.1109/ISCA52012.2021.00060 (Crossref)
+@inproceedings{ham2021elsa,
+  author    = {Ham, Tae Jun and Lee, Yejin and Seo, Seong Hoon and Kim, Soosung and Choi, Hyunji and Jung, Sung Jun and Lee, Jae W.},
+  title     = {{ELSA}: Hardware-Software Co-design for Efficient, Lightweight Self-Attention Mechanism in Neural Networks},
+  booktitle = {Proc. ACM/IEEE 48th Annu. Int. Symp. Computer Architecture (ISCA)},
+  pages     = {692--705},
+  year      = {2021},
+  doi       = {10.1109/ISCA52012.2021.00060}
+}
+
+% verified: https://doi.org/10.1109/MICRO56248.2022.00051 (Crossref) ; https://arxiv.org/abs/2209.10797
+@inproceedings{hong2022dfx,
+  author    = {Hong, Seongmin and Moon, Seungjae and Kim, Junsoo and Lee, Sungjae and Kim, Minsub and Lee, Dongsoo and Kim, Joo-Young},
+  title     = {{DFX}: A Low-latency Multi-{FPGA} Appliance for Accelerating Transformer-based Text Generation},
+  booktitle = {Proc. 55th IEEE/ACM Int. Symp. Microarchitecture (MICRO)},
+  pages     = {616--630},
+  year      = {2022},
+  doi       = {10.1109/MICRO56248.2022.00051}
+}
+
+% verified: https://doi.org/10.1145/3626202.3637562 (Crossref) ; https://arxiv.org/abs/2401.03868
+@inproceedings{zeng2024flightllm,
+  author    = {Zeng, Shulin and Liu, Jun and Dai, Guohao and Yang, Xinhao and Fu, Tianyu and Wang, Hongyi and Ma, Wenheng and Sun, Hanbo and Li, Shiyao and Huang, Zixiao and Dai, Yadong and Li, Jintao and Wang, Zehao and Zhang, Ruoyu and Wen, Kairui and Ning, Xuefei and Wang, Yu},
+  title     = {{FlightLLM}: Efficient Large Language Model Inference with a Complete Mapping Flow on {FPGAs}},
+  booktitle = {Proc. ACM/SIGDA Int. Symp. Field Programmable Gate Arrays (FPGA)},
+  pages     = {223--234},
+  year      = {2024},
+  doi       = {10.1145/3626202.3637562}
+}
+
+% verified: https://doi.org/10.1145/3656177 (Crossref: vol 18, iss 1, pp 1-29; online 2024-12-17, print 2025-03) ; https://arxiv.org/abs/2312.15159
+@article{chen2025understanding,
+  author  = {Chen, Hongzheng and Zhang, Jiahao and Du, Yixiao and Xiang, Shaojie and Yue, Zichao and Zhang, Niansong and Cai, Yaohui and Zhang, Zhiru},
+  title   = {Understanding the Potential of {FPGA}-based Spatial Acceleration for Large Language Model Inference},
+  journal = {ACM Trans. Reconfigurable Technology and Systems},
+  volume  = {18},
+  number  = {1},
+  pages   = {1--29},
+  year    = {2025},
+  doi     = {10.1145/3656177}
+}
+
+% verified: https://arxiv.org/abs/2405.00738 and https://arxiv.org/html/2405.00738v1 (builds on llama2.c; 110M TinyStories model; INT8; Virtex UltraScale+ VU9P)
+@misc{he2024hlstransform,
+  author        = {He, Andy and Key, Darren and Bulling, Mason and Chang, Andrew and Shapiro, Skyler and Lee, Everett},
+  title         = {{HLSTransform}: Energy-Efficient {Llama} 2 Inference on {FPGAs} Via High Level Synthesis},
+  howpublished  = {arXiv:2405.00738},
+  year          = {2024},
+  eprint        = {2405.00738},
+  archivePrefix = {arXiv}
+}
+
+% verified: https://doi.org/10.1109/WF-IoT62078.2024.10811385 (Crossref) ; https://arxiv.org/abs/2409.11424
+@inproceedings{xu2024llamaf,
+  author    = {Xu, Han and Li, Yutong and Ji, Shihao},
+  title     = {{LlamaF}: An Efficient {Llama2} Architecture Accelerator on Embedded {FPGAs}},
+  booktitle = {Proc. IEEE 10th World Forum on Internet of Things (WF-IoT)},
+  pages     = {1--7},
+  year      = {2024},
+  doi       = {10.1109/WF-IoT62078.2024.10811385}
+}
+
+% verified: https://arxiv.org/abs/2408.00462 (arXiv only; no peer-reviewed venue confirmed)
+@misc{haris2024secdallm,
+  author        = {Haris, Jude and Saha, Rappy and Hu, Wenhao and Cano, Jos{\'e}},
+  title         = {Designing Efficient {LLM} Accelerators for Edge Devices},
+  howpublished  = {arXiv:2408.00462},
+  year          = {2024},
+  eprint        = {2408.00462},
+  archivePrefix = {arXiv}
+}
+
+% verified: https://doi.org/10.1145/3731545.3735115 (Crossref: HPDC'25, pp 1-3, i.e., a short paper) ; https://arxiv.org/abs/2507.14139
+@inproceedings{wang2025speedllm,
+  author    = {Wang, Peipei and Guan, Wu and Liang, Liping and Wang, Zhijun and Luo, Hanqing and Zhang, Zhibin},
+  title     = {{SpeedLLM}: An {FPGA} Co-design of Large Language Model Inference Accelerator},
+  booktitle = {Proc. 34th Int. Symp. High-Performance Parallel and Distributed Computing (HPDC)},
+  pages     = {1--3},
+  year      = {2025},
+  doi       = {10.1145/3731545.3735115}
+}
+
+% verified: https://doi.org/10.1145/3748173.3779191 (Crossref, FPGA'26) ; arXiv https://arxiv.org/abs/2504.16266 (arXiv title differs: "TeLLMe: An Energy-Efficient Ternary LLM Accelerator for Prefilling and Decoding on Edge FPGAs")
+@inproceedings{qiao2026tellme,
+  author    = {Qiao, Ye and Chen, Zhiheng and Zhang, Yifan and Wang, Yian and Huang, Sitao},
+  title     = {{TeLLMe}: An Efficient End-to-End Ternary {LLM} Prefill and Decode Accelerator with Table-Lookup Matmul on Edge {FPGAs}},
+  booktitle = {Proc. ACM/SIGDA Int. Symp. Field Programmable Gate Arrays (FPGA)},
+  pages     = {247--257},
+  year      = {2026},
+  doi       = {10.1145/3748173.3779191}
+}
+
+% verified: https://arxiv.org/abs/1710.10296 (DRNN LM on PYNQ, XC7Z020; arXiv only)
+@misc{hao2017drnn,
+  author        = {Hao, Yufeng and Quigley, Steven},
+  title         = {The Implementation of a Deep Recurrent Neural Network Language Model on a {Xilinx} {FPGA}},
+  howpublished  = {arXiv:1710.10296},
+  year          = {2017},
+  eprint        = {1710.10296},
+  archivePrefix = {arXiv}
+}
+
+% verified: https://doi.org/10.1109/TCAD.2017.2705069 (Crossref) ; preprint https://people.eecs.berkeley.edu/~alanmi/publications/other/tcad18_angeleye.pdf (search snippet: evaluated on XC7Z020 and XC7Z045)
+@article{guo2018angeleye,
+  author  = {Guo, Kaiyuan and Sui, Lingzhi and Qiu, Jiantao and Yu, Jincheng and Wang, Junbin and Yao, Song and Han, Song and Wang, Yu and Yang, Huazhong},
+  title   = {{Angel-Eye}: A Complete Design Flow for Mapping {CNN} Onto Embedded {FPGA}},
+  journal = {IEEE Trans. Computer-Aided Design of Integrated Circuits and Systems},
+  volume  = {37},
+  number  = {1},
+  pages   = {35--47},
+  year    = {2018},
+  doi     = {10.1109/TCAD.2017.2705069}
+}
+
+% verified: https://doi.org/10.1109/ISCA.2018.00012 (Crossref) ; abstract at https://www.microsoft.com/en-us/research/publication/a-configurable-cloud-scale-dnn-processor-for-real-time-ai/
+@inproceedings{fowers2018brainwave,
+  author    = {Fowers, Jeremy and Ovtcharov, Kalin and Papamichael, Michael and Massengill, Todd and Liu, Ming and Lo, Daniel and Alkalay, Shlomi and Haselman, Michael and Adams, Logan and Ghandi, Mahdi and Heil, Stephen and Patel, Prerak and Sapek, Adam and Weisz, Gabriel and Woods, Lisa and Lanka, Sitaram and Reinhardt, Steven K. and Caulfield, Adrian M. and Chung, Eric S. and Burger, Doug},
+  title     = {A Configurable Cloud-Scale {DNN} Processor for Real-Time {AI}},
+  booktitle = {Proc. ACM/IEEE 45th Annu. Int. Symp. Computer Architecture (ISCA)},
+  pages     = {1--14},
+  year      = {2018},
+  doi       = {10.1109/ISCA.2018.00012}
+}
+
+% verified: https://doi.org/10.1109/TVLSI.2019.2939726 (Crossref)
+@article{yu2020opu,
+  author  = {Yu, Yunxuan and Wu, Chen and Zhao, Tiandong and Wang, Kun and He, Lei},
+  title   = {{OPU}: An {FPGA}-Based Overlay Processor for Convolutional Neural Networks},
+  journal = {IEEE Trans. Very Large Scale Integration (VLSI) Systems},
+  volume  = {28},
+  number  = {1},
+  pages   = {35--47},
+  year    = {2020},
+  doi     = {10.1109/TVLSI.2019.2939726}
+}
+
+% verified: https://doi.org/10.1145/3431920.3439477 (Crossref: FPGA'21, page 227 only => abstract-length proceedings entry) ; full text https://arxiv.org/abs/2104.06535
+@inproceedings{khan2021npe,
+  author    = {Khan, Hamza and Khan, Asma and Khan, Zainab and Huang, Lun Bin and Wang, Kun and He, Lei},
+  title     = {{NPE}: An {FPGA}-based Overlay Processor for Natural Language Processing},
+  booktitle = {Proc. ACM/SIGDA Int. Symp. Field-Programmable Gate Arrays (FPGA)},
+  pages     = {227},
+  year      = {2021},
+  doi       = {10.1145/3431920.3439477},
+  note      = {Extended version: arXiv:2104.06535}
+}
+
+% verified: https://doi.org/10.1109/MM.2019.2928962 (Crossref) ; https://arxiv.org/abs/1807.04188
+@article{moreau2019vta,
+  author  = {Moreau, Thierry and Chen, Tianqi and Vega, Luis and Roesch, Jared and Yan, Eddie and Zheng, Lianmin and Fromm, Josh and Jiang, Ziheng and Ceze, Luis and Guestrin, Carlos and Krishnamurthy, Arvind},
+  title   = {A Hardware--Software Blueprint for Flexible Deep Learning Specialization},
+  journal = {IEEE Micro},
+  volume  = {39},
+  number  = {5},
+  pages   = {8--16},
+  year    = {2019},
+  doi     = {10.1109/MM.2019.2928962}
+}
+
+% verified: https://doi.org/10.1088/1748-0221/13/07/P07027 (Crossref)
+@article{duarte2018hls4ml,
+  author  = {Duarte, J. and Han, S. and Harris, P. and Jindariani, S. and Kreinar, E. and Kreis, B. and Ngadiuba, J. and Pierini, M. and Rivera, R. and Tran, N. and Wu, Z.},
+  title   = {Fast Inference of Deep Neural Networks in {FPGAs} for Particle Physics},
+  journal = {Journal of Instrumentation},
+  volume  = {13},
+  number  = {07},
+  pages   = {P07027},
+  year    = {2018},
+  doi     = {10.1088/1748-0221/13/07/P07027}
+}
+% (Author given names are initials-only in the Crossref/IOP record; kept as initials.)
+
+% verified: https://doi.org/10.1109/FPL57034.2022.00027 (Crossref)
+@inproceedings{li2022autovitacc,
+  author    = {Li, Zhengang and Sun, Mengshu and Lu, Alec and Ma, Haoyu and Yuan, Geng and Xie, Yanyue and Tang, Hao and Li, Yanyu and Leeser, Miriam and Wang, Zhangyang and Lin, Xue and Fang, Zhenman},
+  title     = {{Auto-ViT-Acc}: An {FPGA}-Aware Automatic Acceleration Framework for Vision Transformer with Mixed-Scheme Quantization},
+  booktitle = {Proc. 32nd Int. Conf. Field-Programmable Logic and Applications (FPL)},
+  pages     = {109--116},
+  year      = {2022},
+  doi       = {10.1109/FPL57034.2022.00027}
+}
+
+% =====================================================================
+% C. Integer / approximate nonlinearities; RNN/LSTM FPGA accelerators
+% =====================================================================
+
+% verified: https://doi.org/10.1109/DAC18074.2021.9586134 (Crossref) ; https://arxiv.org/abs/2103.09301
+@inproceedings{stevens2021softermax,
+  author    = {Stevens, Jacob R. and Venkatesan, Rangharajan and Dai, Steve and Khailany, Brucek and Raghunathan, Anand},
+  title     = {Softermax: Hardware/Software Co-Design of an Efficient Softmax for Transformers},
+  booktitle = {Proc. 58th ACM/IEEE Design Automation Conf. (DAC)},
+  pages     = {469--474},
+  year      = {2021},
+  doi       = {10.1109/DAC18074.2021.9586134}
+}
+
+% verified: https://doi.org/10.1109/ICCV51070.2023.01565 (Crossref) ; https://arxiv.org/abs/2207.01405
+@inproceedings{li2023ivit,
+  author    = {Li, Zhikai and Gu, Qingyi},
+  title     = {{I-ViT}: Integer-only Quantization for Efficient Vision Transformer Inference},
+  booktitle = {Proc. IEEE/CVF Int. Conf. Computer Vision (ICCV)},
+  pages     = {17019--17029},
+  year      = {2023},
+  doi       = {10.1109/ICCV51070.2023.01565}
+}
+
+% verified: https://doi.org/10.24963/ijcai.2022/164 (Crossref) ; https://arxiv.org/abs/2111.13824
+@inproceedings{lin2022fqvit,
+  author    = {Lin, Yang and Zhang, Tianyu and Sun, Peiqin and Li, Zheng and Zhou, Shuchang},
+  title     = {{FQ-ViT}: Post-Training Quantization for Fully Quantized Vision Transformer},
+  booktitle = {Proc. 31st Int. Joint Conf. Artificial Intelligence (IJCAI)},
+  pages     = {1173--1179},
+  year      = {2022},
+  doi       = {10.24963/ijcai.2022/164}
+}
+
+% verified: https://doi.org/10.1145/3489517.3530505 (Crossref) ; https://arxiv.org/abs/2112.02191
+@inproceedings{yu2022nnlut,
+  author    = {Yu, Joonsang and Park, Junki and Park, Seongmin and Kim, Minsoo and Lee, Sihwa and Lee, Dong Hyun and Choi, Jungwook},
+  title     = {{NN-LUT}: Neural Approximation of Non-Linear Operations for Efficient Transformer Inference},
+  booktitle = {Proc. 59th ACM/IEEE Design Automation Conf. (DAC)},
+  pages     = {577--582},
+  year      = {2022},
+  doi       = {10.1145/3489517.3530505}
+}
+
+% verified: https://doi.org/10.1109/ICCAD57390.2023.10323725 (Crossref) ; abstract https://arxiv.org/abs/2510.17189
+@inproceedings{wang2023sole,
+  author    = {Wang, Wenxun and Zhou, Shuchang and Sun, Wenyu and Sun, Peiqin and Liu, Yongpan},
+  title     = {{SOLE}: Hardware-Software Co-design of Softmax and {LayerNorm} for Efficient Transformer Inference},
+  booktitle = {Proc. IEEE/ACM Int. Conf. Computer Aided Design (ICCAD)},
+  pages     = {1--9},
+  year      = {2023},
+  doi       = {10.1109/ICCAD57390.2023.10323725}
+}
+
+% verified: https://doi.org/10.1145/3020078.3021745 (Crossref) ; https://arxiv.org/abs/1612.00694
+@inproceedings{han2017ese,
+  author    = {Han, Song and Kang, Junlong and Mao, Huizi and Hu, Yiming and Li, Xin and Li, Yubin and Xie, Dongliang and Luo, Hong and Yao, Song and Wang, Yu and Yang, Huazhong and Dally, William J.},
+  title     = {{ESE}: Efficient Speech Recognition Engine with Sparse {LSTM} on {FPGA}},
+  booktitle = {Proc. ACM/SIGDA Int. Symp. Field-Programmable Gate Arrays (FPGA)},
+  pages     = {75--84},
+  year      = {2017},
+  doi       = {10.1145/3020078.3021745}
+}
+
+% verified: https://doi.org/10.1145/3174243.3174253 (Crossref) ; https://arxiv.org/abs/1803.06305
+@inproceedings{wang2018clstm,
+  author    = {Wang, Shuo and Li, Zhe and Ding, Caiwen and Yuan, Bo and Qiu, Qinru and Wang, Yanzhi and Liang, Yun},
+  title     = {{C-LSTM}: Enabling Efficient {LSTM} using Structured Compression Techniques on {FPGAs}},
+  booktitle = {Proc. ACM/SIGDA Int. Symp. Field-Programmable Gate Arrays (FPGA)},
+  pages     = {11--20},
+  year      = {2018},
+  doi       = {10.1145/3174243.3174253}
+}
+
+% =====================================================================
+% D. The models and architectural components
+% =====================================================================
+
+% verified: https://www.jmlr.org/papers/v3/bengio03a.html
+@article{bengio2003neural,
+  author  = {Bengio, Yoshua and Ducharme, R{\'e}jean and Vincent, Pascal and Jauvin, Christian},
+  title   = {A Neural Probabilistic Language Model},
+  journal = {Journal of Machine Learning Research},
+  volume  = {3},
+  pages   = {1137--1155},
+  year    = {2003}
+}
+
+% verified: https://doi.org/10.21437/Interspeech.2010-343 (Crossref)
+@inproceedings{mikolov2010recurrent,
+  author    = {Mikolov, Tom{\'a}{\v{s}} and Karafi{\'a}t, Martin and Burget, Luk{\'a}{\v{s}} and {\v{C}}ernock{\'y}, Jan and Khudanpur, Sanjeev},
+  title     = {Recurrent Neural Network Based Language Model},
+  booktitle = {Proc. Interspeech},
+  pages     = {1045--1048},
+  year      = {2010},
+  doi       = {10.21437/Interspeech.2010-343}
+}
+
+% verified: https://doi.org/10.3115/v1/D14-1179 (Crossref)
+@inproceedings{cho2014learning,
+  author    = {Cho, Kyunghyun and van Merri{\"e}nboer, Bart and Gulcehre, Caglar and Bahdanau, Dzmitry and Bougares, Fethi and Schwenk, Holger and Bengio, Yoshua},
+  title     = {Learning Phrase Representations using {RNN} Encoder--Decoder for Statistical Machine Translation},
+  booktitle = {Proc. Conf. Empirical Methods in Natural Language Processing (EMNLP)},
+  pages     = {1724--1734},
+  year      = {2014},
+  doi       = {10.3115/v1/D14-1179}
+}
+
+% verified: https://proceedings.neurips.cc/paper/2017/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html (pages not shown on the record -> omitted)
+@inproceedings{vaswani2017attention,
+  author    = {Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and Uszkoreit, Jakob and Jones, Llion and Gomez, Aidan N. and Kaiser, {\L}ukasz and Polosukhin, Illia},
+  title     = {Attention is All you Need},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {30},
+  year      = {2017}
+}
+
+% verified: https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf (PDF opened; author line read)
+@techreport{radford2019language,
+  author      = {Radford, Alec and Wu, Jeffrey and Child, Rewon and Luan, David and Amodei, Dario and Sutskever, Ilya},
+  title       = {Language Models are Unsupervised Multitask Learners},
+  institution = {OpenAI},
+  year        = {2019},
+  url         = {https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf}
+}
+
+% verified: https://arxiv.org/abs/2307.09288 (68 authors; truncated with "others")
+@misc{touvron2023llama2,
+  author        = {Touvron, Hugo and Martin, Louis and Stone, Kevin and Albert, Peter and Almahairi, Amjad and Babaei, Yasmine and others},
+  title         = {{Llama} 2: Open Foundation and Fine-Tuned Chat Models},
+  howpublished  = {arXiv:2307.09288},
+  year          = {2023},
+  eprint        = {2307.09288},
+  archivePrefix = {arXiv}
+}
+
+% verified: https://doi.org/10.1016/j.neucom.2023.127063 (Crossref; author order of the journal version) ; arXiv https://arxiv.org/abs/2104.09864
+@article{su2024roformer,
+  author  = {Su, Jianlin and Ahmed, Murtadha and Lu, Yu and Pan, Shengfeng and Bo, Wen and Liu, Yunfeng},
+  title   = {{RoFormer}: Enhanced Transformer with Rotary Position Embedding},
+  journal = {Neurocomputing},
+  volume  = {568},
+  pages   = {127063},
+  year    = {2024},
+  doi     = {10.1016/j.neucom.2023.127063}
+}
+
+% verified: https://proceedings.neurips.cc/paper/2019/hash/1e8a19426224ca89e83cef47f1e7f53b-Abstract.html
+@inproceedings{zhang2019rmsnorm,
+  author    = {Zhang, Biao and Sennrich, Rico},
+  title     = {Root Mean Square Layer Normalization},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {32},
+  year      = {2019}
+}
+
+% verified: https://arxiv.org/abs/2002.05202
+@misc{shazeer2020glu,
+  author        = {Shazeer, Noam},
+  title         = {{GLU} Variants Improve Transformer},
+  howpublished  = {arXiv:2002.05202},
+  year          = {2020},
+  eprint        = {2002.05202},
+  archivePrefix = {arXiv}
+}
+
+% verified: https://doi.org/10.18653/v1/2023.emnlp-main.298 (Crossref) ; https://arxiv.org/abs/2305.13245
+@inproceedings{ainslie2023gqa,
+  author    = {Ainslie, Joshua and Lee-Thorp, James and de Jong, Michiel and Zemlyanskiy, Yury and Lebr{\'o}n, Federico and Sanghai, Sumit},
+  title     = {{GQA}: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints},
+  booktitle = {Proc. Conf. Empirical Methods in Natural Language Processing (EMNLP)},
+  pages     = {4895--4901},
+  year      = {2023},
+  doi       = {10.18653/v1/2023.emnlp-main.298}
+}
+
+% verified: https://proceedings.neurips.cc/paper/2021/hash/2f3c6a4cd8af177f6456e7e51a916ff3-Abstract.html ; arXiv https://arxiv.org/abs/2109.08668
+% NOTE: proceedings-page title omits the "Primer:" prefix used on arXiv; the model is called Primer in the paper.
+@inproceedings{so2021primer,
+  author    = {So, David R. and Ma{\'n}ke, Wojciech and Liu, Hanxiao and Dai, Zihang and Shazeer, Noam and Le, Quoc V.},
+  title     = {Searching for Efficient Transformers for Language Modeling},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {34},
+  pages     = {6010--6022},
+  year      = {2021}
+}
+
+% verified: https://doi.org/10.18653/v1/2020.findings-emnlp.379 (Crossref) ; https://arxiv.org/abs/2010.04245
+@inproceedings{henry2020qknorm,
+  author    = {Henry, Alex and Dachapally, Prudhvi Raj and Pawar, Shubham Shantaram and Chen, Yuxuan},
+  title     = {Query-Key Normalization for Transformers},
+  booktitle = {Findings of the Association for Computational Linguistics: EMNLP 2020},
+  pages     = {4246--4253},
+  year      = {2020},
+  doi       = {10.18653/v1/2020.findings-emnlp.379}
+}
+
+% verified: https://proceedings.mlr.press/v202/dehghani23a.html (42 authors; truncated with "others")
+@inproceedings{dehghani2023scaling,
+  author    = {Dehghani, Mostafa and Djolonga, Josip and Mustafa, Basil and Padlewski, Piotr and Heek, Jonathan and Gilmer, Justin and others},
+  title     = {Scaling Vision Transformers to 22 Billion Parameters},
+  booktitle = {Proc. 40th Int. Conf. Machine Learning (ICML)},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {202},
+  pages     = {7480--7512},
+  year      = {2023},
+  url       = {https://proceedings.mlr.press/v202/dehghani23a.html}
+}
+
+% verified: https://arxiv.org/abs/2305.07759
+@misc{eldan2023tinystories,
+  author        = {Eldan, Ronen and Li, Yuanzhi},
+  title         = {{TinyStories}: How Small Can Language Models Be and Still Speak Coherent {English}?},
+  howpublished  = {arXiv:2305.07759},
+  year          = {2023},
+  eprint        = {2305.07759},
+  archivePrefix = {arXiv}
+}
+
+% ---- Karpathy repositories (GitHub API checked 2026-10-13; created_at shown) ----
+
+% verified: https://github.com/karpathy/makemore (created 2022-06-09)
+@misc{karpathy2022makemore,
+  author       = {Karpathy, Andrej},
+  title        = {makemore: An Autoregressive Character-Level Language Model for Making More Things},
+  howpublished = {\url{https://github.com/karpathy/makemore}},
+  year         = {2022},
+  note         = {Accessed: 2026-10-13}
+}
+
+% verified: https://github.com/karpathy/minGPT (created 2020-08-17)
+@misc{karpathy2020mingpt,
+  author       = {Karpathy, Andrej},
+  title        = {{minGPT}: A Minimal {PyTorch} Re-implementation of the {OpenAI} {GPT}},
+  howpublished = {\url{https://github.com/karpathy/minGPT}},
+  year         = {2020},
+  note         = {Accessed: 2026-10-13}
+}
+
+% verified: https://github.com/karpathy/nanoGPT (created 2022-12-28)
+@misc{karpathy2022nanogpt,
+  author       = {Karpathy, Andrej},
+  title        = {{nanoGPT}: The Simplest, Fastest Repository for Training/Finetuning Medium-Sized {GPTs}},
+  howpublished = {\url{https://github.com/karpathy/nanoGPT}},
+  year         = {2022},
+  note         = {Accessed: 2026-10-13}
+}
+
+% verified: https://github.com/karpathy/llama2.c (created 2023-07-23); README confirms stories260K row and the int8 (Q8_0) scheme
+@misc{karpathy2023llama2c,
+  author       = {Karpathy, Andrej},
+  title        = {llama2.c: Inference {Llama} 2 in One File of Pure {C}},
+  howpublished = {\url{https://github.com/karpathy/llama2.c}},
+  year         = {2023},
+  note         = {Accessed: 2026-10-13}
+}
+
+% verified: https://huggingface.co/karpathy/tinyllamas/tree/main/stories260K (files stories260K.bin/.pt, tok512.bin/.model present)
+@misc{karpathy2023tinyllamas,
+  author       = {Karpathy, Andrej},
+  title        = {tinyllamas: {Llama} 2 Architecture Models Trained on {TinyStories} (incl. stories260K)},
+  howpublished = {\url{https://huggingface.co/karpathy/tinyllamas}},
+  year         = {2023},
+  note         = {Accessed: 2026-10-13}
+}
+
+% verified: https://github.com/karpathy/nanochat (created 2025-10-13); nanochat/gpt.py docstring lists: rotary embeddings, QK norm,
+%           untied embeddings, relu^2 MLP, norm after token embedding, parameter-free rmsnorm, no bias, GQA
+@misc{karpathy2025nanochat,
+  author       = {Karpathy, Andrej},
+  title        = {nanochat: The Best {ChatGPT} That \$100 Can Buy},
+  howpublished = {\url{https://github.com/karpathy/nanochat}},
+  year         = {2025},
+  note         = {Accessed: 2026-10-13}
+}
+
+% verified: blog post https://karpathy.github.io/2026/02/12/microgpt/ (dated Feb 12, 2026) and
+%           gist https://gist.github.com/karpathy/8627fe009c40f57531cb18360106ce95 (page title "microgpt · GitHub");
+%           companion build-up gist https://gist.github.com/karpathy/561ac2de12a47cc06a23691e1be9543a (created 2026-02-13)
+%           Code comment: "Follow GPT-2 ... with minor differences: layernorm -> rmsnorm, no biases, GeLU -> ReLU"
+@misc{karpathy2026microgpt,
+  author       = {Karpathy, Andrej},
+  title        = {microgpt},
+  howpublished = {Blog post, \url{https://karpathy.github.io/2026/02/12/microgpt/}; code: \url{https://gist.github.com/karpathy/8627fe009c40f57531cb18360106ce95}},
+  month        = feb,
+  year         = {2026},
+  note         = {Accessed: 2026-10-13}
+}
+
+% =====================================================================
+% E. Architecture-modification / hardware-cost studies
+% =====================================================================
+
+% verified: https://doi.org/10.18653/v1/2021.emnlp-main.465 (Crossref; published author name "Liam Fedus") ; https://arxiv.org/abs/2102.11972
+@inproceedings{narang2021transformer,
+  author    = {Narang, Sharan and Chung, Hyung Won and Tay, Yi and Fedus, Liam and Fevry, Thibault and Matena, Michael and Malkan, Karishma and Fiedel, Noah and Shazeer, Noam and Lan, Zhenzhong and Zhou, Yanqi and Li, Wei and Ding, Nan and Marcus, Jake and Roberts, Adam and Raffel, Colin},
+  title     = {Do Transformer Modifications Transfer Across Implementations and Applications?},
+  booktitle = {Proc. Conf. Empirical Methods in Natural Language Processing (EMNLP)},
+  pages     = {5758--5773},
+  year      = {2021},
+  doi       = {10.18653/v1/2021.emnlp-main.465}
+}
+
+% verified: https://arxiv.org/abs/2302.14017 (journal_ref: ASSYST workshop at ISCA 2023)
+@misc{kim2023fullstack,
+  author        = {Kim, Sehoon and Hooper, Coleman and Wattanawong, Thanakul and Kang, Minwoo and Yan, Ruohan and Genc, Hasan and Dinh, Grace and Huang, Qijing and Keutzer, Kurt and Mahoney, Michael W. and Shao, Yakun Sophia and Gholami, Amir},
+  title         = {Full Stack Optimization of Transformer Inference: a Survey},
+  howpublished  = {arXiv:2302.14017; presented at the ASSYST Workshop at ISCA 2023},
+  year          = {2023},
+  eprint        = {2302.14017},
+  archivePrefix = {arXiv}
+}
+
+% verified: https://doi.org/10.18653/v1/2020.acl-main.686 (Crossref) ; https://arxiv.org/abs/2005.14187
+@inproceedings{wang2020hat,
+  author    = {Wang, Hanrui and Wu, Zhanghao and Liu, Zhijian and Cai, Han and Zhu, Ligeng and Gan, Chuang and Han, Song},
+  title     = {{HAT}: Hardware-Aware Transformers for Efficient Natural Language Processing},
+  booktitle = {Proc. 58th Annu. Meeting of the Association for Computational Linguistics (ACL)},
+  pages     = {7675--7688},
+  year      = {2020},
+  doi       = {10.18653/v1/2020.acl-main.686}
+}

@@ -8,6 +8,8 @@
 #   COVER=1   Verilator line/toggle coverage -> <objdir>/coverage.dat
 #   SIM=icarus  4-state simulation (sv2v + Icarus) with X checks on every logit
 #   TV=<file> golden vectors (default <memdir>/tv.txt)
+#   MODEL=<dir> model images loaded into the engine (with LOAD=1), e.g. for the universal engine:
+#             LOAD=1 MODEL=mem/zoo/universal/gpt2 scripts/zoo_sim.sh universal
 # Verilator runs with --assert (address ranges, accumulator overflow, divider precondition).
 set -euo pipefail
 export PATH="/opt/homebrew/bin:$PATH"     # ARM Verilator/Yosys/sv2v/Icarus (macOS)
@@ -26,7 +28,8 @@ OBJ="$ROOT/build/zoo/obj_${TAG}_${SIM}"
 mkdir -p "$OBJ"
 SRC=(rtl/zoo/zrom.sv rtl/zoo/zdiv.sv rtl/requant.sv rtl/isqrt_seq.sv rtl/zoo/zoo_core.sv tb/tb_zoo.sv)
 PLUS=(+NSEQ="$NSEQ")
-if [ -f "$MEM/gen.txt" ]; then PLUS+=(+GEN); fi             # closed-loop greedy generation check
+GDIR="$MEM"; if [ -n "${MODEL:-}" ]; then GDIR="${MODEL%/}"; PLUS+=(+MODELDIR="$GDIR"); fi
+if [ -f "$GDIR/gen.txt" ]; then PLUS+=(+GEN); fi            # closed-loop greedy generation check
 if [ -n "${TV:-}" ]; then PLUS+=(+TV="$TV"); fi
 
 if [ "$SIM" = icarus ]; then

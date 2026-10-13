@@ -1,0 +1,1636 @@
+{
+ "seed": 1,
+ "cases": [
+  {
+   "case": 0,
+   "arch": "bow",
+   "V": 512,
+   "T": 8,
+   "L": 2,
+   "C": 8,
+   "params": 24168,
+   "spec": {
+    "cls": "BoW",
+    "kwargs": {
+     "V": 512,
+     "T": 8,
+     "n_embd": 16,
+     "n_hidden": 216
+    }
+   },
+   "status": "pass",
+   "steps": 23,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 2037,
+   "logits": 11776
+  },
+  {
+   "case": 1,
+   "arch": "rnn",
+   "V": 512,
+   "T": 64,
+   "L": 1,
+   "C": 48,
+   "params": 46720,
+   "spec": {
+    "cls": "RNN",
+    "kwargs": {
+     "V": 512,
+     "T": 64,
+     "n_embd": 16,
+     "n_hidden": 64,
+     "cell": "rnn"
+    }
+   },
+   "status": "pass",
+   "steps": 175,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 4862,
+   "logits": 89600
+  },
+  {
+   "case": 2,
+   "arch": "lad5_llama",
+   "V": 512,
+   "T": 64,
+   "L": 1,
+   "C": 32,
+   "params": 20320,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 512,
+     "T": 64,
+     "n_layer": 1,
+     "n_embd": 32,
+     "n_head": 4,
+     "n_kv_head": 2,
+     "hidden": 8,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "swiglu",
+     "bias": false,
+     "tied": true
+    }
+   },
+   "status": "pass",
+   "steps": 165,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 3518,
+   "logits": 84480
+  },
+  {
+   "case": 3,
+   "arch": "lad6_relu2",
+   "V": 97,
+   "T": 8,
+   "L": 3,
+   "C": 16,
+   "params": 11652,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 97,
+     "T": 8,
+     "n_layer": 3,
+     "n_embd": 16,
+     "n_head": 2,
+     "n_kv_head": 1,
+     "hidden": 60,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "relu2"
+    }
+   },
+   "status": "pass",
+   "steps": 28,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 2674,
+   "logits": 2716
+  },
+  {
+   "case": 4,
+   "arch": "lad7_qknorm",
+   "V": 200,
+   "T": 32,
+   "L": 2,
+   "C": 64,
+   "params": 53072,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 200,
+     "T": 32,
+     "n_layer": 2,
+     "n_embd": 64,
+     "n_head": 8,
+     "n_kv_head": 4,
+     "hidden": 8,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "relu2",
+     "qk_norm": true
+    }
+   },
+   "status": "pass",
+   "steps": 131,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 9616,
+   "logits": 26200
+  },
+  {
+   "case": 5,
+   "arch": "lad4_gqa",
+   "V": 97,
+   "T": 8,
+   "L": 1,
+   "C": 16,
+   "params": 4584,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 97,
+     "T": 8,
+     "n_layer": 1,
+     "n_embd": 16,
+     "n_head": 2,
+     "n_kv_head": 1,
+     "hidden": 12,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "swiglu"
+    }
+   },
+   "status": "pass",
+   "steps": 39,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 1002,
+   "logits": 3783
+  },
+  {
+   "case": 6,
+   "arch": "bigram",
+   "V": 512,
+   "T": 24,
+   "L": 2,
+   "C": 16,
+   "params": 262144,
+   "spec": {
+    "cls": "Bigram",
+    "kwargs": {
+     "V": 512,
+     "T": 24
+    }
+   },
+   "status": "pass",
+   "steps": 79,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 521,
+   "logits": 40448
+  },
+  {
+   "case": 7,
+   "arch": "lad2_rope",
+   "V": 27,
+   "T": 16,
+   "L": 1,
+   "C": 48,
+   "params": 12968,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 27,
+     "T": 16,
+     "n_layer": 1,
+     "n_embd": 48,
+     "n_head": 6,
+     "n_kv_head": 6,
+     "hidden": 8,
+     "norm": "rms",
+     "pos": "rope"
+    }
+   },
+   "status": "pass",
+   "steps": 57,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 2558,
+   "logits": 1539
+  },
+  {
+   "case": 8,
+   "arch": "lad0_gpt2",
+   "V": 27,
+   "T": 64,
+   "L": 2,
+   "C": 48,
+   "params": 26608,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 27,
+     "T": 64,
+     "n_layer": 2,
+     "n_embd": 48,
+     "n_head": 6,
+     "n_kv_head": 6,
+     "hidden": 8
+    }
+   },
+   "status": "pass",
+   "steps": 205,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 4854,
+   "logits": 5535
+  },
+  {
+   "case": 9,
+   "arch": "microgpt",
+   "V": 50,
+   "T": 64,
+   "L": 2,
+   "C": 64,
+   "params": 45312,
+   "spec": {
+    "cls": "MicroGPT",
+    "kwargs": {
+     "V": 50,
+     "T": 64,
+     "n_layer": 2,
+     "n_embd": 64,
+     "n_head": 8,
+     "hidden": 8
+    }
+   },
+   "status": "pass",
+   "steps": 166,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 7316,
+   "logits": 8300
+  },
+  {
+   "case": 10,
+   "arch": "rnn",
+   "V": 512,
+   "T": 8,
+   "L": 1,
+   "C": 48,
+   "params": 21328,
+   "spec": {
+    "cls": "RNN",
+    "kwargs": {
+     "V": 512,
+     "T": 8,
+     "n_embd": 32,
+     "n_hidden": 8,
+     "cell": "rnn"
+    }
+   },
+   "status": "pass",
+   "steps": 27,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 764,
+   "logits": 13824
+  },
+  {
+   "case": 11,
+   "arch": "bow",
+   "V": 50,
+   "T": 64,
+   "L": 3,
+   "C": 16,
+   "params": 19370,
+   "spec": {
+    "cls": "BoW",
+    "kwargs": {
+     "V": 50,
+     "T": 64,
+     "n_embd": 32,
+     "n_hidden": 216
+    }
+   },
+   "status": "pass",
+   "steps": 263,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 2181,
+   "logits": 13150
+  },
+  {
+   "case": 12,
+   "arch": "mlp",
+   "V": 512,
+   "T": 8,
+   "L": 3,
+   "C": 32,
+   "params": 6924,
+   "spec": {
+    "cls": "MLP",
+    "kwargs": {
+     "V": 512,
+     "T": 8,
+     "n_embd": 4,
+     "n_hidden": 8,
+     "k": 8
+    }
+   },
+   "status": "pass",
+   "steps": 28,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 742,
+   "logits": 14336
+  },
+  {
+   "case": 13,
+   "arch": "nanochat",
+   "V": 200,
+   "T": 16,
+   "L": 2,
+   "C": 32,
+   "params": 59904,
+   "spec": {
+    "cls": "NanoChat",
+    "kwargs": {
+     "V": 200,
+     "T": 16,
+     "n_layer": 2,
+     "n_embd": 32,
+     "n_head": 4,
+     "n_kv_head": 2,
+     "hidden": 320
+    }
+   },
+   "status": "pass",
+   "steps": 53,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 9358,
+   "logits": 10600
+  },
+  {
+   "case": 14,
+   "arch": "nanochat",
+   "V": 512,
+   "T": 32,
+   "L": 3,
+   "C": 16,
+   "params": 19456,
+   "spec": {
+    "cls": "NanoChat",
+    "kwargs": {
+     "V": 512,
+     "T": 32,
+     "n_layer": 3,
+     "n_embd": 16,
+     "n_head": 2,
+     "n_kv_head": 1,
+     "hidden": 8
+    }
+   },
+   "status": "pass",
+   "steps": 103,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 3872,
+   "logits": 52736
+  },
+  {
+   "case": 15,
+   "arch": "gpt2",
+   "V": 512,
+   "T": 64,
+   "L": 1,
+   "C": 32,
+   "params": 39784,
+   "spec": {
+    "cls": "GPT2",
+    "kwargs": {
+     "V": 512,
+     "T": 64,
+     "n_layer": 1,
+     "n_embd": 32,
+     "n_head": 4,
+     "hidden": 8
+    }
+   },
+   "status": "pass",
+   "steps": 55,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 3425,
+   "logits": 28160
+  },
+  {
+   "case": 16,
+   "arch": "bigram",
+   "V": 512,
+   "T": 64,
+   "L": 3,
+   "C": 32,
+   "params": 262144,
+   "spec": {
+    "cls": "Bigram",
+    "kwargs": {
+     "V": 512,
+     "T": 64
+    }
+   },
+   "status": "pass",
+   "steps": 286,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 521,
+   "logits": 146432
+  },
+  {
+   "case": 17,
+   "arch": "nanochat",
+   "V": 512,
+   "T": 64,
+   "L": 1,
+   "C": 64,
+   "params": 78848,
+   "spec": {
+    "cls": "NanoChat",
+    "kwargs": {
+     "V": 512,
+     "T": 64,
+     "n_layer": 1,
+     "n_embd": 64,
+     "n_head": 8,
+     "n_kv_head": 4,
+     "hidden": 8
+    }
+   },
+   "status": "pass",
+   "steps": 165,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 8588,
+   "logits": 84480
+  },
+  {
+   "case": 18,
+   "arch": "lad2_rope",
+   "V": 50,
+   "T": 32,
+   "L": 3,
+   "C": 24,
+   "params": 11016,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 50,
+     "T": 32,
+     "n_layer": 3,
+     "n_embd": 24,
+     "n_head": 3,
+     "n_kv_head": 3,
+     "hidden": 8,
+     "norm": "rms",
+     "pos": "rope"
+    }
+   },
+   "status": "pass",
+   "steps": 106,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 3112,
+   "logits": 5300
+  },
+  {
+   "case": 19,
+   "arch": "gpt2",
+   "V": 200,
+   "T": 24,
+   "L": 3,
+   "C": 64,
+   "params": 81240,
+   "spec": {
+    "cls": "GPT2",
+    "kwargs": {
+     "V": 200,
+     "T": 24,
+     "n_layer": 3,
+     "n_embd": 64,
+     "n_head": 8,
+     "hidden": 8
+    }
+   },
+   "status": "pass",
+   "steps": 62,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 11122,
+   "logits": 12400
+  },
+  {
+   "case": 20,
+   "arch": "lad1_rms",
+   "V": 27,
+   "T": 16,
+   "L": 3,
+   "C": 48,
+   "params": 34392,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 27,
+     "T": 16,
+     "n_layer": 3,
+     "n_embd": 48,
+     "n_head": 6,
+     "n_kv_head": 6,
+     "hidden": 8,
+     "norm": "rms"
+    }
+   },
+   "status": "pass",
+   "steps": 62,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 6350,
+   "logits": 1674
+  },
+  {
+   "case": 21,
+   "arch": "lad4_gqa",
+   "V": 512,
+   "T": 32,
+   "L": 1,
+   "C": 48,
+   "params": 57568,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 512,
+     "T": 32,
+     "n_layer": 1,
+     "n_embd": 48,
+     "n_head": 6,
+     "n_kv_head": 3,
+     "hidden": 8,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "swiglu"
+    }
+   },
+   "status": "pass",
+   "steps": 66,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 5218,
+   "logits": 33792
+  },
+  {
+   "case": 22,
+   "arch": "lad7_qknorm",
+   "V": 50,
+   "T": 64,
+   "L": 3,
+   "C": 16,
+   "params": 12920,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 50,
+     "T": 64,
+     "n_layer": 3,
+     "n_embd": 16,
+     "n_head": 2,
+     "n_kv_head": 1,
+     "hidden": 88,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "relu2",
+     "qk_norm": true
+    }
+   },
+   "status": "pass",
+   "steps": 126,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 3888,
+   "logits": 6300
+  },
+  {
+   "case": 23,
+   "arch": "lad1_rms",
+   "V": 512,
+   "T": 64,
+   "L": 3,
+   "C": 48,
+   "params": 83256,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 512,
+     "T": 64,
+     "n_layer": 3,
+     "n_embd": 48,
+     "n_head": 6,
+     "n_kv_head": 6,
+     "hidden": 8,
+     "norm": "rms"
+    }
+   },
+   "status": "pass",
+   "steps": 249,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 9782,
+   "logits": 127488
+  },
+  {
+   "case": 24,
+   "arch": "lad4_gqa",
+   "V": 512,
+   "T": 24,
+   "L": 3,
+   "C": 64,
+   "params": 108272,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 512,
+     "T": 24,
+     "n_layer": 3,
+     "n_embd": 64,
+     "n_head": 8,
+     "n_kv_head": 4,
+     "hidden": 8,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "swiglu"
+    }
+   },
+   "status": "pass",
+   "steps": 79,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 12905,
+   "logits": 40448
+  },
+  {
+   "case": 25,
+   "arch": "nanochat",
+   "V": 200,
+   "T": 16,
+   "L": 2,
+   "C": 48,
+   "params": 59136,
+   "spec": {
+    "cls": "NanoChat",
+    "kwargs": {
+     "V": 200,
+     "T": 16,
+     "n_layer": 2,
+     "n_embd": 48,
+     "n_head": 6,
+     "n_kv_head": 3,
+     "hidden": 136
+    }
+   },
+   "status": "pass",
+   "steps": 60,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 9870,
+   "logits": 12000
+  },
+  {
+   "case": 26,
+   "arch": "bow",
+   "V": 200,
+   "T": 8,
+   "L": 3,
+   "C": 32,
+   "params": 12288,
+   "spec": {
+    "cls": "BoW",
+    "kwargs": {
+     "V": 200,
+     "T": 8,
+     "n_embd": 16,
+     "n_hidden": 168
+    }
+   },
+   "status": "pass",
+   "steps": 28,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 1221,
+   "logits": 5600
+  },
+  {
+   "case": 27,
+   "arch": "mlp",
+   "V": 512,
+   "T": 24,
+   "L": 1,
+   "C": 64,
+   "params": 14872,
+   "spec": {
+    "cls": "MLP",
+    "kwargs": {
+     "V": 512,
+     "T": 24,
+     "n_embd": 16,
+     "n_hidden": 8,
+     "k": 16
+    }
+   },
+   "status": "pass",
+   "steps": 76,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 1190,
+   "logits": 38912
+  },
+  {
+   "case": 28,
+   "arch": "lad3_swiglu",
+   "V": 97,
+   "T": 16,
+   "L": 2,
+   "C": 32,
+   "params": 29776,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 97,
+     "T": 16,
+     "n_layer": 2,
+     "n_embd": 32,
+     "n_head": 4,
+     "n_kv_head": 4,
+     "hidden": 76,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "swiglu"
+    }
+   },
+   "status": "pass",
+   "steps": 48,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 5037,
+   "logits": 4656
+  },
+  {
+   "case": 29,
+   "arch": "lad1_rms",
+   "V": 200,
+   "T": 64,
+   "L": 3,
+   "C": 24,
+   "params": 19752,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 200,
+     "T": 64,
+     "n_layer": 3,
+     "n_embd": 24,
+     "n_head": 3,
+     "n_kv_head": 3,
+     "hidden": 8,
+     "norm": "rms"
+    }
+   },
+   "status": "pass",
+   "steps": 179,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 3485,
+   "logits": 35800
+  },
+  {
+   "case": 30,
+   "arch": "llama",
+   "V": 97,
+   "T": 8,
+   "L": 3,
+   "C": 16,
+   "params": 40832,
+   "spec": {
+    "cls": "Llama",
+    "kwargs": {
+     "V": 97,
+     "T": 8,
+     "n_layer": 3,
+     "n_embd": 16,
+     "n_head": 2,
+     "n_kv_head": 1,
+     "hidden": 256
+    }
+   },
+   "status": "pass",
+   "steps": 29,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 7367,
+   "logits": 2813
+  },
+  {
+   "case": 31,
+   "arch": "lad2_rope",
+   "V": 27,
+   "T": 64,
+   "L": 3,
+   "C": 32,
+   "params": 25640,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 27,
+     "T": 64,
+     "n_layer": 3,
+     "n_embd": 32,
+     "n_head": 4,
+     "n_kv_head": 4,
+     "hidden": 56,
+     "norm": "rms",
+     "pos": "rope"
+    }
+   },
+   "status": "pass",
+   "steps": 216,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 5574,
+   "logits": 5832
+  },
+  {
+   "case": 32,
+   "arch": "lad4_gqa",
+   "V": 27,
+   "T": 24,
+   "L": 1,
+   "C": 32,
+   "params": 15216,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 27,
+     "T": 24,
+     "n_layer": 1,
+     "n_embd": 32,
+     "n_head": 4,
+     "n_kv_head": 2,
+     "hidden": 104,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "swiglu"
+    }
+   },
+   "status": "pass",
+   "steps": 72,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 2728,
+   "logits": 1944
+  },
+  {
+   "case": 33,
+   "arch": "nanochat",
+   "V": 27,
+   "T": 32,
+   "L": 1,
+   "C": 48,
+   "params": 10272,
+   "spec": {
+    "cls": "NanoChat",
+    "kwargs": {
+     "V": 27,
+     "T": 32,
+     "n_layer": 1,
+     "n_embd": 48,
+     "n_head": 6,
+     "n_kv_head": 3,
+     "hidden": 8
+    }
+   },
+   "status": "pass",
+   "steps": 93,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 3270,
+   "logits": 2511
+  },
+  {
+   "case": 34,
+   "arch": "rnn",
+   "V": 50,
+   "T": 24,
+   "L": 3,
+   "C": 64,
+   "params": 60402,
+   "spec": {
+    "cls": "RNN",
+    "kwargs": {
+     "V": 50,
+     "T": 24,
+     "n_embd": 32,
+     "n_hidden": 204,
+     "cell": "rnn"
+    }
+   },
+   "status": "pass",
+   "steps": 66,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 7862,
+   "logits": 3300
+  },
+  {
+   "case": 35,
+   "arch": "bow",
+   "V": 50,
+   "T": 8,
+   "L": 2,
+   "C": 24,
+   "params": 5098,
+   "spec": {
+    "cls": "BoW",
+    "kwargs": {
+     "V": 50,
+     "T": 8,
+     "n_embd": 32,
+     "n_hidden": 24
+    }
+   },
+   "status": "pass",
+   "steps": 31,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 645,
+   "logits": 1550
+  },
+  {
+   "case": 36,
+   "arch": "rnn",
+   "V": 50,
+   "T": 16,
+   "L": 1,
+   "C": 48,
+   "params": 48834,
+   "spec": {
+    "cls": "RNN",
+    "kwargs": {
+     "V": 50,
+     "T": 16,
+     "n_embd": 8,
+     "n_hidden": 192,
+     "cell": "rnn"
+    }
+   },
+   "status": "pass",
+   "steps": 59,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 6407,
+   "logits": 2950
+  },
+  {
+   "case": 37,
+   "arch": "lad2_rope",
+   "V": 512,
+   "T": 8,
+   "L": 2,
+   "C": 16,
+   "params": 30288,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 512,
+     "T": 8,
+     "n_layer": 2,
+     "n_embd": 16,
+     "n_head": 2,
+     "n_kv_head": 2,
+     "hidden": 176,
+     "norm": "rms",
+     "pos": "rope"
+    }
+   },
+   "status": "pass",
+   "steps": 19,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 3720,
+   "logits": 9728
+  },
+  {
+   "case": 38,
+   "arch": "gru",
+   "V": 27,
+   "T": 8,
+   "L": 3,
+   "C": 32,
+   "params": 4083,
+   "spec": {
+    "cls": "RNN",
+    "kwargs": {
+     "V": 27,
+     "T": 8,
+     "n_embd": 16,
+     "n_hidden": 24,
+     "cell": "gru"
+    }
+   },
+   "status": "pass",
+   "steps": 25,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 607,
+   "logits": 675
+  },
+  {
+   "case": 39,
+   "arch": "lad2_rope",
+   "V": 50,
+   "T": 32,
+   "L": 3,
+   "C": 32,
+   "params": 17752,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 50,
+     "T": 32,
+     "n_layer": 3,
+     "n_embd": 32,
+     "n_head": 4,
+     "n_kv_head": 4,
+     "hidden": 8,
+     "norm": "rms",
+     "pos": "rope"
+    }
+   },
+   "status": "pass",
+   "steps": 118,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 4282,
+   "logits": 5900
+  },
+  {
+   "case": 40,
+   "arch": "gpt2",
+   "V": 97,
+   "T": 64,
+   "L": 2,
+   "C": 16,
+   "params": 12304,
+   "spec": {
+    "cls": "GPT2",
+    "kwargs": {
+     "V": 97,
+     "T": 64,
+     "n_layer": 2,
+     "n_embd": 16,
+     "n_head": 2,
+     "hidden": 88
+    }
+   },
+   "status": "pass",
+   "steps": 246,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 2275,
+   "logits": 23862
+  },
+  {
+   "case": 41,
+   "arch": "mlp",
+   "V": 97,
+   "T": 24,
+   "L": 3,
+   "C": 24,
+   "params": 38849,
+   "spec": {
+    "cls": "MLP",
+    "kwargs": {
+     "V": 97,
+     "T": 24,
+     "n_embd": 8,
+     "n_hidden": 168,
+     "k": 16
+    }
+   },
+   "status": "pass",
+   "steps": 78,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 5040,
+   "logits": 7566
+  },
+  {
+   "case": 42,
+   "arch": "lad3_swiglu",
+   "V": 200,
+   "T": 16,
+   "L": 3,
+   "C": 32,
+   "params": 29320,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 200,
+     "T": 16,
+     "n_layer": 3,
+     "n_embd": 32,
+     "n_head": 4,
+     "n_kv_head": 4,
+     "hidden": 12,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "swiglu"
+    }
+   },
+   "status": "pass",
+   "steps": 24,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 5096,
+   "logits": 4800
+  },
+  {
+   "case": 43,
+   "arch": "bow",
+   "V": 27,
+   "T": 32,
+   "L": 3,
+   "C": 24,
+   "params": 34155,
+   "spec": {
+    "cls": "BoW",
+    "kwargs": {
+     "V": 27,
+     "T": 32,
+     "n_embd": 16,
+     "n_hidden": 992
+    }
+   },
+   "status": "pass",
+   "steps": 99,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 4181,
+   "logits": 2673
+  },
+  {
+   "case": 44,
+   "arch": "lad3_swiglu",
+   "V": 97,
+   "T": 16,
+   "L": 1,
+   "C": 8,
+   "params": 5200,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 97,
+     "T": 16,
+     "n_layer": 1,
+     "n_embd": 8,
+     "n_head": 1,
+     "n_kv_head": 1,
+     "hidden": 128,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "swiglu"
+    }
+   },
+   "status": "pass",
+   "steps": 56,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 1227,
+   "logits": 5432
+  },
+  {
+   "case": 45,
+   "arch": "lad4_gqa",
+   "V": 27,
+   "T": 8,
+   "L": 2,
+   "C": 16,
+   "params": 17008,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 27,
+     "T": 8,
+     "n_layer": 2,
+     "n_embd": 16,
+     "n_head": 2,
+     "n_kv_head": 1,
+     "hidden": 144,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "swiglu"
+    }
+   },
+   "status": "pass",
+   "steps": 25,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 3319,
+   "logits": 675
+  },
+  {
+   "case": 46,
+   "arch": "gru",
+   "V": 50,
+   "T": 64,
+   "L": 1,
+   "C": 64,
+   "params": 9690,
+   "spec": {
+    "cls": "RNN",
+    "kwargs": {
+     "V": 50,
+     "T": 64,
+     "n_embd": 8,
+     "n_hidden": 44,
+     "cell": "gru"
+    }
+   },
+   "status": "pass",
+   "steps": 151,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 1422,
+   "logits": 7550
+  },
+  {
+   "case": 47,
+   "arch": "gru",
+   "V": 27,
+   "T": 8,
+   "L": 2,
+   "C": 8,
+   "params": 12287,
+   "spec": {
+    "cls": "RNN",
+    "kwargs": {
+     "V": 27,
+     "T": 8,
+     "n_embd": 32,
+     "n_hidden": 44,
+     "cell": "gru"
+    }
+   },
+   "status": "pass",
+   "steps": 34,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 1753,
+   "logits": 918
+  },
+  {
+   "case": 48,
+   "arch": "mlp",
+   "V": 97,
+   "T": 24,
+   "L": 2,
+   "C": 16,
+   "params": 14441,
+   "spec": {
+    "cls": "MLP",
+    "kwargs": {
+     "V": 97,
+     "T": 24,
+     "n_embd": 8,
+     "n_hidden": 60,
+     "k": 16
+    }
+   },
+   "status": "pass",
+   "steps": 79,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 1972,
+   "logits": 7663
+  },
+  {
+   "case": 49,
+   "arch": "lad6_relu2",
+   "V": 97,
+   "T": 16,
+   "L": 3,
+   "C": 16,
+   "params": 6504,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 97,
+     "T": 16,
+     "n_layer": 3,
+     "n_embd": 16,
+     "n_head": 2,
+     "n_kv_head": 1,
+     "hidden": 8,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "relu2"
+    }
+   },
+   "status": "pass",
+   "steps": 73,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 2075,
+   "logits": 7081
+  },
+  {
+   "case": 50,
+   "arch": "lad1_rms",
+   "V": 512,
+   "T": 64,
+   "L": 1,
+   "C": 16,
+   "params": 18824,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 512,
+     "T": 64,
+     "n_layer": 1,
+     "n_embd": 16,
+     "n_head": 2,
+     "n_kv_head": 2,
+     "hidden": 8,
+     "norm": "rms"
+    }
+   },
+   "status": "pass",
+   "steps": 259,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 1820,
+   "logits": 132608
+  },
+  {
+   "case": 51,
+   "arch": "lad2_rope",
+   "V": 50,
+   "T": 8,
+   "L": 3,
+   "C": 48,
+   "params": 52128,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 50,
+     "T": 8,
+     "n_layer": 3,
+     "n_embd": 48,
+     "n_head": 6,
+     "n_kv_head": 6,
+     "hidden": 64,
+     "norm": "rms",
+     "pos": "rope"
+    }
+   },
+   "status": "pass",
+   "steps": 31,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 8845,
+   "logits": 1550
+  },
+  {
+   "case": 52,
+   "arch": "gpt2",
+   "V": 200,
+   "T": 24,
+   "L": 2,
+   "C": 64,
+   "params": 63248,
+   "spec": {
+    "cls": "GPT2",
+    "kwargs": {
+     "V": 200,
+     "T": 24,
+     "n_layer": 2,
+     "n_embd": 64,
+     "n_head": 8,
+     "hidden": 8
+    }
+   },
+   "status": "pass",
+   "steps": 74,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 8122,
+   "logits": 14800
+  },
+  {
+   "case": 53,
+   "arch": "lad0_gpt2",
+   "V": 50,
+   "T": 16,
+   "L": 1,
+   "C": 32,
+   "params": 22720,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 50,
+     "T": 16,
+     "n_layer": 1,
+     "n_embd": 32,
+     "n_head": 4,
+     "n_kv_head": 4,
+     "hidden": 224
+    }
+   },
+   "status": "pass",
+   "steps": 50,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 3304,
+   "logits": 2500
+  },
+  {
+   "case": 54,
+   "arch": "lad3_swiglu",
+   "V": 50,
+   "T": 64,
+   "L": 3,
+   "C": 8,
+   "params": 5488,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 50,
+     "T": 64,
+     "n_layer": 3,
+     "n_embd": 8,
+     "n_head": 1,
+     "n_kv_head": 1,
+     "hidden": 48,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "swiglu"
+    }
+   },
+   "status": "pass",
+   "steps": 253,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 2152,
+   "logits": 12650
+  },
+  {
+   "case": 55,
+   "arch": "microgpt",
+   "V": 50,
+   "T": 16,
+   "L": 2,
+   "C": 8,
+   "params": 5536,
+   "spec": {
+    "cls": "MicroGPT",
+    "kwargs": {
+     "V": 50,
+     "T": 16,
+     "n_layer": 2,
+     "n_embd": 8,
+     "n_head": 1,
+     "hidden": 128
+    }
+   },
+   "status": "pass",
+   "steps": 35,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 1482,
+   "logits": 1750
+  },
+  {
+   "case": 56,
+   "arch": "lad5_llama",
+   "V": 512,
+   "T": 8,
+   "L": 1,
+   "C": 48,
+   "params": 32784,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 512,
+     "T": 8,
+     "n_layer": 1,
+     "n_embd": 48,
+     "n_head": 6,
+     "n_kv_head": 3,
+     "hidden": 8,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "swiglu",
+     "bias": false,
+     "tied": true
+    }
+   },
+   "status": "pass",
+   "steps": 31,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 5155,
+   "logits": 15872
+  },
+  {
+   "case": 57,
+   "arch": "lad3_swiglu",
+   "V": 97,
+   "T": 8,
+   "L": 3,
+   "C": 48,
+   "params": 41520,
+   "spec": {
+    "cls": "Ladder",
+    "kwargs": {
+     "V": 97,
+     "T": 8,
+     "n_layer": 3,
+     "n_embd": 48,
+     "n_head": 6,
+     "n_kv_head": 6,
+     "hidden": 8,
+     "norm": "rms",
+     "pos": "rope",
+     "mlp": "swiglu"
+    }
+   },
+   "status": "pass",
+   "steps": 33,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 7383,
+   "logits": 3201
+  },
+  {
+   "case": 58,
+   "arch": "bigram",
+   "V": 27,
+   "T": 8,
+   "L": 1,
+   "C": 64,
+   "params": 729,
+   "spec": {
+    "cls": "Bigram",
+    "kwargs": {
+     "V": 27,
+     "T": 8
+    }
+   },
+   "status": "pass",
+   "steps": 29,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 36,
+   "logits": 783
+  },
+  {
+   "case": 59,
+   "arch": "microgpt",
+   "V": 27,
+   "T": 32,
+   "L": 1,
+   "C": 64,
+   "params": 22912,
+   "spec": {
+    "cls": "MicroGPT",
+    "kwargs": {
+     "V": 27,
+     "T": 32,
+     "n_layer": 1,
+     "n_embd": 64,
+     "n_head": 8,
+     "hidden": 8
+    }
+   },
+   "status": "pass",
+   "steps": 115,
+   "errors": 0,
+   "assertions": 0,
+   "cycles": 3815,
+   "logits": 3105
+  }
+ ]
+}
