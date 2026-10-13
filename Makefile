@@ -7,7 +7,7 @@ VFLAGS = --binary --timing --timescale 1ns/1ps -j 0 -Wall -Wno-fatal \
          -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-UNUSEDSIGNAL -Wno-UNUSEDPARAM
 RTL    = $(shell cat scripts/files.f)
 
-.PHONY: all model train quantize eval export sim test-arith selftest lint report clean
+.PHONY: all model train quantize eval export sim test-arith selftest lint synth report clean
 
 all: test-arith sim selftest
 
@@ -44,6 +44,10 @@ test-arith: build/obj_arith/Vtb_arith
 
 selftest: build/obj_selftest/Vtb_selftest
 	./build/obj_selftest/Vtb_selftest
+
+# ---------------- açık kaynak sentez (Yosys, kaynak tahmini) ----------------
+synth:
+	scripts/yosys_synth.sh gpt_top
 
 # ---------------- PDF rapor (XeLaTeX) ----------------
 report:

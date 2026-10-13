@@ -472,7 +472,7 @@ Skorlar ($11\times32$ bit) ve üstel ağırlıklar ($11\times16$ bit) birimin i�
 \section{Bellek organizasyonu ve FPGA kaynak eşlemesi}
 % ===========================================================================
 
-Tasarımın bellek gereksinimi yaklaşık 95\,KB ROM ve 4\,KB RAM'dir. Büyük ROM'lar blok RAM'e (BRAM), küçük tamponlar ve tablolar dağıtık RAM'e (LUTRAM) veya yazmaçlara eşlenir. Bu bölümdeki kaynak sayıları hesapla elde edilmiş \textbf{tahminlerdir}; kesin değerler Vivado sentez raporundan alınacaktır.
+Tasarımın bellek gereksinimi yaklaşık 95\,KB ROM ve 4\,KB RAM'dir. Büyük ROM'lar blok RAM'e (BRAM), küçük tamponlar ve tablolar dağıtık RAM'e (LUTRAM) veya yazmaçlara eşlenir. Aşağıdaki ayrıntılı eşlemeler hesapla elde edilmiş tahminlerdir. Bölümün sonunda açık kaynak Yosys sentezinin ölçtüğü sayılar verilmiştir (Tablo~\ref{tab:yosys}); kesin değerler ve zamanlama için Vivado gerekir.
 
 \begin{table}[h]
   \centering\small
@@ -517,6 +517,26 @@ Tasarımın bellek gereksinimi yaklaşık 95\,KB ROM ve 4\,KB RAM'dir. Büyük R
 \end{table}
 
 Toplam tahmin 16--30 DSP'dir; Zynq-7020'de 220 DSP bulunur. Geniş çarpıcıların operand genişlikleri bilinçli olarak güvenli tutulmuştur. Bölüm~\ref{sec:cekirdek}'teki sınırlar gerçek ihtiyacı gösterir ($d$ için 23 bit, $inv$ için yaklaşık 27 bit, $R$ için 18 bit). Genişlikler daraltılırsa DSP sayısı ve kritik yol kısalır. Hedef cihaz xc7z020'de 53\,200 LUT, 106\,400 FF, 140 RAMB36 ve 220 DSP bulunur. Tasarımın yaklaşık 24 RAMB36'lık ihtiyacı, cihaz BRAM'inin \%17'si kadardır.
+
+\paragraph{Açık kaynak sentez sonucu.} Vivado bu geliştirme bilgisayarında (macOS, Apple Silicon) çalışmadığı için tasarım, açık kaynak \textbf{Yosys} 0.69 ile Xilinx 7-serisi hedefine bağlam dışı (out-of-context) sentezlenmiştir. SystemVerilog kodu önce \code{sv2v} ile Verilog'a çevrilir, ardından \code{synth\_xilinx -family xc7} uygulanır (\code{make synth}, yaklaşık 26\,s). Sonuçlar Tablo~\ref{tab:yosys}'tedir.
+
+\begin{table}[h]
+  \centering\small
+  \caption{\code{gpt\_top}'un Yosys sentez sonucu (Xilinx 7-serisi, zamanlama analizi yok).}
+  \label{tab:yosys}
+  \begin{tabular}{@{}lrr@{}}
+    \toprule
+    \thead{Kaynak} & \thead{Kullanım} & \thead{xc7z020 payı} \\ \midrule
+    LUT (mantık) & 3\,187 & \\
+    LUT (dağıtık RAM ve SRL) & 768 & \\
+    \textbf{LUT toplam} & \textbf{3\,955} & \textbf{\%7,4} \\
+    Flip-flop & 1\,567 & \%1,5 \\
+    BRAM (20 RAMB36 + 6 RAMB18) & 23 RAMB36 eşd. & \%16,4 \\
+    DSP48E1 & 31 & \%14,1 \\ \bottomrule
+  \end{tabular}
+\end{table}
+
+BRAM sayısı, bellek haritasından yapılan tahminle (yaklaşık 24) uyuşur. DSP sayısı (31), tahmin aralığının (16--30) biraz üzerindedir; geniş çarpıcılar bildirilen genişlikleriyle sentezlenmiştir ve bit genişliği daraltması bu sayıyı düşürecektir. Yosys zamanlama analizi yapmaz; ulaşılabilir saat frekansı (Fmax) ve Vivado'nun kesin sayıları için Vivado sentezi gerekir. Vivado'nun sonuçları, özellikle LUT sayısında, Yosys'ten farklı olabilir.
 
 % ===========================================================================
 \section{Performans analizi}
@@ -662,7 +682,7 @@ Mevcut tasarım, işlevsel doğruluğu kanıtlanmış bir temel sürümdür. Bir
 
 \paragraph{Sınırlamalar.}
 \begin{itemize}
-  \item \textbf{Fiziksel doğrulama yok:} sentez, zamanlama kapanışı ve kart üzerinde çalıştırma henüz yapılmamıştır. 100\,MHz bir hedeftir, ölçülmüş değildir.
+  \item \textbf{Fiziksel doğrulama yok:} Vivado sentezi, zamanlama kapanışı ve kart üzerinde çalıştırma henüz yapılmamıştır; kaynak kullanımı yalnızca Yosys ile ölçülmüştür. 100\,MHz bir hedeftir, ölçülmüş değildir.
   \item \textbf{Model boyutu:} model küçüktür (85\,728 parametre) ve dar bir görevde eğitilmiştir; metin üreten bir dil modeli değildir.
   \item \textbf{Ölçek:} bütün ağırlıkların BRAM'e sığması varsayılmıştır. Bu varsayım Zynq-7020'de yaklaşık 600 bin INT8 parametreye kadar geçerlidir.
   \item \textbf{Kod çözme:} yalnızca açgözlü kod çözme vardır; sıcaklıklı örnekleme ve top-k yoktur.

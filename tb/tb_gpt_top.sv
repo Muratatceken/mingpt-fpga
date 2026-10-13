@@ -50,8 +50,13 @@ module tb_gpt_top;
 
   // cycle profile per controller state (hierarchical reference into the DUT)
   localparam int NST = 12;
-  string  st_name [NST] = '{"IDLE", "EMB", "LN1", "QKV", "ATT", "PROJ", "LN2", "FC", "MPROJ",
-                            "LNF", "HEAD", "DONE"};
+  function automatic string st_name(input int k);
+    case (k)
+      1: return "EMB";   2: return "LN1";  3: return "QKV";  4: return "ATT";
+      5: return "PROJ";  6: return "LN2";  7: return "FC";   8: return "MPROJ";
+      9: return "LNF";  10: return "HEAD"; 11: return "DONE"; default: return "IDLE";
+    endcase
+  endfunction
   longint st_cycles [NST];
   initial foreach (st_cycles[k]) st_cycles[k] = 0;
   always @(posedge clk) if (rst_n && dut.busy) st_cycles[int'(dut.st)] <= st_cycles[int'(dut.st)] + 1;
@@ -167,7 +172,7 @@ module tb_gpt_top;
              cycles / steps_checked, real'(cycles) / steps_checked / 100.0);
     $display("cycle profile (per token, summed over all layers):");
     for (int k = 1; k < NST; k++)
-      $display("  %-6s %7.1f  (%4.1f%%)", st_name[k], real'(st_cycles[k]) / steps_checked,
+      $display("  %-6s %7.1f  (%4.1f%%)", st_name(k), real'(st_cycles[k]) / steps_checked,
                100.0 * real'(st_cycles[k]) / real'(cycles));
     $display("RESULT: %s", (errors == 0) ? "PASS" : "FAIL");
     $display("------------------------------------------------------------");

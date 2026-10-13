@@ -13,7 +13,7 @@ Bu çalışmada Andrej Karpathy'nin minGPT modelinin \code{gpt-nano} yapılandı
 \end{ozet}
 
 \begin{uyari}
-\textbf{Kapsam notu.} Bu raporun tarihinde Vivado sentezi, zamanlama kapanışı ve kart üzerinde çalıştırma henüz yapılmamıştır. Bunun nedeni Vivado'nun geliştirme bilgisayarı olan macOS'ta çalışmamasıdır. Gerekli bütün scriptler depoda hazırdır. Kaynak kullanımı ile ilgili sayılar bu yüzden hesapla elde edilmiş tahminlerdir. Kısım~II'deki model ailesinin donanım karşılaştırması projenin sonraki aşamasıdır; bu sürümde teori ve yöntem verilmiştir.
+\textbf{Kapsam notu.} Bu raporun tarihinde Vivado sentezi, zamanlama kapanışı ve kart üzerinde çalıştırma henüz yapılmamıştır. Bunun nedeni Vivado'nun geliştirme bilgisayarı olan macOS'ta çalışmamasıdır. Gerekli bütün scriptler depoda hazırdır. Kaynak kullanımı sayıları bu yüzden açık kaynak Yosys sentezinden alınmıştır; zamanlama (Fmax) henüz ölçülmemiştir. Kısım~II'deki model ailesinin donanım karşılaştırması projenin sonraki aşamasıdır; bu sürümde teori ve yöntem verilmiştir.
 \end{uyari}
 
 Rapor üç kısımdan oluşur. Kısım~I (Bölüm~\ref{sec:giris}--\ref{sec:deney}) minGPT'nin matematiksel modelini, eğitimini ve çıkarım algoritmasını anlatır. Kısım~II (Bölüm~\ref{sec:aile}--\ref{sec:yontem}) Karpathy'nin bigram'dan nanochat'e uzanan dil modeli ailesini aynı matematiksel ve görsel dille inceler, her mimari özelliğin donanım karşılığını çıkarır ve ailenin karşılaştırma yöntemini tanımlar. Kısım~III (Bölüm~\ref{sec:hedef}--\ref{sec:sinir}) minGPT'nin tamsayı aritmetiğine dönüştürülmesini, donanım mimarisini, performans analizini, doğrulamayı ve kart entegrasyonunu anlatır. Bütün kaynak kod ve üretilen dosyalar \gh{} adresindedir.
