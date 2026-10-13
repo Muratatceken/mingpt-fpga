@@ -1,0 +1,24 @@
+% PYNQ-Z2 üst modülü
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \draw[container, fill=paper!50] (1.35,1.05) rectangle (11.35,-2.85);
+  \node[lbl, anchor=north west, font=\sffamily\scriptsize\bfseries] at (1.45,0.98) {\code{pynq\_z2\_top} · PL};
+
+  \node[membox, minimum width=20mm] (clk) at (0,0) {sysclk\\[-2pt]\scriptsize 125 MHz · H16};
+  \node[box, minimum width=27mm] (mmcm) at (3.05,0) {\bfseries MMCM\\[-2pt]\scriptsize $\times8 \rightarrow$ 1000 MHz $\rightarrow /20$};
+  \node[box, minimum width=12mm] (bufg) at (5.4,0) {BUFG};
+  \node[membox, minimum width=20mm] (btn) at (0,-1.9) {BTN0 · BTN1\\[-2pt]SW0};
+  \node[box, minimum width=27mm] (sync) at (3.05,-1.9) {senkronizatör\\[-2pt]\scriptsize 2–3 FF · kenar algılama};
+  \node[accbox, minimum width=38mm, minimum height=31mm] (st) at (9.0,-0.95) {};
+  \node[font=\sffamily\bfseries\small, anchor=north, text=ink] at ([yshift=-1mm]st.north) {\code{gpt\_selftest}};
+  \node[lbl, anchor=north] at ([yshift=-5.5mm]st.north) {729 girdi + sıralama kontrolü};
+  \node[box, minimum width=30mm] (gpt) at (9.0,-1.6) {\bfseries\code{gpt\_top}\\[-2pt]\scriptsize hızlandırıcı};
+  \node[membox, minimum width=20mm] (led) at (13.45,-0.95) {LD0–LD3\\[-2pt]LD4 (RGB)};
+
+  \draw[flow] (clk) -- (mmcm);
+  \draw[flow] (mmcm) -- (bufg);
+  \draw[accflow] (bufg.east) -- node[lbl, above, text=accent] {50 MHz} (bufg.east -| st.west);
+  \draw[flow] (btn) -- (sync);
+  \draw[flow] (sync.east) -- node[lbl, above] {start · rst\_n · fault} (sync.east -| st.west);
+  \draw[flow] (mmcm.south) -- node[lbl, right] {LOCKED} (sync.north);
+  \draw[flow] (st.east) -- node[lbl, above, align=center] {busy · done\\pass} (led.west);
+\end{tikzpicture}

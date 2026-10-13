@@ -1,0 +1,39 @@
+% Kontrol FSM'i (çevrimler: ölçülen, katman başına)
+\begin{tikzpicture}[x=1cm,y=1cm,
+    st/.style={box, minimum width=19mm, minimum height=11mm, inner ysep=2pt},
+    gst/.style={st, draw=accent, fill=accentsoft, line width=1pt}]
+  \newcommand{\stt}[2]{\textbf{\code{#1}}\\[-1pt]{\scriptsize\color{muted}#2}}
+  \node[st, draw=muted, fill=paper] (idle) at (0,0) {\stt{S\_IDLE}{bekle}};
+  \node[st] (emb) at (2.45,0)   {\stt{S\_EMB}{49}};
+  \node[st] (ln1) at (4.9,0)    {\stt{S\_LN1}{234}};
+  \node[gst] (qkv) at (7.35,0)  {\stt{S\_QKV}{878}};
+  \node[st] (att) at (9.8,0)    {\stt{S\_ATT}{258…1248}};
+  \node[gst] (proj) at (12.25,0){\stt{S\_PROJ}{302}};
+  \node[st] (ln2) at (12.25,-2.1){\stt{S\_LN2}{234}};
+  \node[gst] (fc) at (9.8,-2.1) {\stt{S\_FC}{1166}};
+  \node[gst] (mproj) at (7.35,-2.1){\stt{S\_MPROJ}{1166}};
+  \node[st] (lnf) at (7.35,-4.2) {\stt{S\_LNF}{234}};
+  \node[gst] (head) at (9.8,-4.2){\stt{S\_HEAD}{62}};
+  \node[st, draw=good, fill=goodsoft] (done) at (12.25,-4.2){\stt{S\_DONE}{1}};
+
+  \draw[flow] (idle) -- node[lbl, above] {start} (emb);
+  \draw[flow] (emb) -- (ln1);
+  \draw[flow] (ln1) -- (qkv);
+  \draw[flow] (qkv) -- (att);
+  \draw[flow] (att) -- (proj);
+  \draw[flow] (proj) -- (ln2);
+  \draw[flow] (ln2) -- (fc);
+  \draw[flow] (fc) -- (mproj);
+  \draw[flow, accent] (mproj.west) -- ++(-0.9,0) node[lbl, above, text=accent, pos=0.5] {} -| node[lbl, pos=0.75, left, text=accent, align=right] {katman $<2$\\katman++} (ln1.south);
+  \draw[flow] (mproj) -- node[lbl, right] {katman $=2$} (lnf);
+  \draw[flow] (lnf) -- (head);
+  \draw[flow] (head) -- (done);
+  \draw[flow] (done.south) -- ++(0,-0.75) -| node[lbl, pos=0.1, above] {done, tok\_out} (idle.south);
+
+  % blok çerçevesi
+  \begin{scope}[on background layer]
+    \draw[container, fill=paper!50] (3.75,0.85) rectangle (13.4,-3.25);
+  \end{scope}
+  \node[lbl, anchor=south east, font=\sffamily\scriptsize\bfseries] at (13.3,-3.18) {transformer bloğu (× 3)};
+  \node[lbl, anchor=west] at (-0.95,-6.0) {\tikz\node[gst, minimum width=4mm, minimum height=3mm]{};\; GEMV durumu \quad sayılar: ölçülen çevrim (katman başına)};
+\end{tikzpicture}

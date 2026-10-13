@@ -1,0 +1,22 @@
+% GELU: minGPT tanh GELU ve katman 0'ın INT8 tablosu
+\begin{tikzpicture}
+\begin{axis}[
+    width=7.6cm, height=6.4cm, xmin=-3.8, xmax=3.8, ymin=-0.6, ymax=3.4,
+    xlabel={giriş $h$}, ylabel={GELU$(h)$}, grid=major, axis lines*=left,
+    legend pos=north west, legend cell align=left, title={\sffamily\small (a) tüm aralık},
+  ]
+  \addplot[warm, line width=0.9pt, const plot mark mid] table[x=x,y=y] {data/gelu_lut_l0.dat};
+  \addplot[accent, line width=1.2pt, smooth] table[x=x,y=y] {data/gelu_exact.dat};
+  \legend{INT8 tablo (katman 0), tanh GELU}
+\end{axis}
+\end{tikzpicture}\hspace{7mm}
+\begin{tikzpicture}
+\begin{axis}[
+    width=7.6cm, height=6.4cm, xmin=-1.6, xmax=0.4, ymin=-0.2, ymax=0.25,
+    xlabel={giriş $h$}, grid=major, axis lines*=left, title={\sffamily\small (b) yakınlaştırma},
+    yticklabel style={/pgf/number format/fixed},
+  ]
+  \addplot[warm, line width=0.9pt, const plot mark mid, mark=*, mark size=1pt] table[x=x,y=y] {data/gelu_lut_l0.dat};
+  \addplot[accent, line width=1.2pt, smooth] table[x=x,y=y] {data/gelu_exact.dat};
+\end{axis}
+\end{tikzpicture}

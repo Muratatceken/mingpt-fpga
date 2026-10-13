@@ -1,0 +1,76 @@
+% ---------------------------------------------------------------------------
+% minGPT -> FPGA : teknik rapor
+% Derleme: latexmk -xelatex rapor.tex   (veya: make -C report)
+% ---------------------------------------------------------------------------
+\documentclass[a4paper,11pt,oneside,parskip=half-]{scrartcl}
+
+\input{stil}
+
+% ===========================================================================
+\begin{document}
+
+% ------------------------------ kapak ---------------------------------------
+\begin{titlepage}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[accent] (current page.north west) rectangle ([yshift=-12.2cm]current page.north east);
+  % dekoratif: art arda katmanlar ve artık akış
+  \begin{scope}[shift={([xshift=-6.4cm,yshift=-3.0cm]current page.north east)}, opacity=0.9]
+    \draw[white, line width=1.6pt, ->] (0,0.6) -- (0,-7.0);
+    \foreach \y/\w in {0/2.8, -2.2/3.6, -4.4/2.4} {
+      \fill[white] (0,\y) circle (2.6pt);
+      \draw[white!70!accent, line width=0.9pt, rounded corners=2pt] (0.5,\y-0.32) rectangle (0.5+\w,\y+0.32);
+      \draw[white!70!accent, line width=0.9pt] (0,\y) -- (0.5,\y);
+      \draw[white!70!accent, line width=0.9pt, ->] (0.5+\w*0.5,\y-0.32) -- (0.5+\w*0.5,\y-1.0) -- (0.12,\y-1.0);
+    }
+  \end{scope}
+  \node[anchor=north west, text=white, font=\sffamily\bfseries\fontsize{12}{14}\selectfont]
+    at ([xshift=2.6cm,yshift=-2.6cm]current page.north west) {BİTİRME PROJESİ \enspace·\enspace TEKNİK RAPOR};
+  \node[anchor=north west, text=white, align=left, font=\sffamily\bfseries\fontsize{30}{36}\selectfont]
+    at ([xshift=2.6cm,yshift=-3.6cm]current page.north west)
+    {minGPT ve FPGA Üzerinde\\Tamsayı Çıkarım\\Hızlandırıcısı};
+  \node[anchor=north west, text=white!88!accent, text width=11.5cm, align=left, font=\sffamily\fontsize{13}{17}\selectfont\nohyph]
+    at ([xshift=2.6cm,yshift=-8.6cm]current page.north west)
+    {Transformer matematiğinden bit düzeyinde doğrulanmış SystemVerilog donanımına};
+\end{tikzpicture}
+
+\vspace*{11.4cm}
+
+\begin{minipage}{\textwidth}
+\sffamily
+{\large\bfseries\color{ink} Murat Atceken}\par\medskip
+{\color{muted} Ekim 2026}\par\vspace{1.6cm}
+
+\begin{tabularx}{\textwidth}{@{}p{3.6cm}L@{}}
+\textcolor{muted}{Model} & minGPT \code{gpt-nano} — 3 katman, 3 dikkat başı, $C = 48$, 85\,728 parametre \\
+\textcolor{muted}{Aritmetik} & INT8 ağırlık ve aktivasyon, INT16 artık akış, yalnızca tamsayı \\
+\textcolor{muted}{Doğruluk} & 729 / 729 girdi doğru; RTL, referans modelle 8\,019 adımda bit-exact \\
+\textcolor{muted}{Performans} & 14\,544 çevrim/token — 100 MHz'de 145\,µs \\
+\textcolor{muted}{Hedef kart} & PYNQ-Z2 (Zynq-7020, xc7z020clg400-1) \\
+\textcolor{muted}{Kaynak kod} & \gh \\
+\end{tabularx}
+\end{minipage}
+\end{titlepage}
+
+% ------------------------------ özet + içindekiler --------------------------
+\pagenumbering{roman}
+\section*{Özet}
+\addcontentsline{toc}{section}{Özet}
+\input{bolumler/00_ozet}
+
+\clearpage
+{\hypersetup{linkcolor=ink}\tableofcontents}
+\clearpage
+\listoffigures
+\clearpage
+\pagenumbering{arabic}
+
+\kisim{I}{minGPT: Teknik, Algoritmik ve Matematiksel Anlatım}
+\input{bolumler/kisim1}
+
+\kisim{II}{FPGA İmplementasyonu}
+\input{bolumler/kisim2}
+
+\clearpage
+\input{bolumler/kaynaklar}
+
+\end{document}

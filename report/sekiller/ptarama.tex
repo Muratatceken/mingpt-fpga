@@ -1,0 +1,19 @@
+% P taraması: analitik model + Amdahl sınırı
+\begin{tikzpicture}
+\begin{axis}[
+    width=11.5cm, height=6.6cm, xmin=2, xmax=26, ymin=0, ymax=27000,
+    xtick={4,8,12,16,24}, xlabel={MAC şeridi sayısı $P$}, ylabel={çevrim / token},
+    ymajorgrids, axis x line*=bottom, axis y line*=left,
+    scaled y ticks=false,
+    legend pos=north east, legend cell align=left,
+  ]
+  \addplot[accent, line width=1.3pt, mark=*, mark options={fill=white, line width=1pt}]
+    coordinates {(4,24913) (8,14545) (12,11089) (16,9361) (24,7633)};
+  \addplot[only marks, mark=*, mark size=3.2pt, warm] coordinates {(8,14544)};
+  \addplot[muted, dashed, line width=1pt, domain=2:26] {3947};
+  \legend{model tahmini, ölçülen ($P{=}8$), GEMV dışı aşamalar (Amdahl tabanı)}
+  \node[font=\sffamily\scriptsize, text=muted, anchor=south west] at (axis cs:16.3,3947) {3\,947 çevrim};
+  \node[font=\sffamily\scriptsize, text=accent, anchor=south west] at (axis cs:24,7633) {7\,633};
+  \node[font=\sffamily\scriptsize, text=accent, anchor=south west] at (axis cs:4,24913) {24\,913};
+\end{axis}
+\end{tikzpicture}

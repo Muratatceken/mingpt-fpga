@@ -7,7 +7,7 @@ VFLAGS = --binary --timing --timescale 1ns/1ps -j 0 -Wall -Wno-fatal \
          -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-UNUSEDSIGNAL -Wno-UNUSEDPARAM
 RTL    = $(shell cat scripts/files.f)
 
-.PHONY: all model train quantize eval export sim test-arith selftest lint clean
+.PHONY: all model train quantize eval export sim test-arith selftest lint report clean
 
 all: test-arith sim selftest
 
@@ -45,8 +45,13 @@ test-arith: build/obj_arith/Vtb_arith
 selftest: build/obj_selftest/Vtb_selftest
 	./build/obj_selftest/Vtb_selftest
 
+# ---------------- PDF rapor (XeLaTeX) ----------------
+report:
+	cd sw && $(PYTHON) report_data.py
+	cd report && latexmk -xelatex -interaction=nonstopmode -outdir=build rapor.tex && cp build/rapor.pdf rapor.pdf
+
 lint:
 	$(VERILATOR) --lint-only -Wall -Wno-fatal -Wno-WIDTHEXPAND -Wno-UNUSEDSIGNAL $(RTL) --top-module gpt_top
 
 clean:
-	rm -rf build/obj_* build/xsim build/vivado*
+	rm -rf build/obj_* build/xsim build/vivado* report/build

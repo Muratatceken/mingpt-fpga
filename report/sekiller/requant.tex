@@ -1,0 +1,41 @@
+% Tamsayı GEMV şeridi ve yeniden kuantizasyon veri yolu
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \node[membox, minimum width=14mm] (x) at (0,0.65) {$x_i$\\[-2pt]\scriptsize INT8};
+  \node[membox, minimum width=14mm] (w) at (0,-0.65) {$W_{oi}$\\[-2pt]\scriptsize INT8};
+  \node[op] (mul) at (1.6,0) {$\times$};
+  \node[op] (add) at (3.0,0) {$+$};
+  \node[box, minimum width=15mm] (acc) at (4.45,0) {$acc_o$\\[-2pt]\scriptsize INT32};
+  \draw[flow] (x.east) -- (mul);
+  \draw[flow] (w.east) -- (mul);
+  \draw[flow] (mul) -- node[bw, above] {16} (add);
+  \draw[flow] (add) -- (acc);
+  \draw[flow] (acc.south) -- ++(0,-0.55) -| (add.south);
+  \node[lbl, anchor=north] at (3.72,-0.85) {$n_{in}$ kez};
+
+  % requant
+  \node[op] (addb) at (6.0,0) {$+$};
+  \node[op] (mulm) at (7.4,0) {$\times$};
+  \node[op] (rnd) at (8.8,0) {$+$};
+  \node[box, minimum width=12mm] (shr) at (10.2,0) {$\gg sh$};
+  \node[box, minimum width=11mm] (sat) at (11.55,0) {sat};
+  \node[accbox, minimum width=18mm] (y) at (13.1,0) {$y_o$\\[-2pt]\scriptsize INT8 / INT16};
+  \draw[flow] (acc.east) -- node[bw, above] {32} (addb);
+  \draw[flow] (addb) -- node[bw, above] {33} (mulm);
+  \draw[flow] (mulm) -- node[bw, above] {50} (rnd);
+  \draw[flow] (rnd) -- (shr);
+  \draw[flow] (shr) -- (sat);
+  \draw[flow] (sat) -- (y);
+
+  % parametre ROM'u
+  \node[warmbox, minimum width=60mm] (prm) at (8.1,2.15) {\bfseries parametre ROM'u \mdseries\scriptsize — çıkış kanalı başına 64 bit\\[-1pt]\scriptsize\mdseries$\{\,b_o[63{:}32],\; m_0[31{:}16],\; sh[7{:}0]\,\}$};
+  \draw[flow, warm] (prm.south -| addb) -- node[lbl, right, text=warm] {$b_o$} (addb.north);
+  \draw[flow, warm] (prm.south -| mulm) -- node[lbl, right, text=warm] {$m_0$} (mulm.north);
+  \draw[flow, warm] (prm.south -| rnd) -- node[lbl, right, text=warm] {$2^{sh-1}$} (rnd.north);
+  \draw[flow, warm] (prm.south -| shr) -- node[lbl, right, text=warm] {$sh$} (shr.north);
+
+  % gruplama
+  \draw[decorate, decoration={brace, mirror, amplitude=5pt}, draw=muted]
+    (-0.7,-1.6) -- node[lbl, below=6pt] {MAC şeridi (8 şerit paralel)} (5.25,-1.6);
+  \draw[decorate, decoration={brace, mirror, amplitude=5pt}, draw=muted]
+    (5.6,-1.6) -- node[lbl, below=6pt] {requant birimi: 2 boru hattı kademesi} (12.15,-1.6);
+\end{tikzpicture}

@@ -1,0 +1,14 @@
+% Float ve tamsayı logitleri (öğretmen zorlamalı)
+\begin{tikzpicture}
+\begin{axis}[
+    width=8.6cm, height=7.4cm, xmin=-10, xmax=11, ymin=-10, ymax=11,
+    xlabel={float minGPT logiti}, ylabel={tamsayı model logiti $\times\,S_{logit}$},
+    grid=major, axis lines*=left, legend pos=north west, legend cell align=left,
+  ]
+  \addplot[only marks, mark=*, mark size=0.9pt, accent, opacity=0.45] table[x=f,y=i] {data/logits.dat};
+  \addplot[muted, dashed, domain=-10:11] {x};
+  \legend{2\,409 logit, $y=x$}
+  \node[font=\sffamily\scriptsize, text=ink, anchor=south east, align=right] at (axis cs:10.5,-9.5)
+    {SQNR 41,5 dB\\en büyük hata 0,35\\RMS hata 0,046};
+\end{axis}
+\end{tikzpicture}

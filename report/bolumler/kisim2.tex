@@ -1,0 +1,681 @@
+% ===========================================================================
+\section{Tasarım hedefleri ve kısıtları}
+% ===========================================================================
+
+Donanımın amacı, Bölüm~\ref{sec:kv}'deki KV önbellekli decode adımını yalnızca tamsayı aritmetiğiyle ve bütün ağırlıkları çip üzerinde tutarak gerçekleştirmektir. Bu yapılırken bir yazılım referansıyla bit düzeyinde eşdeğerlik korunur.
+
+\paragraph{Hedefler.}
+\begin{enumerate}
+  \item \textbf{Yalnızca tamsayı veri yolu:} kayan nokta birimi kullanılmaz; LayerNorm, softmax ve GELU de tamsayı algoritmalarla hesaplanır.
+  \item \textbf{Çip üzeri bellek:} ağırlıklar BRAM'de, ara değerler dağıtık RAM'de ve yazmaçlarda tutulur; DDR ve DMA gerekmez.
+  \item \textbf{Bit-exact doğrulanabilirlik:} her işlem, Python'daki tamsayı referans modelde aynı bit genişliği, yuvarlama ve doyma kurallarıyla tanımlanır (\code{sw/\allowbreak intmodel.py}). RTL çıktısı bu modelle tolerans olmadan karşılaştırılır.
+  \item \textbf{Parametriklik:} boyutlar ve sabitler, Python tarafından üretilen bir SystemVerilog paketinden (\code{rtl/gpt\_pkg.sv}) okunur. Farklı bir model yeniden eğitilip dışa aktarıldığında RTL değişmez.
+  \item \textbf{Taşınabilir RTL:} kod sentezlenebilir SystemVerilog alt kümesiyle yazılır; hem Verilator hem de Vivado xsim'de çalışır.
+\end{enumerate}
+
+\paragraph{Neden tamsayı?} 7-serisi FPGA'larda bir float32 çarpıcı birden fazla DSP48E1 bloğu, ek LUT ve birkaç çevrimlik gecikme gerektirir. INT8$\times$INT8 çarpımı ise tek bir DSP48E1'in $25\times18$ bitlik çarpıcısının küçük bir kısmını kullanır veya doğrudan LUT'larla yapılabilir. Ağırlık belleği float32'ye göre 4 kat küçülür. Ayrıca tamsayı aritmetik deterministiktir: aynı girdi her platformda aynı bitleri verir. Bit-exact doğrulama ancak bu sayede mümkündür.
+
+\paragraph{Yazılımdan donanıma akış.} Proje dört Python adımı ve iki simülatör adımından oluşur (Şekil~\ref{fig:akis}). Merkezde, donanımın spesifikasyonu olarak kullanılan tamsayı referans modeli vardır.
+
+\begin{figure}[h]
+  \centering
+  \sekil{akis}
+  \caption[Yazılımdan donanıma akış]{Yazılımdan donanıma akış. Python tarafı modeli eğitir, tamsayıya dönüştürür ve ROM içeriklerini, SystemVerilog paketini ve altın test vektörlerini üretir. RTL, Verilator ile bu Mac'te doğrulanmıştır. Vivado adımları hazırdır, ancak henüz çalıştırılmamıştır.}
+  \label{fig:akis}
+\end{figure}
+
+% ===========================================================================
+\section{Sayı sistemi ve kuantizasyon teorisi}\label{sec:kuant}
+% ===========================================================================
+
+Model INT8 ağırlık ve aktivasyonlar, INT32 akümülatörler ve INT16 artık akışla temsil edilir. Gerçel ölçekler çalışma zamanında yalnızca tamsayı çarpma ve kaydırma ile uygulanır. Bu biçim, Jacob ve ark.'nın \cite{jacob18} tamsayı-yalnız çıkarım çerçevesini izler.
+
+\subsection{Düzgün simetrik kuantizasyon}
+Gerçel bir $r$ değeri, ölçek $S>0$ ile $b$ bitlik bir $q$ tamsayısına eşlenir:
+\begin{equation}
+  q = \mathrm{clip}\left( \mathrm{round}\left(\frac{r}{S}\right),\, -2^{b-1},\, 2^{b-1}-1 \right), \qquad \hat r = S \cdot q .
+\end{equation}
+Aralık içindeki her değer için hata $|r-\hat r| \le S/2$'dir. Hata $[-S/2, S/2]$ aralığında düzgün dağılımlı kabul edilirse gürültü gücü $S^2/12$ olur. Her ek bit $S$'yi yarıya indirir ve sinyal-kuantizasyon gürültüsü oranını (SQNR) yaklaşık $20\log_{10}2 \approx 6{,}02$\,dB artırır \cite{nagel21}.
+
+\subsection{Taşıyıcı biçimler}
+\begin{itemize}
+  \item \textbf{Ağırlıklar:} INT8, \emph{çıkış kanalı başına} ölçek $S_w[o] = \max_i |W_{oi}|/127$, aralık $[-127, 127]$. Kanal başına ölçek, küçük normlu satırların büyük normlu satırlar yüzünden ezilmesini önler.
+  \item \textbf{Aktivasyonlar:} INT8, \emph{tensör başına} sabit ölçek, aralık $[-128, 127]$.
+  \item \textbf{Bias:} INT32, ölçeği akümülatörle aynıdır ($S_w[o]\,S_x$); doğrudan akümülatöre eklenebilir.
+  \item \textbf{Artık akış:} INT16, ölçeği 2'nin kuvveti olan $S_r = 2^{-FR}$.
+\end{itemize}
+
+\subsection{Yalnızca tamsayı GEMV}
+Bir doğrusal katman $y_o = \sum_i W_{oi} x_i + b_o$ için kuantize temsiller yerine yazılır ve ortak çarpan dışarı alınır:
+\begin{equation}
+  y_o \;\approx\; S_w[o]\, S_x \underbrace{\left( \sum_{i} q^{w}_{oi}\, q^{x}_{i} \;+\; q^{b}_{o} \right)}_{acc_o \,\in\, \mathbb{Z}}, \qquad q^{b}_{o} = \mathrm{round}\left( \frac{b_o}{S_w[o]\, S_x} \right).
+\end{equation}
+Parantez içindeki ifade yalnızca tamsayı çarpma ve toplama içerir; donanımın gerçekten hesapladığı değer budur. Çıktının ölçeği $S_y$ ise $q^y_o = \mathrm{round}(M_o\, acc_o)$ olur. Burada $M_o = S_w[o]\,S_x/S_y$ bir gerçel sayıdır.
+
+\subsection{Yeniden kuantizasyon (requantization)}
+$M_o$, bir tamsayı çarpan ve bir kaydırma ile temsil edilir:
+\begin{equation}
+  M_o \approx m_0 \cdot 2^{-sh}, \qquad 2^{15} \le m_0 < 2^{16}, \qquad \left| \frac{m_0\, 2^{-sh} - M_o}{M_o} \right| \le 2^{-16}.
+\end{equation}
+$m_0$'ın en yüksek bitinin her zaman 1 olması, 16 bitin tamamının hassasiyete harcanmasını sağlar; bu, kayan noktadaki mantis normalizasyonunun tamsayı karşılığıdır. Donanımda yeniden kuantizasyon şu ifadeyle yapılır:
+\begin{equation}
+  q^{y}_o = \mathrm{sat}_b\left( \left( (acc_o + q^b_o)\cdot m_0 + 2^{sh-1} \right) \gg sh \right).
+\end{equation}
+Aritmetik sağa kaydırma taban bölmesidir: $a \gg sh = \lfloor a/2^{sh}\rfloor$. Dolayısıyla $(a + 2^{sh-1}) \gg sh = \lfloor a/2^{sh} + \tfrac12\rfloor$, yani yarıyı yukarı yuvarlamadır. $\mathrm{sat}_b$ sonucu $b$ bitlik işaretli aralığa kırpar. $(b, m_0, sh)$ üçlüsü her çıkış kanalı için parametre ROM'unda 64 bitlik bir kelime olarak saklanır. Veri yolu Şekil~\ref{fig:requant}'te gösterilmiştir.
+
+\begin{figure}[h]
+  \centering
+  \sekil{requant}
+  \caption[Tamsayı GEMV şeridi ve yeniden kuantizasyon]{Tamsayı GEMV şeridi ve yeniden kuantizasyon veri yolu. Mavi sayılar bit genişlikleridir. Parametre ROM'u her çıkış kanalı için bias, $m_0$ ve $sh$ değerlerini sağlar.}
+  \label{fig:requant}
+\end{figure}
+
+\paragraph{Akümülatör genişliği.} INT8$\times$INT8 çarpımının büyüklüğü en fazla $127\cdot128 = 16\,256$'dır. En geniş giriş $N_{in}=192$ için $|acc| \le 192\cdot16\,256 \approx 3{,}1\cdot10^6 < 2^{22}$ olur. 32 bitlik akümülatör taşmaz; gereken en az genişlik işaretiyle 23 bittir.
+
+\subsection{Kalibrasyon}
+Statik ölçekler, float modelin bir kalibrasyon kümesi üzerinde çalıştırılmasıyla belirlenir: her tensörün en büyük mutlak değeri kaydedilir ve $S = \max|r|/127$ alınır. Bu projede kalibrasyon kümesi görevin \textbf{bütün girdi uzayıdır} (729 dizi $\times$ 11 konum). Bu nedenle çıkarımda kalibre edilmiş aralığın dışında bir aktivasyon oluşamaz; kırpma hatası sıfırdır.
+
+Artık akışın kalibre edilmiş en büyük değeri $5{,}936$'dır. $FR = \lfloor \log_2(32\,767/5{,}936)\rfloor = 12$ seçilir ve akış \textbf{Q3.12} biçiminde temsil edilir (aralık $\pm8$, çözünürlük $2^{-12}$). Ölçek 2'nin kuvveti olduğundan gömme toplamı ve artık toplama ek bir ölçek dönüşümü gerektirmez. Katman başına kalibre edilen ölçekler Tablo~\ref{tab:olcek}'te verilmiştir.
+
+\begin{table}[h]
+  \centering\small
+  \caption{Katman başına kalibre edilen aktivasyon ölçekleri. $S_q$, $1/\sqrt{d_h}$ katlandıktan sonraki sorgu ölçeğidir.}
+  \label{tab:olcek}
+  \begin{tabular}{@{}crrrrr@{}}
+    \toprule
+    \thead{Katman} & \thead{$S_q$} & \thead{$S_k$} & \thead{$S_v$} & \thead{$S_h$ (GELU giriş)} & \thead{$S_g$ (GELU çıkış)} \\ \midrule
+    0 & 0,004359 & 0,01803 & 0,008157 & 0,02900 & 0,02490 \\
+    1 & 0,002940 & 0,008851 & 0,01075 & 0,02246 & 0,01876 \\
+    2 & 0,002882 & 0,01326 & 0,01076 & 0,02132 & 0,02125 \\ \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Biçim özeti ve sayısal sonuç}
+
+\begin{table}[h]
+  \centering\small
+  \caption{Tensör biçimleri ve seçim gerekçeleri.}
+  \label{tab:bicim}
+  \begin{tabularx}{\textwidth}{@{}lllL@{}}
+    \toprule
+    \thead{Tensör} & \thead{Biçim} & \thead{Ölçek} & \thead{Gerekçe} \\ \midrule
+    Ağırlıklar & INT8 & kanal başına & \cite{jacob18} \\
+    Bias & INT32 & $S_w S_x$ & akümülatörle aynı ölçek \\
+    Artık akış & INT16 & $2^{-12}$ (Q3.12) & 2'nin kuvveti; toplama dönüşümsüz \\
+    LayerNorm çıktısı & INT8 & $2^{-4}$ (Q3.4) & Samuelson sınırı, doyma yok (Önerme~\ref{on:samuelson}) \\
+    $q$, $k$, $v$ & INT8 & tensör başına & kalibrasyon \\
+    Dikkat çıktısı & INT8 & $S_v$ & dışbükeylik, doyma yok (Önerme~\ref{on:disbukey}) \\
+    GELU giriş/çıkışı & INT8 & katman başına & kalibrasyon, tam tablo \\
+    Softmax ağırlıkları & UQ1.15 & $2^{-15}$ & en büyük terim tam olarak 1 \\
+    Logitler & INT16 & ortak $S_{logit}$ & argmax için ortak ölçek \\ \bottomrule
+  \end{tabularx}
+\end{table}
+
+Tamsayı model, float modelle 729 girdinin tamamında aynı tokenları üretir. Öğretmen zorlamalı logit hatasının en büyüğü $0{,}35$, karekök ortalaması $0{,}046$'dır. Logitlerin ortalamadan sapmasına göre ölçülen SQNR $41{,}5$\,dB'dir (Şekil~\ref{fig:logit}).
+
+\begin{figure}[h]
+  \centering
+  \sekil{logit}
+  \caption[Float ve tamsayı logitleri]{Float minGPT logitleri ile tamsayı modelin logitleri (öğretmen zorlamalı, 146 dizi, her ikinci nokta). Noktalar $y=x$ doğrusu üzerinde toplanır.}
+  \label{fig:logit}
+\end{figure}
+
+% ===========================================================================
+\section{Matematiksel olarak eşdeğer dönüşümler (katlama)}\label{sec:katlama}
+% ===========================================================================
+
+Kuantizasyondan önce, modelin hesapladığı fonksiyonu değiştirmeden donanımı sadeleştiren iki dönüşüm uygulanır. Bu dönüşümler LayerNorm'un afin parametrelerini ve dikkat ölçeğini doğrusal katmanların içine taşır.
+
+\paragraph{LayerNorm afin katlama.} Her LayerNorm'un ardından bir doğrusal katman gelir. Bu durumda $\gamma$ ve $\beta$, o katmanın ağırlık ve bias'ına katılabilir:
+\begin{equation}
+  W\left(\gamma \odot \hat z + \beta\right) + b \;=\; \underbrace{\left(W\, \mathrm{diag}(\gamma)\right)}_{W'} \hat z \;+\; \underbrace{\left(W \beta + b\right)}_{b'} .
+\end{equation}
+$W'$, $W$'nin $i$'inci sütununun $\gamma_i$ ile çarpılmasıyla elde edilir. \code{ln\_1} \code{c\_attn}'a, \code{ln\_2} \code{mlp.c\_fc}'ye, \code{ln\_f} de \code{lm\_head}'e katlanır. \code{lm\_head}'in bias'ı yoktur; katlama ona $W\beta_f$ bias'ını ekler. Katlamadan sonra donanımdaki LayerNorm birimi yalnızca $\hat z$'yi hesaplar. $\gamma$ ve $\beta$ için ne bellek ne çarpıcı gerekir. Bir yan etki olarak $\hat z$'nin aralığı artık veriden bağımsız ve matematiksel olarak sınırlıdır. Bu sayede LN çıktısı için kalibrasyon gerektirmeyen sabit bir biçim (Q3.4) kullanılabilir.
+
+\paragraph{Dikkat ölçeği katlama.} Skor $(q\cdot k)/\sqrt{d_h} = (q/\sqrt{d_h})\cdot k$ biçiminde yazılabilir. $1/\sqrt{d_h}$ çarpanı, \code{c\_attn}'ın $Q$'yu üreten ilk $C$ satırına katlanır:
+\begin{equation}
+  W'_{Q} = \frac{W_Q\, \mathrm{diag}(\gamma_1)}{\sqrt{d_h}}, \qquad b'_{Q} = \frac{W_Q \beta_1 + b_Q}{\sqrt{d_h}}, \qquad \sqrt{d_h} = 4 .
+\end{equation}
+Bundan sonra donanım skorları doğrudan $q'\cdot k$ olarak hesaplar ve bölme yapmaz.
+
+\paragraph{Doğrulama.} Katlanmış model float64 ile bağımsız bir NumPy ileri geçişi olarak yazılmıştır. 729 dizinin tümünde her konumdaki logitler, orijinal minGPT çıktısıyla $10^{-4}$ mutlak tolerans içinde aynıdır. Bu kontrol \code{quantize.py} her çalıştığında otomatik olarak tekrarlanır.
+
+% ===========================================================================
+\section{Tamsayı çekirdekler}\label{sec:cekirdek}
+% ===========================================================================
+
+Doğrusal olmayan üç işlem kayan nokta ve aşkın fonksiyon kullanmadan, yalnızca toplama, çarpma, kaydırma, karşılaştırma, taban bölme ve taban karekökle hesaplanır. Her algoritma için taşma olmadığı ve doymanın gerekmediği ispatlanmıştır.
+
+\subsection{Tamsayı LayerNorm}
+Girdi $N = C = 48$ elemanlı INT16 artık vektörüdür ($S_r = 2^{-12}$). Çıktı Q3.4 biçiminde INT8'dir ($ZF = 4$):
+\begin{equation}
+\begin{aligned}
+  s &= \textstyle\sum_{i} x_i, & d_i &= N x_i - s = N\,(x_i - \mu) \quad \text{(tam)}, \\
+  Q &= \textstyle\sum_i d_i^2 + E, & E &= \mathrm{round}\left(\epsilon\, N^3 / S_r^2\right) \;\Rightarrow\; Q = N^3(\sigma^2+\epsilon)/S_r^2, \\
+  rt &= \left\lfloor \sqrt{Q} \right\rfloor, & inv &= \left\lfloor K / rt \right\rfloor, \quad K = \mathrm{round}\left(\sqrt{N}\, 2^{P}\right), \\
+  z_i &= \mathrm{sat}_8\left( \left(d_i \cdot inv + 2^{P-ZF-1}\right) \gg (P - ZF) \right).
+\end{aligned}
+\end{equation}
+Tanımlar yerine konunca $\hat z_i = \sqrt N\, d_i/\sqrt Q$ olduğu görülür. $inv \approx \sqrt N\, 2^P/\sqrt Q$ olduğundan $d_i\cdot inv/2^{P-ZF} \approx \hat z_i\, 2^{ZF}$ bulunur; bu, $\hat z_i$'nin Q3.4 karşılığıdır. $S_r$ ölçeği yalnızca $\epsilon$ terimi $E$'de görünür; LayerNorm'un ölçek değişmezliği sayesinde başka hiçbir yerde yer almaz. Sabitler: $P = 36$, $E = 18\,554\,259$ ve $K = 476\,102\,500\,705 < 2^{39}$.
+
+\begin{onerme}[Samuelson eşitsizliği \cite{samuelson}]\label{on:samuelson}
+$N$ elemanlı her gerçel vektör için $|x_i - \mu| \le \sigma\sqrt{N-1}$ sağlanır.
+\end{onerme}
+\begin{proof}
+$\sum_j (x_j - \mu) = 0$ olduğundan $(x_i-\mu) = -\sum_{j\ne i}(x_j-\mu)$ yazılabilir. Cauchy--Schwarz eşitsizliğiyle
+\[
+  (x_i - \mu)^2 \le (N-1) \sum_{j \ne i} (x_j - \mu)^2 = (N-1)\left( N\sigma^2 - (x_i - \mu)^2 \right)
+\]
+bulunur; buradan $N (x_i - \mu)^2 \le N (N-1)\, \sigma^2$ elde edilir.
+\end{proof}
+
+\noindent\textbf{Sonuç.} $|\hat z_i| \le \sqrt{N-1} = \sqrt{47} \approx 6{,}86$ olur; $\epsilon>0$ bu değeri yalnızca küçültür. Q3.4'ün en büyük değeri $127/16 = 7{,}94$'tür. LayerNorm çıktısı bu yüzden \textbf{hiçbir girdi için doymaz}. Bu garanti kalibrasyondan değil matematikten gelir ve $N \le 64$ olan her model için geçerlidir.
+
+\begin{onerme}[LayerNorm'da taşma yok]\label{on:tasma}
+$|d_i\cdot inv| \le K < 2^{39}$.
+\end{onerme}
+\begin{proof}
+$|d_i| \le \sqrt{\sum_j d_j^2} \le \sqrt Q$ sağlanır. $d_i$ tamsayı olduğu için $|d_i| \le \lfloor\sqrt Q\rfloor = rt$ olur. Dolayısıyla $|d_i\cdot inv| \le rt \cdot K/rt = K$.
+\end{proof}
+
+\noindent 23 bitlik $d_i$ ile 39 bitlik $inv$'in çarpımı bu yüzden hiçbir zaman $2^{39}$'u geçmez; 64 bitlik işaretli çarpım güvenlidir. $rt \ge \sqrt E \approx 4\,307$ olduğundan karekökün taban almasından gelen bağıl hata en fazla $2{,}3\cdot10^{-4}$'tür; çıktıdaki $\pm\tfrac12$ LSB yuvarlamasının yanında ihmal edilebilir.
+
+\paragraph{Tek geçişli biçim.} $\sum_i d_i^2 = N\,(N\sum_i x_i^2 - s^2)$ özdeşliği tamsayıda \emph{tam} olarak sağlanır. Bu sayede $s$ ve $\sum x^2$ tek geçişte toplanabilir. Kayan noktada bu formun yol açtığı yıkıcı iptal sorunu tamsayı aritmetikte yoktur (gelecek iyileştirme).
+
+\subsection{Tamsayı softmax}
+Bir başın $t$ konumundaki skorları $s_j = q\cdot k_j$ ($j = 0..t$) INT32'dir ve ölçekleri $S_s = S_q S_k$'dir. Hesap dört adımda yapılır (Şekil~\ref{fig:softmax}).
+
+\textbf{(i) Kaydırma.} $m = \max_j s_j$ alınır. Kaydırma değişmezliği sayesinde bütün üsler $\le 0$ olur ve $e_j \in (0,1]$ aralığında kalır.
+
+\textbf{(ii) 2 tabanına geçiş.} $e^x = 2^{x\log_2 e}$ eşitliği kullanılır. Skor farkı, normalize edilmiş bir tamsayı sabitle çarpılarak 2 tabanında sıfır veya pozitif bir üsse dönüştürülür:
+\begin{equation}
+  u_j = (m - s_j)\cdot C_{exp}, \qquad C_{exp}\, 2^{-F} \approx S_q S_k \log_2 e, \qquad 2^{15} \le C_{exp} < 2^{16}.
+\end{equation}
+Katman başına $(C_{exp}, F)$ değerleri $(60\,882;\,29)$, $(40\,315;\,30)$ ve $(59\,216;\,30)$'dur. Bu durumda $e_j = 2^{-u_j/2^F}$ olur.
+
+\textbf{(iii) Aralık indirgeme ve tablo.} $u_j$, tam kısım $n$ ve kesir kısmı olarak ayrılır. Tam kısım bir sağa kaydırmaya, kesrin üst 8 biti 256 girişlik bir tabloya dönüşür:
+\begin{equation}
+\begin{gathered}
+  n = u_j \gg F, \qquad k = (u_j \gg (F-8)) \,\&\, 255, \qquad \mathrm{LUT}[k] = \mathrm{round}\left(2^{15} \cdot 2^{-k/256}\right), \\
+  e_j = \begin{cases} \mathrm{LUT}[k] \gg n, & n \le 15, \\ 0, & n > 15. \end{cases}
+\end{gathered}
+\end{equation}
+$e_j$ UQ1.15 biçimindedir ve en büyük skor için tam olarak $2^{15}$ ($=1{,}0$) değerini alır.
+
+\textbf{Hata analizi.} Kesrin üst 8 bite kesilmesi üste $2^{-8}$'den küçük bir hata ekler. Bu, $e_j$'de $2^{2^{-8}}-1 \approx \%0{,}27$'den küçük bir bağıl hata demektir. Bu hata bütün terimleri aynı yönde etkilediği için $E$'ye bölünürken kısmen birbirini götürür. $\gg n$ kaydırmasının kesmesi en fazla $2^{-15}$ mutlak hata ekler. $n>15$ için sıfır alınan terimler en büyük terimin $2^{-16}$'sından küçüktür.
+
+\textbf{(iv) Ertelenmiş normalizasyon.} Her olasılığı ayrı ayrı bölmek yerine önce ağırlıklı toplam alınır; bölme sonda tek bir karşılık (reciprocal) ile yapılır:
+\begin{equation}
+  A_d = \sum_{j=0}^{t} e_j\, v_{j,d}, \qquad E = \sum_{j=0}^{t} e_j, \qquad R = \left\lfloor \frac{2^{32}}{E} \right\rfloor, \qquad y_d = \mathrm{sat}_8\left( \left(A_d R + 2^{31}\right) \gg 32 \right).
+\end{equation}
+Böylece baş başına \textbf{tek bir bölme} yapılır. En büyük terim için $e = 2^{15}$ olduğundan $E \ge 2^{15}$ olur; sıfıra bölme imkânsızdır ve $R \le 2^{17}$'dir.
+
+\begin{onerme}[Dışbükeylik ve doymazlık]\label{on:disbukey}
+Dikkat çıktısı $y_d$, ölçeği $S_y = S_v$ seçildiğinde hiçbir girdi için doymaz.
+\end{onerme}
+\begin{proof}
+$p_j = e_j/E \ge 0$ ve $\sum_j p_j = 1$ olduğundan $y_d$, $v_{j,d}$ değerlerinin dışbükey birleşimidir; $\min_j v_{j,d} \le y_d \le \max_j v_{j,d}$ sağlanır. Tamsayı tarafta $R$ taban alınarak küçüldüğü için $|A_d R/2^{32}| \le |A_d|/E \le 127$ olur.
+\end{proof}
+
+\noindent Bu yöntem, I-BERT'in \cite{ibert} polinom tabanlı \code{i-exp} fonksiyonuna bir alternatiftir. FPGA'da küçük LUT-ROM'lar ucuz olduğu için tablo tercih edilmiştir.
+
+\begin{figure}[h]
+  \centering
+  \sekil{softmax}
+  \caption[Tamsayı softmax veri yolu]{Tamsayı softmax ve ertelenmiş normalizasyon. Üstel ağırlıklar bir çarpma, bir tablo ve bir kaydırmayla hesaplanır. Baş başına tek bir bölme yapılır.}
+  \label{fig:softmax}
+\end{figure}
+
+\subsection{GELU: tam tablo}
+\code{c\_fc} çıktısı INT8'e ($S_h$) yeniden kuantize edilir. Bu yüzden GELU'nun girdisi yalnızca 256 farklı değer alabilir ve fonksiyon bir tabloyla \emph{tam olarak} temsil edilir:
+\begin{equation}
+  \mathrm{GELU\_LUT}_{\ell}[q] = \mathrm{sat}_8\left( \mathrm{round}\left( \mathrm{GELU}(q \cdot S_h)/S_g \right) \right), \qquad q \in \{-128, \dots, 127\}.
+\end{equation}
+Tablo, minGPT'nin tanh tabanlı GELU'sunu birebir kullanır. Hata yalnızca giriş ve çıkış kuantizasyonundan gelir; bir fonksiyon yaklaşımı yoktur (Şekil~\ref{fig:gelu}). Her katmanın kendi tablosu vardır ($3\times256$ bayt). Tablo, INT8 değerin iki tümleyenli bitleriyle doğrudan adreslenir: adres $= \{\ell, h[7{:}0]\}$.
+
+\begin{figure}[h]
+  \centering
+  \sekil{gelu}
+  \caption[GELU ve INT8 GELU tablosu]{Katman 0'ın gerçek GELU tablosu (turuncu) ve minGPT'nin tanh GELU'su (mavi). (b) Yakınlaştırmada INT8 adımları görülür. (a)'nın sağ ucundaki düz kısım çıkış doymasıdır: $S_g$ en büyük \emph{gözlenen} çıkıştan kalibre edildiği için yalnızca kalibrasyonda hiç görülmeyen pozitif girişlerde oluşur.}
+  \label{fig:gelu}
+\end{figure}
+
+\subsection{Argmax ve artık toplama}
+\code{lm\_head} çıktıları ortak bir ölçeğe ($S_{logit}$, INT16) yeniden kuantize edilir. Kanal başına ölçek farkları yeniden kuantizasyonda yok olur; tamsayı karşılaştırma bu yüzden doğrudur. Eşitlik durumunda en küçük indeks seçilir ve referans model de aynı kuralı uygular. GEMV motoru 8'in katı çıkış istediği için \code{lm\_head} 8 satıra sıfır ağırlıklarla doldurulur; fazla satırlar argmax'a katılmaz.
+
+Artık toplama, \code{c\_proj} ve \code{mlp.c\_proj} çıktılarını doğrudan $S_r$ ölçeğinde INT16'ya yeniden kuantize eder ve $r \leftarrow \mathrm{sat}_{16}(r + \Delta)$ uygular. Gömme adımı da aynı biçimdedir: $x^{(0)} = \mathrm{sat}_{16}(W_{te}[\tau] + W_{pe}[t])$.
+
+% ===========================================================================
+\section{Donanım mimarisi}\label{sec:mimari}
+% ===========================================================================
+
+Hızlandırıcı, bir token için minGPT'nin bütün ileri geçişini katman katman ve sırayla yürütür. Bütün doğrusal katmanlar aynı GEMV motorunu paylaşır; LayerNorm ve dikkatin kendi ardışık birimleri vardır (Şekil~\ref{fig:mimari}). GEMV motoru girdisini LN tamponundan (xa) veya dikkat/GELU tamponundan (xb) alır. Çıktısını o anki duruma göre dört hedeften birine yazar. Artık akış (res) ve KV önbelleği, bloklar ve tokenlar arasında durumu taşıyan iki bellektir.
+
+\begin{figure}[h]
+  \centering
+  \sekil{mimari}
+  \caption[\code{gpt\_top} veri yolu]{\code{gpt\_top} veri yolu. Turuncu kutular ROM'lardır, gri kutular tamponlardır. Mavi oklar GEMV çıkış akışının olası hedefleridir.}
+  \label{fig:mimari}
+\end{figure}
+
+\subsection{Üst modül arayüzü}
+
+\begin{table}[h]
+  \centering\small
+  \caption{\code{rtl/gpt\_top.sv} portları.}
+  \label{tab:portlar}
+  \begin{tabularx}{\textwidth}{@{}llL@{}}
+    \toprule
+    \thead{Port} & \thead{Yön} & \thead{Açıklama} \\ \midrule
+    \code{clk}, \code{rst\_n} & giriş & saat, senkron aktif-düşük reset \\
+    \code{start} & giriş & 1 çevrimlik darbe: \code{tok\_in} tokenını \code{pos} konumunda işle \\
+    \code{tok\_in}, \code{pos} & giriş & token (2 bit) ve konum (4 bit, $0 \le$ \code{pos} $< 11$) \\
+    \code{busy}, \code{done} & çıkış & meşgul / bitti (1 çevrimlik darbe) \\
+    \code{tok\_out} & çıkış & en büyük logitin indeksi, yani sonraki token \\
+    \code{logits} & çıkış & $3\times$INT16 logit \\
+    \code{dbg\_addr}, \code{dbg\_res} & giriş/çıkış & artık tamponunun asenkron okunması (test için) \\ \bottomrule
+  \end{tabularx}
+\end{table}
+
+Bir dizi üretmek için \code{pos} $= 0, 1, 2, \dots$ sırayla verilir. KV önbelleği konumlar arasında korunur.
+
+\subsection{Kontrol FSM'i}
+FSM, \code{model.py}'deki \code{forward()} fonksiyonunu satır satır izler (Şekil~\ref{fig:fsm}). Her durumun ilk çevriminde (\code{kick}) ilgili birim başlatılır; durum, birimin \code{done} darbesini bekler. \code{S\_LN1}'den \code{S\_MPROJ}'a kadar olan yedi durum her katman için tekrarlanır. GEMV'nin ağırlık taban adresi katman sayacından hesaplanır: \code{layer}$\cdot$\code{W\_PER\_LAYER}$+$\code{W\_OFF\_*}.
+
+\begin{figure}[h]
+  \centering
+  \sekil{fsm}
+  \caption[Kontrol FSM'i]{Kontrol FSM'i. Mavi durumlar GEMV motorunu kullanır. Sayılar katman başına ölçülen çevrimlerdir; dikkat süresi konuma ($t$) bağlıdır.}
+  \label{fig:fsm}
+\end{figure}
+
+\begin{table}[h]
+  \centering\small
+  \caption{FSM durumları ve \code{model.py} karşılıkları.}
+  \label{tab:fsm}
+  \begin{tabular}{@{}llll@{}}
+    \toprule
+    \thead{Durum} & \thead{Birim} & \thead{Okur $\rightarrow$ yazar} & \thead{\code{model.py}} \\ \midrule
+    \code{S\_EMB} & gömme ROM'u & wte, wpe $\rightarrow$ res & \code{wte(idx) + wpe(pos)} \\
+    \code{S\_LN1} & layernorm & res $\rightarrow$ xa & \code{ln\_1(x)} \\
+    \code{S\_QKV} & gemv $48\rightarrow144$ & xa $\rightarrow$ qbuf, K, V & \code{c\_attn} \\
+    \code{S\_ATT} & attention & qbuf, K, V $\rightarrow$ xb & \code{softmax(q k$^\top$) v} \\
+    \code{S\_PROJ} & gemv $48\rightarrow48$ & xb $\rightarrow$ res (+=) & \code{x + c\_proj(y)} \\
+    \code{S\_LN2} & layernorm & res $\rightarrow$ xa & \code{ln\_2(x)} \\
+    \code{S\_FC} & gemv $48\rightarrow192$ + GELU & xa $\rightarrow$ xb & \code{gelu(c\_fc(·))} \\
+    \code{S\_MPROJ} & gemv $192\rightarrow48$ & xb $\rightarrow$ res (+=) & \code{x + mlp.c\_proj(·)} \\
+    \code{S\_LNF} & layernorm & res $\rightarrow$ xa & \code{ln\_f(x)} \\
+    \code{S\_HEAD} & gemv $48\rightarrow8$ + argmax & xa $\rightarrow$ tok\_out & \code{lm\_head} + argmax \\ \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Tasarım kararları.}
+\begin{itemize}
+  \item \textbf{Zaman çoklamalı birimler:} tek GEMV motoru ve tek LN birimi bütün katmanlar için sırayla kullanılır; alan küçük tutulur.
+  \item \textbf{Akış hâlinde çıktı:} GEMV çıktısı (indeks, değer) çiftleri olarak akar. Hedef tampon FSM durumundan seçildiği için ara tampon gerekmez.
+  \item \textbf{Kaynaştırılmış GELU:} GELU tablosu FC çıktısının yazma yoluna yerleştirilmiştir; ayrı bir aşama yoktur.
+  \item \textbf{Akış hâlinde argmax:} HEAD çıktıları akarken en büyük logit güncellenir; softmax hesaplanmaz.
+\end{itemize}
+
+% ===========================================================================
+\section{GEMV motoru}\label{sec:gemv}
+% ===========================================================================
+
+Token başına hesabın \%96'sından fazlası matris-vektör çarpımı olduğu için tasarımın merkezinde $P=8$ şeritli, \textbf{çıkış-durgun} (\emph{output-stationary}) bir GEMV motoru vardır (Şekil~\ref{fig:gemv}). Motor, ölçülen 10\,598 çevrimin 10\,416'sında faydalı iş yapar; verimi \%98,3'tür.
+
+\subsection{Dataflow seçimi}
+Sze ve ark.\ \cite{sze17} hızlandırıcıları hangi verinin işlem biriminde sabit kaldığına göre sınıflandırır: ağırlık-durgun, girdi-durgun ve çıkış-durgun. Decode sırasındaki GEMV için çıkış-durgun yapının gerekçesi şudur:
+\begin{itemize}
+  \item \textbf{Ağırlıklar yeniden kullanılmaz:} her ağırlık bir token için tam bir kez çarpılır; ağırlıkları işlem biriminde tutmak bir şey kazandırmaz.
+  \item \textbf{Girdi $P$ kez yeniden kullanılır:} aynı $x_i$, $P$ farklı çıkış nöronu tarafından kullanılır; bütün şeritlere yayınlanır.
+  \item \textbf{Kısmi toplamlar yerinde kalır:} her şeridin INT32 akümülatörü $n_{in}$ çevrim boyunca kendi yazmacında birikir.
+\end{itemize}
+
+\begin{figure}[h]
+  \centering
+  \sekil{gemv}
+  \caption[GEMV motoru]{GEMV motoru. Her çevrimde tek bir $x_i$ sekiz şeride yayınlanır ve ağırlık ROM'undan sekiz çıkışın aynı sütundaki ağırlıklarını taşıyan 64 bitlik tek bir kelime okunur. Akümülatörler bir gölge bankaya kopyalanır ve tek bir requant birimine sırayla aktarılır.}
+  \label{fig:gemv}
+\end{figure}
+
+\subsection{Ağırlık ROM düzeni}
+ROM kelimesi, $P=8$ çıkışın aynı sütundaki ağırlıklarını taşır; şerit $p$ kelimenin $[8p{+}7 : 8p]$ bitlerini kullanır:
+\begin{equation}
+  \mathrm{word}(o_b, i) = \{\, W_{o_b P + 7,\, i},\, \dots,\, W_{o_b P,\, i} \,\}, \qquad acc_p \mathrel{+}= W_{o_b P + p,\, i} \cdot x_i \quad (p = 0..7).
+\end{equation}
+Her doğrusal katman için önce çıkış bloğu $o_b$, sonra giriş indeksi $i$ sırasıyla yazılır. Adres bu yüzden çağrı boyunca birer birer artan bir sayaçtır:
+\begin{equation}
+  \mathrm{addr} = \ell\cdot3456 + \mathrm{OFF}_{lin} + o_b \cdot n_{in} + i, \qquad
+  \mathrm{OFF} = \{\texttt{attn}{:}\,0,\; \texttt{proj}{:}\,864,\; \texttt{fc}{:}\,1152,\; \texttt{mproj}{:}\,2304\}.
+\end{equation}
+\code{lm\_head} 10\,368 adresinden başlar; ROM'un toplam derinliği 10\,416 kelimedir (83\,328 bayt). Parametre ROM'u aynı sırayı çıkış kanalı başına bir kelimeyle izler (1\,304 kelime). MAC döngüsünün RTL'deki karşılığı şudur:
+
+\begin{lstlisting}[language=SV]
+always_comb begin
+  for (int p = 0; p < P; p++) begin
+    prod[p]   = $signed(w_word[8*p +: 8]) * x1;        // INT8 x INT8 -> INT16
+    acc_nx[p] = (first1 ? 32'sd0 : acc[p]) + prod[p];  // INT32 birikim
+  end
+end
+\end{lstlisting}
+
+Bloğun ilk elemanında akümülatör sıfır yerine doğrudan çarpımla yüklenir (\code{first1}); ayrı bir temizleme çevrimi gerekmez.
+
+\subsection{Boru hattı ve gölge banka}
+Motor üç aşamalıdır: \emph{issue} (ROM ve aktivasyon adresi), \emph{MAC} (ROM verisi geçerli, 8 şerit biriktirir) ve \emph{requant}. Bloğun son elemanında 8 akümülatör gölge bankaya kopyalanır (\emph{handoff}). Gölge banka her çevrimde bir değer olmak üzere requant birimine aktarılır; bu sırada şeritler bir sonraki 8 çıkışı hesaplamaya başlamıştır. Şekil~\ref{fig:boruhatti} zamanlamayı gösterir.
+
+\begin{figure}[h]
+  \centering
+  \sekil{boruhatti}
+  \caption[GEMV boru hattı zamanlaması]{GEMV boru hattı zamanlaması ($n_{in}=48$, $P=8$). Blok 0'ın son MAC'i 48. çevrimdedir; akümülatörler bu çevrimin sonunda gölge bankaya kopyalanır (H). Blok 1'in MAC'leri boşluksuz devam ederken blok 0'ın sekiz çıkışı 52--59. çevrimlerde akar.}
+  \label{fig:boruhatti}
+\end{figure}
+
+\begin{onerme}[Gölge banka güvenliği]\label{on:golge}
+$n_{in} \ge P+1$ ise gölge bankadaki hiçbir değerin üzerine okunmadan yazılmaz.
+\end{onerme}
+\begin{proof}
+H çevriminde yazılan gölge banka H$+2$ \dots H$+P+1$ çevrimlerinde okunur. Bir sonraki handoff H$+n_{in}$ çevriminin sonundadır. H$+P+1 \le$ H$+n_{in}$ koşulu $n_{in} \ge P+1$'e denktir. Modeldeki en küçük $n_{in}$ 48'dir; RTL koşulu simülasyonda bir \code{assert} ile denetler.
+\end{proof}
+
+\subsection{Requant birimi}
+Bölüm~\ref{sec:kuant}'teki ifade iki boru hattı aşamasında hesaplanır: önce 33 bitlik $(acc+b)$ toplamı işaretli 17 bitlik $\{0, m_0\}$ ile çarpılır ve 64 bitlik yazmaca alınır; sonra $2^{sh-1}$ eklenir, aritmetik kaydırma yapılır ve sonuç \code{out16} bayrağına göre INT8 veya INT16 aralığına doyurulur:
+
+\begin{lstlisting}[language=SV]
+always_ff @(posedge clk) prod_r <= sum * m0_s;              // kademe 1
+assign shifted = (prod_r + (64'sd1 <<< (sh_r - 6'd1))) >>> sh_r;
+always_ff @(posedge clk) out <= sat(shifted, out16_r);      // kademe 2
+\end{lstlisting}
+
+\subsection{Çevrim sayısı}
+Bir GEMV çağrısı $(n_{out}/P)\cdot n_{in} + 14$ çevrim sürer. Ek 14 çevrim son bloğun yeniden kuantizasyonundan, boru hattının dolup boşalmasından ve FSM geçişinden gelir.
+
+\begin{table}[h]
+  \centering\small
+  \caption{GEMV çağrılarının ideal ve ölçülen çevrim sayıları.}
+  \label{tab:gemvcyc}
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    \thead{Katman} & \thead{$n_{out}\times n_{in}$} & \thead{İdeal} & \thead{Ölçülen} \\ \midrule
+    \code{c\_attn} & $144\times48$ & 864 & 878 \\
+    \code{c\_proj} & $48\times48$ & 288 & 302 \\
+    \code{mlp.c\_fc} & $192\times48$ & 1\,152 & 1\,166 \\
+    \code{mlp.c\_proj} & $48\times192$ & 1\,152 & 1\,166 \\
+    \code{lm\_head} & $8\times48$ & 48 & 62 \\ \bottomrule
+  \end{tabular}
+\end{table}
+
+Tüm token için ideal toplam $3\cdot3456 + 48 = 10\,416$ çevrimdir; bu, ağırlık ROM'unun derinliğine eşittir, çünkü motor her çevrimde bir ROM kelimesi tüketir.
+
+% ===========================================================================
+\section{LayerNorm ve dikkat birimleri}
+% ===========================================================================
+
+LayerNorm ve dikkat hesap yükünün küçük bir kısmını oluşturur. Bu yüzden ikisi de çevrim başına bir işlem yapan ardışık birimler olarak tasarlanmıştır: LN başına 234 çevrim, dikkat için katman başına ortalama 752 çevrim.
+
+\subsection{Ardışık karekök}
+Taban karekök, elle karekök almaya benzeyen \emph{basamak basamak} (\emph{digit-by-digit}) yöntemle hesaplanır. Her çevrimde girdiden 2 bit tüketilir ve köke 1 bit eklenir; 64 bitlik girdi için 32 çevrim sürer:
+\begin{equation}
+\begin{aligned}
+  rem &\leftarrow 4\,rem + (\text{sıradaki 2 bit}), \qquad trial = 4\,root + 1, \\
+  (rem,\, root) &\leftarrow \begin{cases} (rem - trial,\; 2\,root + 1), & rem \ge trial, \\ (rem,\; 2\,root), & \text{aksi hâlde}. \end{cases}
+\end{aligned}
+\end{equation}
+\textbf{Değişmez:} $i$ adımdan sonra $N_i$ girdinin en üst $2i$ biti olsun. $root_i = \lfloor\sqrt{N_i}\rfloor$ ve $rem_i = N_i - root_i^2 \le 2\,root_i$ sağlanır. Aday kök $2r+1$'dir ve $(2r+1)^2 = 4r^2 + 4r + 1$ olduğundan karşılaştırılacak değer tam olarak $4r+1$'dir.
+
+\subsection{Ardışık bölücü}
+Taban bölme, işaretsiz \emph{geri yüklemeli} (\emph{restoring}) yöntemle her çevrimde bir bölüm biti üretir (48 bit için 48 çevrim): $r \leftarrow 2r + \text{bit}$; $r \ge D$ ise $r \leftarrow r - D$ ve bölüm biti 1. Değişmez: $q_i = \lfloor N_i/D \rfloor$, $0 \le r_i < D$. Bölücü LayerNorm'da $K/rt$, softmax'ta $2^{32}/E$ için kullanılır ve her ikisinde de yalnızca \emph{bir kez} çalışır. Her iki birim, birim testinde 2\,000 rastgele girdiyle referans gerektirmeyen koşullara karşı doğrulanmıştır: $r^2 \le n < (r+1)^2$ ve $q\,d \le n < (q+1)\,d$.
+
+\subsection{LayerNorm birimi}
+
+\begin{table}[h]
+  \centering\small
+  \caption{LayerNorm biriminin aşamaları (toplam 234 çevrim, ölçülen).}
+  \label{tab:ln}
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    \thead{Aşama} & \thead{İşlem} & \thead{Çevrim} \\ \midrule
+    \code{SUM} & $s = \sum x_i$ & 48 \\
+    \code{VAR} & $d_i = 48x_i - s$ (yazmaçlanır); $Q \mathrel{+}= d_i^2$ & $48+1$ \\
+    \code{SQRT} & $rt = \lfloor\sqrt{Q+E}\rfloor$ & $32+1$ \\
+    \code{DIV} & $inv = \lfloor K/rt \rfloor$ & $48+1$ \\
+    \code{OUT} & $z_i = \mathrm{sat}_8((d_i\, inv + 2^{31}) \gg 32)$ & $48+2$ \\ \bottomrule
+  \end{tabular}
+\end{table}
+
+$d_i$ iki kez hesaplanır (VAR ve OUT); böylece 48 elemanlı bir $d$ tamponuna gerek kalmaz. Bit genişlikleri ihtiyacın üstünde seçilmiştir: $d$ 32 bit (gereken 23), $Q$ 64 bit (gereken yaklaşık 50), $inv$ 48 bit, $d\cdot inv$ 64 bit (Önerme~\ref{on:tasma}'e göre $2^{39}$ ile sınırlı).
+
+\subsection{Dikkat birimi}
+Dikkat birimi, $t$ konumundaki tek sorgu için üç başı sırayla işler. Önbellek adreslemesi doğrusaldır:
+\begin{equation}
+  \mathrm{addr}_{KV}(\ell, j, h, d) = (\ell\, T + j)\, C + h\, d_h + d, \qquad 0 \le \mathrm{addr}_{KV} < L\,T\,C = 1584 .
+\end{equation}
+QKV GEMV'si $(\ell, t)$ satırını yazar, dikkat $(\ell, 0..t)$ satırlarını okur. Yeni bir diziye $t=0$ ile başlanırsa eski satırlar silinmez; $j>t$ satırları hiç okunmadığı için bu zararsızdır.
+
+\begin{table}[h]
+  \centering\small
+  \caption{Dikkat biriminin baş başına aşamaları.}
+  \label{tab:att}
+  \begin{tabularx}{\textwidth}{@{}lLl@{}}
+    \toprule
+    \thead{Aşama} & \thead{İşlem} & \thead{Çevrim} \\ \midrule
+    \code{SCORE} & $s_j = \sum_d q_d\, k_{j,d}$ (INT8$\times$INT8), koşan maksimum $m$ & $16(t+1)$ \\
+    \code{EXP} & kademe 1: $u_j = (m-s_j)\, C_{exp}$; kademe 2: $e_j = \mathrm{LUT}[k] \gg n$, $E \mathrel{+}= e_j$ & $(t+1)+2$ \\
+    \code{DIV} & $R = \lfloor 2^{32}/E \rfloor$ & $48+2$ \\
+    \code{AV} & $A_d = \sum_j e_j\, v_{j,d}$ (UQ1.15$\times$INT8); $y_d = \mathrm{sat}_8((A_d R + 2^{31}) \gg 32)$ & $16(t+1)+1$ \\ \bottomrule
+  \end{tabularx}
+\end{table}
+
+Skorlar ($11\times32$ bit) ve üstel ağırlıklar ($11\times16$ bit) birimin içindeki yazmaçlarda tutulur. AV aşamasında dış döngü $d$, iç döngü $j$ üzerindedir; böylece her $y_d$, $j$ döngüsü biter bitmez yazılabilir. Bir katmanın dikkat süresi yaklaşık $3\,(33\,(t+1) + 53)$ çevrimdir; $t=0$'da 258, $t=10$'da 1\,248 çevrim.
+
+% ===========================================================================
+\section{Bellek organizasyonu ve FPGA kaynak eşlemesi}
+% ===========================================================================
+
+Tasarımın bellek gereksinimi yaklaşık 95\,KB ROM ve 4\,KB RAM'dir. Büyük ROM'lar blok RAM'e (BRAM), küçük tamponlar ve tablolar dağıtık RAM'e (LUTRAM) veya yazmaçlara eşlenir. Bu bölümdeki kaynak sayıları hesapla elde edilmiş \textbf{tahminlerdir}; kesin değerler Vivado sentez raporundan alınacaktır.
+
+\begin{table}[h]
+  \centering\small
+  \caption{Bellekler ve beklenen gerçeklemeleri.}
+  \label{tab:bellek}
+  \begin{tabularx}{\textwidth}{@{}lllL@{}}
+    \toprule
+    \thead{Bellek} & \thead{Boyut} & \thead{Okuma} & \thead{Beklenen gerçekleme} \\ \midrule
+    Ağırlık ROM'u & $10\,416\times64$ bit (83,3\,KB) & senkron & $\approx21$ RAMB36 ($512\times72$ düzeni) \\
+    Parametre ROM'u & $1\,304\times64$ bit (10,4\,KB) & senkron & $\approx3$ RAMB36 \\
+    \code{wte} / \code{wpe} & $144$ / $528\times16$ bit & senkron & LUT-ROM veya RAMB18 \\
+    GELU tablosu & $768\times8$ bit & asenkron & LUT-ROM \\
+    exp tablosu & $256\times16$ bit & asenkron & LUT-ROM \\
+    K ve V önbelleği & $2\times1\,584\times8$ bit & asenkron & LUTRAM \\
+    Artık tampon & $48\times16$ bit & asenkron, 3 port & yazmaç \\
+    xa, xb, qbuf & $48$, $192$, $48\times8$ bit & asenkron & LUTRAM \\ \bottomrule
+  \end{tabularx}
+\end{table}
+
+\paragraph{Asenkron okumalı küçük tamponlar.} LUTRAM, okuma adresi verildiği çevrimde veriyi kombinasyonel olarak verir. Bu sayede GEMV, LN ve dikkat birimlerinin durum makineleri adres-veri hizalaması için ek boru hattı aşaması gerektirmez. Bunun bedeli, okuma yolunun saat periyoduna dahil olmasıdır.
+
+\paragraph{Tek yazma portu.} Artık ve xb tamponlarına iki farklı kaynak yazar (gömme ile artık toplama; dikkat çıktısı ile GELU). Bu kaynaklar zaman içinde çakışmaz. RTL'de her tampon için tek bir yazma portu kombinasyonel olarak seçilir; sentez aracı tamponu tek portlu RAM olarak çıkarabilir.
+
+\paragraph{Çarpıcı envanteri.} DSP48E1 bloğu $25\times18$ bitlik işaretli bir çarpıcı, 48 bitlik bir toplayıcı ve boru hattı yazmaçları içerir; bu boyutu aşan çarpımlar birden fazla DSP'ye bölünür.
+
+\begin{table}[h]
+  \centering\small
+  \caption{Tasarımdaki çarpıcılar ve tahmini DSP48E1 kullanımı.}
+  \label{tab:dsp}
+  \begin{tabular}{@{}lllcc@{}}
+    \toprule
+    \thead{Yer} & \thead{İşlem} & \thead{Operandlar} & \thead{Adet} & \thead{Tahmini DSP} \\ \midrule
+    GEMV şeritleri & $W\cdot x$ & $8\times8$ & 8 & 0--8 \\
+    Requant & $(acc+b)\cdot m_0$ & $33\times17$ & 1 & 2 \\
+    LayerNorm & $d\cdot d$ & $32\times32$ & 1 & 3--4 \\
+    LayerNorm & $d\cdot inv$ & $32\times49$ & 1 & 4--6 \\
+    Dikkat & $q\cdot k$ & $8\times8$ & 1 & 0--1 \\
+    Dikkat & $e\cdot v$ & $17\times8$ & 1 & 1 \\
+    Dikkat & $(m-s)\cdot C_{exp}$ & $32\times16$ & 1 & 2 \\
+    Dikkat & $A\cdot R$ & $32\times49$ & 1 & 4--6 \\ \bottomrule
+  \end{tabular}
+\end{table}
+
+Toplam tahmin 16--30 DSP'dir; Zynq-7020'de 220 DSP bulunur. Geniş çarpıcıların operand genişlikleri bilinçli olarak güvenli tutulmuştur. Bölüm~\ref{sec:cekirdek}'teki sınırlar gerçek ihtiyacı gösterir ($d$ için 23 bit, $inv$ için yaklaşık 27 bit, $R$ için 18 bit). Genişlikler daraltılırsa DSP sayısı ve kritik yol kısalır. Hedef cihaz xc7z020'de 53\,200 LUT, 106\,400 FF, 140 RAMB36 ve 220 DSP bulunur. Tasarımın yaklaşık 24 RAMB36'lık ihtiyacı, cihaz BRAM'inin \%17'si kadardır.
+
+% ===========================================================================
+\section{Performans analizi}
+% ===========================================================================
+
+Bir token ortalama 14\,544 çevrimde işlenir. Bu, 100\,MHz'de 145\,µs/token, yani saniyede yaklaşık 6\,900 token demektir. Sürenin \%72,9'u GEMV aşamalarında geçer (Şekil~\ref{fig:profil}).
+
+\begin{figure}[h]
+  \centering
+  \sekil{profil}
+  \caption[Token başına çevrim profili]{Token başına çevrim profili (tüm katmanlar toplamı; Verilator, 729 dizi $\times$ 11 adım ortalaması). Testbench el sıkışmasıyla birlikte toplam 14\,544 çevrimdir.}
+  \label{fig:profil}
+\end{figure}
+
+MLP'nin iki katmanı (FC ve MPROJ) tek başına sürenin yaklaşık yarısını alır; bu oran Bölüm~8'deki parametre dağılımıyla ($8C^2/12C^2$) uyumludur. Dikkat (\%15,5) ve LayerNorm (\%11,3) ardışık birimler oldukları için işlem paylarından (\%4'ün altında) daha fazla süre alır.
+
+\paragraph{Analitik çevrim modeli.} Bölüm~\ref{sec:gemv} ve 16'daki çevrim sayıları birleştirilince, $t$ konumundaki bir tokenın süresi kapalı biçimde yazılabilir:
+\begin{equation}
+\begin{aligned}
+  T_{token}(t) &= \underbrace{49}_{\mathrm{EMB}} + \underbrace{7\cdot234}_{\mathrm{LN}} + \underbrace{3\,(878+302+1166+1166)+62}_{\mathrm{GEMV}\,=\,10\,598} + \underbrace{9\,\big(33\,(t+1) + 53\big)}_{\text{dikkat}} + 1 \\
+  &\approx\; 12\,763 + 297\,(t+1).
+\end{aligned}
+\end{equation}
+Model $t=0$ için 13\,060, $t=10$ için 16\,030 çevrim verir. Ortalaması 14\,545 çevrimdir ve ölçülen 14\,544 değeriyle bir çevrim farkla uyuşur.
+
+\paragraph{Darboğaz ve Amdahl sınırı.} Decode sırasında her ağırlık token başına bir kez kullanılır; aritmetik yoğunluk ağırlık baytı başına 1 MAC'tir. GEMV hızı bu yüzden çevrim başına okunabilen ağırlık baytıyla sınırlıdır: $P=8$ şerit ROM'dan çevrim başına 8 bayt okur. GEMV dışındaki aşamalar 3\,944 çevrim sürer. GEMV sonsuz hızlı olsa bile token süresi bu değerin altına inemez; yalnızca $P$ artırılarak elde edilebilecek en büyük hızlanma $14\,542/3\,944 \approx 3{,}7\times$'tir.
+
+\paragraph{Paralellik derecesinin etkisi.} $P$, bütün $n_{out}$ değerlerini (144, 48, 192) bölmeli ve $n_{in} > P$ sağlanmalıdır; geçerli değerler 4, 8, 12, 16 ve 24'tür ($P=32$ geçersizdir, çünkü 144 ve 48, 32'ye bölünmez). Şekil~\ref{fig:ptarama}, analitik modelin tahminlerini gösterir: $P$'yi 8'den 24'e çıkarmak süreyi yalnızca $1{,}9$ kat kısaltır. Daha fazla hızlanma için LayerNorm ve dikkat birimlerinin de paralelleştirilmesi gerekir.
+
+\begin{figure}[h]
+  \centering
+  \sekil{ptarama}
+  \caption[Paralellik derecesinin etkisi]{MAC şeridi sayısı $P$'nin token süresine etkisi (analitik model). $P=8$ ölçülmüştür. Kesikli çizgi, GEMV dışındaki aşamaların oluşturduğu Amdahl tabanıdır.}
+  \label{fig:ptarama}
+\end{figure}
+
+% ===========================================================================
+\section{Doğrulama metodolojisi}
+% ===========================================================================
+
+Donanımın doğruluğu, her biri bir öncekine karşı kontrol edilen dört referans seviyesiyle gösterilmiştir (Şekil~\ref{fig:dogrulama}). Son seviyede RTL, tamsayı referans modelle 8\,019 decode adımının tamamında bit düzeyinde aynıdır.
+
+\begin{figure}[h]
+  \centering
+  \sekil{dogrulama}
+  \caption[Referans model hiyerarşisi]{Referans model hiyerarşisi. Seviye 2, donanımın bit düzeyindeki spesifikasyonudur; seviye 2 ile 3 arasındaki karşılaştırma toleranssızdır.}
+  \label{fig:dogrulama}
+\end{figure}
+
+Python tamsayıları sınırsız hassasiyetlidir. Bu yüzden RTL'deki her taşma, yanlış bit genişliği veya farklı bir yuvarlama, ilk etkilediği değerde bir uyumsuzluk olarak görünür.
+
+\paragraph{Birim testleri} (\code{tb/tb\_arith.sv}). Aritmetik bloklar referans modele ihtiyaç duymayan matematiksel koşullarla test edilir: \code{div\_seq} için $q\,d \le n < (q+1)\,d$, \code{isqrt\_seq} için $r^2 \le n < (r+1)^2$ ve \code{requant} için davranışsal referansa eşitlik. Her blok 2\,000 rastgele girdiyle sınanmıştır.
+
+\paragraph{Sistem testi} (\code{tb/tb\_gpt\_top.sv}). \code{sw/export.py}, tamsayı modelin 729 girdinin her biri için yaptığı 11 decode adımını \code{mem/tv.txt} dosyasına yazar. Testbench:
+\begin{enumerate}
+  \item \textbf{kapalı döngü} çalışır: ilk 6 adımda girdi tokenları verilir, sonraki adımlarda DUT'nin kendi ürettiği token geri beslenir;
+  \item her adımda token, bütün logitler ve 48 artık değer referansla birebir karşılaştırılır;
+  \item dizi sonunda üretilen 6 tokenın girdinin sıralı hâli olup olmadığını ayrıca kontrol eder;
+  \item FSM durumlarına göre çevrim profilini ölçer (Şekil~\ref{fig:profil}).
+\end{enumerate}
+
+\begin{table}[h]
+  \centering\small
+  \caption{Sistem testi sonuçları (Verilator 5.052).}
+  \label{tab:sistem}
+  \begin{tabular}{@{}lr@{}}
+    \toprule
+    \thead{Ölçüt} & \thead{Değer} \\ \midrule
+    Kontrol edilen decode adımı & 8\,019 \\
+    Bit-exact diziler & 729 / 729 \\
+    Doğru sıralanan diziler & 729 / 729 \\
+    Uyumsuz değer & 0 \\ \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Testin testi.} Her zaman PASS veren bir testbench hiçbir şeyi kanıtlamaz. Bu yüzden altın dosyaya bilerek iki hata eklenmiştir: bir artık değere $+1$ ve değiştirilmiş bir token. Testbench ikisini de doğru dizi ve adımla raporlamış ve FAIL vermiştir.
+
+\begin{uyari}
+\textbf{Karşılaşılan bir SystemVerilog tuzağı.} Bir \code{initial} bloğunun içindeki döngüde ilk değerle tanımlanan değişkenler (\code{int x = \$urandom();}) varsayılan olarak \emph{static} ömürlüdür ve ilk değer yalnızca bir kez atanır (IEEE 1800, §6.21). Bu hatayla 2\,000 rastgele test aslında aynı girdiyi 2\,000 kez denerdi. Verilator'ın \code{IMPLICITSTATIC} uyarısıyla fark edilmiş ve değişkenler \code{automatic} yapılarak düzeltilmiştir.
+\end{uyari}
+
+\paragraph{Çip üzeri öz-test} (\code{tb/tb\_selftest.sv}). Bölüm~\ref{sec:pynq}'deki öz-test modülü simülasyonda iki kez çalıştırılmıştır: normal modda 729/729 dizi geçmiş, hata enjeksiyonu açıkken 729/729 dizi kalmıştır. Bir çalıştırma 116\,637\,813 çevrim sürer.
+
+% ===========================================================================
+\section{PYNQ-Z2 entegrasyonu}\label{sec:pynq}
+% ===========================================================================
+
+Hedef kart, Zynq-7020 (xc7z020clg400-1) içeren TUL PYNQ-Z2'dir. İlk kart hedefi, PC veya yazılım gerektirmeyen bir \textbf{çip üzeri öz-testtir}: FPGA 729 sıralama probleminin hepsini kendisi üretir, çözer ve kontrol eder; sonucu LED ile gösterir.
+
+\begin{table}[h]
+  \centering\small
+  \caption{Aday kartların karşılaştırması.}
+  \label{tab:kart}
+  \begin{tabularx}{\textwidth}{@{}llccL@{}}
+    \toprule
+    \thead{Kart} & \thead{FPGA} & \thead{RAMB36} & \thead{DSP} & \thead{Değerlendirme} \\ \midrule
+    \textbf{PYNQ-Z2} & Zynq-7020 & 140 & 220 & \textbf{seçildi}: 2$\times$Cortex-A9 + PYNQ (Python) \\
+    Basys 3 & Artix-7 35T & 50 & 90 & sığar, ancak büyümeye yer az; işlemci yok \\
+    Zybo Z7-20 & Zynq-7020 & 140 & 220 & aynı çip; resmî PYNQ desteği yok \\
+    Kria KV260 & Zynq US+ K26 & 144 (+64 URAM) & 1\,248 & bu boyut için gereğinden büyük \\ \bottomrule
+  \end{tabularx}
+\end{table}
+
+PYNQ-Z2'nin seçilme nedenleri şunlardır: BRAM'in yalnızca yaklaşık \%17'sinin kullanılması, ücretsiz Vivado ML Standard sürümüyle desteklenmesi ve kart üzerindeki ARM işlemci. Bu işlemci, sonraki aşamada hızlandırıcıyı Python'dan sürmeye ve aynı karttaki CPU ile karşılaştırmaya imkân verir.
+
+\paragraph{Öz-test modülü} (\code{rtl/gpt\_selftest.sv}). Modül, girdileri tabanı 3 olan 6 basamaklı bir sayaçla (odometre) üretir. Her girdi için hızlandırıcıyla 11 adımlık kapalı döngü üretim yapar. Üretilen 6 token iki koşulla kontrol edilir: \emph{monotonluk} (her token bir öncekinden küçük olmamalı) ve \emph{histogram eşitliği} (her rakamın çıktıdaki sayısı girdidekine eşit olmalı). Bu iki koşul birlikte ``çıktı, girdinin sıralı hâlidir'' önermesine denktir; çipte altın veri saklanmaz. Hata enjeksiyonu açıkken her dizinin ilk çıktısı farklı geçerli bir tokenla değiştirilir. Histogram bu durumda kesinlikle değişeceği için her dizi kalmalıdır.
+
+\begin{figure}[h]
+  \centering
+  \sekil{pynq}
+  \caption[PYNQ-Z2 üst modülü]{PYNQ-Z2 üst modülü. 125\,MHz kart saatinden MMCM ile 50\,MHz üretilir. Butonlar senkronize edilir, öz-test sonucu LED'lerde gösterilir.}
+  \label{fig:pynq}
+\end{figure}
+
+\paragraph{Saat ve reset.} Kart, PL'ye H16 pininden 125\,MHz saat verir. Bu saatten bir MMCM ile tasarım saati üretilir:
+\begin{equation}
+  f_{VCO} = 125\ \mathrm{MHz} \times 8 = 1000\ \mathrm{MHz}, \qquad f_{clk} = f_{VCO}/20 = 50\ \mathrm{MHz}.
+\end{equation}
+VCO frekansı, -1 hız sınıfı 7-serisi MMCM'nin 600--1200\,MHz aralığındadır. 50\,MHz, zamanlama raporu görülene kadar bilinçli olarak temkinli seçilmiştir; rapor uygunsa bölen 10'a düşürülerek 100\,MHz'e çıkılabilir. PL'ye bağlı bir reset pini yoktur; reset MMCM'nin \code{LOCKED} sinyali ve BTN1 ile üretilir.
+
+\begin{table}[h]
+  \centering\small
+  \caption{Kart arayüzü.}
+  \label{tab:led}
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    \thead{Öğe} & \thead{Anlamı} \\ \midrule
+    LD0 & yanıp söner: bitstream çalışıyor \\
+    LD1 / LD2 & test sürüyor / bitti \\
+    LD3 & hata enjeksiyonu açık (SW0) \\
+    LD4 (RGB) & mavi: sürüyor · yeşil: 729/729 doğru · kırmızı: hata var \\
+    BTN0 / BTN1 / SW0 & testi yeniden başlat / reset / hata enjeksiyonu \\ \bottomrule
+  \end{tabular}
+\end{table}
+
+Bir çalıştırma 116,6 milyon çevrim sürer: 50\,MHz'de yaklaşık 2,3\,s, 100\,MHz'de 1,17\,s. Kart akışı iki komuttan oluşur: \code{scripts/vivado\_build\_pynq\_z2.tcl} sentez, yerleştirme, yönlendirme ve bitstream üretimini yapar ve kaynak, zamanlama, güç raporlarını yazar; \code{scripts/vivado\_program.tcl} kartı JTAG üzerinden programlar. Beklenen sonuç: LD4 yaklaşık 2,3\,s mavi yanar, sonra yeşil olur. Bu adımlar hazırdır, ancak raporun tarihinde henüz çalıştırılmamıştır.
+
+% ===========================================================================
+\section{Sınırlamalar ve gelecek çalışmalar}
+% ===========================================================================
+
+Mevcut tasarım, işlevsel doğruluğu kanıtlanmış bir temel sürümdür. Bir sonraki adım onu kart üzerinde çalıştırmak, ardından ölçerek iyileştirmektir.
+
+\paragraph{Sınırlamalar.}
+\begin{itemize}
+  \item \textbf{Fiziksel doğrulama yok:} sentez, zamanlama kapanışı ve kart üzerinde çalıştırma henüz yapılmamıştır. 100\,MHz bir hedeftir, ölçülmüş değildir.
+  \item \textbf{Model boyutu:} model küçüktür (85\,728 parametre) ve dar bir görevde eğitilmiştir; metin üreten bir dil modeli değildir.
+  \item \textbf{Ölçek:} bütün ağırlıkların BRAM'e sığması varsayılmıştır. Bu varsayım Zynq-7020'de yaklaşık 600 bin INT8 parametreye kadar geçerlidir.
+  \item \textbf{Kod çözme:} yalnızca açgözlü kod çözme vardır; sıcaklıklı örnekleme ve top-k yoktur.
+  \item \textbf{Bit genişlikleri:} geniş çarpıcıların genişlikleri güvenli tarafta tutulmuştur; kritik yol ve DSP sayısı henüz optimize edilmemiştir.
+\end{itemize}
+
+\paragraph{Gelecek çalışmalar.}
+\begin{enumerate}
+  \item \textbf{Kartta çalıştırma ve ölçüm:} PYNQ-Z2 bitstream'i, kaynak/Fmax/güç raporları ve yeşil LED.
+  \item \textbf{Paralellik taraması:} $P \in \{4, 8, 12, 16, 24\}$ için çevrim, BRAM, DSP ve Fmax değişimi (Şekil~\ref{fig:ptarama}). $P$, \code{quantize.py} içinde tek bir parametredir.
+  \item \textbf{Tek geçişli LayerNorm:} $\sum d^2 = N(N\sum x^2 - s^2)$ özdeşliğiyle LN başına 48 çevrim kazancı.
+  \item \textbf{Paralel dikkat:} SCORE ve AV aşamalarında $d_h=16$ boyutu üzerinden paralel MAC; dikkat süresinde yaklaşık 16 kat azalma.
+  \item \textbf{Bit genişliği analizi:} Bölüm~\ref{sec:cekirdek}'teki sınırlardan türetilen dar operandlar ve boru hattı bölme ile daha yüksek Fmax.
+  \item \textbf{PS entegrasyonu:} AXI4-Lite sarmalayıcı, Vivado blok tasarımı ve PYNQ Python sürücüsü. Böylece aynı karttaki ARM işlemciyle (NumPy/PyTorch) gecikme ve enerji karşılaştırması yapılabilir.
+  \item \textbf{Daha büyük görev:} minGPT'nin \code{projects/chargpt} örneğiyle karakter düzeyinde metin üretimi. Mimari aynı kalır; büyük modellerde ağırlıklar DDR'dan akış hâlinde okunur.
+\end{enumerate}

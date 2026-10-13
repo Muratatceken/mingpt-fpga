@@ -1,0 +1,367 @@
+% ===========================================================================
+\section{Giriş: dil modelleme ve minGPT}
+% ===========================================================================
+
+Bir dil modeli, sonlu bir sözlük $\mathcal{V}$ üzerindeki token dizilerine olasılık atayan bir fonksiyondur. Olasılığın zincir kuralı, bu ortak dağılımı koşullu dağılımların çarpımına kesin olarak ayırır:
+\begin{equation}
+  p(x_1, x_2, \dots, x_T) \;=\; \prod_{t=1}^{T} p\left(x_t \mid x_1, \dots, x_{t-1}\right).
+\end{equation}
+Bu ayrışım bir yaklaşım değil, olasılık teorisinin bir özdeşliğidir. Otoregresif bir model her koşullu dağılımı parametreleri $\theta$ olan tek bir sinir ağı $f_\theta$ ile modeller:
+\begin{equation}
+  p_\theta\left(x_t \mid x_{<t}\right) = \mathrm{softmax}\left(f_\theta(x_{<t})\right)_{x_t},
+  \qquad f_\theta : \mathcal{V}^{t-1} \rightarrow \mathbb{R}^{|\mathcal{V}|}.
+\end{equation}
+$f_\theta$'nın çıktısı olan $|\mathcal{V}|$ boyutlu vektöre \emph{logit} vektörü denir. Metin üretmek için bu dağılımdan bir token seçilir, diziye eklenir ve işlem tekrarlanır.
+
+\paragraph{GPT ailesi.} GPT (\emph{Generative Pre-trained Transformer}), $f_\theta$ olarak Vaswani ve ark.\ \cite{vaswani} tarafından önerilen transformer mimarisinin yalnızca kod çözücü (\emph{decoder-only}) yarısını kullanır. GPT-1 \cite{radford18}, GPT-2 \cite{radford19} ve GPT-3 \cite{brown20} aynı temel yapıyı korur. Aralarındaki fark esas olarak katman sayısı, gömme boyutu ve eğitim verisidir. Kod çözücü bloklarda kodlayıcıya yönelik çapraz dikkat bulunmaz; yalnızca nedensel öz-dikkat ve ileri beslemeli ağ vardır.
+
+\paragraph{minGPT.} minGPT \cite{mingpt}, GPT-2 ile aynı mimariye sahip, yaklaşık 300 satırlık bir PyTorch gerçeklemesidir. Depo üç temel dosyadan oluşur:
+\begin{itemize}
+  \item \code{mingpt/model.py}: model tanımı (\code{GPT}, \code{Block}, \code{CausalSelfAttention}, \code{NewGELU}) ve \code{generate()} fonksiyonu,
+  \item \code{mingpt/trainer.py}: genel amaçlı eğitim döngüsü,
+  \item \code{mingpt/bpe.py}: GPT-2'nin bayt düzeyinde BPE tokenizer'ı.
+\end{itemize}
+minGPT eğitim amaçlıdır, ancak mimari olarak eksiksizdir: \code{GPT.from\_pretrained()} ile OpenAI'ın GPT-2 ağırlıklarını yükleyip aynı çıktıları üretebilir. Bu nedenle minGPT üzerinde yapılan bir donanım tasarımı, büyük GPT modellerinin hesap yapısını da temsil eder. Bir token için yapılan işlemler (matris-vektör çarpımı, LayerNorm, softmax, GELU) GPT-2'de de aynıdır; değişen yalnızca boyutlardır.
+
+\paragraph{Bu çalışmanın kapsamı.} Model GPU/CPU üzerinde float32 ile eğitilir. FPGA üzerinde yalnızca \emph{çıkarım} yapılır: verilen bir önek dizisinden sonraki tokenların üretilmesi. Bu ayrım güncel uygulamalardaki iş bölümüyle uyumludur. Eğitim bir kez ve yüksek hassasiyetle yapılır; çıkarım ise milyonlarca kez, düşük enerji ve gecikmeyle yapılmalıdır.
+
+Rapor boyunca şu notasyon kullanılır: $C$ gömme boyutu (\code{n\_embd} $=48$), $H$ dikkat başı sayısı ($3$), $d_h = C/H$ baş boyutu ($16$), $L$ katman sayısı ($3$), $V$ sözlük boyutu ($3$) ve $T$ en uzun bağlam (\code{block\_size} $=11$).
+
+% ===========================================================================
+\section{Girdi temsili: token ve konum gömmeleri}
+% ===========================================================================
+
+Transformer ham metin değil, tamsayı token kimlikleri alır. Her token, iki tablodan okunan vektörlerin toplamına dönüştürülür.
+
+\paragraph{Tokenizasyon.} GPT-2 bayt düzeyinde BPE (\emph{Byte Pair Encoding}) kullanır ve sözlüğü 50\,257 tokendan oluşur. Bu projedeki sıralama görevinde sözlük yalnızca $\{0, 1, 2\}$ rakamlarıdır ($V=3$). Her rakam doğrudan kendi token kimliğidir, bu yüzden ayrı bir tokenizer gerekmez.
+
+\paragraph{Token gömmesi.} Öğrenilebilir bir matris $W_{te} \in \mathbb{R}^{V\times C}$ her token kimliğini $C$ boyutlu bir vektöre eşler. Bu işlem, one-hot kodlanmış bir vektörle matris çarpımına eşdeğer olan bir tablo okumasıdır:
+\begin{equation}
+  e(\tau) = W_{te}[\tau,:] = W_{te}^{\top}\, \mathbf{1}_{\tau}, \qquad \mathbf{1}_{\tau} \in \{0,1\}^{V}.
+\end{equation}
+Donanım açısından bu eşdeğerlik önemlidir: gömme katmanı hiç çarpıcı gerektirmez, yalnızca bir ROM okumasıdır.
+
+\paragraph{Konum gömmesi.} Maskesiz öz-dikkat, konum bilgisi verilmezse girdinin sırasına duyarsızdır. Bir permütasyon matrisi $P$ için $\mathrm{Attn}(PX) = P\,\mathrm{Attn}(X)$ olur; dikkat \emph{permütasyona eşdeğişkendir}. Bu durumda model ``0~1~2'' ile ``2~1~0'' dizilerini ayırt edemez. Nedensel maske sıra hakkında yalnızca dolaylı ve kısmi bir bilgi verir; bu yüzden açık bir konum kodlaması kullanılır. minGPT, GPT-2 gibi, öğrenilebilir bir konum tablosu $W_{pe} \in \mathbb{R}^{T\times C}$ kullanır. Bu tablo, orijinal transformer'daki sabit sinüzoidal kodlamanın yerine geçer.
+
+\paragraph{Girdi matrisi.} Uzunluğu $T$ olan bir dizi için birinci bloğa giren matris şudur:
+\begin{equation}
+  X^{(0)} = \begin{bmatrix} W_{te}[\tau_0] + W_{pe}[0] \\ W_{te}[\tau_1] + W_{pe}[1] \\ \vdots \\ W_{te}[\tau_{T-1}] + W_{pe}[T-1] \end{bmatrix} \in \mathbb{R}^{T \times C}.
+\end{equation}
+Eğitim sırasında bu toplama \code{embd\_pdrop} $=0{,}1$ oranında dropout uygulanır; çıkarımda dropout devre dışıdır. Bu projede $W_{te}$ $3\times48$, $W_{pe}$ $11\times48$ boyutundadır ve iki tablo toplam 672 parametre içerir.
+
+% ===========================================================================
+\section{Transformer bloğu I: artık akış ve LayerNorm}
+% ===========================================================================
+
+minGPT'nin gövdesi $L$ adet özdeş transformer bloğunun art arda bağlanmasından oluşur. Her blok iki alt katman içerir ve her alt katmanın çıktısı girdisine eklenir (\emph{residual connection}). minGPT, GPT-2 gibi \textbf{pre-LN} yapıyı kullanır; LayerNorm alt katmanın girişinde uygulanır:
+\begin{equation}
+  X' = X + \mathrm{Attn}\left(\mathrm{LN}_1(X)\right), \qquad
+  X'' = X' + \mathrm{MLP}\left(\mathrm{LN}_2(X')\right).
+\end{equation}
+\code{model.py}'de bu iki satır \code{Block.forward()} içinde birebir \code{x = x + self.attn(self.ln\_1(x))} ve \code{x = x + self.mlpf(self.ln\_2(x))} olarak yazılıdır. Son bloğun ardından bir son LayerNorm (\code{ln\_f}) daha uygulanır. Şekil~\ref{fig:gpt} bütün ileri geçişi gösterir.
+
+\begin{figure}[t]
+  \centering
+  \sekil{gpt}
+  \caption[minGPT ileri geçişi]{minGPT ileri geçişi (\code{gpt-nano}). Artık akış (mavi) blokların içinden kesintisiz geçer. LayerNorm yalnızca alt katmana giden kolda yer alır (pre-LN). Üç blok art arda uygulanır; ardından LN$_f$, \code{lm\_head} ve argmax gelir.}
+  \label{fig:gpt}
+\end{figure}
+
+\paragraph{Artık akış.} $X$ matrisi bloklar boyunca taşınan bir ``ana veri yolu'' gibi düşünülebilir. Her alt katman bu yoldan okur, bir düzeltme hesaplar ve sonucu yola geri ekler. $L$ blok sonunda akış $2L$ düzeltmenin toplamını taşır:
+\begin{equation}
+  X^{(L)} = X^{(0)} + \sum_{\ell=1}^{L} \left[ \Delta^{\mathrm{attn}}_{\ell} + \Delta^{\mathrm{mlp}}_{\ell} \right].
+\end{equation}
+Bu yapının iki sonucu vardır. Birincisi, $\partial X''/\partial X = I + (\text{alt katman türevleri})$ olduğu için birim matris terimi gradyanın derin ağlarda sönmeden geri yayılmasını sağlar \cite{he16}. İkincisi donanımla ilgilidir: akış, ağın en geniş dinamik aralığa sahip tensörüdür, çünkü düzeltmeler birikir. Kısım~II'de bu yüzden artık akış INT8 yerine INT16 ile temsil edilecektir.
+
+\paragraph{Pre-LN ve post-LN.} Orijinal transformer'da LayerNorm toplamadan sonra uygulanır (post-LN). Xiong ve ark.\ \cite{xiong20}, pre-LN yapıda öğrenme oranı ısınması (\emph{warm-up}) olmadan da kararlı eğitim yapılabildiğini göstermiştir. Pre-LN'de artık yol üzerinde hiçbir normalizasyon bulunmaz.
+
+\paragraph{LayerNorm.} LayerNorm \cite{ba16} her token vektörünü kendi $C$ özelliği üzerinden normalize eder ve batch boyutundan bağımsızdır:
+\begin{equation}
+  \mu = \frac{1}{C}\sum_{i=1}^{C} x_i, \qquad
+  \sigma^2 = \frac{1}{C}\sum_{i=1}^{C} (x_i - \mu)^2, \qquad
+  \mathrm{LN}(x)_i = \gamma_i\, \frac{x_i - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta_i .
+\end{equation}
+Burada $\gamma, \beta \in \mathbb{R}^C$ öğrenilebilir parametrelerdir ve $\epsilon = 10^{-5}$'tir. Normalize edilmiş ara vektörü $\hat z = (x-\mu)/\sqrt{\sigma^2+\epsilon}$ ile gösterelim. Kısım~II'de kullanılacak üç özellik şunlardır:
+\begin{itemize}
+  \item \textbf{Ölçek ve kaydırma değişmezliği:} $a>0$ ve $b$ sabiti için $\hat z(a x + b) \approx \hat z(x)$ olur ($\epsilon$ ihmal edilince eşitlik tamdır). Girdinin sabit nokta ölçeği bu yüzden normalizasyon sonucunu etkilemez.
+  \item \textbf{Küre üzerinde olma:} $\sum_i \hat z_i = 0$ ve $\sum_i \hat z_i^2 \approx C$; yani $\hat z$, yarıçapı $\sqrt{C}$ olan bir kürenin üzerindedir.
+  \item \textbf{Sınırlılık:} bu iki koşul her bileşen için $|\hat z_i| \le \sqrt{C-1}$ sonucunu verir (Önerme~\ref{on:samuelson}). Bu sınır veriden bağımsızdır.
+\end{itemize}
+Afin kısım ($\gamma$, $\beta$) normalizasyondan sonra geldiği için, Bölüm~\ref{sec:katlama}'de bir sonraki doğrusal katmana katlanarak donanımdan tamamen kaldırılacaktır.
+
+% ===========================================================================
+\section{Transformer bloğu II: nedensel çok başlı öz-dikkat}
+% ===========================================================================
+
+Öz-dikkat, transformer'da tokenların birbirinden bilgi aldığı tek mekanizmadır. Her token, önceki tokenların değer vektörlerinin ağırlıklı ortalamasını alır. Ağırlıklar, sorgu ile anahtarların benzerliğinden hesaplanır.
+
+\paragraph{Sorgu, anahtar, değer.} LN$_1$ çıktısı $A \in \mathbb{R}^{T\times C}$, tek bir doğrusal katmanla (\code{c\_attn}, $C\rightarrow3C$) üç matrise dönüştürülür:
+\begin{equation}
+  [\,Q \;|\; K \;|\; V\,] = A\, W_{attn}^{\top} + b_{attn}, \qquad W_{attn} \in \mathbb{R}^{3C \times C}, \quad Q, K, V \in \mathbb{R}^{T \times C}.
+\end{equation}
+PyTorch'un \code{nn.Linear} katmanı $y = xW^\top + b$ hesaplar; ağırlık (çıkış~$\times$~giriş) biçiminde saklanır. Donanımdaki ağırlık ROM'u da bu satır düzenini kullanır.
+
+\paragraph{Başlara bölme.} $C$ boyutu, her biri $d_h = C/H$ boyutlu $H$ başa bölünür. $h$ numaralı baş $Q$, $K$, $V$'nin $[h\,d_h, (h+1)\,d_h)$ aralığındaki sütunlarını kullanır. Her baş, ölçekli iç çarpım dikkatini bağımsız olarak hesaplar:
+\begin{equation}
+  \mathrm{head}_h = \mathrm{softmax}\!\left( \frac{Q_h K_h^{\top}}{\sqrt{d_h}} + M \right) V_h, \qquad
+  M_{tj} = \begin{cases} 0, & j \le t, \\ -\infty, & j > t. \end{cases}
+\end{equation}
+Softmax satır bazlıdır: $\mathrm{softmax}(s)_j = e^{s_j} / \sum_k e^{s_k}$. Sonuç negatif olmayan ve toplamı 1 olan bir olasılık vektörüdür. Şekil~\ref{fig:dikkat} maskeyi ve çok başlı yapıyı gösterir.
+
+\begin{figure}[t]
+  \centering
+  \sekil{dikkat}
+  \caption[Nedensel maske ve çok başlı öz-dikkat]{(a) $T=6$ için nedensel maske: $t$ konumu yalnızca $j \le t$ konumlarını görür. (b) Çok başlı öz-dikkat: \code{c\_attn} çıktısı üç başa bölünür; başların çıktıları birleştirilip \code{c\_proj}'dan geçirilir. $1/\sqrt{16}=1/4$ çarpanı Bölüm~\ref{sec:katlama}'de ağırlıklara katlanır.}
+  \label{fig:dikkat}
+\end{figure}
+
+\paragraph{Neden $\sqrt{d_h}$ ile bölünür?} Sorgu ve anahtar bileşenlerinin bağımsız, sıfır ortalamalı ve birim varyanslı olduğunu varsayalım. Bu durumda iç çarpımın varyansı boyutla doğrusal büyür:
+\begin{equation}
+  \mathrm{Var}(q \cdot k) = \sum_{i=1}^{d_h} \mathrm{Var}(q_i k_i) = \sum_{i=1}^{d_h} \mathbb{E}[q_i^2]\, \mathbb{E}[k_i^2] = d_h .
+\end{equation}
+$\sqrt{d_h}$'ye bölmek skorları yeniden birim varyansa getirir. Bölme yapılmasa büyük $d_h$'de skorlar çok büyür, softmax tek bir girdiye doyar ve gradyan sıfıra yaklaşır \cite{vaswani}.
+
+\paragraph{Nedensel maske.} $M$ matrisi, $t$ konumunun yalnızca $j\le t$ konumlarına bakmasını sağlar. $e^{-\infty}=0$ olduğu için gelecekteki tokenların ağırlığı tam olarak sıfırdır. Bu sayede eğitimde $T$ konumun hepsi paralel hesaplanır, ama her konum yalnızca geçmişi görür.
+
+\paragraph{Softmax'ın iki özelliği.} Donanım tasarımı için kritik olan iki özellik vardır:
+\begin{enumerate}
+  \item \textbf{Kaydırma değişmezliği:} her $c$ sabiti için $\mathrm{softmax}(s-c) = \mathrm{softmax}(s)$. $c = \max_j s_j$ seçilirse bütün üsler sıfır veya negatif olur ve $e^x \in (0,1]$ aralığında kalır; taşma imkânsızdır.
+  \item \textbf{Dışbükey birleşim:} $p_j \ge 0$ ve $\sum p_j = 1$ olduğundan başın çıktısı $y = \sum_j p_j v_j$, değer vektörlerinin dışbükey birleşimidir: her bileşen için $\min_j v_{j,d} \le y_d \le \max_j v_{j,d}$.
+\end{enumerate}
+
+\paragraph{Birleştirme ve çıkış izdüşümü.} Başların çıktıları yan yana konur ve ikinci bir doğrusal katmandan (\code{c\_proj}, $C\rightarrow C$) geçirilir:
+\begin{equation}
+  \mathrm{Attn}(A) = \left[\, \mathrm{head}_1 \;|\; \cdots \;|\; \mathrm{head}_H \,\right] W_{proj}^{\top} + b_{proj}.
+\end{equation}
+
+\paragraph{Tensör boyutları.} $B$ batch boyutu olmak üzere \code{CausalSelfAttention.forward()} Tablo~\ref{tab:boyutlar}'daki dönüşümleri yapar. Tam bir dizi için skor matrisi $T^2$ elemanlıdır; dikkatin maliyeti katman başına $O(T^2 C)$'dir. Bölüm~\ref{sec:kv}'de çıkarımda bu maliyetin token başına $O(tC)$'ye nasıl indiği gösterilecektir.
+
+\begin{table}[h]
+  \centering\small
+  \caption{\code{CausalSelfAttention.forward()} içindeki tensör dönüşümleri.}
+  \label{tab:boyutlar}
+  \begin{tabular}{@{}clc@{}}
+    \toprule
+    \thead{Adım} & \thead{İşlem} & \thead{Boyut} \\ \midrule
+    1 & \code{c\_attn(x).split(C)} & $3\times(B,T,C)$ \\
+    2 & \code{view(B,T,H,d\_h).transpose(1,2)} & $(B,H,T,d_h)$ \\
+    3 & \code{q @ k.transpose(-2,-1) / sqrt(d\_h)} & $(B,H,T,T)$ \\
+    4 & maske + softmax + dropout & $(B,H,T,T)$ \\
+    5 & \code{att @ v} & $(B,H,T,d_h)$ \\
+    6 & \code{transpose(1,2).view(B,T,C)} & $(B,T,C)$ \\
+    7 & \code{c\_proj} + dropout & $(B,T,C)$ \\ \bottomrule
+  \end{tabular}
+\end{table}
+
+% ===========================================================================
+\section{Transformer bloğu III: MLP ve GELU}
+% ===========================================================================
+
+Bloğun ikinci alt katmanı, her tokene ayrı ayrı uygulanan iki katmanlı bir ileri beslemeli ağdır:
+\begin{equation}
+  \mathrm{MLP}(a) = W_2\, \mathrm{GELU}\left(W_1 a + b_1\right) + b_2, \qquad W_1 \in \mathbb{R}^{4C \times C}, \quad W_2 \in \mathbb{R}^{C \times 4C}.
+\end{equation}
+minGPT'de $W_1$ \code{mlp.c\_fc}, $W_2$ ise \code{mlp.c\_proj} katmanıdır. Ara genişlik $4C = 192$'dir. MLP, bloğun $12C^2$ ağırlığının $8C^2$'sini, yani üçte ikisini taşır; hesap yükünün büyük kısmı da buradadır.
+
+\paragraph{GELU.} Hendrycks ve Gimpel'in \cite{gelu} önerdiği GELU, girdiyi standart normal dağılımın birikimli dağılım fonksiyonu $\Phi$ ile ağırlıklandırır:
+\begin{equation}
+  \mathrm{GELU}(x) = x\,\Phi(x) = \frac{x}{2}\left(1 + \mathrm{erf}\!\left(\frac{x}{\sqrt{2}}\right)\right).
+\end{equation}
+ReLU girdiyi işaretine göre sert biçimde keser. GELU ise bu kesmeyi yumuşak ve türevlenebilir yapar. minGPT, GPT-2 ile aynı sonuçları vermek için \code{NewGELU} sınıfında tanh yaklaşımını kullanır:
+\begin{equation}
+  \mathrm{GELU}(x) \approx \frac{x}{2}\left(1 + \tanh\!\left(\sqrt{2/\pi}\,\left(x + 0{,}044715\,x^3\right)\right)\right).
+\end{equation}
+Bu projede sayısal olarak hesaplanan değerler şunlardır: tanh yaklaşımı ile erf tanımı arasındaki en büyük mutlak fark $4{,}73\times10^{-4}$'tür ($x\approx2{,}70$). GELU monoton değildir; en küçük değeri yaklaşık $-0{,}170$'tir ve $x\approx-0{,}752$'de alınır.
+
+Donanım açısından erf ve tanh, doğrudan gerçeklenmesi pahalı aşkın fonksiyonlardır. Bölüm~\ref{sec:cekirdek}'te girişin INT8'e kuantize edilmesi sayesinde GELU'nun 256 girişlik bir tabloyla, yaklaşım hatası olmadan gerçeklendiği gösterilecektir (Şekil~\ref{fig:gelu}).
+
+\paragraph{Dropout.} Eğitimde MLP çıktısına \code{resid\_pdrop} $=0{,}1$ oranında dropout uygulanır. Dropout her elemanı $p$ olasılığıyla sıfırlar, kalanları $1/(1-p)$ ile ölçekler; böylece beklenen değer çıkarımdakiyle aynı kalır. Çıkarımda (\code{model.eval()}) dropout birim dönüşümdür ve donanımda karşılığı yoktur.
+
+% ===========================================================================
+\section{Çıkış katmanı, kayıp fonksiyonu ve eğitim}
+% ===========================================================================
+
+Son bloğun çıktısı \code{ln\_f} ile normalize edilir ve bias içermeyen \code{lm\_head} katmanıyla sözlük boyutuna izdüşürülür. minGPT, GPT-2'nin aksine \code{lm\_head} ağırlığını token gömmesiyle paylaşmaz:
+\begin{equation}
+  z_t = W_{head}\, \mathrm{LN}_f\!\left(x^{(L)}_t\right) \in \mathbb{R}^{V}, \qquad p_\theta(\,\cdot \mid x_{\le t}) = \mathrm{softmax}(z_t).
+\end{equation}
+
+\paragraph{Kayıp fonksiyonu.} Eğitim, hedef tokenların negatif log-olabilirliğini (çapraz entropi) en aza indirir. Hedefi $-1$ olan konumlar kayba katılmaz (\code{ignore\_index=-1}). İşaretli konumların kümesi $\mathcal{M}$ olmak üzere:
+\begin{equation}
+  \mathcal{L}(\theta) = -\frac{1}{|\mathcal{M}|} \sum_{(b,t) \in \mathcal{M}} \log p_\theta\left(y_{b,t} \mid x_{b,\le t}\right).
+\end{equation}
+Çapraz entropinin logitlere göre gradyanı basittir: $\partial\mathcal{L}/\partial z_t = p_t - e_{y_t}$. Rastgele tahmin yapan bir modelin kaybı $\ln V$'dir; $V=3$ için $1{,}0986$.
+
+\paragraph{Öğretmen zorlaması.} Eğitimde girdi dizisi $x$ ve bir konum kaydırılmış hedef dizisi $y$ birlikte verilir. Nedensel maske sayesinde $T$ konumun kayıp terimleri tek bir ileri geçişte paralel hesaplanır.
+
+\paragraph{Optimizasyon: AdamW.} minGPT, Loshchilov ve Hutter'ın \cite{adamw} ayrık ağırlık azaltmalı Adam yöntemini kullanır. $g_t$ gradyan, $\eta$ öğrenme oranı ve $\lambda$ ağırlık azaltma katsayısı olmak üzere:
+\begin{equation}
+\begin{aligned}
+  m_t &= \beta_1 m_{t-1} + (1-\beta_1)\, g_t, & v_t &= \beta_2 v_{t-1} + (1-\beta_2)\, g_t^2, \\
+  \hat m_t &= m_t/(1-\beta_1^t), & \hat v_t &= v_t/(1-\beta_2^t), \\
+  \theta_t &= \theta_{t-1} - \eta \left( \frac{\hat m_t}{\sqrt{\hat v_t} + \epsilon} + \lambda\, \theta_{t-1} \right).
+\end{aligned}
+\end{equation}
+
+\begin{table}[h]
+  \centering\small
+  \caption{minGPT'nin optimizasyon ayarları (\code{trainer.py}, \code{model.py::configure\_optimizers}).}
+  \label{tab:adamw}
+  \begin{tabularx}{0.85\textwidth}{@{}lL@{}}
+    \toprule
+    \thead{Ayar} & \thead{Değer} \\ \midrule
+    $\beta_1, \beta_2$ & $0{,}9$ ve $0{,}95$ \\
+    Ağırlık azaltma $\lambda$ & $0{,}1$, yalnızca \code{nn.Linear} ağırlıklarına \\
+    Azaltma uygulanmayanlar & tüm bias'lar, LayerNorm ve gömme ağırlıkları \\
+    Gradyan kırpma & norm $\le 1{,}0$ (\code{clip\_grad\_norm\_}) \\
+    Batch boyutu & 64 \\
+    Öğrenme oranı & varsayılan $3\times10^{-4}$; bu projede $5\times10^{-4}$ \\ \bottomrule
+  \end{tabularx}
+\end{table}
+
+\paragraph{Ağırlık başlatma.} Tüm doğrusal ve gömme ağırlıkları $\mathcal{N}(0, 0{,}02^2)$ dağılımından çekilir. Bias'lar 0, LayerNorm'un $\gamma$'sı 1 ve $\beta$'sı 0 ile başlar. Artık akışa yazan izdüşümlerin (\code{c\_proj}) standart sapması ise $0{,}02/\sqrt{2L}$ alınır. Akış $2L$ düzeltmenin toplamıdır ve bağımsız terimlerin varyansları toplanır; bu ölçekleme akışın varyansını derinlikten bağımsız tutar \cite{radford19}.
+
+% ===========================================================================
+\section{Çıkarım algoritması ve KV önbelleği}\label{sec:kv}
+% ===========================================================================
+
+Çıkarımda model, verilen bir önek diziyi her adımda bir token uzatır. minGPT'nin \code{generate()} fonksiyonu bunu her adımda tüm diziyi yeniden işleyerek yapar. Bu çalışmadaki tamsayı model ve donanım ise yalnızca yeni tokenı işler; geçmiş KV önbelleğinde tutulur.
+
+\paragraph{\code{generate()} algoritması.} Her adımda şu işlemler yapılır:
+\begin{enumerate}
+  \item Bağlam \code{block\_size} uzunluğunu aşarsa son \code{block\_size} token alınır.
+  \item Bağlamın tamamı için ileri geçiş yapılır ve yalnızca son konumun logitleri $z$ alınır.
+  \item $z$ sıcaklığa bölünür; istenirse yalnızca en büyük $k$ logit tutulur (\emph{top-k}).
+  \item $p = \mathrm{softmax}(z)$ hesaplanır; sonraki token örneklenir veya açgözlü olarak $\arg\max_j p_j$ seçilir.
+  \item Seçilen token diziye eklenir.
+\end{enumerate}
+Açgözlü kod çözmede softmax gereksizdir. Softmax kesin artan bir fonksiyon olduğundan $\arg\max\,\mathrm{softmax}(z) = \arg\max z$ sağlanır; donanım bu özelliği kullanır ve çıkışta softmax hesaplamaz.
+
+\begin{onerme}[Nedensel bağımlılık]\label{on:nedensel}
+Nedensel maske altında $j$ konumundaki her ara değer (her katmandaki $x_j$, $k_j$, $v_j$) yalnızca $\tau_0,\dots,\tau_j$ tokenlarına bağlıdır.
+\end{onerme}
+\begin{proof}
+Katman sırası üzerinden tümevarım. Gömmede $x^{(0)}_j$ yalnızca $\tau_j$ ve $j$'ye bağlıdır. Bir bloğun girişinde iddianın doğru olduğunu varsayalım. LayerNorm, doğrusal katmanlar, GELU ve artık toplama konum bazlıdır; $j$ konumunun çıktısını yalnızca $j$ konumunun girdisinden üretir. Dikkat ise $j$ konumunda yalnızca $i \le j$ konumlarının $k_i, v_i$ değerlerini kullanır ve bunlar varsayım gereği yalnızca $\tau_0,\dots,\tau_i$'ye bağlıdır. Dolayısıyla iddia bloğun çıkışında da doğrudur.
+\end{proof}
+
+\paragraph{Sonuç: KV önbelleği.} Diziye yeni bir token eklendiğinde önceki konumların $k_j$, $v_j$ vektörleri değişmez. Bunlar bir kez hesaplanıp saklanırsa, $t$ adımında yalnızca $t$ konumu işlenir (Şekil~\ref{fig:kv}):
+\begin{equation}
+\begin{aligned}
+  [\,q_t \,|\, k_t \,|\, v_t\,] &= W_{attn}\, \mathrm{LN}_1(x_t) + b_{attn} \qquad (k_t, v_t \text{ önbelleğe yazılır}), \\
+  y^{(h)}_t &= \sum_{j=0}^{t} \frac{\exp\!\left(q^{(h)}_t \cdot k^{(h)}_j / \sqrt{d_h}\right)}{\sum_{i=0}^{t} \exp\!\left(q^{(h)}_t \cdot k^{(h)}_i / \sqrt{d_h}\right)}\; v^{(h)}_j .
+\end{aligned}
+\end{equation}
+Bu formda bütün doğrusal katmanlar matris-matris çarpımı (GEMM) yerine \textbf{matris-vektör çarpımına (GEMV)} dönüşür. Dikkat de $t+1$ uzunluğunda iki iç çarpım dizisine indirgenir.
+
+\begin{figure}[t]
+  \centering
+  \sekil{kvcache}
+  \caption[KV önbellekli decode adımı]{KV önbellekli bir decode adımı (bir katman, bir baş). Yeni token yalnızca kendi $q_t$, $k_t$, $v_t$ vektörlerini üretir; $k_t$ ve $v_t$ önbelleğin $t$ satırına yazılır. Dikkat, önbellekteki $t+1$ satırın hepsini okur.}
+  \label{fig:kv}
+\end{figure}
+
+\paragraph{Karmaşıklık.} $P_{lin}$ doğrusal katmanların ağırlık sayısı olsun. $N$ token üretmenin çarpma-toplama (MAC) maliyeti Tablo~\ref{tab:karmasiklik}'deki gibidir. Önbelleğin bedeli bellektir: $2LTC$ değer. \code{gpt-nano} için bu $2\cdot3\cdot11\cdot48 = 3168$ değerdir ve INT8 ile 3\,KB tutar.
+
+\begin{table}[h]
+  \centering\small
+  \caption{Önbelleksiz ve KV önbellekli üretimin maliyeti.}
+  \label{tab:karmasiklik}
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    \thead{Yöntem} & \thead{$t$ adımının maliyeti} & \thead{$N$ adımın toplamı} \\ \midrule
+    \code{generate()} (önbelleksiz) & $(t{+}1)P_{lin} + O((t{+}1)^2 LC)$ & $O(N^2 P_{lin} + N^3 LC)$ \\
+    KV önbellekli decode & $P_{lin} + 2LC(t{+}1)$ & $O(N P_{lin} + N^2 LC)$ \\ \bottomrule
+  \end{tabular}
+\end{table}
+
+Önerme~\ref{on:nedensel} matematiksel bir garantidir. Ek olarak deneysel olarak da doğrulanmıştır: adım adım çalışan tamsayı modelin ürettiği tokenlar, minGPT'nin önbelleksiz \code{generate()} çıktısıyla 729 girdinin tamamında aynıdır.
+
+% ===========================================================================
+\section{Parametre ve işlem sayısı analizi}
+% ===========================================================================
+
+Bir minGPT modelinin parametre sayısı ve token başına işlem sayısı yalnızca $(L, C, V, T)$ boyutlarının kapalı bir fonksiyonudur. Bir bloktaki dört doğrusal katman ve iki LayerNorm şu parametreleri taşır:
+\begin{equation}
+  \underbrace{(3C^2 + 3C)}_{\texttt{c\_attn}} + \underbrace{(C^2 + C)}_{\texttt{c\_proj}} + \underbrace{(4C^2 + 4C)}_{\texttt{c\_fc}} + \underbrace{(4C^2 + C)}_{\texttt{mlp.c\_proj}} + \underbrace{4C}_{\mathrm{LN}_1,\,\mathrm{LN}_2} = 12C^2 + 13C .
+\end{equation}
+Bloklara gömme tabloları, son LayerNorm ve çıkış katmanı eklenince:
+\begin{equation}
+  N_{param} = L\,(12C^2 + 13C) + (V + T)\,C + 2C + VC .
+\end{equation}
+KV önbellekli decode'da her ağırlık bir token için tam bir kez çarpılır; buna $t$ konumundaki dikkatin iç çarpımları eklenir:
+\begin{equation}
+  \mathrm{MAC}(t) = L \cdot 12C^2 + VC + L \cdot 2C\,(t+1), \qquad \mathrm{FLOP} \approx 2 \cdot \mathrm{MAC}.
+\end{equation}
+
+\begin{table}[h]
+  \centering\small
+  \caption{\code{gpt-nano} ($L=3$, $C=48$, $V=3$, $T=11$) için parametre ve token başına MAC sayıları.}
+  \label{tab:parametre}
+  \begin{tabular}{@{}lrrr@{}}
+    \toprule
+    \thead{Bileşen} & \thead{Boyut (çıkış $\times$ giriş)} & \thead{Parametre} & \thead{MAC / token} \\ \midrule
+    \code{c\_attn} ($Q,K,V$) & $144 \times 48$ & 7\,056 & 6\,912 \\
+    \code{c\_proj} & $48 \times 48$ & 2\,352 & 2\,304 \\
+    \code{mlp.c\_fc} & $192 \times 48$ & 9\,408 & 9\,216 \\
+    \code{mlp.c\_proj} & $48 \times 192$ & 9\,264 & 9\,216 \\
+    LN$_1$ + LN$_2$ & $2\times48$ ($\gamma,\beta$) & 192 & -- \\ \midrule
+    \textbf{Blok toplamı} & & \textbf{28\,272} & \textbf{27\,648} \\
+    3 blok & & 84\,816 & 82\,944 \\
+    \code{wte} + \code{wpe} & $(3+11)\times48$ & 672 & tablo okuması \\
+    \code{ln\_f} & $48$ ($\gamma,\beta$) & 96 & -- \\
+    \code{lm\_head} & $3\times48$ & 144 & 144 \\
+    Dikkat (3 katman) & & -- & $288\,(t+1)$ \\ \midrule
+    \textbf{Toplam} & & \textbf{85\,728} & $\mathbf{83\,088 + 288\,(t+1)}$ \\ \bottomrule
+  \end{tabular}
+\end{table}
+
+minGPT başlatılırken ``number of parameters: 0.09M'' yazar; bu sayı \code{lm\_head}'i saymaz (85\,584). Adım başına dikkat payı en fazla $3168/86\,256 \approx \%3{,}7$'dir. Hesap yükünün \%96'dan fazlası doğrusal katmanlardadır; bu gözlem, donanım mimarisinin merkezine bir GEMV motoru konmasının gerekçesidir.
+
+\paragraph{Ölçek karşılaştırması.} Aynı formüller GPT-2 small ($L=12$, $C=768$, $V=50\,257$, $T=1024$) için \code{lm\_head} hariç yaklaşık 124 milyon parametre verir (GPT-2'de \code{lm\_head} token gömmesiyle paylaşılır). Bu model INT8 ile bile yaklaşık 124\,MB tutar ve FPGA içindeki SRAM'e sığmaz; harici DRAM ve bant genişliği yönetimi gerektirir. Bu çalışmadaki tasarım ilkeleri aynı kalır; değişen, ağırlıkların nereden ve hangi hızla okunduğudur.
+
+% ===========================================================================
+\section{Deney görevi: sıralama}
+% ===========================================================================
+
+Model, minGPT'nin \code{demo.ipynb} örneğindeki sıralama görevinde eğitilmiştir: $\{0,1,2\}$ rakamlarından oluşan 6 uzunluğundaki bir diziyi küçükten büyüğe sıralamak. Eğitim sonunda model, olası $3^6 = 729$ girdinin tamamını doğru sıralar.
+
+\paragraph{Veri biçimi.} Girdi ile çözüm birleştirilir ve modele son token hariç verilir. \code{0 0 2 1 0 1} girdisi için Tablo~\ref{tab:sort}'taki gibidir. Hedefi $-1$ olan konumlar kayba katılmaz; model yalnızca sıralı çıktıyı öğrenir. Dizi uzunluğu $2\cdot6-1 = 11$ olduğu için \code{block\_size} $=11$'dir. Örneklerin yarısı tekrar eden rakamı çok olan dizilerden seçilir; girdinin hash değerine göre \%25'i test kümesine ayrılır.
+
+\begin{table}[h]
+  \centering\small
+  \caption{Sıralama görevinin dizi biçimi (girdi \code{0 0 2 1 0 1}).}
+  \label{tab:sort}
+  \setlength{\tabcolsep}{5.2pt}
+  \begin{tabular}{@{}l*{11}{c}@{}}
+    \toprule
+    \thead{Konum} & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\ \midrule
+    Girdi $x$ & 0 & 0 & 2 & 1 & 0 & 1 & 0 & 0 & 0 & 1 & 1 \\
+    Hedef $y$ & $-1$ & $-1$ & $-1$ & $-1$ & $-1$ & \textbf{0} & \textbf{0} & \textbf{0} & \textbf{1} & \textbf{1} & \textbf{2} \\ \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Bu görev neden seçildi?}
+\begin{enumerate}
+  \item \textbf{Kapsamlı doğrulama:} girdi uzayı sonlu ve küçüktür. Doğruluk bir örneklemle tahmin edilmez; bütün girdi uzayı üzerinde kesin olarak ölçülür.
+  \item \textbf{Referanssız kontrol:} bir çıktının doğruluğu modelden bağımsız biçimde kontrol edilebilir: çıktı azalmayan olmalı ve girdiyle aynı histograma sahip olmalıdır. Bu özellik Bölüm~\ref{sec:pynq}'deki çip üzeri öz-testin temelidir.
+  \item \textbf{Dikkat gerektirir:} çıktının $k$'inci elemanını üretmek için model girdideki bütün konumlara bakarak her rakamdan kaç tane olduğunu ve kaçının zaten yazıldığını çıkarmalıdır. Bu, tokenlar arası bilgi akışı gerektiren gerçek bir dikkat görevidir.
+\end{enumerate}
+
+\begin{table}[h]
+  \centering\small
+  \caption{Model ve eğitim yapılandırması.}
+  \label{tab:egitim}
+  \begin{tabularx}{0.8\textwidth}{@{}lL@{}}
+    \toprule
+    \thead{Ayar} & \thead{Değer} \\ \midrule
+    Model & \code{gpt-nano}: $L=3$, $H=3$, $C=48$, $d_h=16$ \\
+    Sözlük / bağlam & $V=3$, $T=11$ \\
+    Dropout & $0{,}1$ (gömme, dikkat, artık) \\
+    İterasyon / batch & 5\,000 / 64 \\
+    Optimizasyon & AdamW, $\eta = 5\times10^{-4}$, $\beta=(0{,}9;\,0{,}95)$, $\lambda=0{,}1$ \\
+    Tohum & 3407 \\
+    Süre & CPU (Apple M serisi) üzerinde yaklaşık 90\,s \\ \bottomrule
+  \end{tabularx}
+\end{table}
+
+\paragraph{Sonuçlar.} Başlangıç kaybı $1{,}089$'dur ve rastgele tahminin kaybı olan $\ln 3 = 1{,}0986$'ya çok yakındır. Kayıp 500. iterasyonda $0{,}0104$'e, sonraki iterasyonlarda $10^{-3}$ mertebesine iner. Açgözlü kod çözmeyle model 729 girdinin \textbf{tamamını} doğru sıralar. Eğitilmiş ağırlıklar depoda \code{model/gpt\_sort.pt} dosyasında saklanır; böylece Kısım~II'deki bütün adımlar yeniden eğitim yapılmadan tekrarlanabilir.

@@ -1,0 +1,27 @@
+% Yazılımdan donanıma akış
+\begin{tikzpicture}[x=1cm,y=1cm, every node/.append style={text width=27mm}]
+  % şeritler
+  \fill[accentsoft!55] (-1.45,0.85) rectangle (12.35,-0.85);
+  \fill[paper] (-1.45,-1.65) rectangle (12.35,-4.45);
+  \node[lbl, rotate=90, text width=, font=\sffamily\scriptsize\bfseries, text=accent] at (-1.75,0) {PYTHON};
+  \node[lbl, rotate=90, text width=, font=\sffamily\scriptsize\bfseries] at (-1.75,-3.05) {SV / SİMÜLATÖR};
+
+  \node[box] (tr) at (0,0)     {\bfseries train.py\\[-1pt]\scriptsize\mdseries gpt-nano eğitimi};
+  \node[box] (qz) at (3.6,0)   {\bfseries quantize.py\\[-1pt]\scriptsize\mdseries katlama, kalibrasyon};
+  \node[accbox] (im) at (7.2,0){\bfseries intmodel.py\\[-1pt]\scriptsize\mdseries bit-exact referans};
+  \node[box] (ex) at (10.8,0)  {\bfseries export.py\\[-1pt]\scriptsize\mdseries ROM + vektör üretimi};
+  \draw[flow] (tr) -- (qz);  \draw[flow] (qz) -- (im);  \draw[flow] (im) -- (ex);
+  \node[lbl, anchor=south, text width=] at (1.8,0.42) {\code{model/gpt\_sort.pt}};
+
+  \node[membox] (out) at (10.8,-2.3) {\bfseries üretilen dosyalar\\[-1pt]\scriptsize\mdseries mem/*.mem, gpt\_pkg.sv, tv.txt};
+  \node[box] (rtl) at (7.2,-2.3)  {\bfseries rtl/*.sv\\[-1pt]\scriptsize\mdseries sentezlenebilir RTL};
+  \node[box] (tb) at (3.6,-2.3)   {\bfseries testbench\\[-1pt]\scriptsize\mdseries bit-exact karşılaştırma};
+  \node[goodbox] (ver) at (0,-1.95) {\bfseries Verilator 5.052\\[-1pt]\scriptsize\mdseries macOS · doğrulandı};
+  \node[warmbox, text width=30mm] (viv) at (0,-3.65) {\bfseries Vivado xsim, sentez\\[-1pt]\scriptsize\mdseries Win/Linux · hazır};
+  \draw[flow] (ex) -- (out);
+  \draw[flow] (out) -- (rtl);
+  \draw[flow] (rtl) -- (tb);
+  \draw[flow] (tb.west) -- ++(-0.35,0) |- (ver.east);
+  \draw[flow] (tb.west) -- ++(-0.35,0) |- (viv.east);
+  \draw[flow, dashed] (out.south) -- ++(0,-1.15) -| node[lbl, pos=0.25, below, text width=] {altın vektörler (tv.txt)} (tb.south);
+\end{tikzpicture}

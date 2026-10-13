@@ -1,0 +1,53 @@
+% Tamsayı softmax ve ertelenmiş normalizasyon veri yolu
+\begin{tikzpicture}[x=1cm,y=1cm]
+  % --- satır 1: üstel ağırlıklar ---
+  \node[membox, minimum width=14mm] (s) at (0,0) {$s_j$\\[-2pt]\scriptsize INT32};
+  \node[box, minimum width=13mm] (mx) at (1.75,0) {max};
+  \node[op] (sub) at (3.3,0) {$-$};
+  \node[op] (mc) at (4.75,0) {$\times$};
+  \node[box, minimum width=27mm, inner xsep=2pt] (split) at (6.95,0)
+     {\scriptsize $n = u \gg F$\\[-1pt]\scriptsize $k = \text{üst 8 kesir biti}$};
+  \node[warmbox, minimum width=18mm] (lut) at (9.45,0.0) {LUT\\[-2pt]\scriptsize $256\times16$};
+  \node[box, minimum width=12mm] (shn) at (11.25,0) {$\gg n$};
+  \node[accbox, minimum width=15mm] (e) at (12.95,0) {$e_j$\\[-2pt]\scriptsize UQ1.15};
+  \draw[flow] (s) -- (mx);
+  \draw[flow] (mx) -- node[lbl, above] {$m$} (sub);
+  \draw[flow] (s.south) -- ++(0,-0.45) -| (sub.south);
+  \draw[flow] (sub) -- (mc);
+  \draw[flow] (mc) -- node[bw, above] {$u$} (split);
+  \draw[flow] (split) -- node[lbl, above] {$k$} (lut);
+  \draw[flow] (lut) -- (shn);
+  \draw[flow] (shn) -- (e);
+  \draw[flow] (split.north) -- ++(0,0.4) -| node[lbl, pos=0.25, above] {$n$} (shn.north);
+  \node[lbl] (cexp) at (4.75,1.0) {$C_{exp}$};
+  \draw[flow] (cexp) -- (mc);
+
+  % --- satır 2: payda ve tek bölme ---
+  \node[op] (sum) at (12.95,-1.75) {$\Sigma$};
+  \node[box, minimum width=34mm] (div) at (9.45,-1.75) {$R = \lfloor 2^{32}/E \rfloor$\\[-2pt]\scriptsize \code{div\_seq}, 48 çevrim, baş başına 1 kez};
+  \draw[flow] (e) -- (sum);
+  \draw[flow] (sum) -- node[lbl, below=1pt] {$E$} (div);
+  \node[lbl, anchor=north] at (12.95,-2.15) {$E \ge 2^{15}$};
+
+  % --- satır 3: ağırlıklı toplam ve ölçekleme ---
+  \node[membox, minimum width=14mm] (er) at (0,-3.15) {$e_j$\\[-2pt]\scriptsize yazmaç};
+  \node[membox, minimum width=14mm] (v) at (0,-4.35) {$v_{j,d}$\\[-2pt]\scriptsize INT8};
+  \node[op] (mv) at (1.75,-3.75) {$\times$};
+  \node[op] (sa) at (3.4,-3.75) {$\Sigma_j$};
+  \node[op] (mr) at (6.95,-3.75) {$\times$};
+  \node[box, minimum width=25mm] (rs) at (9.3,-3.75) {$(\,\cdot + 2^{31}) \gg 32$};
+  \node[box, minimum width=12mm] (st) at (11.35,-3.75) {sat$_8$};
+  \node[accbox, minimum width=15mm] (y) at (12.95,-3.75) {$y_d$\\[-2pt]\scriptsize INT8};
+  \draw[flow] (er.east) -- (mv);
+  \draw[flow] (v.east) -- (mv);
+  \draw[flow] (mv) -- node[bw, above] {25} (sa);
+  \draw[flow] (sa) -- node[lbl, above] {$A_d$} (mr);
+  \draw[flow] (mr) -- (rs);
+  \draw[flow] (rs) -- (st);
+  \draw[flow] (st) -- (y);
+  \draw[flow] (div.south) -- ++(0,-0.55) -| node[lbl, pos=0.25, above] {$R$} (mr.north);
+
+  % aşama etiketleri
+  \node[lbl, anchor=west, text=accent, font=\sffamily\scriptsize\bfseries] at (-0.7,0.85) {(i)–(iii) kaydırma, 2 tabanı, tablo};
+  \node[lbl, anchor=west, text=accent, font=\sffamily\scriptsize\bfseries] at (-0.7,-2.35) {(iv) ertelenmiş normalizasyon};
+\end{tikzpicture}

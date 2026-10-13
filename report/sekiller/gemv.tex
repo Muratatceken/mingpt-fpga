@@ -1,0 +1,37 @@
+% GEMV motoru: 8 şerit, çıkış-durgun dataflow
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \def\lw{1.45}
+  % ağırlık kelimesi
+  \node[hdr, anchor=east] at (-0.3,1.55) {ağırlık ROM'u};
+  \node[lbl, anchor=east] at (-0.3,1.2) {64 bit kelime / çevrim};
+  \foreach \p in {0,...,7} {
+    \draw[warm, fill=warmsoft, line width=0.8pt] (\p*\lw+0.08,1.05) rectangle (\p*\lw+\lw-0.08,1.75);
+    \node[font=\scriptsize] at (\p*\lw+\lw/2,1.4) {$W_{o+\p,\,i}$};
+  }
+  \node[lbl, anchor=west] at (8*\lw+0.05,1.4) {bit $[8p{+}7{:}8p]$};
+  % x yayını
+  \node[membox, minimum width=20mm] (xb) at (-1.35,-0.15) {$x_i$\\[-2pt]\scriptsize INT8};
+  \draw[accflow] (xb.east) -- (8*\lw-0.25,-0.15);
+  \node[lbl, text=accent, anchor=south west] at (0.0,-0.12) {yayın (broadcast)};
+  % şeritler
+  \foreach \p in {0,...,7} {
+    \node[box, minimum width=12mm, minimum height=13mm, inner ysep=2pt] (L\p) at (\p*\lw+\lw/2,-1.45)
+      {$\times\;+$\\[1pt]\scriptsize $acc_{\p}$};
+    \draw[flow, warm] (\p*\lw+\lw/2,1.05) -- (L\p.north);
+    \fill[accent] (\p*\lw+\lw/2-0.3,-0.15) circle (1.6pt);
+    \draw[flow, accent] (\p*\lw+\lw/2-0.3,-0.15) -- (\p*\lw+\lw/2-0.3,-0.8);
+  }
+  \node[lbl, anchor=west] at (8*\lw+0.05,-1.45) {8 şerit, INT32};
+  % gölge banka
+  \node[membox, minimum width=8*\lw cm-1.6mm, minimum height=8mm] (sh) at (4*\lw,-3.05) {gölge yazmaç bankası \;·\; $8\times$INT32 \;·\; her $n_{in}$ çevrimde bir kez kopyalanır};
+  \foreach \p in {0,...,7} { \draw[flow] (L\p.south) -- (L\p.south |- sh.north); }
+  % requant
+  \node[box, minimum width=22mm] (mux) at (2.2,-4.65) {seçici $p$\\[-2pt]\scriptsize çevrim başına 1};
+  \node[accbox, minimum width=28mm] (rq) at (6.0,-4.65) {requant\\[-2pt]\scriptsize 2 kademe};
+  \node[warmbox, minimum width=24mm] (prm) at (6.0,-6.15) {parametre ROM'u};
+  \node[box, minimum width=28mm] (out) at (10.0,-4.65) {(indeks, değer)\\[-2pt]\scriptsize çıkış akışı};
+  \draw[flow] (sh.south -| mux) -- (mux);
+  \draw[flow] (mux) -- (rq);
+  \draw[flow, warm] (prm) -- (rq);
+  \draw[flow] (rq) -- (out);
+\end{tikzpicture}

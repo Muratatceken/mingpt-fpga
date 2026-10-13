@@ -1,0 +1,29 @@
+% gpt_top veri yolu
+\begin{tikzpicture}[x=1cm,y=1cm, every node/.append style={minimum height=10mm}]
+  \node[box, minimum width=34mm] (ln) at (2.2,-1.9) {\bfseries LayerNorm\\[-1pt]\scriptsize\mdseries res $\rightarrow$ xa · 234 çevrim};
+  \node[membox, minimum width=34mm] (xa) at (2.2,-3.75) {\bfseries xa · LN çıkışı\\[-1pt]\scriptsize\mdseries $48\times$INT8};
+  \node[membox, minimum width=34mm] (xb) at (2.2,-5.45) {\bfseries xb · dikkat / GELU\\[-1pt]\scriptsize\mdseries $192\times$INT8};
+  \node[warmbox, minimum width=40mm] (rom) at (7.3,-1.75) {\bfseries ROM'lar (BRAM)\\[-1pt]\scriptsize\mdseries ağırlık 83\,KB · parametre 10\,KB};
+  \node[accbox, minimum width=34mm, minimum height=27mm] (gemv) at (7.3,-4.6)
+    {\bfseries GEMV motoru\\[3pt]\scriptsize\mdseries $8\times$ INT8 MAC şeridi\\\scriptsize\mdseries INT32 akümülatör\\\scriptsize\mdseries gölge banka + requant\\\scriptsize\mdseries $\rightarrow$ INT8 / INT16};
+  \node[box, minimum width=34mm] (gelu) at (7.3,-7.55) {\bfseries GELU tablosu\\[-1pt]\scriptsize\mdseries FC: \code{c\_fc} $\rightarrow$ GELU};
+  \node[warmbox, minimum width=25mm] (emb) at (13.15,-0.75) {\bfseries Gömme ROM'u\\[-1pt]\scriptsize\mdseries wte + wpe};
+  \node[membox, minimum width=36mm] (res) at (12.5,-2.6) {\bfseries res · artık akış\\[-1pt]\scriptsize\mdseries PROJ, MPROJ: res += $\Delta$};
+  \node[box, minimum width=36mm] (arg) at (12.5,-4.6) {\bfseries argmax $\rightarrow$ tok\_out\\[-1pt]\scriptsize\mdseries HEAD · logitler};
+  \node[membox, minimum width=36mm] (kv) at (12.5,-6.45) {\bfseries qbuf + KV önbelleği\\[-1pt]\scriptsize\mdseries QKV: $q$, $K$, $V$ yazılır};
+  \node[box, minimum width=36mm] (att) at (12.5,-8.4) {\bfseries Dikkat birimi\\[-1pt]\scriptsize\mdseries softmax · 3 baş};
+
+  \draw[flow] ([xshift=-12mm]res.north) -- ++(0,1.75) -| (ln.north);
+  \draw[flow] (emb.south) -- (emb.south |- res.north);
+  \draw[flow] (ln) -- (xa);
+  \draw[flow] (xa.east) -- (xa.east -| gemv.west);
+  \draw[flow] (xb.east) -- (xb.east -| gemv.west);
+  \draw[flow] (rom) -- (gemv);
+  \draw[accflow] (gemv.east) -- (arg.west);
+  \draw[accflow] (9.95,-4.6) |- (res.west);
+  \draw[accflow] (9.95,-4.6) |- (kv.west);
+  \draw[flow] (gemv) -- (gelu);
+  \draw[flow] (gelu.west) -| ([xshift=6mm]xb.south);
+  \draw[flow] (kv) -- (att);
+  \draw[flow] (att.west) -| ([xshift=-6mm]xb.south);
+\end{tikzpicture}

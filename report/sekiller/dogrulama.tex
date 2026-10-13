@@ -1,0 +1,16 @@
+% Referans model hiyerarşisi
+\begin{tikzpicture}[x=1cm,y=1cm, lv/.style={box, minimum width=52mm, minimum height=12mm, text width=48mm, align=left}]
+  \node[lv] (l0) at (0,0)    {\textbf{0 · minGPT}\hfill{\scriptsize\color{muted}float32}\\[-1pt]\scriptsize\code{ref/minGPT/mingpt/model.py}};
+  \node[lv] (l1) at (0,-1.85){\textbf{1 · Katlanmış model}\hfill{\scriptsize\color{muted}float64}\\[-1pt]\scriptsize\code{sw/quantize.py}};
+  \node[lv, draw=accent, fill=accentsoft, line width=1pt] (l2) at (0,-3.7)
+     {\textbf{2 · Tamsayı referans}\hfill{\scriptsize\color{muted}tamsayı}\\[-1pt]\scriptsize\code{sw/intmodel.py} — spesifikasyon};
+  \node[lv, draw=good, fill=goodsoft, line width=1pt] (l3) at (0,-5.55)
+     {\textbf{3 · RTL}\hfill{\scriptsize\color{muted}donanım}\\[-1pt]\scriptsize\code{rtl/*.sv}};
+  \foreach \a/\b/\t in {l0/l1/{logitler $10^{-4}$ içinde aynı · 729/729},
+                        l1/l2/{token uyumu \%100 · SQNR 41,5 dB},
+                        l2/l3/{\textbf{bit-exact} · 8\,019 adım · tolerans 0}} {
+    \draw[flow, line width=1pt] (\a.south) -- (\b.north) node[midway, right=4mm, font=\sffamily\footnotesize, text=ink] {\t};
+  }
+  \node[lbl, anchor=west, align=left] at (3.2,0) {eğitim sonrası görev doğruluğu \%100};
+  \node[lbl, anchor=west, align=left] at (3.2,-5.55) {+ birim testleri (3 × 2\,000)\\+ negatif test\\+ çip üzeri öz-test};
+\end{tikzpicture}

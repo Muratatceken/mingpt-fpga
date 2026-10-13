@@ -1,0 +1,56 @@
+% (a) nedensel maske, (b) çok başlı dikkat
+\begin{tikzpicture}[x=1cm,y=1cm]
+  % ---------------- (a) maske matrisi ----------------
+  \def\n{6}
+  \def\s{0.52}
+  \begin{scope}[shift={(0,0)}]
+    \foreach \t in {0,...,5} {
+      \foreach \j in {0,...,5} {
+        \pgfmathtruncatemacro{\ok}{\j<=\t ? 1 : 0}
+        \ifnum\ok=1
+          \fill[accent!22] (\j*\s,-\t*\s) rectangle ++(\s,-\s);
+        \else
+          \fill[pattern=north east lines, pattern color=rule] (\j*\s,-\t*\s) rectangle ++(\s,-\s);
+        \fi
+      }
+    }
+    \draw[rule, line width=0.4pt, step=\s] (0,-6*\s) grid (6*\s,0);
+    \draw[ink, line width=0.8pt] (0,-6*\s) rectangle (6*\s,0);
+    \foreach \k in {0,...,5} {
+      \node[lbl] at (\k*\s+\s/2, 0.22) {\k};
+      \node[lbl] at (-0.22, -\k*\s-\s/2) {\k};
+    }
+    \node[lbl, anchor=south] at (3*\s, 0.42) {anahtar konumu $j$};
+    \node[lbl, rotate=90, anchor=south] at (-0.48, -3*\s) {sorgu konumu $t$};
+    \fill[accent!22] (0,-6*\s-0.45) rectangle ++(0.3,-0.25);
+    \node[lbl, anchor=west] at (0.35,-6*\s-0.575) {$M_{tj}=0$ (görülür)};
+    \fill[pattern=north east lines, pattern color=rule] (0,-6*\s-0.9) rectangle ++(0.3,-0.25);
+    \draw[rule] (0,-6*\s-0.9) rectangle ++(0.3,-0.25);
+    \node[lbl, anchor=west] at (0.35,-6*\s-1.025) {$M_{tj}=-\infty$ (gelecek)};
+    \node[hdr] at (3*\s,-6*\s-1.65) {(a) Nedensel maske};
+  \end{scope}
+
+  % ---------------- (b) çok başlı dikkat ----------------
+  \begin{scope}[shift={(5.0,-0.2)}]
+    \node[membox, minimum width=17mm] (A) at (0,-1.35) {$A$\\[-1pt]{\scriptsize $T \times 48$}};
+    \node[box, minimum width=17mm] (ca) at (2.15,-1.35) {\code{c\_attn}\\[-1pt]{\scriptsize $48\!\rightarrow\!144$}};
+    % Q | K | V yığını
+    \node[box, minimum width=12mm, minimum height=6.5mm, inner ysep=1pt] (Q) at (4.0,-0.62) {$Q$};
+    \node[box, minimum width=12mm, minimum height=6.5mm, inner ysep=1pt, below=0pt of Q] (K) {$K$};
+    \node[box, minimum width=12mm, minimum height=6.5mm, inner ysep=1pt, below=0pt of K] (V) {$V$};
+    \node[fit=(Q)(V), inner sep=0pt] (qkv) {};
+    \foreach \h/\y in {1/0.15, 2/-1.35, 3/-2.85} {
+      \node[accbox, minimum width=33mm, minimum height=10mm, inner ysep=3pt] (h\h) at (6.85,\y)
+        {\footnotesize\bfseries baş \h\\[1pt]{\scriptsize $\mathrm{softmax}\!\big(Q_\h K_\h^{\top}/4 + M\big)\,V_\h$}};
+      \draw[flow] (qkv.east) -- (h\h.west);
+    }
+    \node[box, minimum width=17mm] (cat) at (9.75,-1.35) {birleştir\\[-1pt]{\scriptsize $T\times 48$}};
+    \node[box, minimum width=17mm] (cp) at (9.75,-2.85) {\code{c\_proj}\\[-1pt]{\scriptsize $48\!\rightarrow\!48$}};
+    \draw[flow] (A) -- (ca);
+    \draw[flow] (ca) -- (qkv.west);
+    \foreach \h in {1,2,3} { \draw[flow] (h\h.east) -- (cat.west); }
+    \draw[flow] (cat) -- (cp);
+    \node[lbl, align=center, anchor=north] at (4.0,-2.45) {her biri 3 başa\\bölünür ($d_h{=}16$)};
+    \node[hdr] at (4.9,-4.2) {(b) Çok başlı öz-dikkat};
+  \end{scope}
+\end{tikzpicture}

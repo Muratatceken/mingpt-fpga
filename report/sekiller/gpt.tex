@@ -1,0 +1,50 @@
+% minGPT ileri geçişi: artık akış ve pre-LN blok
+\begin{tikzpicture}[x=1cm,y=1cm]
+  % blok kabı
+  \draw[container, fill=paper!60] (-1.1,-0.85) rectangle (10.9,-6.15);
+  \node[anchor=south east, font=\sffamily\bfseries\small, text=muted] at (10.75,-6.05) {Transformer bloğu \,×\,3};
+
+  \node[box, minimum width=46mm] (emb) at (0,0.9)
+    {\textbf{Gömme}\\[-1pt]{\scriptsize $W_{te}[\tau_t] + W_{pe}[t]$}};
+  \node[lbl, anchor=east] at ([xshift=-3mm]emb.west) {token $\tau_t$, konum $t$};
+
+  % 1. alt katman
+  \coordinate (j1) at (0,-1.6);
+  \node[box, minimum width=17mm] (ln1) at (2.6,-1.6) {LN$_1$};
+  \node[box, minimum width=52mm] (att) at (6.9,-1.6)
+    {\textbf{Nedensel çok başlı öz-dikkat}\\[-1pt]{\scriptsize 3 baş · $d_h = 16$ · \code{c\_attn}, \code{c\_proj}}};
+  \node[op] (add1) at (0,-3.0) {$+$};
+
+  % 2. alt katman
+  \coordinate (j2) at (0,-4.2);
+  \node[box, minimum width=17mm] (ln2) at (2.6,-4.2) {LN$_2$};
+  \node[box, minimum width=52mm] (mlp) at (6.9,-4.2)
+    {\textbf{MLP}\\[-1pt]{\scriptsize $48 \rightarrow 192 \rightarrow 48$ · GELU}};
+  \node[op] (add2) at (0,-5.5) {$+$};
+
+  % çıkış
+  \node[box, minimum width=20mm] (lnf) at (0,-7.3) {LN$_f$};
+  \node[box, minimum width=34mm] (head) at (4.0,-7.3) {\textbf{lm\_head}\\[-1pt]{\scriptsize $48 \rightarrow 3$ logit}};
+  \node[accbox, minimum width=38mm] (arg) at (8.6,-7.3) {\textbf{argmax}\\[-1pt]{\scriptsize sonraki token $\tau_{t+1}$}};
+
+  % artık akış
+  \draw[accflow] (emb.south) -- (add1.north);
+  \draw[accflow] (add1.south) -- (add2.north);
+  \draw[accflow] (add2.south) -- (lnf.north);
+  \node[lbl, anchor=west, text=accent] at (0.15,-0.45) {artık akış $x \in \mathbb{R}^{48}$};
+
+  % dallar
+  \fill[muted] (j1) circle (1.8pt);  \fill[muted] (j2) circle (1.8pt);
+  \draw[flow] (j1) -- (ln1.west);
+  \draw[flow] (ln1) -- (att);
+  \draw[flow] (att.south) |- (add1.east);
+  \draw[flow] (j2) -- (ln2.west);
+  \draw[flow] (ln2) -- (mlp);
+  \draw[flow] (mlp.south) |- (add2.east);
+  \draw[flow] (lnf) -- (head);
+  \draw[flow] (head) -- (arg);
+
+  % denklemler
+  \node[lbl, anchor=north] at (3.3,-3.15) {$x \leftarrow x + \mathrm{Attn}(\mathrm{LN}_1(x))$};
+  \node[lbl, anchor=north] at (3.3,-5.65) {$x \leftarrow x + \mathrm{MLP}(\mathrm{LN}_2(x))$};
+\end{tikzpicture}

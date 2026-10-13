@@ -1,0 +1,21 @@
+% Token başına çevrim profili (Verilator, 729 dizi x 11 adım ortalaması)
+\begin{tikzpicture}
+\begin{axis}[
+    xbar, width=12.4cm, height=7.2cm, bar width=9pt, bar shift=0pt,
+    xmin=0, xmax=4400, ymin=0.4, ymax=8.6,
+    ytick={1,...,8},
+    yticklabels={EMB + DONE, HEAD, PROJ (×3), LN (×7), ATT (×3), QKV (×3), MPROJ (×3), FC (×3)},
+    y tick label style={font=\sffamily\small, text=ink},
+    xlabel={çevrim / token}, xmajorgrids, axis x line*=bottom, axis y line*=left,
+    scaled x ticks=false,
+    nodes near coords, nodes near coords style={font=\sffamily\scriptsize, text=muted, anchor=west},
+    point meta=explicit symbolic, legend pos=south east, legend cell align=left,
+  ]
+  \addplot[fill=accent!80, draw=none] coordinates {
+    (3498,8) [3\,498 · \%24,1]  (3498,7) [3\,498 · \%24,1]
+    (2634,6) [2\,634 · \%18,1] (906,3) [906 · \%6,2] (62,2) [62 · \%0,4]};
+  \addplot[fill=rule, draw=none] coordinates {
+    (2256,5) [2\,256 · \%15,5] (1638,4) [1\,638 · \%11,3] (50,1) [50 · \%0,3]};
+  \legend{{GEMV aşamaları (\%72,9)}, {diğer aşamalar}}
+\end{axis}
+\end{tikzpicture}

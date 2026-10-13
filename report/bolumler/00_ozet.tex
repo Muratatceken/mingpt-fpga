@@ -1,0 +1,19 @@
+Bu çalışmada Andrej Karpathy'nin minGPT modelinin \code{gpt-nano} yapılandırması, yalnızca tamsayı aritmetiği kullanan bir FPGA hızlandırıcısı olarak SystemVerilog ile gerçeklenmiştir. Model; 3 katman, 3 dikkat başı ve 48 boyutlu gömmeden oluşur (85\,728 parametre). Model, minGPT'nin kendi örneğindeki sıralama görevinde eğitilmiştir. Kayan nokta model önce matematiksel olarak eşdeğer biçimde dönüştürülmüş, sonra INT8 ağırlık ve aktivasyonlarla, INT16 artık akışla temsil edilmiştir. LayerNorm, softmax ve GELU için yalnızca toplama, çarpma, kaydırma, taban bölme ve taban karekök kullanan tamsayı algoritmalar türetilmiş, her biri için taşma ve doyma sınırları ispatlanmıştır.
+
+\medskip
+\begin{ozet}[Ana sonuçlar]
+\begin{itemize}[leftmargin=12pt]
+  \item \textbf{Doğruluk:} float model, tamsayı model ve RTL, görevin 729 olası girdisinin tamamında \%100 doğrudur.
+  \item \textbf{Sayısal sadakat:} tamsayı modelin logit SQNR değeri 41,5\,dB'dir; float modelle token uyumu \%100'dür.
+  \item \textbf{Bit-exact doğrulama:} 729 dizi $\times$ 11 decode adımı $=$ 8\,019 adımın her birinde token, logitler ve 48 artık değer, Python referans modeliyle birebir aynıdır (Verilator 5.052).
+  \item \textbf{Performans:} token başına 14\,544 çevrim; 100\,MHz'de 145\,µs/token. Matris-vektör motorunun verimi \%98,3'tür.
+  \item \textbf{Bellek:} 83\,KB INT8 ağırlık ve 3\,KB KV önbelleği; harici bellek gerekmez.
+  \item \textbf{Hedef kart:} PYNQ-Z2 (Zynq-7020). Çip üzeri öz-test simülasyonda doğrulanmıştır.
+\end{itemize}
+\end{ozet}
+
+\begin{uyari}
+\textbf{Kapsam notu.} Bu raporun tarihinde Vivado sentezi, zamanlama kapanışı ve kart üzerinde çalıştırma henüz yapılmamıştır. Bunun nedeni Vivado'nun geliştirme bilgisayarı olan macOS'ta çalışmamasıdır. Gerekli bütün scriptler depoda hazırdır. Kaynak kullanımı ile ilgili sayılar bu yüzden hesapla elde edilmiş tahminlerdir.
+\end{uyari}
+
+Rapor iki kısımdan oluşur. Kısım~I (Bölüm 1--9) minGPT'nin matematiksel modelini, eğitimini ve çıkarım algoritmasını anlatır. Kısım~II (Bölüm 10--21) modelin tamsayı aritmetiğine dönüştürülmesini, donanım mimarisini, performans analizini, doğrulamayı ve kart entegrasyonunu anlatır. Bütün kaynak kod ve üretilen dosyalar \gh{} adresindedir.

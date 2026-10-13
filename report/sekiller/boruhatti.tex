@@ -1,0 +1,43 @@
+% GEMV boru hattı zamanlaması (n_in = 48, P = 8)
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \def\cw{0.86}  \def\rh{0.62}
+  \def\cs{47}    \def\ce{59}
+  \newcommand{\cell}[4]{% sütun(çevrim), satır, renk, metin
+    \pgfmathsetmacro{\xx}{(#1-\cs)*\cw}
+    \fill[#3] (\xx+0.03,-#2*\rh-0.06) rectangle (\xx+\cw-0.03,-#2*\rh-\rh+0.06);
+    \node[font=\sffamily\scriptsize] at (\xx+\cw/2,-#2*\rh-\rh/2) {#4};}
+  % başlıklar
+  \foreach \c in {47,...,59} {
+    \pgfmathsetmacro{\xx}{(\c-\cs)*\cw}
+    \node[lbl] at (\xx+\cw/2,0.25) {\c};
+  }
+  \node[lbl, anchor=east] at (-0.15,0.25) {çevrim};
+  \foreach \r/\name in {0/Issue, 1/MAC, 2/Param. ROM, 3/Requant 1, 4/Requant 2, 5/out\_valid} {
+    \node[font=\sffamily\small, anchor=east] at (-0.15,-\r*\rh-\rh/2) {\name};
+  }
+  % issue
+  \cell{47}{0}{paper}{$i$=47}
+  \foreach \c [evaluate=\c as \k using int(\c-48)] in {48,...,59} { \cell{\c}{0}{accentsoft}{\k$'$} }
+  % mac
+  \cell{47}{1}{paper}{46}
+  \cell{48}{1}{paper}{47}
+  \foreach \c [evaluate=\c as \k using int(\c-49)] in {49,...,59} { \cell{\c}{1}{accentsoft}{\k$'$} }
+  % requant zinciri
+  \foreach \c [evaluate=\c as \k using int(\c-49)] in {49,...,56} { \cell{\c}{2}{warmsoft}{p\k} }
+  \foreach \c [evaluate=\c as \k using int(\c-50)] in {50,...,57} { \cell{\c}{3}{warmsoft}{p\k} }
+  \foreach \c [evaluate=\c as \k using int(\c-51)] in {51,...,58} { \cell{\c}{4}{warmsoft}{p\k} }
+  \foreach \c [evaluate=\c as \k using int(\c-52)] in {52,...,59} { \cell{\c}{5}{goodsoft}{o\k} }
+  % ızgara ve handoff
+  \draw[rule, line width=0.3pt] (0,0) -- (13*\cw,0);
+  \draw[accent, line width=1.2pt, dashed] ({(49-\cs)*\cw},0.5) -- ({(49-\cs)*\cw},-6*\rh-0.1)
+     node[below, font=\sffamily\scriptsize, text=accent] {H: handoff};
+  \draw[decorate, decoration={brace, mirror, amplitude=4pt}, draw=muted]
+    ({(50-\cs)*\cw},-6*\rh-0.15) -- node[lbl, below=5pt] {gölge banka okuma penceresi: H+2 … H+P+1} ({(58-\cs)*\cw},-6*\rh-0.15);
+  % açıklama
+  \begin{scope}[shift={(0,-5.3)}]
+    \fill[paper] (0,0) rectangle (0.35,-0.25); \node[lbl, anchor=west] at (0.4,-0.125) {blok $o_b{=}0$};
+    \fill[accentsoft] (2.2,0) rectangle (2.55,-0.25); \node[lbl, anchor=west] at (2.6,-0.125) {blok $o_b{=}1$ ($i'$)};
+    \fill[warmsoft] (4.9,0) rectangle (5.25,-0.25); \node[lbl, anchor=west] at (5.3,-0.125) {blok 0'ın requant'ı ($p$ = şerit)};
+    \fill[goodsoft] (8.9,0) rectangle (9.25,-0.25); \node[lbl, anchor=west] at (9.3,-0.125) {çıkış $o$};
+  \end{scope}
+\end{tikzpicture}

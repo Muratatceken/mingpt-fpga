@@ -1,0 +1,42 @@
+% KV önbellekli decode adımı (bir katman, bir baş)
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \def\rh{0.40}
+  \node[box, minimum width=24mm] (tok) at (0,0) {yeni token $\tau_t$\\[-1pt]{\scriptsize konum $t$}};
+  \node[box, minimum width=24mm] (proj) at (0,-1.6) {LN$_1$ + \code{c\_attn}};
+  \draw[flow] (tok) -- (proj);
+  \node[accbox, minimum width=10mm, minimum height=7mm] (q) at (2.55,-0.35) {$q_t$};
+  \node[warmbox, minimum width=10mm, minimum height=7mm] (k) at (2.55,-1.6) {$k_t$};
+  \node[warmbox, minimum width=10mm, minimum height=7mm] (v) at (2.55,-2.85) {$v_t$};
+  \draw[flow] (proj.east) -- ++(0.3,0) |- (q.west);
+  \draw[flow] (proj.east) -- (k.west);
+  \draw[flow] (proj.east) -- ++(0.3,0) |- (v.west);
+
+  % önbellek çizici: \cache{x}{y-üst}{harf}
+  \newcommand{\cache}[3]{%
+    \foreach \j/\lab in {0/{#3_0},1/{#3_1},2/{#3_2},3/{\vdots},4/{#3_{t-1}}} {
+      \fill[paper] (#1,#2-\j*\rh) rectangle ++(2.4,-\rh);
+      \draw[rule] (#1,#2-\j*\rh) rectangle ++(2.4,-\rh);
+      \node[font=\scriptsize, text=muted] at (#1+1.2,#2-\j*\rh-\rh/2) {$\lab$};
+    }
+    \fill[warmsoft] (#1,#2-5*\rh) rectangle ++(2.4,-\rh);
+    \draw[warm, line width=0.9pt] (#1,#2-5*\rh) rectangle ++(2.4,-\rh);
+    \node[font=\scriptsize, text=warm] at (#1+1.2,#2-5*\rh-\rh/2) {$#3_t$ \,(yeni)};
+  }
+  \cache{4.2}{0.75}{k}
+  \cache{4.2}{-2.05}{v}
+  \node[hdr, anchor=south] at (5.4,0.8) {K önbelleği};
+  \node[hdr, anchor=north] at (5.4,-4.5) {V önbelleği};
+  \draw[flow, warm] (k.east) -- ++(0.55,0) |- (4.2,0.75-5.5*\rh);
+  \draw[flow, warm] (v.east) -- ++(0.55,0) |- (4.2,-2.05-5.5*\rh);
+
+  % skor ve ağırlıklı toplam
+  \node[box, minimum width=36mm] (sc) at (9.75,-0.25) {$s_j = q_t \cdot k_j$, \; $j \le t$\\[-1pt]{\scriptsize $t{+}1$ iç çarpım}};
+  \node[accbox, minimum width=36mm] (sm) at (9.75,-1.75) {$p = \mathrm{softmax}(s)$};
+  \node[box, minimum width=36mm] (y) at (9.75,-3.25) {$y_t = \sum_{j\le t} p_j\, v_j$\\[-1pt]{\scriptsize $t{+}1$ ağırlıklı toplam}};
+  \draw[flow] (6.6,-0.25) -- (sc.west);
+  \draw[flow] (sc) -- (sm);
+  \draw[flow] (sm) -- (y);
+  \draw[flow] (6.6,-3.05) -- (y.west);
+  \draw[flow, accent] (q.north) -- ++(0,1.75) -| (sc.north);
+  \node[lbl, anchor=north west] at (7.95,-4.15) {Önbellek: $2\cdot L\cdot T\cdot C = 3168$ değer (3\,KB)};
+\end{tikzpicture}
