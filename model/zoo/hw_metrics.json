@@ -1,0 +1,141 @@
+{
+ "bigram": {
+  "steps": 354,
+  "bad_steps": 0,
+  "errors": 0,
+  "cycles_avg": 36,
+  "cycles_min": 36,
+  "cycles_max": 36,
+  "profile": {
+   "TABLOGIT": 29.0,
+   "FETCH": 5.0
+  }
+ },
+ "mlp": {
+  "steps": 354,
+  "bad_steps": 0,
+  "errors": 0,
+  "cycles_avg": 6632,
+  "cycles_min": 6632,
+  "cycles_max": 6632,
+  "profile": {
+   "EMBWIN": 258.0,
+   "GEMV": 6363.0,
+   "FETCH": 9.0
+  }
+ },
+ "rnn": {
+  "steps": 354,
+  "bad_steps": 0,
+  "errors": 0,
+  "cycles_avg": 6374,
+  "cycles_min": 6348,
+  "cycles_max": 6534,
+  "profile": {
+   "EMB8": 50.0,
+   "HRESET": 26.3,
+   "GEMV": 6099.0,
+   "COPY": 184.0,
+   "FETCH": 13.0
+  }
+ },
+ "gru": {
+  "steps": 354,
+  "bad_steps": 0,
+  "errors": 0,
+  "cycles_avg": 6515,
+  "cycles_min": 6501,
+  "cycles_max": 6603,
+  "profile": {
+   "EMB8": 50.0,
+   "HRESET": 14.4,
+   "GEMV": 6227.0,
+   "MUL": 103.0,
+   "GRUUPD": 100.0,
+   "FETCH": 19.0
+  }
+ },
+ "bow": {
+  "steps": 354,
+  "bad_steps": 0,
+  "errors": 0,
+  "cycles_avg": 6277,
+  "cycles_min": 6277,
+  "cycles_max": 6277,
+  "profile": {
+   "EMB16": 130.0,
+   "GEMV": 5928.0,
+   "REQ": 134.0,
+   "BOW": 66.0,
+   "FETCH": 17.0
+  }
+ },
+ "gpt2": {
+  "steps": 354,
+  "bad_steps": 0,
+  "errors": 0,
+  "cycles_avg": 9083,
+  "cycles_min": 8982,
+  "cycles_max": 9270,
+  "profile": {
+   "EMB16": 66.0,
+   "NORM": 1440.0,
+   "GEMV": 6601.0,
+   "KVSTORE": 16.0,
+   "ATTN": 869.3,
+   "FETCH": 89.0
+  }
+ },
+ "microgpt": {
+  "steps": 354,
+  "bad_steps": 0,
+  "errors": 0,
+  "cycles_avg": 9120,
+  "cycles_min": 9019,
+  "cycles_max": 9307,
+  "profile": {
+   "EMB16": 66.0,
+   "NORM": 1440.0,
+   "GEMV": 6601.0,
+   "KVSTORE": 16.0,
+   "ATTN": 869.3,
+   "REQ": 35.0,
+   "FETCH": 91.0
+  }
+ },
+ "llama": {
+  "steps": 354,
+  "bad_steps": 0,
+  "errors": 0,
+  "cycles_avg": 9859,
+  "cycles_min": 9758,
+  "cycles_max": 10046,
+  "profile": {
+   "EMB16": 34.0,
+   "NORM": 1440.0,
+   "GEMV": 6653.0,
+   "ROPE": 336.0,
+   "KVSTORE": 8.0,
+   "ATTN": 869.3,
+   "MUL": 396.0,
+   "FETCH": 121.0
+  }
+ },
+ "nanochat": {
+  "steps": 354,
+  "bad_steps": 0,
+  "errors": 0,
+  "cycles_avg": 11749,
+  "cycles_min": 11648,
+  "cycles_max": 11936,
+  "profile": {
+   "EMB16": 34.0,
+   "NORM": 4288.0,
+   "GEMV": 6089.0,
+   "ROPE": 336.0,
+   "KVSTORE": 8.0,
+   "ATTN": 869.3,
+   "FETCH": 123.0
+  }
+ }
+}

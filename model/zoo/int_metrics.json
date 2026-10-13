@@ -1,0 +1,101 @@
+{
+ "bigram": {
+  "float_nll": 2.4510954121625623,
+  "int_nll": 2.451094876795385,
+  "delta": -5.353671772406609e-07,
+  "argmax_agree": 1.0,
+  "tokens": 7166,
+  "FR": 12,
+  "ops": 1,
+  "seconds": 0.2,
+  "h0_clipped": false
+ },
+ "mlp": {
+  "float_nll": 1.9862516069733116,
+  "int_nll": 1.9878389979925282,
+  "delta": 0.0015873910192165234,
+  "argmax_agree": 0.978230533072844,
+  "tokens": 7166,
+  "FR": 12,
+  "ops": 3,
+  "seconds": 1.0,
+  "h0_clipped": false
+ },
+ "rnn": {
+  "float_nll": 1.9638741237286637,
+  "int_nll": 1.9682714977228046,
+  "delta": 0.0043973739941409705,
+  "argmax_agree": 0.9538096567122523,
+  "tokens": 7166,
+  "FR": 12,
+  "ops": 5,
+  "seconds": 1.0,
+  "h0_clipped": false
+ },
+ "gru": {
+  "float_nll": 1.9559829079656845,
+  "int_nll": 1.9564841852157355,
+  "delta": 0.0005012772500511406,
+  "argmax_agree": 0.9733463578007256,
+  "tokens": 7166,
+  "FR": 12,
+  "ops": 8,
+  "seconds": 1.7,
+  "h0_clipped": false
+ },
+ "bow": {
+  "float_nll": 2.044755489890655,
+  "int_nll": 2.0456785284210794,
+  "delta": 0.0009230385304243089,
+  "argmax_agree": 0.962740720066983,
+  "tokens": 7166,
+  "FR": 11,
+  "ops": 7,
+  "seconds": 1.8,
+  "h0_clipped": false
+ },
+ "gpt2": {
+  "float_nll": 1.9999289170377108,
+  "int_nll": 2.005404094639566,
+  "delta": 0.005475177601855152,
+  "argmax_agree": 0.9621825286073123,
+  "tokens": 7166,
+  "FR": 9,
+  "ops": 43,
+  "seconds": 19.5,
+  "h0_clipped": false
+ },
+ "microgpt": {
+  "float_nll": 1.9705595195937962,
+  "int_nll": 1.9719699475349686,
+  "delta": 0.001410427941172558,
+  "argmax_agree": 0.9581356405247,
+  "tokens": 7166,
+  "FR": 11,
+  "ops": 44,
+  "seconds": 11.7,
+  "h0_clipped": false
+ },
+ "llama": {
+  "float_nll": 2.0026188016065722,
+  "int_nll": 2.012705417426776,
+  "delta": 0.010086615820203657,
+  "argmax_agree": 0.9242255093497069,
+  "tokens": 7166,
+  "FR": 9,
+  "ops": 59,
+  "seconds": 16.7,
+  "h0_clipped": false
+ },
+ "nanochat": {
+  "float_nll": 1.969427823237508,
+  "int_nll": 1.9777564514261112,
+  "delta": 0.008328628188603101,
+  "argmax_agree": 0.930505163271002,
+  "tokens": 7166,
+  "FR": 7,
+  "ops": 60,
+  "seconds": 16.9,
+  "h0_clipped": false
+ }
+}
