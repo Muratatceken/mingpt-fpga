@@ -173,7 +173,8 @@ def export(name, seqs, gen=0, gen_start=0, q=None, out=None, quiet=False):
         elif op == "REQ":
             prog.append(word(op=OPC[op], src0=BUF["R"], dst=BUF[o["dst"]], n0=C, k64=(o["m0"] << 8) | o["sh"]))
         elif op == "BOW":
-            prog.append(word(op=OPC[op], dst=BUF["R"], n0=C, base0=tabs.put("rcp", q.rcp)))
+            hl = [x for r in q.rcp for x in (int(r) >> 16, ((int(r) & 0xFFFF) ^ 0x8000) - 0x8000)]  # 16-bit halves
+            prog.append(word(op=OPC[op], dst=BUF["R"], n0=C, base0=tabs.put("rcp", hl)))
         else:
             raise ValueError(op)
     prog.append(word(op=OPC["END"]))

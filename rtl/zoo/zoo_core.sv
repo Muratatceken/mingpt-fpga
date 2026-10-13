@@ -559,10 +559,10 @@ module zoo_core
           vb_a = vaddr(f_src1, i);
           vw_a = vaddr(B_HS, i); vw_be = P'(1) << i[LP-1:0]; vw_d = {P{sat8(64'(gnew))}};
         end
-        OP_BOW: if (EN[15]) begin
-          t_a  = TA_W'(f_b0 + 32'(t));
+        OP_BOW: if (EN[15]) begin                      // 1/(t+1) in 2^-20 units: two 16-bit table words
+          t_a  = TA_W'(f_b0 + 2 * 32'(t) + ((ph == 4'd1) ? 32'd1 : 32'd0));
           r_ra = RA_W'(i);
-          if (ph == 4'd2) begin
+          if (ph == 4'd3) begin
             sm_we = 1'b1; sm_wd = bw_s;
             r_we = 1'b1; r_wa = RA_W'(i); r_wd = sat16(64'(r_rd) + bw_avg);
           end
@@ -805,8 +805,9 @@ module zoo_core
             end
 
             OP_BOW: if (EN[15]) case (ph)
-              4'd0: ph <= 4'd1;
-              4'd1: begin rcp <= t_dx[21:0]; ph <= 4'd2; end
+              4'd0: ph <= 4'd1;                                          // high word address out
+              4'd1: begin rcp <= 22'(t_dx) <<< 16; ph <= 4'd2; end       // low word address out
+              4'd2: begin rcp <= rcp | 22'(t_dx[15:0]); ph <= 4'd3; end
               default: begin
                 i <= i + 1'b1;
                 if (i == f_n0 - 1'b1) begin pc <= pc + 1'b1; st <= S_FETCH; end

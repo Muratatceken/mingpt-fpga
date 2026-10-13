@@ -306,7 +306,7 @@ static void step(int tok, int t) {
       break;
     }
     case OP_BOW: {
-      int64_t rcp = tab[b0 + t];
+      int64_t rcp = ((int64_t)tab[b0 + 2 * t] << 16) | (tab[b0 + 2 * t + 1] & 0xFFFF);  /* two 16-bit words */
       for (int c = 0; c < n0; c++) {
         S[c] = (t == 0 ? 0 : S[c]) + R[c];
         int64_t avg = ((int64_t)S[c] * rcp + (1LL << 19)) >> 20;

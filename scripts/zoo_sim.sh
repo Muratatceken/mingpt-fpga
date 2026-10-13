@@ -41,10 +41,16 @@ if [ "$SIM" = icarus ]; then
 fi
 
 COV=(--x-assign fast)                                      # (bash 3.2: no empty arrays under set -u)
+# reuse the previous build if no source is newer than the simulator binary
+FRESH=0
+if [ -x "$OBJ/Vtb_zoo" ] && [ -z "$(find "$MEM/zoo_pkg.sv" "${SRC[@]}" "$0" -newer "$OBJ/Vtb_zoo" 2>/dev/null)" ]; then FRESH=1; fi
 if [ "$COVER" = 1 ]; then COV+=(--coverage-line --coverage-toggle); fi
+if [ "$FRESH" = 0 ]; then
 verilator --binary --timing --assert --timescale 1ns/1ps -j ${VJOBS:-0} -Wall -Wno-fatal \
   -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-UNUSEDSIGNAL -Wno-UNUSEDPARAM "${COV[@]}" \
   -GSPECIALIZE=$SPEC -GLOADTEST=$LOAD "$MEM/zoo_pkg.sv" "${SRC[@]}" --top-module tb_zoo \
   -Mdir "$OBJ" -o Vtb_zoo > "$OBJ/build.log" 2>&1 || { tail -40 "$OBJ/build.log"; exit 1; }
+fi
+if [ -n "${CYCFILE:-}" ]; then PLUS+=(+CYCFILE="$CYCFILE"); fi
 if [ "$COVER" = 1 ]; then PLUS+=(+verilator+coverage+file+"$OBJ/coverage.dat"); fi
 "$OBJ/Vtb_zoo" "${PLUS[@]}"                                   # from the repo root: MEM_PATH is relative

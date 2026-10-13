@@ -15,7 +15,7 @@ package zoo_pkg;
   localparam int    NKVW       = 4;
   localparam int    KDEP       = 5120;
   localparam int    KA_W       = 13;
-  localparam int    TAB_W      = 32;
+  localparam int    TAB_W      = 16;
   localparam int    PROG_DEPTH = 74;
   localparam int    W_DEPTH    = 32736;
   localparam int    PRM_DEPTH  = 3552;

@@ -55,7 +55,8 @@ def verif_engine(ds, dims):
 
 
 def rtl(vdir, imgdir):
-    env = dict(os.environ, LOAD="1", MODEL=os.path.relpath(imgdir, ROOT), VJOBS="2")
+    cyc = os.path.join(imgdir, "cycles.txt")
+    env = dict(os.environ, LOAD="1", MODEL=os.path.relpath(imgdir, ROOT), VJOBS="2", CYCFILE=cyc)
     out = subprocess.run([os.path.join(ROOT, "scripts", "zoo_sim.sh"), os.path.relpath(vdir, ROOT)],
                          capture_output=True, text=True, cwd=ROOT, env=env)
     txt = out.stdout + out.stderr
@@ -65,8 +66,14 @@ def rtl(vdir, imgdir):
         return dict(rtl_error=txt[-1500:])
     steps, bad, err, avg, lo, hi = map(int, m.groups())
     prof = {k: int(v) for k, v in re.findall(r"^PROF \S+ (\S+) (\d+)", txt, re.M)}
+    pos = {}
+    if os.path.exists(cyc):                       # cycles per position, averaged over the sequences
+        for line in open(cyc):
+            t, c = map(int, line.split())
+            pos.setdefault(t, []).append(c)
     return dict(rtl_steps=steps, rtl_errors=err + len(re.findall(r"Assertion failed", txt)), cycles=avg,
-                cycles_min=lo, cycles_max=hi, profile={k: round(v / steps, 1) for k, v in prof.items()})
+                cycles_min=lo, cycles_max=hi, profile={k: round(v / steps, 1) for k, v in prof.items()},
+                pos_cycles=[round(sum(pos[t]) / len(pos[t]), 1) for t in sorted(pos)])
 
 
 def process(run, d_names):

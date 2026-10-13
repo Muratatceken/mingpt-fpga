@@ -10,6 +10,7 @@
 // produced by IntRunner; the tokens are written to build/zoo/<model>_gen_rtl.txt.
 //
 // Plusargs: +NSEQ=<n> (default: all sequences)  +TV=<file> (default <model dir>/tv.txt)  +GEN
+//           +CYCFILE=<file>: write "position cycles" for every teacher-forced step
 //           +MODELDIR=<dir>: model images to load (LOADTEST; default MEM_PATH), e.g. one model of
 //           the universal one-bitstream engine (mem/zoo/universal/<model>/)
 // Parameters: SPECIALIZE   only the units this model uses
@@ -99,7 +100,8 @@ module tb_zoo;
   endfunction
 
   int fd = 0, rc = 0, nseq = 0, nv = 0, len = 0, tok = 0, maxseq = 0, xerr = 0;   // initialised: sv2v
-  string tvfile;                                                                  // keeps them variables
+  string tvfile, cycfile;                                                         // keeps them variables
+  int cfd = 0;
   int gold [V];
   initial for (int k = 0; k < V; k++) gold[k] = 0;
   int errors = 0, steps = 0, bad_steps = 0;
@@ -159,6 +161,7 @@ module tb_zoo;
     if (!$value$plusargs("TV=%s", tvfile)) tvfile = {mdir, "/tv.txt"};
     fd = $fopen(tvfile, "r");
     if (fd == 0) $fatal(1, "cannot open %s", tvfile);
+    if ($value$plusargs("CYCFILE=%s", cycfile)) cfd = $fopen(cycfile, "w");
     rc = $fscanf(fd, "%d %d", nseq, nv);
     if (nv > V) $fatal(1, "tv.txt has V=%0d > engine V=%0d", nv, V);   // universal engine: nv <= V
     if (nseq > maxseq) nseq = maxseq;
@@ -176,6 +179,7 @@ module tb_zoo;
         for (int k = 0; k < nv; k++) rc = $fscanf(fd, "%d", gold[k]);
         run_step(tok, tt);
         tot_cyc += step_cyc;
+        if (cfd != 0) $fwrite(cfd, "%0d %0d\n", tt, step_cyc);
         if (step_cyc > max_cyc) max_cyc = step_cyc;
         if (step_cyc < min_cyc) min_cyc = step_cyc;
         step_err = 0;
@@ -197,6 +201,7 @@ module tb_zoo;
       end
     end
     $fclose(fd);
+    if (cfd != 0) $fclose(cfd);
     if (steps == 0) steps = 1;
 
     $display("");
