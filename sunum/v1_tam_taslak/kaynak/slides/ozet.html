@@ -1,0 +1,27 @@
+<section id="ozet" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">Giriş</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Proje bir cümlede</h2>
+</div>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D">Karpathy’nin minGPT’sini ve aynı soydan dokuz dil modelini, hiç kayan nokta kullanmayan tek bir FPGA motoruna taşıdık; RTL simülasyonunda hepsi yazılım referansıyla <i>bit bit</i> aynı sonucu veriyor.</p>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:36px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#B4460F">729/729</p>
+<p style="font-size:24px;line-height:1.4">minGPT sıralama görevinde doğru çözülen dizi (tüm girdi uzayı)</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:36px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#B4460F">10 model</p>
+<p style="font-size:24px;line-height:1.4">tek motor, tek bitstream: bigram’dan Llama’ya ve stories260K’ya</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:36px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#B4460F">0 hata</p>
+<p style="font-size:24px;line-height:1.4">rastgele testte 1 256 707 logitin hepsi referansla aynı</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:36px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#B4460F">145 µs</p>
+<p style="font-size:24px;line-height:1.4">minGPT’de token başına süre (14 544 çevrim, 100 MHz hedefi)</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">2 · minGPT’den FPGA’ye</p>
+<aside>Projenin özeti bu dört sayı. 729/729: minGPT’nin sıralama görevinde olası 729 girdinin hepsini donanım doğru çözüyor. 10 model: Karpathy’nin bigram’dan nanochat’e kadar uzanan ailesinden dokuz mimari ve hazır eğitilmiş stories260K, aynı donanımda çalışıyor. 0 hata: rastgele üretilmiş 60 test vakasında donanımın verdiği 1,26 milyon logitin her biri yazılımdaki tamsayı referansla aynı. 145 µs: ilk minGPT tasarımında bir token 14 544 saat çevrimi sürüyor; 100 MHz’de bu 145 mikrosaniye eder. Önemli bir dürüstlük notu: bunların hepsi RTL simülasyonu ve Yosys sentez tahmini. Vivado’da zamanlama kapanışı ve gerçek kartta ölçüm henüz yapılmadı; son bölümde bunlara döneceğim.</aside>
+</section>

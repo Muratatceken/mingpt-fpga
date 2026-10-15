@@ -1,0 +1,39 @@
+<section id="merdiven" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">5 · Model ailesi ve motor</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Özellik merdiveni: her basamakta tek değişiklik</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;gap:12px;align-items:end">
+<div style="width:220px;display:flex;flex-direction:column;gap:4px;background:#14213D;border-radius:10px;padding:16px 20px"><p style="font-size:24px;font-weight:600;color:#F2A65A">L0</p><p style="font-size:24px;color:#FBFBF8">GPT-2</p></div>
+<x-shape kind="arrow-right" style="width:36px;height:18px;background:#5A6474"></x-shape>
+<div style="width:220px;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:16px 20px"><p style="font-size:24px;font-weight:600;color:#B4460F">L1</p><p style="font-size:24px;color:#14213D">+ RMSNorm</p></div>
+<x-shape kind="arrow-right" style="width:36px;height:18px;background:#5A6474"></x-shape>
+<div style="width:220px;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:16px 20px"><p style="font-size:24px;font-weight:600;color:#B4460F">L2</p><p style="font-size:24px;color:#14213D">+ RoPE</p></div>
+<x-shape kind="arrow-right" style="width:36px;height:18px;background:#5A6474"></x-shape>
+<div style="width:220px;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:16px 20px"><p style="font-size:24px;font-weight:600;color:#B4460F">L3</p><p style="font-size:24px;color:#14213D">+ SwiGLU</p></div>
+<x-shape kind="arrow-right" style="width:36px;height:18px;background:#5A6474"></x-shape>
+<div style="width:220px;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:16px 20px"><p style="font-size:24px;font-weight:600;color:#B4460F">L4</p><p style="font-size:24px;color:#14213D">+ GQA</p></div>
+<x-shape kind="arrow-right" style="width:36px;height:18px;background:#5A6474"></x-shape>
+<div style="width:220px;display:flex;flex-direction:column;gap:4px;background:#14213D;border-radius:10px;padding:16px 20px"><p style="font-size:24px;font-weight:600;color:#F2A65A">L5</p><p style="font-size:24px;color:#FBFBF8">= llama2.c</p></div>
+</div>
+<div style="display:flex;gap:12px;align-items:center">
+<div style="width:1024px;display:flex;justify-content:end"><p style="font-size:24px;color:#2A5C9A">L2’den dal (nanochat yönü) →</p></div>
+<div style="width:220px;display:flex;flex-direction:column;gap:4px;background:#DCE5F1;border-radius:10px;padding:16px 20px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">L6</p><p style="font-size:24px;color:#14213D">ReLU², GQA</p></div>
+<x-shape kind="arrow-right" style="width:36px;height:18px;background:#5A6474"></x-shape>
+<div style="width:220px;display:flex;flex-direction:column;gap:4px;background:#DCE5F1;border-radius:10px;padding:16px 20px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">L7</p><p style="font-size:24px;color:#14213D">+ QK-norm</p></div>
+</div>
+</div>
+<div style="display:flex;gap:48px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Neden böyle?</h3>
+<p style="font-size:30px;line-height:1.4">Ailedeki modeller birden çok yönden farklı. Merdivende her basamak tek bir kararı değiştirir; kayıp ve çevrim farkı o fikre atfedilebilir. Bütçe, MLP genişliği aranarak eşit tutulur.</p>
+</div>
+<div style="width:560px;display:flex;flex-direction:column;gap:8px;border-left:6px solid #B4460F;padding:8px 0px 8px 24px">
+<p style="font-size:24px;font-weight:600;color:#B4460F">Durum</p>
+<p style="font-size:24px;line-height:1.4">Eğitim kampanyası sürüyor (isimler: 51 koşudan 20’si tamam). Merdivenin sonuçları henüz yok.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">31 · minGPT’den FPGA’ye</p>
+<aside>Ailedeki modeller birbirinden aynı anda birçok yönden ayrılıyor; GPT-2 ile Llama arasında dört beş fark var. Hangi farkın neye yol açtığını ayırmak için bir özellik merdiveni kurduk. L0 GPT-2. Her basamak tek bir tasarım kararını değiştiriyor: önce LayerNorm yerine RMSNorm, sonra öğrenilen konum yerine RoPE, sonra GELU yerine SwiGLU, sonra gruplanmış sorgu dikkati (GQA). L5’te bias’lar kaldırılıp gömmeler bağlanınca llama2.c’ye ulaşılıyor. Bir de nanochat yönüne bir dal var: L6’da SwiGLU yerine ReLU kare ve GQA, L7’de buna QK-norm ekleniyor. Her basamakta parametre sayısı MLP genişliği aranarak eşit tutuluyor. Böylece iki basamak arasındaki kayıp ve çevrim farkı tek bir fikre atfedilebiliyor. Dürüst olmak gerekirse: eğitim kampanyası yarıda; isimler için 51 koşudan 20’si bitti, merdivenin sonuçları henüz elimizde değil.</aside>
+</section>

@@ -1,0 +1,32 @@
+<section id="ilksonuc" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">4 · İlk donanım</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">İlk sonuç: doğru, hızlı ve küçük</h2>
+</div>
+<div style="display:flex;gap:64px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;gap:24px;align-items:baseline;border-top:1px solid #D9D5CA;padding:16px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;color:#B4460F;width:380px">8 019/8 019</p>
+<p style="font-size:24px;line-height:1.4">adım RTL’de bit-exact (Verilator); 729/729 dizi doğru</p>
+</div>
+<div style="display:flex;gap:24px;align-items:baseline;border-top:1px solid #D9D5CA;padding:16px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;color:#14213D;width:380px">14 544</p>
+<p style="font-size:24px;line-height:1.4">çevrim/token → 100 MHz hedefinde 145 µs</p>
+</div>
+<div style="display:flex;gap:24px;align-items:baseline;border-top:1px solid #D9D5CA;padding:16px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;color:#14213D;width:380px">%73</p>
+<p style="font-size:24px;line-height:1.4">sürenin GEMV’de geçen kısmı; LN %11, dikkat %16</p>
+</div>
+</div>
+<div style="width:700px;display:flex;flex-direction:column;gap:20px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:32px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Kaynak kullanımı (Yosys, XC7Z020)</p>
+<div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;justify-content:space-between"><p style="font-size:24px;color:#14213D">LUT · 3 955 / 53 200</p><p style="font-size:24px;font-weight:600;color:#14213D">%7,4</p></div><div style="height:20px;background:#E9E6DD;border-radius:4px;display:flex"><div style="width:47px;background:#2A5C9A;border-radius:4px"></div></div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;justify-content:space-between"><p style="font-size:24px;color:#14213D">FF · 1 567 / 106 400</p><p style="font-size:24px;font-weight:600;color:#14213D">%1,5</p></div><div style="height:20px;background:#E9E6DD;border-radius:4px;display:flex"><div style="width:10px;background:#2A5C9A;border-radius:4px"></div></div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;justify-content:space-between"><p style="font-size:24px;color:#14213D">BRAM · 23 / 140</p><p style="font-size:24px;font-weight:600;color:#14213D">%16</p></div><div style="height:20px;background:#E9E6DD;border-radius:4px;display:flex"><div style="width:104px;background:#2A5C9A;border-radius:4px"></div></div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;justify-content:space-between"><p style="font-size:24px;color:#14213D">DSP · 31 / 220</p><p style="font-size:24px;font-weight:600;color:#14213D">%14</p></div><div style="height:20px;background:#E9E6DD;border-radius:4px;display:flex"><div style="width:90px;background:#2A5C9A;border-radius:4px"></div></div></div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">Vivado zamanlama ve kart ölçümü henüz yok.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">28 · minGPT’den FPGA’ye</p>
+<aside>İlk tasarımın sonuçları. Doğruluk: 729 dizinin her birinin 11 adımında, yani 8 019 adımın hepsinde, Verilator simülasyonundaki donanım yazılımdaki tamsayı modelle bit bit aynı logitleri üretiyor. Hız: bir token 14 544 saat çevrimi sürüyor; 100 MHz’de çalışırsa bu 145 mikrosaniye eder. 100 MHz bir hedef; Vivado’da zamanlama kapanışı henüz yapılmadı. Sürenin dağılımı: dört Linear katmanın toplamı yaklaşık yüzde 73, yedi LayerNorm yüzde 11, dikkat yüzde 16 civarında. Boyut: Yosys sentez tahminine göre çipin LUT’larının yalnızca yüzde 7’si, DSP’lerinin yüzde 14’ü, BRAM’lerinin yüzde 16’sı kullanılıyor. Bu kadar küçük olması bir sonraki soruyu doğurdu: aynı çipe tek bir model yerine bütün bir model ailesini sığdırabilir miyiz? Not: Yosys rakamları bir tahmin; kesin rakamlar Vivado’dan gelecek.</aside>
+</section>

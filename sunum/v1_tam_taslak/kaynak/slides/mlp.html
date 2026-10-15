@@ -1,0 +1,25 @@
+<section id="mlp" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">2 · minGPT adım adım</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Adım 7 · MLP ve GELU: her token kendi içinde</h2>
+</div>
+<div style="display:flex;gap:56px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:24px">
+<div style="background:#F2EFE7;border-radius:12px;padding:28px 36px;display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D">MLP(<i>a</i>) = <i>W</i>₂ GELU(<i>W</i>₁ <i>a</i> + <i>b</i>₁) + <i>b</i>₂</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D">GELU(<i>x</i>) = ½ <i>x</i> (1 + tanh(√(2/π) (<i>x</i> + 0,044715 <i>x</i>³)))</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#14213D;border-radius:12px;padding:32px">
+<p style="font-size:24px;color:#9FB0CC">minGPT · Block.__init__</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">c_fc   = nn.Linear(n_embd, 4 * n_embd),  <span style="color:#9FB0CC"># 48 → 192</span><br>c_proj = nn.Linear(4 * n_embd, n_embd),  <span style="color:#9FB0CC"># 192 → 48</span><br>act    = NewGELU(),<br>self.mlpf = <span style="color:#F2A65A">lambda</span> x: m.dropout(m.c_proj(m.act(m.c_fc(x))))</p>
+</div>
+</div>
+<div style="width:620px;display:flex;flex-direction:column;gap:16px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:28px">
+<svg aria-label="GELU eğrisi; −4 ile 3 aralığında, ReLU ile karşılaştırmalı" width="560" height="300" viewBox="0 0 560 300"><line x1="40" y1="250" x2="520" y2="250" stroke="#9AA3B2" stroke-width="2"/><line x1="314.3" y1="20" x2="314.3" y2="280" stroke="#9AA3B2" stroke-width="2"/><polyline points="40,250 314.3,250 520,40" fill="none" stroke="#2A5C9A" stroke-width="4" stroke-dasharray="12 10"/><path d="M40.0 250.0 L67.4 250.0 L94.9 250.1 L122.3 250.5 L149.7 251.3 L177.1 253.2 L204.6 256.2 L232.0 259.7 L245.7 261.1 L259.4 261.9 L273.1 261.5 L286.9 259.6 L300.6 255.9 L314.3 250.0 L328.0 241.9 L341.7 231.6 L355.4 219.5 L369.1 205.9 L382.9 191.1 L396.6 175.7 L410.3 159.9 L424.0 144.2 L437.7 128.5 L451.4 113.2 L465.1 98.1 L478.9 83.3 L492.6 68.8 L506.3 54.5 L520.0 40.3" fill="none" stroke="#B4460F" stroke-width="6"/></svg>
+<p style="font-size:24px;line-height:1.4"><span style="color:#B4460F"><b>GELU</b></span> (düz) ve <span style="color:#2A5C9A"><b>ReLU</b></span> (kesikli), <i>x</i> ∈ [−4, 3]</p>
+<p style="font-size:24px;line-height:1.4">Negatif tarafta yumuşak; sıfır çevresinde türevlenebilir.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">16 · minGPT’den FPGA’ye</p>
+<aside>Dikkat tokenlar arasında bilgi taşır; MLP ise her tokenın vektörünü kendi içinde işler. Önce dört kat genişletir (48’den 192’ye), doğrusal olmayan bir aktivasyondan geçirir, sonra tekrar 48’e indirir. Doğrusal olmayan aktivasyon olmasaydı iki Linear tek bir Linear’a çökerdi; modelin ifade gücü bu fonksiyondan gelir. minGPT, GPT-2 ile aynı tanh yaklaşımlı GELU’yu kullanır. Grafikte turuncu GELU, kesikli mavi ReLU: GELU negatif tarafta sert biçimde sıfıra kesilmez, küçük bir eksi bölge bırakır. Kodda MLP tek bir lambda: c_fc, GELU, c_proj ve dropout. Donanım için güzel bir haber var: GELU’nun girişi 8 bitlik bir tamsayı olacağından yalnızca 256 farklı değer alabilir. Bu fonksiyonu yaklaşık hesaplamak yerine 256 girişlik bir tabloyla tam olarak saklayabiliyoruz.</aside>
+</section>

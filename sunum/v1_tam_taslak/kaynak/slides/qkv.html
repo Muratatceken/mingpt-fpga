@@ -1,0 +1,35 @@
+<section id="qkv" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">2 · minGPT adım adım</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Adım 3 · Sorgu, anahtar, değer: üç doğrusal izdüşüm</h2>
+</div>
+<div style="background:#F2EFE7;border-radius:12px;padding:32px 40px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D">[<i>q</i>ₜ ; <i>k</i>ₜ ; <i>v</i>ₜ] = <i>W</i><span style="color:#14213D">ₐₜₜₙ</span> · LN₁(<i>x</i>ₜ) + <i>b</i> ,   <i>W</i><span style="color:#14213D">ₐₜₜₙ</span> ∈ ℝ<span style="color:#14213D">³ᶜˣᶜ</span></p>
+</div>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:24px 28px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">q · sorgu</p>
+<p style="font-size:24px;line-height:1.4">“Ben ne arıyorum?”</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:24px 28px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">k · anahtar</p>
+<p style="font-size:24px;line-height:1.4">“Bende ne var?”</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #14213D;border-radius:12px;padding:24px 28px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">v · değer</p>
+<p style="font-size:24px;line-height:1.4">“Seçilirsem ne aktarırım?”</p>
+</div>
+</div>
+<div style="display:flex;gap:48px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#14213D;border-radius:12px;padding:32px">
+<p style="font-size:24px;color:#9FB0CC">minGPT · CausalSelfAttention</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">self.c_attn = nn.Linear(n_embd, 3 * n_embd)<br>q, k, v = self.c_attn(x).split(self.n_embd, dim=2)</p>
+</div>
+<div style="width:560px;display:flex;flex-direction:column;gap:8px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Donanım açısından</p>
+<p style="font-size:24px;line-height:1.4">Bir Linear = matris-vektör çarpımı (GEMV): <i>y</i>ᵢ = Σⱼ <i>W</i>ᵢⱼ <i>x</i>ⱼ + <i>b</i>ᵢ. gpt-nano’da bu satır 144 × 48 = 6 912 çarpma-toplama.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">11 · minGPT’den FPGA’ye</p>
+<aside>Üçüncü adım: normalize edilmiş vektörden üç ayrı vektör türetiriz. Sorgu (q): bu token geçmişte ne tür bilgi arıyor. Anahtar (k): her token kendini nasıl tanıtıyor. Değer (v): eşleşme olursa aktarılacak içerik. Üçü de aynı vektöre uygulanan doğrusal dönüşümlerdir; minGPT bunları tek bir 3C×C matrisle hesaplayıp sonucu üçe böler (split). Bu sezgisel isimler bir benzetme; matematikte yalnızca üç öğrenilen izdüşüm var. Donanım açısından burada asıl önemli olan şey şu: bir Linear katman matris-vektör çarpımıdır. Her çıkış elemanı, girişlerin ağırlıklı toplamı artı bir bias. gpt-nano’da yalnızca bu satır 6 912 çarpma-toplama demek. Toplam hesabın yaklaşık %97’si bu tür çarpımlardan geliyor; donanımın kalbi bu yüzden bir GEMV motoru.</aside>
+</section>

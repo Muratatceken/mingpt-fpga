@@ -1,0 +1,22 @@
+<section id="gomme" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">2 · minGPT adım adım</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Adım 1 · Gömme: “ne” ve “nerede” toplanır</h2>
+</div>
+<div style="background:#F2EFE7;border-radius:12px;padding:32px 40px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D"><i>x</i>ₜ⁽⁰⁾ = <i>W</i>ₜₑ[τₜ] + <i>W</i>ₚₑ[<i>t</i>]      <span style="color:#5A6474">τₜ: <i>t</i> konumundaki token</span></p>
+</div>
+<div style="display:flex;gap:48px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Konum neden gerekli?</h3>
+<p style="font-size:30px;line-height:1.4">Dikkat, değerlerin ağırlıklı toplamıdır; toplama sıra bilmez. Konum vektörü olmasa “2 0 1” ile “1 0 2” modele aynı görünürdü.</p>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">Dropout yalnızca eğitimde etkin; çıkarımda birim fonksiyon. Donanımda yoktur.</p>
+</div>
+<div style="width:820px;display:flex;flex-direction:column;gap:12px;background:#14213D;border-radius:12px;padding:32px">
+<p style="font-size:24px;color:#9FB0CC">minGPT · GPT.forward</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">pos = torch.arange(0, t, dtype=torch.long)<br>tok_emb = self.transformer.wte(idx) <span style="color:#9FB0CC"># (b, t, C)</span><br>pos_emb = self.transformer.wpe(pos) <span style="color:#9FB0CC"># (1, t, C)</span><br>x = self.transformer.drop(tok_emb + pos_emb)</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">9 · minGPT’den FPGA’ye</p>
+<aside>Birinci adım: her konum için iki vektörü topluyoruz. Biri tokenın kendisi için (“ne”), diğeri konumu için (“nerede”). İkisi de öğrenilen tablolardır. Konum neden gerekli? Birazdan göreceğimiz dikkat mekanizması, önceki tokenların değer vektörlerinin ağırlıklı toplamıdır ve toplama işlemi sıra bilmez. Konum bilgisi eklenmezse model “2 0 1” ile “1 0 2”yi ayırt edemezdi. Kodda arange ile konum indeksleri oluşturulur, iki tablodan okunur ve toplanır. Dropout yalnızca eğitimde rastgele eleman sıfırlar; çıkarımda hiçbir şey yapmaz. Bu yüzden donanımda karşılığı yoktur. Donanımda bu adım iki ROM okuması ve bir toplamadır.</aside>
+</section>

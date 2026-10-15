@@ -1,0 +1,41 @@
+<section id="cokbas" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">2 · minGPT adım adım</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Adım 5 · Çok başlı dikkat: aynı anda birkaç soru</h2>
+</div>
+<div style="display:flex;gap:20px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:8px">
+<p style="font-size:24px;color:#5A6474"><i>q</i>, <i>k</i>, <i>v</i> (<i>C</i> = 48)</p>
+<div style="display:flex;width:360px;height:56px;border-radius:8px;overflow:hidden">
+<div style="flex:1;background:#B4460F"></div><div style="flex:1;background:#2A5C9A"></div><div style="flex:1;background:#14213D"></div>
+</div>
+</div>
+<x-shape kind="arrow-right" style="width:48px;height:24px;background:#5A6474"></x-shape>
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;padding:10px 20px;background:#F6E3D7;color:#14213D;border-left:6px solid #B4460F">baş 1 · <i>d</i>ₕ = 16 · dikkat</p>
+<p style="font-size:24px;padding:10px 20px;background:#DCE5F1;color:#14213D;border-left:6px solid #2A5C9A">baş 2 · <i>d</i>ₕ = 16 · dikkat</p>
+<p style="font-size:24px;padding:10px 20px;background:#E3E5EA;color:#14213D;border-left:6px solid #14213D">baş 3 · <i>d</i>ₕ = 16 · dikkat</p>
+</div>
+<x-shape kind="arrow-right" style="width:48px;height:24px;background:#5A6474"></x-shape>
+<div style="display:flex;flex-direction:column;gap:8px">
+<p style="font-size:24px;color:#5A6474">yan yana birleştir</p>
+<div style="display:flex;width:300px;height:56px;border-radius:8px;overflow:hidden">
+<div style="flex:1;background:#B4460F"></div><div style="flex:1;background:#2A5C9A"></div><div style="flex:1;background:#14213D"></div>
+</div>
+</div>
+<x-shape kind="arrow-right" style="width:48px;height:24px;background:#5A6474"></x-shape>
+<p style="font-size:30px;font-weight:600;padding:16px 24px;background:#14213D;color:#FBFBF8;border-radius:8px">c_proj</p>
+</div>
+<div style="display:flex;gap:48px;align-items:start">
+<div style="width:640px;display:flex;flex-direction:column;gap:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D"><i>y</i> = <i>W</i><span style="color:#14213D">ₒ</span> [ baş₁ ; baş₂ ; baş₃ ] + <i>b</i></p>
+<p style="font-size:24px;line-height:1.4">Her baş kendi 16 boyutlu alt uzayında ayrı bir dikkat dağılımı kurar. Toplam çarpma sayısı tek başlı dikkatle aynı.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#14213D;border-radius:12px;padding:32px">
+<p style="font-size:24px;color:#9FB0CC">minGPT · CausalSelfAttention.forward</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">k = k.view(B, T, nh, C // nh).transpose(1, 2)<br><span style="color:#9FB0CC"># ... her baş için dikkat ...</span><br>y = y.transpose(1, 2).contiguous().view(B, T, C)<br>y = self.resid_dropout(self.c_proj(y))</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">14 · minGPT’den FPGA’ye</p>
+<aside>Tek bir dikkat dağılımı her konumda yalnızca bir “ağırlıklı ortalama” alabilir. Çok başlı dikkatte 48 boyutlu q, k, v vektörleri her biri 16 boyutlu üç parçaya bölünür. Her parça kendi dikkatini bağımsız hesaplar; örneğin biri bir önceki tokena, diğeri dizinin başına bakabilir. Sonra üç başın çıktısı yan yana konup c_proj adlı bir Linear ile karıştırılır. Kodda bu, view ve transpose ile yapılan bir yeniden şekillendirmedir; ek bir hesap yoktur. Toplam çarpma sayısı tek başlı dikkatle aynıdır. Donanımda her baş, P baytlık bir vektör kelimesinin bir dilimidir ve başlar ardışık işlenir. Koddaki nh, minGPT’deki self.n_head’in kısaltmasıdır.</aside>
+</section>

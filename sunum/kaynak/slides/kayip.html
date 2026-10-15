@@ -1,0 +1,33 @@
+<section id="kayip" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:32px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">1 · Temel kavramlar</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Model, doğru token’a verdiği olasılıkla ölçülür (cross-entropy loss) ve bu loss’u küçültecek şekilde eğitilir</h2>
+</div>
+<div style="display:flex;gap:48px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:22px">
+<div style="background:#F2EFE7;border-radius:12px;padding:24px 32px;display:flex;flex-direction:column;gap:10px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D"><i>ℒ</i> = − (1/<i>N</i>) Σₜ ln <i>p</i>(doğru token)</p>
+<p style="font-size:24px;line-height:1.4">Her pozisyonda doğru token’a verilen olasılığın eksi logaritması, ortalaması alınır. Birimi nat/token; küçük olan daha iyi.</p>
+</div>
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:52%;text-align:left;color:#14213D">Doğru token’a verilen olasılık</th><th style="width:18%;text-align:right;color:#14213D">loss</th><th style="width:30%;text-align:left;color:#14213D">yorum</th></tr>
+<tr><td>1/27 ≈ 0,037 (her harfe eşit)</td><td style="text-align:right">3,30</td><td>hiçbir şey bilmiyor</td></tr>
+<tr><td>0,5</td><td style="text-align:right">0,69</td><td>iki aday arasında</td></tr>
+<tr><td>0,9</td><td style="text-align:right">0,11</td><td>emin ve haklı</td></tr>
+<tr><td>1</td><td style="text-align:right">0</td><td>mükemmel</td></tr>
+</table>
+</div>
+<div style="width:720px;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-direction:column;gap:10px;background:#14213D;border-radius:12px;padding:24px 32px">
+<p style="font-size:24px;color:#9FB0CC">minGPT · trainer.py: training döngüsünün kalbi</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">logits, self.loss = model(x, y) <span style="color:#9FB0CC"># loss</span><br>model.zero_grad(set_to_none=True)<br>self.loss.backward()            <span style="color:#9FB0CC"># gradient</span><br>self.optimizer.step()           <span style="color:#9FB0CC"># AdamW adımı</span></p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 24px">
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Training ve inference ayrımı</p>
+<p style="font-size:24px;line-height:1.4">Training bilgisayarda, floating point ile yapılır. Bir FPGA’de yalnızca eğitilmiş modeli çalıştırırız: buna inference denir.</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">5 · minGPT ve FPGA</p>
+<aside>Bir modelin iyi olup olmadığını nasıl ölçeriz? Her pozisyonda modelin doğru token’a verdiği olasılığa bakarız. Model doğru cevaba yüksek olasılık veriyorsa iyidir. Bu olasılığın eksi doğal logaritmasını alıp bütün pozisyonlarda ortalarız; buna cross-entropy loss denir. Logaritma doğal olduğu için birimi nat/token. Tablodaki satırlar sezgi veriyor. Hiçbir şey bilmeyen bir model 27 harfe eşit olasılık verir; doğru harfe 1/27 düşer, loss ln 27, yani 3,30 olur. Model iki aday arasında kararsızsa, yani doğruya 0,5 veriyorsa, loss 0,69. Doğruya 0,9 veriyorsa 0,11. Mükemmel bir model sıfır loss alır. Logaritma küçük olasılıkları çok sert cezalandırır: model emin olup yanılırsa loss çok büyür. Training de bu sayıyı küçültmek demek. Sağdaki dört satır minGPT’nin training döngüsünün kalbi. Birinci satırda model tahminini yapar ve loss’u hesaplar. İkinci satırda eski gradient’ler sıfırlanır. Üçüncü satırda backward çağrısıyla PyTorch, loss’un her weight’e göre türevini, yani gradient’ini otomatik hesaplar. Dördüncü satırda optimizer, burada AdamW, her weight’i loss’u azaltacak yönde küçük bir adım kaydırır. Bu döngü binlerce kez tekrarlanır. Bir ayrımı baştan netleştirmek istiyorum: training tamamen bilgisayarda, floating point sayılarla yapılıyor. FPGA tarafında hiçbir zaman training yapmıyoruz; yalnızca eğitilmiş modeli çalıştırıyoruz. Buna inference denir. Bu ayrım önemli, çünkü inference’ın hesabı training’inkinden çok daha basit: ne gradient ne optimizer var, sadece ileri yönde hesap.</aside>
+</section>

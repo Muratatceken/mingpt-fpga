@@ -1,0 +1,43 @@
+<section id="cokbas" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:30px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · minGPT adım adım</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Adım 5 · Multi-head attention: 48 boyut üç head’e bölünür ve her head kendi ilişkisini arar</h2>
+</div>
+<div style="display:flex;gap:20px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:8px">
+<p style="font-size:24px;color:#5A6474"><i>q</i>, <i>k</i>, <i>v</i>: 48 boyut</p>
+<div style="display:flex;width:300px;height:56px;border-radius:8px;overflow:hidden">
+<div style="flex:1;background:#B4460F"></div><div style="flex:1;background:#2A5C9A"></div><div style="flex:1;background:#14213D"></div>
+</div>
+</div>
+<x-shape kind="arrow-right" style="width:48px;height:24px;background:#5A6474"></x-shape>
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;padding:8px 20px;background:#F6E3D7;color:#14213D;border-left:6px solid #B4460F">head 1 · 16 boyut · kendi attention’ı</p>
+<p style="font-size:24px;padding:8px 20px;background:#DCE5F1;color:#14213D;border-left:6px solid #2A5C9A">head 2 · 16 boyut · kendi attention’ı</p>
+<p style="font-size:24px;padding:8px 20px;background:#E3E5EA;color:#14213D;border-left:6px solid #14213D">head 3 · 16 boyut · kendi attention’ı</p>
+</div>
+<x-shape kind="arrow-right" style="width:48px;height:24px;background:#5A6474"></x-shape>
+<div style="display:flex;flex-direction:column;gap:8px">
+<p style="font-size:24px;color:#5A6474">yan yana birleştir: 48</p>
+<div style="display:flex;width:250px;height:56px;border-radius:8px;overflow:hidden">
+<div style="flex:1;background:#B4460F"></div><div style="flex:1;background:#2A5C9A"></div><div style="flex:1;background:#14213D"></div>
+</div>
+</div>
+<x-shape kind="arrow-right" style="width:48px;height:24px;background:#5A6474"></x-shape>
+<div style="display:flex;flex-direction:column;gap:4px;padding:14px 22px;background:#14213D;border-radius:8px"><p style="font-size:24px;font-weight:600;color:#F2A65A">c_proj</p><p style="font-size:24px;color:#FBFBF8">Linear 48 → 48</p></div>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> q, k ve v’nin her biri 16’şar boyutluk üç parçaya bölünür. Her head kendi score’larını ve weight’lerini bağımsız hesaplar; çıktılar yan yana konup c_proj adlı bir Linear ile karıştırılır.</p>
+<div style="display:flex;gap:44px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D"><i>y</i> = <i>W</i>proj · [ head₁ ; head₂ ; head₃ ] + <i>b</i></p>
+<p style="font-size:24px;line-height:1.4"><b>Neden birden çok head?</b> Tek bir head, her pozisyonda yalnızca tek bir ağırlıklı ortalama alabilir. Birden çok head aynı anda farklı ilişkilere bakabilir: biri girdideki küçük rakamlara, bir diğeri bir önceki token’a.</p>
+<p style="font-size:24px;line-height:1.4"><b>Maliyet:</b> toplam MAC sayısı tek head’li attention ile aynı; vektör yalnızca parçalara bölünür.</p>
+</div>
+<div style="width:820px;display:flex;flex-direction:column;gap:10px;background:#14213D;border-radius:12px;padding:24px 32px">
+<p style="font-size:24px;color:#9FB0CC">minGPT · CausalSelfAttention.forward</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">k = k.view(B, T, nh, C // nh).transpose(1, 2)<br><span style="color:#9FB0CC"># → (B, nh, T, hs): head’ler batch gibi</span><br>y = y.transpose(1, 2).contiguous().view(B, T, C)<br>y = self.resid_dropout(self.c_proj(y))</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">19 · minGPT ve FPGA</p>
+<aside>Beşinci adım: multi-head attention. Tek bir attention, her pozisyonda tek bir ağırlıklı ortalama alabiliyor. Ama bir token’ın aynı anda birden çok şeye bakması gerekebilir. Örneğin sıralamada hem girdideki rakamları saymak hem de şimdiye kadar kaç rakam yazıldığını bilmek gerekiyor. Çözüm, attention’ı birkaç kez paralel çalıştırmak. minGPT bunu şöyle yapıyor: 48 boyutlu q, k ve v vektörlerini 16’şar boyutluk üç parçaya bölüyor. Her parça bir head. Her head, kendi 16 boyutlu q, k ve v’siyle kendi score’larını, kendi softmax weight’lerini ve kendi ağırlıklı toplamını bağımsız olarak hesaplıyor. Az önce gösterdiğim, girdideki rakamlara bakan head bunlardan biriydi. Sonra üç head’in 16 boyutlu çıktıları yan yana konuyor, yine 48 boyut oluyor ve c_proj adlı bir Linear katman bunları karıştırıyor. Böylece her head’in bulduğu bilgi tek bir vektörde birleşiyor. Maliyet açısından önemli bir nokta var: multi-head, hesabı artırmıyor. Toplam çarpma sayısı tek head’li, 48 boyutlu bir attention ile aynı; çünkü vektör yalnızca parçalara bölünüyor. Kodda bu, view ve transpose ile yapılan bir yeniden şekillendirme. view, 48 boyutu 3 çarpı 16 olarak yeniden yorumluyor; transpose da head boyutunu öne alıyor. Böylece PyTorch, head’leri sanki ayrı örneklermiş gibi tek bir matris çarpımında işliyor. İşlem bitince ters yönde birleştirip c_proj’dan geçiriyor. minGPT kodunda nh yerine self.n_head yazıyor; okunabilirlik için kısalttım.</aside>
+</section>

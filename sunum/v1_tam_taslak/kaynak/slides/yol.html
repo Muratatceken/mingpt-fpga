@@ -1,0 +1,42 @@
+<section id="yol" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">Giriş</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Yol haritası</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 32px">
+<div style="display:flex;gap:24px;align-items:start;border-top:1px solid #D9D5CA;padding:20px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;line-height:1.1;color:#B4460F;width:56px">1</p>
+<div style="display:flex;flex-direction:column;gap:4px"><p style="font-size:30px;font-weight:600;color:#14213D">Teorik zemin</p><p style="font-size:24px">Dil modeli nedir, nasıl ölçülür, nasıl eğitilir</p></div>
+</div>
+<div style="display:flex;gap:24px;align-items:start;border-top:1px solid #D9D5CA;padding:20px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;line-height:1.1;color:#B4460F;width:56px">5</p>
+<div style="display:flex;flex-direction:column;gap:4px"><p style="font-size:30px;font-weight:600;color:#14213D">Model ailesi ve motor</p><p style="font-size:24px">Dokuz mimari, tek mikrokodlu motor</p></div>
+</div>
+<div style="display:flex;gap:24px;align-items:start;border-top:1px solid #D9D5CA;padding:20px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;line-height:1.1;color:#B4460F;width:56px">2</p>
+<div style="display:flex;flex-direction:column;gap:4px"><p style="font-size:30px;font-weight:600;color:#14213D">minGPT adım adım</p><p style="font-size:24px">Her adım: formül, sezgi ve onu yapan kod</p></div>
+</div>
+<div style="display:flex;gap:24px;align-items:start;border-top:1px solid #D9D5CA;padding:20px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;line-height:1.1;color:#B4460F;width:56px">6</p>
+<div style="display:flex;flex-direction:column;gap:4px"><p style="font-size:30px;font-weight:600;color:#14213D">Doğrulama ve sonuçlar</p><p style="font-size:24px">Bit-exact zincir, çevrim modeli, ölçümler</p></div>
+</div>
+<div style="display:flex;gap:24px;align-items:start;border-top:1px solid #D9D5CA;padding:20px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;line-height:1.1;color:#B4460F;width:56px">3</p>
+<div style="display:flex;flex-direction:column;gap:4px"><p style="font-size:30px;font-weight:600;color:#14213D">Tamsayı aritmetiği</p><p style="font-size:24px">Nicemleme, tamsayı LayerNorm ve softmax</p></div>
+</div>
+<div style="display:flex;gap:24px;align-items:start;border-top:1px solid #D9D5CA;padding:20px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;line-height:1.1;color:#B4460F;width:56px">7</p>
+<div style="display:flex;flex-direction:column;gap:4px"><p style="font-size:30px;font-weight:600;color:#14213D">Gerçekten anladık mı?</p><p style="font-size:24px">Beş temel soru, beş gerekçeli cevap</p></div>
+</div>
+<div style="display:flex;gap:24px;align-items:start;border-top:1px solid #D9D5CA;padding:20px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;line-height:1.1;color:#B4460F;width:56px">4</p>
+<div style="display:flex;flex-direction:column;gap:4px"><p style="font-size:30px;font-weight:600;color:#14213D">İlk donanım</p><p style="font-size:24px">gpt_top: minGPT’ye özel hızlandırıcı</p></div>
+</div>
+<div style="display:flex;gap:24px;align-items:start;border-top:1px solid #D9D5CA;padding:20px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;line-height:1.1;color:#B4460F;width:56px">8</p>
+<div style="display:flex;flex-direction:column;gap:4px"><p style="font-size:30px;font-weight:600;color:#14213D">Neredeyiz</p><p style="font-size:24px">Kalan işler, sınırlar, kart ve makale</p></div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">3 · minGPT’den FPGA’ye</p>
+<aside>Sunumun akışı. İlk üç bölüm teorik: önce dil modeli kavramını, sonra minGPT’nin bir tokenı nasıl işlediğini formül formül ve kod satırı satırı anlatacağım. Ardından kayan nokta yerine tamsayıyla nasıl hesap yaptığımızı göstereceğim. Dördüncü ve beşinci bölüm donanım: önce yalnızca minGPT için yaptığımız ilk hızlandırıcı, sonra dokuz farklı mimariyi çalıştıran ortak, mikrokodlu motor. Altıncı bölümde doğrulamayı ve sonuçları göstereceğim. Yedinci bölümde kendimize beş zor soru soracağım; anlamadan ezberlenmiş bir şey olmadığını göstermek için.</aside>
+</section>

@@ -1,0 +1,23 @@
+<section id="s4" style="background:#F2EFE7;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">7 · Gerçekten anladık mı? · Soru 4 / 5</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">“Bit-exact” ne demek; “yeterince yakın” neden yetmez?</h2>
+</div>
+<div style="display:flex;gap:56px;align-items:start">
+<div style="width:620px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Kısa cevap</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D">Donanımın her logiti, spesifikasyonun tamsayısıyla birebir aynı. Tek bir farklı bit bir hatadır.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FBFBF8;border-radius:12px;padding:32px 40px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Üç neden</p>
+<div style="display:flex;gap:20px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;font-weight:600;color:#B4460F;width:32px">1</p><p style="font-size:24px;line-height:1.4">Spesifikasyon deterministik tamsayı aritmetiği: tek bir doğru cevap var. Bir tolerans için gerekçe yok.</p></div>
+<div style="display:flex;gap:20px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;font-weight:600;color:#B4460F;width:32px">2</p><p style="font-size:24px;line-height:1.4">Tolerans sistematik hataları gizler: “yarıya yuvarla” yerine “aşağı yuvarla” ±1 LSB fark üretir, testi geçer, ama katmanlar ve adımlar boyunca birikir.</p></div>
+<div style="display:flex;gap:20px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;font-weight:600;color:#B4460F;width:32px">3</p><p style="font-size:24px;line-height:1.4">Hata yerini gösterir: her alt katmandan sonraki artık akış izlenir; ilk farklı değer, hatalı birimi işaret eder.</p></div>
+</div>
+</div>
+<div style="display:flex;gap:16px;align-items:center;border-left:6px solid #B4460F;padding:8px 0px 8px 24px">
+<p style="font-size:24px;line-height:1.4"><b>Bizden bir örnek:</b> AXI tezgâhı yükselen kenarda örnekleyince sonuç simülatörün olay sırasına bağlıydı. Düşen kenarda örnekleyen yarışsız bir modelle bu belirsizlik kalktı.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">43 · minGPT’den FPGA’ye</p>
+<aside>Dördüncü soru sunum boyunca çok kullandığım bir kelime: bit-exact. Anlamı şu: donanımın ürettiği her logit, yazılımdaki tamsayı spesifikasyonun ürettiği tamsayıyla aynı. Yakın değil, aynı. Neden bu kadar katı davranıyoruz? Birincisi: spesifikasyon deterministik tamsayı aritmetiği. Her girdi için tek bir doğru cevap var; kayan noktadaki gibi “işlem sırasına göre biraz farklı” bir durum yok. Dolayısıyla bir toleransın gerekçesi de yok. İkincisi: tolerans sistematik hataları gizler. Örneğin donanımda yuvarlamayı yarıya yuvarlamak yerine aşağı yuvarlayan bir hata yalnızca bir LSB’lik farklar üretir; toleranslı bir test bunu kaçırır. Ama bu hata her katmanda ve her adımda birikir. Üçüncüsü: tam eşitlik hatanın yerini bulmayı kolaylaştırır. Her alt katmandan sonraki artık akışı karşılaştırıyoruz; ilk farklı değer, hatalı birimi gösteriyor. Projeden gerçek bir örnek: AXI test tezgâhımız sinyalleri saatin yükselen kenarında örneklediğinde sonuç simülatörün olayları hangi sırayla işlediğine bağlı hâle geliyordu. Örneklemeyi düşen kenara alarak yarışı ortadan kaldırdık. Bit-exact ölçütü olmasaydı bu tür bir belirsizliği fark etmemiz çok daha zor olurdu.</aside>
+</section>

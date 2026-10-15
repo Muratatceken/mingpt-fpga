@@ -1,0 +1,47 @@
+<section id="hikaye" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Doğrulama ve sonuçlar</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Gerçek bir model: stories260K, 512 tokenlık bağlam</h2>
+</div>
+<div style="display:flex;gap:56px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Çevrimin dağılımı: kısa bağlam ve uzun bağlam</p>
+<div style="display:flex;flex-direction:column;gap:8px">
+<p style="font-size:24px;color:#14213D">GPT-2, isimler (<i>T</i> ≤ 16) · 8 620 çevrim</p>
+<div style="display:flex;height:48px;border-radius:6px;overflow:hidden">
+<div style="width:833px;background:#2A5C9A;display:flex;align-items:center;padding:0px 16px"><p style="font-size:24px;color:#FBFBF8">GEMV %77</p></div>
+<div style="width:156px;background:#14213D;display:flex;align-items:center;padding:0px 12px"><p style="font-size:24px;color:#FBFBF8">%14</p></div>
+<div style="width:77px;background:#B4460F"></div>
+<div style="width:22px;background:#9AA3B2"></div>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<p style="font-size:24px;color:#14213D">stories260K (<i>T</i> = 512) · ortalama 59 092 çevrim</p>
+<div style="display:flex;height:48px;border-radius:6px;overflow:hidden">
+<div style="width:611px;background:#2A5C9A;display:flex;align-items:center;padding:0px 16px"><p style="font-size:24px;color:#FBFBF8">GEMV %56</p></div>
+<div style="width:400px;background:#B4460F;display:flex;align-items:center;padding:0px 16px"><p style="font-size:24px;color:#FBFBF8">ATTN %37</p></div>
+<div style="width:40px;background:#14213D"></div>
+<div style="width:36px;background:#9AA3B2"></div>
+</div>
+</div>
+<p style="font-size:24px;line-height:1.4"><span style="color:#2A5C9A"><b>mavi GEMV</b></span> · <span style="color:#B4460F"><b>turuncu dikkat</b></span> · <b>lacivert NORM</b> · gri diğer</p>
+<p style="font-size:30px;line-height:1.4;color:#14213D">Dikkatin payı %7’den %37’ye çıkıyor: çevrim, konumla doğrusal artıyor (38 652 → 79 532).</p>
+</div>
+<div style="width:520px;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #D9D5CA;padding:16px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#B4460F">1,400 → 1,422</p>
+<p style="font-size:24px;line-height:1.4">float → INT8 test kaybı (Δ +0,022), argmax uyumu %92</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #D9D5CA;padding:16px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">200 / 200</p>
+<p style="font-size:24px;line-height:1.4">RTL’nin ürettiği hikâyenin tokenları referansla aynı</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #D9D5CA;padding:16px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">0,052 → 0,022</p>
+<p style="font-size:24px;line-height:1.4">kalibrasyon iyileştirmesiyle Δ; hata aktivasyonlardan (yalnız ağırlık: +0,001)</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">38 · minGPT’den FPGA’ye</p>
+<aside>İsim modelleri küçük ve kısa bağlamlı. Motorun gerçek bir modeli de çalıştırabildiğini göstermek için Karpathy’nin llama2.c deposundaki hazır eğitilmiş stories260K modelini aldık: 260 bin parametre, 512 tokenlık sözlük, 5 katman, 512 tokenlık bağlam (bu modele özel motorda; evrensel motor 256 tokenla sınırlı). Sonuçlar: kayan noktada 1,400 olan test kaybı INT8’de 1,422’ye çıkıyor (20 test hikâyesi); en olası token yüzde 92 oranında aynı. RTL simülasyonunda ürettirdiğimiz 200 tokenlık hikâye, yazılımdaki tamsayı referansla token token aynı. Nicemleme hatasını da inceledik. Başta Δ 0,052’ydi. Kalibrasyonu yüzde 99,99’luk dilimle yapıp normalizasyon ölçeğini kalibre edince 0,022’ye indi. Yalnızca ağırlıkları nicemleyince kayıp sadece 0,001 artıyor; yani hatanın kaynağı aktivasyonlar. Bu, literatürde 8 bit transformerler için bilinen bir bulgu; biz onu çok küçük ölçekte doğruluyoruz. Soldaki çubuklar önemli bir şey gösteriyor: kısa bağlamda dikkat çevrimin yalnızca yüzde 7’si, 512 tokenlık bağlamda ise ortalama yüzde 37’si. Dikkatin maliyeti konumla doğrusal artıyor: ilk tokenda 38 652, son tokenda 79 532 çevrim. 100 MHz’de ortalama yaklaşık 0,6 milisaniye, yani saniyede yaklaşık 1 700 token.</aside>
+</section>

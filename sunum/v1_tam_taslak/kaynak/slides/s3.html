@@ -1,0 +1,22 @@
+<section id="s3" style="background:#F2EFE7;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">7 · Gerçekten anladık mı? · Soru 3 / 5</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Softmax’ta max’ı çıkarmak neden serbest, tek bölme neden yeter?</h2>
+</div>
+<div style="display:flex;gap:56px;align-items:start">
+<div style="width:620px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Kısa cevap</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D">Pay ve payda aynı çarpanı taşır, sadeleşir. Bölme doğrusal olduğu için toplamın dışına çıkar.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FBFBF8;border-radius:12px;padding:32px 40px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Gerekçe</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><i>e</i>^(<i>s</i>ⱼ−<i>m</i>) / Σᵢ <i>e</i>^(<i>s</i>ᵢ−<i>m</i>) = <i>e</i>⁻ᵐ <i>e</i>^<i>s</i>ⱼ / (<i>e</i>⁻ᵐ Σᵢ <i>e</i>^<i>s</i>ᵢ) = softmax(<i>s</i>)ⱼ<br><i>y</i> = Σⱼ (<i>e</i>ⱼ / <i>E</i>) <i>v</i>ⱼ = (1/<i>E</i>) · Σⱼ <i>e</i>ⱼ <i>v</i>ⱼ ,   <i>E</i> = Σⱼ <i>e</i>ⱼ<br><i>p</i>ⱼ ≥ 0, Σ <i>p</i>ⱼ = 1  ⇒  minⱼ <i>v</i>ⱼ ≤ <i>y</i> ≤ maxⱼ <i>v</i>ⱼ</p>
+<p style="font-size:24px;line-height:1.4">Son satır: çıktı değerlerin dışbükey birleşimi, aralığı aşamaz. En büyük terim <i>e</i> = 1 olduğundan <i>E</i> ≥ 2¹⁵: sıfıra bölme de yok.</p>
+</div>
+</div>
+<div style="display:flex;gap:16px;align-items:center;border-left:6px solid #B4460F;padding:8px 0px 8px 24px">
+<p style="font-size:24px;line-height:1.4"><b>Bizim tasarımda:</b> baş başına bir kez <i>R</i> = ⌊2³²/<i>E</i>⌋, sonra her boyut için <i>y</i> = (<i>A</i>·<i>R</i> + 2³¹) ≫ 32; çıkış ölçeği değerlerin ölçeğiyle aynı.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">42 · minGPT’den FPGA’ye</p>
+<aside>Üçüncü soru tamsayı softmax’ın iki hilesinin neden doğru olduğu. Birincisi: bütün skorlardan en büyüğünü çıkarmak. Pay da payda da aynı e üzeri −m çarpanını taşıdığı için bu çarpan sadeleşir; sonuç birebir aynıdır. Kazancımız, bütün üslerin sıfır ya da negatif olması; böylece her terim 0 ile 1 arasında kalır ve taşma imkânsızlaşır. İkincisi: bölmeyi ertelemek. Ağırlıklı toplamda her terim aynı E sayısına bölündüğü için 1/E toplamın dışına çıkar. Önce payları toplar, en sonda bir kez böleriz. t+1 bölme yerine tek bölme yapılır. Üçüncü satır neden doyma olmadığını söylüyor: ağırlıklar negatif değil ve toplamları bir; böyle bir ağırlıklı ortalama, ortalaması alınan değerlerin en küçüğü ile en büyüğü arasında kalmak zorunda. Bu yüzden dikkat çıkışı için değer vektörlerinin ölçeğini kullanabiliyoruz. Son bir ayrıntı: en büyük skorun üssü tam olarak 1, yani tamsayıda 2 üzeri 15. Bu nedenle payda en az 2 üzeri 15 ve sıfıra bölme olamaz.</aside>
+</section>

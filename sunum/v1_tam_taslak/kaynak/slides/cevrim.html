@@ -1,0 +1,29 @@
+<section id="cevrim" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:44px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Doğrulama ve sonuçlar</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Kapalı biçimli çevrim modeli: simülasyonsuz maliyet</h2>
+</div>
+<div style="background:#F2EFE7;border-radius:12px;padding:28px 40px;display:flex;flex-direction:column;gap:8px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><i>C</i>(<i>t</i>) = 3 + 2<i>N</i><span style="color:#14213D">ₖₒₘᵤₜ</span> + Σ<span style="color:#14213D">ₙₒᵣₘ</span> <i>S</i>(2<i>n</i> + 73) + Σ<span style="color:#14213D">GEMV</span> [ <i>n</i>ᵢₙ + (<i>B</i>−1)·max(<i>n</i>ᵢₙ, <i>P</i>+2) + <i>P</i> + 5 ]<br>          + Σ<span style="color:#14213D">ATTN</span> <i>H</i>(2(<i>t</i>+1) + 30) + <i>C</i><span style="color:#14213D">_diğer</span></p>
+</div>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:24px 28px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">NORM</h3>
+<p style="font-size:24px;line-height:1.4"><i>n</i> toplama, 2 hazırlık, 29 karekök, 42 bölme, <i>n</i> çıkış</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:24px 28px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">GEMV</h3>
+<p style="font-size:24px;line-height:1.4">blok başına max(birikim <i>n</i>ᵢₙ, seri requant <i>P</i>+2); <i>B</i> = ⌈<i>n</i>ₒᵤₜ/<i>P</i>⌉</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #14213D;border-radius:12px;padding:24px 28px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">ATTN</h3>
+<p style="font-size:24px;line-height:1.4">baş başına <i>t</i>+1 skor, <i>t</i>+1 üs, 19 karşılık, 8 çıkış, 3 geçiş</p>
+</div>
+</div>
+<div style="display:flex;gap:32px;align-items:center;background:#14213D;border-radius:12px;padding:28px 40px">
+<x-icon name="CheckCircle" style="width:48px;height:48px;color:#F2A65A"></x-icon>
+<p style="font-size:30px;line-height:1.4;color:#FBFBF8">Bütün modellerde ve bütün konumlarda simülasyonla <b>çevrimi çevrimine aynı</b>. Bir mimarinin maliyeti, program derlenir derlenmez okunur.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">36 · minGPT’den FPGA’ye</p>
+<aside>Motorun her birimi sabit bir durum makinesi; verinin değerine göre süresi değişmiyor. Bu yüzden bir tokenın kaç çevrim süreceğini simülasyon yapmadan, doğrudan programdan hesaplayabiliyoruz. Formülde her terim RTL’den geliyor. Normalizasyon: n çevrim toplama, iki çevrim hazırlık, 29 çevrim karekök, 42 çevrim bölme ve n çevrim çıkış; yani 2n artı 73. GEMV: her blokta ya birikim süresi n_in ya da P çıkışın seri yeniden nicemlenmesi (P+2), hangisi uzunsa. Dikkat: her baş için t+1 çevrim skor, t+1 çevrim üs ve birikim, artı sabit 30 çevrim. Diğer işlemler (gömme, RoPE, eleman bazlı) küçük doğrusal terimler. Bu formül, bütün modellerde ve bütün konumlarda simülasyonla çevrimi çevrimine aynı sonucu veriyor; en büyük sapma sıfır. Pratik anlamı şu: yeni bir mimarinin bu motordaki maliyetini sentez ya da simülasyon yapmadan, program derlendiği anda biliyoruz. Formülde dikkat terimi t ile doğrusal büyüyor ama P’ye bağlı değil; bunun sonucunu tasarım uzayı slaytında göreceğiz.</aside>
+</section>

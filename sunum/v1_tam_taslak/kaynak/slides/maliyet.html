@@ -1,0 +1,36 @@
+<section id="maliyet" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Doğrulama ve sonuçlar</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Eşit bütçe, eşit GEMV: fark normalizasyon ve dikkatte</h2>
+</div>
+<div style="display:flex;gap:56px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:150px;color:#14213D">Bigram</p><div style="width:4px;height:28px;background:#2A5C9A"></div><p style="font-size:24px;font-weight:600;color:#14213D">36</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:150px;color:#14213D">BoW</p><div style="width:481px;height:28px;background:#2A5C9A;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600;color:#14213D">6 277</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:150px;color:#14213D">RNN</p><div style="width:488px;height:28px;background:#2A5C9A;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600;color:#14213D">6 374</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:150px;color:#14213D">GRU</p><div style="width:499px;height:28px;background:#2A5C9A;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600;color:#14213D">6 515</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:150px;color:#14213D">MLP</p><div style="width:508px;height:28px;background:#2A5C9A;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600;color:#14213D">6 632</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:150px;color:#14213D">GPT-2</p><div style="width:660px;height:28px;background:#B4460F;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600;color:#14213D">8 620</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:150px;color:#14213D">microgpt</p><div style="width:663px;height:28px;background:#B4460F;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600;color:#14213D">8 657</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:150px;color:#14213D">Llama 2</p><div style="width:719px;height:28px;background:#B4460F;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600;color:#14213D">9 396</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:150px;color:#14213D">nanochat</p><div style="width:820px;height:28px;background:#B4460F;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600;color:#14213D">10 711</p></div>
+<p style="font-size:24px;color:#5A6474">Çevrim/token, isimler, 50k · <span style="color:#2A5C9A"><b>mavi: tekrarlayan, MLP, BoW</b></span> · <span style="color:#B4460F"><b>turuncu: transformer</b></span></p>
+</div>
+<div style="width:500px;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #D9D5CA;padding:16px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">5 900–6 700</p>
+<p style="font-size:24px;line-height:1.4">GEMV çevrimi, her modelde. Eşit parametre ≈ eşit çarpma.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #D9D5CA;padding:16px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#B4460F">+1 233 … +3 506</p>
+<p style="font-size:24px;line-height:1.4">NORM çevrimi, transformerlarda (nanochat’te QK-norm ve ek normlar)</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #D9D5CA;padding:16px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#B4460F">+613</p>
+<p style="font-size:24px;line-height:1.4">ATTN, ortalama; Llama’da RoPE +336, SwiGLU çarpımı +396</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">37 · minGPT’den FPGA’ye</p>
+<aside>Ailenin maliyeti, aynı motorda token başına çevrim olarak. Mavi çubuklar tekrarlayan modeller, MLP ve BoW; turuncular transformerlar. Transformerlar yaklaşık 8,6 ile 10,7 bin çevrim harcarken diğerleri 6,3 ile 6,6 bin arasında. Bunun nedeni ilginç ve öğretici. Bütçe eşit olduğu için bütün modellerde ağırlık sayısı, dolayısıyla çarpma-toplama sayısı yaklaşık aynı; GEMV çevrimi her modelde 5 900 ile 6 700 arasında. Fark, ağırlık taşımayan işlemlerden geliyor. Normalizasyonlar transformerlarda 1 233 çevrim ekliyor; nanochat’te QK-norm ve gömmeden sonraki ek normlar nedeniyle bu 3 506’ya çıkıyor. Dikkat ortalama 613 çevrim ekliyor. Llama’da buna RoPE (336) ve SwiGLU’nun eleman bazlı çarpımı (396) da ekleniyor. Yani parametre sayısı bir modelin donanım maliyetini tek başına belirlemiyor; parametresiz işlemler bu ölçekte toplamın yüzde 23 (GPT-2) ile yüzde 43’ü (nanochat) arasında. Bigram bir tablo okuması olduğu için 36 çevrimle ayrı bir uç noktada.</aside>
+</section>

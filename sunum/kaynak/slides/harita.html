@@ -1,0 +1,42 @@
+<section id="harita" data-transition="fade" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">2 · minGPT nedir?</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">minGPT’nin tamamı üç parça: embedding, L tane aynı block ve bir output katmanı</h2>
+</div>
+<div style="display:flex;gap:14px;align-items:center">
+<div style="width:240px;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:18px 22px">
+<p style="font-size:24px;font-weight:600;color:#14213D">Embedding</p>
+<p style="font-size:24px">token + position</p>
+</div>
+<x-shape kind="arrow-right" style="width:44px;height:22px;background:#5A6474"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#F2EFE7;border:2px solid #2A5C9A;border-radius:12px;padding:18px 22px">
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Block × L (aynı yapı, farklı weight’ler)</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#14213D">x ← x + Attention(LN₁(x))</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#14213D">x ← x + MLP(LN₂(x))</p>
+</div>
+<x-shape kind="arrow-right" style="width:44px;height:22px;background:#5A6474"></x-shape>
+<div style="width:190px;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:18px 22px">
+<p style="font-size:24px;font-weight:600;color:#14213D">ln_f</p>
+<p style="font-size:24px">son LayerNorm</p>
+</div>
+<x-shape kind="arrow-right" style="width:44px;height:22px;background:#5A6474"></x-shape>
+<div style="width:230px;display:flex;flex-direction:column;gap:6px;background:#14213D;border-radius:12px;padding:18px 22px">
+<p style="font-size:24px;font-weight:600;color:#F2A65A">lm_head</p>
+<p style="font-size:24px;color:#FBFBF8">V tane logit</p>
+</div>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> bir token’ın yolu soldan sağa. Her block iki alt adım yapar: attention (token’lar arası bilgi alışverişi) ve MLP (her token’ın kendi içinde hesap). İkisinin sonucu da residual connection ile x’e eklenir.</p>
+<div style="display:flex;gap:36px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#14213D;border-radius:12px;padding:24px 32px">
+<p style="font-size:24px;color:#9FB0CC">minGPT · GPT.forward: şemadaki her kutu bir satır</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#E6EAF2;white-space:nowrap">tok_emb = self.transformer.wte(idx)<br>pos_emb = self.transformer.wpe(pos)<br>x = self.transformer.drop(tok_emb + pos_emb)<br><span style="color:#F2A65A">for</span> block <span style="color:#F2A65A">in</span> self.transformer.h:<br>&#160;&#160;&#160;&#160;x = block(x)<br>x = self.transformer.ln_f(x)<br>logits = self.lm_head(x)</p>
+</div>
+<div style="width:540px;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:28px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Bu sunumdaki model: gpt-nano</p>
+<p style="font-size:24px;line-height:1.5;color:#14213D"><i>L</i> = 3 block, <i>H</i> = 3 attention head<br><i>C</i> = 48 (vektör boyutu), <i>d</i>ₕ = 16 (head başına)<br><i>V</i> = 3 token, <i>T</i> = 11 (en uzun context)</p>
+<p style="font-size:24px;line-height:1.4">Toplam ≈ 85,7 bin parametre.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">6 · minGPT ve FPGA</p>
+<aside>Şimdi minGPT’nin kendisine geçiyorum. Bütün model aslında bu tek satırlık şemadan ibaret. Soldan sağa okuyalım. Önce embedding: token’ın vektörü ile pozisyonunun vektörü toplanır. Sonra L tane block gelir. Bütün block’lar aynı yapıda, sadece weight’leri farklı. Her block iki alt adım yapar. Birincisi attention: her token, kendisinden önceki token’lardan bilgi toplar. Bu modelin token’lar arasında bilgi taşıyan tek yeri. İkincisi MLP: her token kendi vektörünü kendi içinde işler, diğer token’lara bakmaz. İki alt adımın da önünde bir LayerNorm var ve ikisinin de sonucu x’in yerine geçmez, x’in üstüne eklenir; buna residual connection denir. Block’lardan sonra son bir LayerNorm ve lm_head adlı bir katman gelir. lm_head, vocabulary’deki her token için bir skor üretir; bunlara logit diyoruz. Logit’ler softmax’tan geçince bir sonraki token’ın olasılık dağılımı olur. Soldaki kod GPT.forward fonksiyonunun kendisi. Şemadaki her kutunun bir satıra karşılık geldiğini görüyorsunuz: wte token embedding, wpe position embedding, for döngüsü block’lar, ln_f son norm, lm_head çıkış. Bu sunum boyunca kullanacağım model minGPT’nin en küçük hazır yapılandırması olan gpt-nano: 3 block, her block’ta 3 attention head, vektör boyutu 48, head başına 16 boyut. Vocabulary sadece 3 token, çünkü görevimiz 0, 1, 2 rakamlarını sıralamak; context en fazla 11 token. Toplam yaklaşık 85,7 bin parametre. Şimdi bu şemadaki her kutuyu sırayla açacağım; ama önce minGPT’nin ne olduğunu ve neden bu kadar kısa olduğunu konumlandırayım.</aside>
+</section>

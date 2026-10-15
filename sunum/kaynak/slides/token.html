@@ -1,0 +1,42 @@
+<section id="token" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:30px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">1 · Temel kavramlar</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Token bir sembolün sayı kimliğidir; embedding bu kimliği öğrenilmiş bir vektöre çevirir</h2>
+</div>
+<p style="font-size:30px;line-height:1.4">Token id yalnızca bir etikettir: “m = 13” harfi “e = 5”in iki katı değildir. Bu yüzden her token, training sırasında öğrenilen <i>C</i> sayılık bir vektörle temsil edilir.</p>
+<div style="display:flex;gap:24px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:8px;align-items:center;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px 32px">
+<p style="font-size:24px;color:#5A6474">sembol</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:52px;color:#14213D">"e"</p>
+</div>
+<x-shape kind="arrow-right" style="width:56px;height:28px;background:#B4460F"></x-shape>
+<div style="display:flex;flex-direction:column;gap:8px;align-items:center;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px 32px">
+<p style="font-size:24px;color:#5A6474">token id</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:52px;color:#14213D">5</p>
+</div>
+<x-shape kind="arrow-right" style="width:56px;height:28px;background:#B4460F"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px 32px">
+<p style="font-size:24px;color:#5A6474">embedding tablosunun 5. satırı: <i>C</i> sayıdan oluşan bir vektör</p>
+<div style="display:flex;gap:8px">
+<p style="flex:1;font-size:24px;text-align:center;padding:8px 0px;background:#DCE5F1;color:#14213D;border-radius:4px">0,21</p>
+<p style="flex:1;font-size:24px;text-align:center;padding:8px 0px;background:#F6E3D7;color:#14213D;border-radius:4px">−1,3</p>
+<p style="flex:1;font-size:24px;text-align:center;padding:8px 0px;background:#DCE5F1;color:#14213D;border-radius:4px">0,07</p>
+<p style="flex:1;font-size:24px;text-align:center;padding:8px 0px;background:#F6E3D7;color:#14213D;border-radius:4px">0,88</p>
+<p style="flex:1;font-size:24px;text-align:center;padding:8px 0px;background:#E9E6DD;color:#14213D;border-radius:4px">…</p>
+</div>
+</div>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> “e” harfi önce token id 5’e, o da embedding tablosunun 5. satırına dönüşür. Sayılar temsilîdir; gerçek değerler training ile bulunur.</p>
+<div style="display:flex;gap:40px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D"><b>e</b>(τ) = <i>W</i>ₜₑ[τ] = onehot(τ)ᵀ · <i>W</i>ₜₑ ,   <i>W</i>ₜₑ: <i>V</i> satır × <i>C</i> sütun</p>
+<p style="font-size:24px;line-height:1.4">Matematikte bir matris çarpımı, pratikte tek bir satırın okunması. İsim verisinde <i>V</i> = 27: 26 harf ve ismin bittiğini gösteren “.” token’ı.</p>
+</div>
+<div style="width:700px;display:flex;flex-direction:column;gap:10px;background:#14213D;border-radius:12px;padding:24px 32px">
+<p style="font-size:24px;color:#9FB0CC">minGPT · model.py</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">wte = nn.Embedding(vocab_size, n_embd)<br>tok_emb = self.transformer.wte(idx)<br><span style="color:#9FB0CC"># idx: token id’ler → (B, T, C) vektörler</span></p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">4 · minGPT ve FPGA</p>
+<aside>Model metni doğrudan göremez; önce metni token’lara bölmemiz gerekir. Token, bir sembolün sayı kimliğidir. İsim verisinde her harf bir token: nokta 0, a 1, b 2 diye gider, e 5, m 13. Ama bu sayılar yalnızca etiket. m’nin 13 olması, e’nin iki buçuk katı olduğu anlamına gelmez. Bu sayıları doğrudan bir ağa verirsek ağ olmayan bir büyüklük ilişkisi öğrenmeye çalışır. Çözüm embedding: her token için C tane sayıdan oluşan bir vektör tutarız. Bütün bu vektörler V satır, C sütunluk bir tabloda durur. Token id’si tablonun hangi satırını okuyacağımızı söyler. Bu vektörlerin değerleri de diğer weight’ler gibi training sırasında öğrenilir. Benzer bağlamlarda geçen token’ların vektörleri birbirine yaklaşır; örneğin sesli harflerin vektörleri birbirine benzemeye başlayabilir. Yani id’nin taşıyamadığı “benzerlik” bilgisini vektör taşır. Matematiksel olarak embedding, token’ın one-hot vektörüyle tablonun çarpımıdır. One-hot vektörde yalnızca bir tane 1 olduğu için bu çarpım tablonun o satırını seçmekten ibarettir. Bu yüzden pratikte embedding bir hesap değil, bir tablo okuması. minGPT kodunda bunu nn.Embedding yapar: içine token id’leri verirsiniz, her biri için C boyutlu vektörü döner. Bu ayrıntı FPGA açısından önemli; tablo okuması, donanımda bir bellekten tek adres okumak demek. Hiç çarpma gerekmez.</aside>
+</section>

@@ -1,0 +1,35 @@
+<section id="motor" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:44px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">5 · Model ailesi ve motor</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Mikrokodlu motor: her model bir program</h2>
+</div>
+<div style="display:flex;gap:12px;align-items:center">
+<p style="font-size:24px;padding:12px 20px;background:#14213D;color:#FBFBF8;border-radius:8px">PyTorch modeli</p>
+<x-shape kind="arrow-right" style="width:36px;height:18px;background:#5A6474"></x-shape>
+<p style="font-size:24px;padding:12px 20px;background:#DCE5F1;color:#14213D;border-radius:8px">ir.py: derle</p>
+<x-shape kind="arrow-right" style="width:36px;height:18px;background:#5A6474"></x-shape>
+<p style="font-size:24px;padding:12px 20px;background:#DCE5F1;color:#14213D;border-radius:8px">float program = PyTorch</p>
+<x-shape kind="arrow-right" style="width:36px;height:18px;background:#5A6474"></x-shape>
+<p style="font-size:24px;padding:12px 20px;background:#DCE5F1;color:#14213D;border-radius:8px">quant.py: tamsayı program</p>
+<x-shape kind="arrow-right" style="width:36px;height:18px;background:#5A6474"></x-shape>
+<p style="font-size:24px;padding:12px 20px;background:#B4460F;color:#FBFBF8;border-radius:8px">.mem görüntüleri</p>
+</div>
+<div style="display:flex;gap:32px;align-items:stretch">
+<div style="width:360px;display:flex;flex-direction:column;gap:12px;background:#14213D;border-radius:12px;padding:28px">
+<p style="font-size:30px;font-weight:600;color:#F2A65A">Sıralayıcı</p>
+<p style="font-size:24px;line-height:1.4;color:#C9D2E3">256 bitlik komutları sırayla okur, ilgili birimi başlatır, bitmesini bekler.</p>
+<p style="font-size:24px;line-height:1.4;color:#C9D2E3">Bellekler: R (artık, INT16), A…H vektörler, K/V önbelleği, HS (tekrarlayan durum)</p>
+</div>
+<div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:20px 24px"><p style="font-size:24px;font-weight:600;color:#14213D">GEMV · <i>P</i> şerit</p><p style="font-size:24px;line-height:1.4">o8, artığa ekle, tablo aktivasyonu, logit</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:20px 24px"><p style="font-size:24px;font-weight:600;color:#14213D">NORM</p><p style="font-size:24px;line-height:1.4">LayerNorm ve RMSNorm, segment başına</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:20px 24px"><p style="font-size:24px;font-weight:600;color:#14213D">ATTN · 8 şerit</p><p style="font-size:24px;line-height:1.4">tamsayı softmax, GQA, KV önbelleği</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:20px 24px"><p style="font-size:24px;font-weight:600;color:#14213D">ROPE</p><p style="font-size:24px;line-height:1.4">döner konum, iki eşleme stili</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:20px 24px"><p style="font-size:24px;font-weight:600;color:#14213D">EMB</p><p style="font-size:24px;line-height:1.4">token, konum, pencere tabloları</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:20px 24px"><p style="font-size:24px;font-weight:600;color:#14213D">Eleman bazlı</p><p style="font-size:24px;line-height:1.4">MUL, GRU güncelleme, BoW, kopya</p></div>
+</div>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">Derleme parametreleri: SPECIALIZE (yalnızca kullanılan birimler), LOADABLE (bellekler çalışırken yüklenir), PRELOAD.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">32 · minGPT’den FPGA’ye</p>
+<aside>gpt_top’u dokuz kez yeniden tasarlamak yerine mimariyi tersine çevirdik: donanım bir işlemci, her model onun için bir program. Akış şöyle. Derleyicimiz (ir.py) PyTorch modelini küçük bir komut dizisine çeviriyor. Bu programı önce kayan noktada çalıştırıp PyTorch ile aynı sonucu verdiğini doğruluyoruz; böylece derleyicinin kendisi test edilmiş oluyor. Sonra quant.py programı nicemleyip tamsayı tabloları ve sabitleri üretiyor. En sonda bunlar donanımın bellek görüntülerine yazılıyor. Donanım tarafında bir sıralayıcı 256 bitlik komutları sırayla okuyup birimleri çalıştırıyor. Altı birim var: GEMV (P şeritli, dört çıkış modu), NORM (LayerNorm ve RMSNorm), dikkat (sekiz şerit, tamsayı softmax, GQA desteği), RoPE, gömme tabloları ve eleman bazlı işlemler. Derleme parametreleriyle aynı RTL’den ya tek bir modele özel küçük bir motor ya da bütün modelleri çalıştıran evrensel bir motor üretilebiliyor.</aside>
+</section>

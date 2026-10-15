@@ -1,0 +1,21 @@
+<section id="s2" style="background:#F2EFE7;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">7 · Gerçekten anladık mı? · Soru 2 / 5</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">LayerNorm çıkışı neden hiçbir girdide taşmaz?</h2>
+</div>
+<div style="display:flex;gap:56px;align-items:start">
+<div style="width:620px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Kısa cevap</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D">Normalize edilmiş bir eleman √(<i>N</i>−1)’i aşamaz. Bu, veriden bağımsız bir eşitsizlik.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FBFBF8;border-radius:12px;padding:32px 40px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">İspat (Samuelson, 1968)</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D">Σⱼ (<i>x</i>ⱼ − μ) = 0  ⇒  <i>x</i>ᵢ − μ = − Σ<span style="color:#14213D">ⱼ≠ᵢ</span> (<i>x</i>ⱼ − μ)<br>Cauchy–Schwarz: (<i>x</i>ᵢ − μ)² ≤ (<i>N</i>−1) Σ<span style="color:#14213D">ⱼ≠ᵢ</span> (<i>x</i>ⱼ − μ)²<br>                    = (<i>N</i>−1) ( <i>N</i>σ² − (<i>x</i>ᵢ − μ)² )<br>⇒ <i>N</i>(<i>x</i>ᵢ − μ)² ≤ <i>N</i>(<i>N</i>−1)σ²  ⇒  |<i>x</i>ᵢ − μ| / σ ≤ √(<i>N</i>−1)   ∎</p>
+</div>
+</div>
+<div style="display:flex;gap:16px;align-items:center;border-left:6px solid #B4460F;padding:8px 0px 8px 24px">
+<p style="font-size:24px;line-height:1.4"><b>Bizim tasarımda:</b> <i>N</i> = 48 → √47 ≈ 6,86 &lt; 127/16 ≈ 7,94 (INT8 Q3.4’ün en büyüğü). Kalibrasyon gerekmez; ε &gt; 0 sınırı daha da küçültür.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">41 · minGPT’den FPGA’ye</p>
+<aside>İkinci soru: LayerNorm çıkışını 8 bite sığdırıyoruz; taşmayacağından nasıl eminiz? Cevap, istatistikte Samuelson eşitsizliği olarak bilinen bir sonuç. İspatı üç satır. Sapmaların toplamı sıfır olduğu için bir elemanın sapması, diğer bütün sapmaların toplamının eksisine eşit. Bu toplamın karesine Cauchy–Schwarz uygularsak, N−1 terimli bir toplam olduğu için en fazla N−1 çarpı kareler toplamı çıkar. Kareler toplamı da toplam varyansın N katından bu elemanın karesinin çıkarılmasıyla elde edilir. Düzenleyince sapmanın standart sapmaya oranı en fazla √(N−1) olur. Bizim durumumuzda N = 48, sınır √47, yaklaşık 6,86. Q3.4 biçiminde yani 4 kesir bitli 8 bit işaretli sayıyla temsil edebildiğimiz en büyük değer 127/16, yaklaşık 7,94. Dolayısıyla LayerNorm çıkışı hangi girdi gelirse gelsin doymaz. Bu, kalibrasyon verisine dayanan bir tahmin değil, matematiksel bir garanti. Epsilon pozitif olduğu için gerçek sınır biraz daha da küçük.</aside>
+</section>

@@ -1,0 +1,38 @@
+<section id="softmax" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · Tamsayı aritmetiği</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Tamsayı softmax: üç matematiksel hamle</h2>
+</div>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:24px 28px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">1 · Kaydır</h3>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D">softmax(<i>s</i>) = softmax(<i>s</i> − max <i>s</i>)<br>→ üsler ≤ 0, <i>e</i>ⱼ ∈ (0, 1]</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:24px 28px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">2 · 2 tabanı ve tablo</h3>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D"><i>e</i>⁻ˣ = 2⁻ⁿ · 2^(−<i>f</i>/2ᶠ)<br>kaydırma × 256 girişlik tablo</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #14213D;border-radius:12px;padding:24px 28px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">3 · Bölmeyi ertele</h3>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D"><i>y</i> = (Σⱼ <i>e</i>ⱼ <i>v</i>ⱼ) / (Σⱼ <i>e</i>ⱼ)<br>baş başına tek bölme</p>
+</div>
+</div>
+<div style="display:flex;gap:40px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#14213D;border-radius:12px;padding:32px">
+<p style="font-size:24px;color:#9FB0CC">sw/intmodel.py · attention_head (sadeleştirilmiş)</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">u = (m - sj) * ql["CEXP"]          <span style="color:#9FB0CC"># (m − s)·log₂e ≥ 0</span><br>n, k = u &gt;&gt; F, (u &gt;&gt; (F - 8)) &amp; 0xFF<br>e.append(0 <span style="color:#F2A65A">if</span> n &gt; 15 <span style="color:#F2A65A">else</span> EXP_LUT[k] &gt;&gt; n)<br>R = (1 &lt;&lt; rs) // sum(e)            <span style="color:#9FB0CC"># tek bölme</span><br>y.append(sat((A * R + (1 &lt;&lt; (rs - 1))) &gt;&gt; rs, 8))</p>
+</div>
+<div style="width:500px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:8px;border-left:6px solid #B4460F;padding:8px 0px 8px 24px">
+<p style="font-size:24px;font-weight:600;color:#B4460F">Hata sınırı</p>
+<p style="font-size:24px;line-height:1.4">Tablonun 8 bit kesirle adreslenmesi: <i>e</i>ⱼ’de &lt; %0,27 bağıl hata.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;border-left:6px solid #2A5C9A;padding:8px 0px 8px 24px">
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Doyma yok</p>
+<p style="font-size:24px;line-height:1.4">Çıkış, <i>v</i>’lerin dışbükey birleşimi: min <i>v</i> ≤ <i>y</i> ≤ max <i>v</i>.</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">24 · minGPT’den FPGA’ye</p>
+<aside>Softmax’ta üstel fonksiyon ve bölme var. Üç hamleyle ikisinden de kurtuluyoruz. Birincisi: softmax, bütün skorlardan aynı sabit çıkarılınca değişmez. En büyük skoru çıkarırsak bütün üsler sıfır ya da negatif olur, değerler 0 ile 1 arasında kalır; taşma olmaz. İkincisi: e üzeri x’i 2 üzeri (x log₂ e) olarak yazıyoruz. Üssü bir tam kısım n ve bir kesir kısım f olarak ayırıyoruz. 2 üzeri −n basit bir sağa kaydırma; 2 üzeri −f ise kesrin en üst 8 bitiyle adreslenen 256 girişlik bir tablodan okunuyor. Üçüncüsü: her olasılığı ayrı ayrı bölmek yerine önce üslerle ağırlıklı toplamı alıyor, en sonda bir kez bölüyoruz. Böylece her baş için yalnızca bir bölme yapılıyor. Kod altın modelden; okunabilirlik için iki satır birleştirildi. Hata analizi: tablonun 8 bitle adreslenmesi her üste yüzde 0,27’den az bağıl hata katıyor; n 15’i aşınca terim sıfır sayılıyor ve atılan değer en büyük terimin 2 üzeri −16’sından küçük kalıyor. Ayrıca çıkış, değer vektörlerinin dışbükey bir birleşimi olduğundan asla değerlerin aralığı dışına çıkamaz; dolayısıyla çıkış ölçeği değerlerin ölçeğiyle aynı seçilebilir ve doyma olmaz.</aside>
+</section>

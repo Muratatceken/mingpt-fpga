@@ -1,0 +1,32 @@
+<section id="gelu" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:44px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · Tamsayı aritmetiği</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">GELU tablosu ve argmax: yaklaşıklık gerektirmeyenler</h2>
+</div>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:32px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">GELU: tam tablo</h3>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D">LUT[<i>q</i>] = round( GELU(<i>q S</i>_h) / <i>S</i>_g ) ,  <i>q</i> ∈ [−128, 127]</p>
+<p style="font-size:24px;line-height:1.4">Giriş 8 bit olduğundan yalnızca 256 değer alır: tablo fonksiyonu <b>tam</b> temsil eder. Katman başına 256 bayt.</p>
+<div style="background:#14213D;border-radius:8px;padding:20px 24px">
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">g = [ql["GELU_LUT"][v + 128] <span style="color:#F2A65A">for</span> v <span style="color:#F2A65A">in</span> hq]</p>
+</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:32px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Argmax: softmax’sız</h3>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D">argmax softmax(<i>z</i>) = argmax <i>z</i></p>
+<p style="font-size:24px;line-height:1.4">Logitler ortak bir ölçekte INT16: tamsayı karşılaştırma yeterli. Eşitlikte en küçük indeks; yazılım da aynı kuralı uygular.</p>
+<div style="background:#14213D;border-radius:8px;padding:20px 24px">
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">max(range(V), key=<span style="color:#F2A65A">lambda</span> i: (logits[i], -i))</p>
+</div>
+</div>
+</div>
+<div style="display:flex;gap:48px;align-items:center;background:#14213D;border-radius:12px;padding:28px 40px">
+<p style="font-size:24px;font-weight:600;color:#F2A65A;width:300px">Tamsayı model, gpt-nano</p>
+<p style="font-size:30px;color:#FBFBF8"><b>729/729</b> doğru</p>
+<p style="font-size:30px;color:#FBFBF8">float ile token uyumu <b>%100</b></p>
+<p style="font-size:30px;color:#FBFBF8">logit SQNR <b>41,5 dB</b></p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">25 · minGPT’den FPGA’ye</p>
+<aside>İki işlem için hiç yaklaşıklık gerekmiyor. GELU: önceki Linear’ın çıkışı 8 bite nicemlendiği için GELU’nun girişi yalnızca 256 farklı değer alabilir. Bu 256 değerin her biri için doğru sonucu önceden hesaplayıp tabloya yazıyoruz. Bu bir yaklaşım değil; fonksiyonun bu girdilerdeki tam karşılığı. Hata yalnızca giriş ve çıkışın nicemlemesinden geliyor. Argmax: softmax monoton olduğu için en büyük olasılığı bulmak için en büyük logiti bulmak yeterli. Logitler ortak bir ölçekte 16 bit tamsayı olarak tutulduğu için tamsayı karşılaştırması doğru sonuç verir. Eşitlik durumunda en küçük indeksi seçiyoruz; yazılımdaki referans da aynı kuralı uyguluyor, yoksa bit-exact karşılaştırma eşitliklerde bozulurdu. Bu bölümün sonucu: tamsayı model 729 dizinin hepsini doğru çözüyor, float modelle her tokenda aynı kararı veriyor ve logitlerdeki sinyal/gürültü oranı 41,5 dB. Yani nicemleme bu görevde doğruluğu hiç bozmuyor.</aside>
+</section>

@@ -1,0 +1,22 @@
+<section id="s1" data-transition="fade" style="background:#F2EFE7;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">7 · Gerçekten anladık mı? · Soru 1 / 5</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Dikkatte skorları neden √<i>d</i>ₕ’ye bölüyoruz?</h2>
+</div>
+<div style="display:flex;gap:56px;align-items:start">
+<div style="width:620px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Kısa cevap</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D">Bölmezsek skorların yayılımı <i>d</i>ₕ ile büyür ve softmax tek bir tokena kilitlenir.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FBFBF8;border-radius:12px;padding:32px 40px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Gerekçe</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><i>q</i>ᵢ, <i>k</i>ᵢ bağımsız, ortalama 0, varyans 1 ise<br>Var(<i>q</i> · <i>k</i>) = Σᵢ Var(<i>q</i>ᵢ <i>k</i>ᵢ) = <i>d</i>ₕ  →  std = √<i>d</i>ₕ<br>Var(<i>q</i> · <i>k</i> / √<i>d</i>ₕ) = 1, <i>d</i>ₕ’den bağımsız</p>
+<p style="font-size:24px;line-height:1.4"><b>Sayıyla:</b> <i>d</i>ₕ = 16’da tipik skor farkı 4 kat büyür. 2 birimlik fark e² ≈ 7,4 kat ağırlık oranı verirken 8 birimlik fark e⁸ ≈ 2 981 kat verir: dağılım neredeyse tek noktaya çöker, gradyanlar söner.</p>
+</div>
+</div>
+<div style="display:flex;gap:16px;align-items:center;border-left:6px solid #B4460F;padding:8px 0px 8px 24px">
+<p style="font-size:24px;line-height:1.4"><b>Bizim tasarımda:</b> 1/√16 = 1/4 çarpanı <i>W</i>_q’ya katlanır; donanımda bedavadır.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">40 · minGPT’den FPGA’ye</p>
+<aside>Bu bölümde, ezberlemediğimizi göstermek için kendime beş temel soru soruyorum. Birinci soru: dikkatte neden √dₕ’ye bölüyoruz? Cevap bir varyans hesabı. q ve k’nin bileşenleri bağımsız, ortalaması sıfır ve varyansı bir olsun. İç çarpım dₕ tane bağımsız çarpımın toplamı; her çarpımın varyansı bir olduğu için toplamın varyansı dₕ, standart sapması √dₕ olur. Yani baş boyutu büyüdükçe skorlar büyür. Softmax üstel olduğu için skorlar arasındaki fark büyüdükçe dağılım tek bir tokena kilitlenir. Örneğin 2 birimlik bir fark ağırlıklar arasında yaklaşık 7 katlık oran demekken, 8 birimlik bir fark yaklaşık 3 000 katlık oran demek. Bu durumda softmax’ın türevi neredeyse sıfır olur ve eğitim ilerlemez. √dₕ’ye bölmek, varyansı baş boyutundan bağımsız olarak bire sabitler. Bu Vaswani ve arkadaşlarının 2017 makalesindeki gerekçedir. Bizim tasarımda bu ölçek sorgu ağırlıklarına katlandığı için donanımda hiçbir maliyeti yok.</aside>
+</section>

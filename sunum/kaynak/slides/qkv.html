@@ -1,0 +1,31 @@
+<section id="qkv" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:30px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · minGPT adım adım</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Adım 3 · Query, key ve value aynı vektörden, öğrenilen üç linear projection ile üretilir</h2>
+</div>
+<div style="display:flex;gap:20px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px"><p style="font-size:24px;font-weight:600;color:#14213D">LN₁(<i>x</i>ₜ)</p><p style="font-size:24px">48 sayı</p></div>
+<x-shape kind="arrow-right" style="width:48px;height:24px;background:#5A6474"></x-shape>
+<div style="display:flex;flex-direction:column;gap:6px;background:#14213D;border-radius:12px;padding:20px 24px"><p style="font-size:24px;font-weight:600;color:#F2A65A">c_attn</p><p style="font-size:24px;color:#FBFBF8">Linear: 48 → 144</p></div>
+<x-shape kind="arrow-right" style="width:48px;height:24px;background:#5A6474"></x-shape>
+<div style="flex:1;display:flex;gap:10px">
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#F6E3D7;border-top:6px solid #B4460F;border-radius:10px;padding:16px 20px"><p style="font-size:24px;font-weight:600;color:#14213D"><i>q</i>ₜ · 48</p><p style="font-size:24px">ne arıyorum?</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#DCE5F1;border-top:6px solid #2A5C9A;border-radius:10px;padding:16px 20px"><p style="font-size:24px;font-weight:600;color:#14213D"><i>k</i>ₜ · 48</p><p style="font-size:24px">bende ne var?</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#E3E5EA;border-top:6px solid #14213D;border-radius:10px;padding:16px 20px"><p style="font-size:24px;font-weight:600;color:#14213D"><i>v</i>ₜ · 48</p><p style="font-size:24px">ne aktarırım?</p></div>
+</div>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> normalize edilmiş vektör tek bir Linear katmandan geçer; çıkan 144 sayı üçe bölünür. Her token’ın kendi query, key ve value vektörü olur.</p>
+<div style="display:flex;gap:44px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D">[<i>q</i>ₜ ; <i>k</i>ₜ ; <i>v</i>ₜ] = <i>W</i>attn · LN₁(<i>x</i>ₜ) + <i>b</i> ,   <i>W</i>attn: 144 × 48</p>
+<p style="font-size:24px;line-height:1.4"><b>Linear katman nedir?</b> Bir matris-vektör çarpımı ve bir bias: <i>y</i>ᵢ = Σⱼ <i>W</i>ᵢⱼ <i>x</i>ⱼ + <i>b</i>ᵢ. Her çıkış, girişlerin öğrenilmiş weight’lerle ağırlıklı toplamıdır.</p>
+<p style="font-size:24px;line-height:1.4">Bu tek satır her token için 144 × 48 = <b>6 912 çarpma-toplama (MAC)</b> yapar. Modelin hesabının büyük kısmı bu türden Linear katmanlardır.</p>
+</div>
+<div style="width:800px;display:flex;flex-direction:column;gap:10px;background:#14213D;border-radius:12px;padding:24px 32px">
+<p style="font-size:24px;color:#9FB0CC">minGPT · CausalSelfAttention</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap"><span style="color:#9FB0CC"># __init__: q, k, v için tek Linear</span><br>self.c_attn = nn.Linear(n_embd, 3 * n_embd)<br><span style="color:#9FB0CC"># forward: çıkışı üçe böl</span><br>q, k, v = self.c_attn(x).split(self.n_embd, dim=2)</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">14 · minGPT ve FPGA</p>
+<aside>Üçüncü adım: query, key ve value vektörlerini üretmek. Bunlar dışarıdan gelmiyor; her token kendi vektöründen üretiyor. Normalize edilmiş 48 boyutlu vektör, c_attn adlı bir Linear katmandan geçiyor. Bu katmanın 144 çıkışı var; bunlar 48’erli üç parçaya bölünüyor: birinci parça query, ikinci key, üçüncü value. Yani aslında üç ayrı öğrenilmiş projection var, minGPT verimlilik için bunları tek bir matriste birleştirmiş. Sonuçta her token’ın kendi query’si, key’i ve value’su oluyor. Query, o token’ın geçmişte ne aradığını; key, diğer token’lara kendini nasıl tanıttığını; value ise seçilirse ne aktaracağını temsil ediyor. Bu isimler bir benzetme; matematikte yalnızca üç öğrenilmiş linear projection var ve hangi rolü üstlenecekleri training sırasında ortaya çıkıyor. Burada Linear katmanı da tanımlamak istiyorum, çünkü modelin her yerinde karşımıza çıkacak. Linear katman bir matris-vektör çarpımı artı bir bias. Her çıkış elemanı, girişlerin öğrenilmiş weight’lerle ağırlıklı toplamı. Bu tek satır, her token için 144 çarpı 48, yani 6 912 çarpma-toplama yapıyor. Çarpma-toplamaya kısaca MAC diyoruz: multiply-accumulate. Modelin hesabının büyük çoğunluğu bu tür Linear katmanlar; bunu FPGA bölümünde sayılarla göstereceğim, çünkü bir donanım tasarımının neye odaklanması gerektiğini tam olarak bu belirliyor. Kodda iki satır var: tanımda tek bir Linear, forward’da çıkışın split ile üçe bölünmesi.</aside>
+</section>

@@ -1,0 +1,34 @@
+<section id="dilmodeli" data-transition="fade" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:32px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">1 · Temel kavramlar</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Language model, geçmişe bakarak bir sonraki token’ın olasılık dağılımını tahmin eder</h2>
+</div>
+<div style="display:flex;gap:56px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:24px">
+<div style="background:#F2EFE7;border-radius:12px;padding:28px 36px;display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D"><i>p</i>(<i>x</i>₁, …, <i>x</i>ₙ) = ∏ₜ <i>p</i>(<i>x</i>ₜ | <i>x</i>₁, …, <i>x</i>ₜ₋₁)</p>
+<p style="font-size:24px;line-height:1.4">Zincir kuralı: bir dizinin olasılığı, her adımdaki “bir sonraki token” olasılıklarının çarpımıdır. Bu bir yaklaşıklık değil, tam bir eşitliktir.</p>
+</div>
+<p style="font-size:30px;line-height:1.4">Bu yüzden model tek bir şey öğrenir: şimdiye kadar görülen token’lara bakıp bir sonraki token için bir olasılık dağılımı vermek.</p>
+<p style="font-size:30px;line-height:1.4"><b>Generation</b> da buradan çıkar: dağılımdan bir token seç, dizinin sonuna ekle, aynı işlemi tekrarla. Buna <b>autoregressive generation</b> denir.</p>
+</div>
+<div style="width:600px;display:flex;flex-direction:column;gap:20px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:32px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Örnek: isim üreten bir model</p>
+<div style="display:flex;gap:12px;align-items:center">
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:72px;text-align:center;background:#14213D;color:#FBFBF8;border-radius:8px;padding:6px 0px">e</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:72px;text-align:center;background:#14213D;color:#FBFBF8;border-radius:8px;padding:6px 0px">m</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:72px;text-align:center;background:#14213D;color:#FBFBF8;border-radius:8px;padding:6px 0px">m</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:72px;text-align:center;border:2px dashed #B4460F;color:#B4460F;border-radius:8px;padding:4px 0px">?</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;gap:16px;align-items:center"><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:30px;width:36px;color:#14213D">a</p><div style="width:360px;height:28px;background:#B4460F;border-radius:4px"></div><p style="font-size:24px">0,62</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:30px;width:36px;color:#14213D">i</p><div style="width:110px;height:28px;background:#2A5C9A;border-radius:4px"></div><p style="font-size:24px">0,19</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:30px;width:36px;color:#14213D">e</p><div style="width:64px;height:28px;background:#2A5C9A;border-radius:4px"></div><p style="font-size:24px">0,11</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:30px;width:36px;color:#14213D">…</p><div style="width:46px;height:28px;background:#9AA3B2;border-radius:4px"></div><p style="font-size:24px">0,08</p></div>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> “emm” görüldükten sonra sonraki harf için dağılım (temsilî değerler, toplamı 1). En yüksek olasılık “a”da: model “emma”yı tamamlamaya yöneliyor.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">3 · minGPT ve FPGA</p>
+<aside>Önce en temel soru: language model ne yapar? Bir metnin, yani bir token dizisinin olasılığını verir. Bunu doğrudan hesaplamak imkânsız gibi görünür, ama olasılık kuramındaki zincir kuralı işi basitleştiriyor. Bir dizinin olasılığı, her adımda “şimdiye kadar görülenlere göre bir sonraki token’ın olasılığı”nın çarpımına eşittir. Burada önemli olan şu: bu bir yaklaşıklık değil, tam bir eşitlik. Dolayısıyla bir language model’in öğrenmesi gereken tek şey bir fonksiyon: geçmişi al, bir sonraki token için bir olasılık dağılımı ver. ChatGPT’den minGPT’ye kadar bütün GPT tarzı modeller tam olarak bunu yapar. Sağdaki örnek isim üreten bir modelden. Model “e, m, m” harflerini görmüş; şimdi dördüncü harf için 27 sembolün her birine bir olasılık veriyor. Değerler temsilî, ama mantık gerçek: “a” harfine yüksek olasılık verir, çünkü “emma” sık görülen bir isim. Metin üretmek de buradan çıkar: bu dağılımdan bir harf seçeriz, dizinin sonuna ekleriz ve aynı işlemi tekrarlarız. Her yeni token bir öncekinin üzerine kurulduğu için buna autoregressive generation denir. Bu sunumun geri kalanında hep bu tek işlemin, yani “geçmişten sonraki token dağılımını hesaplama”nın içini açacağım. Donanım açısından da işin özü bu: bir çağrıda bir token girer, sonraki token için bir dağılım çıkar.</aside>
+</section>

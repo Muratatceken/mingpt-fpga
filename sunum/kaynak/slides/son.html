@@ -1,0 +1,13 @@
+<section id="son" data-transition="fade" style="background:#14213D;color:#FBFBF8;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#F2A65A">Özet</p>
+<div style="display:flex;flex-direction:column;gap:28px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#FBFBF8">1 · minGPT, GPT-2 mimarisinin sade hâli: embedding, attention ve MLP’den oluşan L tane block ve bir lm_head.</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#FBFBF8">2 · Attention, geçmişin içeriğe göre ağırlıklı ortalaması. Causal mask ve KV cache sayesinde generation her adımda tek bir token işler.</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#FBFBF8">3 · Bu yapı FPGA’ye uygun: küçük, düzenli ve öngörülebilir. Zorluklar belli: non-linear işlemler, floating point ve büyüyen attention.</p>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:end;border-top:1px solid #3A4A6B;padding:32px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;color:#FBFBF8">Teşekkürler. Sorular?</p>
+<p style="font-size:24px;color:#C9D2E3">github.com/Muratatceken/mingpt-fpga</p>
+</div>
+<aside>Toparlamak için üç cümle. Birincisi: minGPT yeni bir mimari değil, GPT-2’nin sade ve okunabilir hâli. Embedding, her biri attention ve MLP’den oluşan L tane aynı block ve bir lm_head; hepsi residual connection ile birbirine bağlı. Bu çekirdek, bugünkü büyük LLM’lerin de çekirdeği. İkincisi: modelin kalbi attention ve attention aslında basit bir fikir: geçmişteki token’ların, ağırlıkları içeriğe göre hesaplanan bir ortalaması. Causal mask sayesinde geçmiş token’ların değerleri hiç değişmiyor; bu da KV cache’i mümkün kılıyor ve generation sırasında her adımda yalnızca tek bir token işlemek yetiyor. Üçüncüsü: bu yapı bir FPGA için çok uygun. Model küçük, kendini tekrar ediyor, hesabın neredeyse tamamı matris-vektör çarpımı ve akış tamamen öngörülebilir. Zorluklar da belli: karekök, üstel fonksiyon ve bölme gibi non-linear işlemler, modelin floating point ile eğitilmiş olması ve uzun context’te büyüyen attention maliyeti. Bir sonraki bölümde bu potansiyeli gerçekleştirdiğimiz FPGA tasarımını anlatacağım. Teşekkür ederim; sorularınızı bekliyorum.</aside>
+</section>

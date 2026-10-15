@@ -1,0 +1,46 @@
+<section id="token" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">1 · Teorik zemin</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Token ve gömme: harften sayıya, sayıdan vektöre</h2>
+</div>
+<div style="display:flex;gap:24px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:8px;align-items:center;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:28px 36px">
+<p style="font-size:24px;color:#5A6474">sembol</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:60px;color:#14213D">"e"</p>
+</div>
+<x-shape kind="arrow-right" style="width:56px;height:28px;background:#B4460F"></x-shape>
+<div style="display:flex;flex-direction:column;gap:8px;align-items:center;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:28px 36px">
+<p style="font-size:24px;color:#5A6474">token kimliği</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:60px;color:#14213D">5</p>
+</div>
+<x-shape kind="arrow-right" style="width:56px;height:28px;background:#B4460F"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:28px 36px">
+<p style="font-size:24px;color:#5A6474">gömme tablosunun 5. satırı: <i>C</i> sayıdan oluşan bir vektör</p>
+<div style="display:flex;gap:8px">
+<div style="flex:1;height:44px;background:#2A5C9A;opacity:0.9;border-radius:4px"></div>
+<div style="flex:1;height:44px;background:#2A5C9A;opacity:0.35;border-radius:4px"></div>
+<div style="flex:1;height:44px;background:#B4460F;opacity:0.75;border-radius:4px"></div>
+<div style="flex:1;height:44px;background:#2A5C9A;opacity:0.55;border-radius:4px"></div>
+<div style="flex:1;height:44px;background:#B4460F;opacity:0.4;border-radius:4px"></div>
+<div style="flex:1;height:44px;background:#2A5C9A;opacity:0.7;border-radius:4px"></div>
+<div style="flex:1;height:44px;background:#B4460F;opacity:0.9;border-radius:4px"></div>
+<div style="flex:1;height:44px;background:#2A5C9A;opacity:0.25;border-radius:4px"></div>
+</div>
+</div>
+</div>
+<div style="display:flex;gap:48px">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D"><b>e</b>(τ) = <i>W</i>ₜₑ[τ] = onehot(τ)ᵀ <i>W</i>ₜₑ ,   <i>W</i>ₜₑ ∈ ℝ<span style="color:#14213D">ⱽˣᶜ</span></p>
+<ul style="font-size:30px;line-height:1.4;display:flex;flex-direction:column;gap:12px">
+<li>İsim verisi: <i>V</i> = 27 (26 harf ve bitiş işareti “.” = 0, a = 1, …).</li>
+<li>Gömme bir matris çarpımıdır, ama tek bir satırı okumaya eşittir. Donanımda bu, bir ROM adresi demek.</li>
+</ul>
+</div>
+<div style="width:700px;display:flex;flex-direction:column;gap:12px;background:#14213D;border-radius:12px;padding:32px">
+<p style="font-size:24px;color:#9FB0CC">minGPT · model.py</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">wte = nn.Embedding(vocab_size, n_embd)<br>wpe = nn.Embedding(block_size, n_embd)<br><span style="color:#9FB0CC"># forward içinde:</span><br>tok_emb = self.transformer.wte(idx)</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">5 · minGPT’den FPGA’ye</p>
+<aside>Bilgisayar harf bilmez, sayı bilir. Önce her sembole bir tamsayı kimlik veririz; buna token denir. İsim verisinde 27 token var: 26 harf ve ismin bittiğini gösteren nokta. Sonra her token için öğrenilen bir vektör tutarız: bu, V satır ve C sütunluk gömme (embedding) tablosudur. Matematikte bu, tokenın one-hot vektörüyle tablonun çarpımıdır; ama one-hot vektörde tek bir 1 olduğundan sonuç tablonun ilgili satırına eşittir. Bu yüzden gömme işlemi hesap değil, bir tablo okumasıdır; donanımda bir ROM’dan tek adres okumaya karşılık gelir. Kodda bunu nn.Embedding yapar. Konum için de ikinci bir tablo (wpe) vardır; onu birazdan göreceğiz.</aside>
+</section>

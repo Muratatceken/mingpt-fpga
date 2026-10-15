@@ -1,0 +1,42 @@
+<section id="gorev" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:30px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">2 · minGPT nedir?</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Çalışan örneğimiz: gpt-nano altı rakamı küçükten büyüğe sıralamayı öğreniyor</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;gap:10px;align-items:center">
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:84px;text-align:center;background:#14213D;color:#FBFBF8;border-radius:8px;padding:10px 0px">2</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:84px;text-align:center;background:#14213D;color:#FBFBF8;border-radius:8px;padding:10px 0px">0</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:84px;text-align:center;background:#14213D;color:#FBFBF8;border-radius:8px;padding:10px 0px">1</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:84px;text-align:center;background:#14213D;color:#FBFBF8;border-radius:8px;padding:10px 0px">1</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:84px;text-align:center;background:#14213D;color:#FBFBF8;border-radius:8px;padding:10px 0px">0</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:84px;text-align:center;background:#14213D;color:#FBFBF8;border-radius:8px;padding:10px 0px">2</p>
+<x-shape kind="arrow-right" style="width:56px;height:28px;background:#5A6474"></x-shape>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:84px;text-align:center;background:#B4460F;color:#FBFBF8;border-radius:8px;padding:10px 0px">0</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:84px;text-align:center;background:#B4460F;color:#FBFBF8;border-radius:8px;padding:10px 0px">0</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:84px;text-align:center;background:#B4460F;color:#FBFBF8;border-radius:8px;padding:10px 0px">1</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:84px;text-align:center;background:#B4460F;color:#FBFBF8;border-radius:8px;padding:10px 0px">1</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:84px;text-align:center;background:#B4460F;color:#FBFBF8;border-radius:8px;padding:10px 0px">2</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:84px;text-align:center;background:#B4460F;color:#FBFBF8;border-radius:8px;padding:10px 0px">2</p>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> lacivert kutular girdi (her biri 0, 1 veya 2 olan altı rakam), turuncu kutular modelin üretmesi gereken sıralı çıktı. Model ikisini tek bir token dizisi olarak görür.</p>
+</div>
+<div style="display:flex;gap:44px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#14213D;border-radius:12px;padding:24px 32px">
+<p style="font-size:24px;color:#9FB0CC">minGPT · demo.ipynb, SortDataset: eğitim örneği nasıl kurulur</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">sol = torch.sort(inp)[0]            <span style="color:#9FB0CC"># sıralı çıktı</span><br>cat = torch.cat((inp, sol), dim=0)  <span style="color:#9FB0CC"># 12 token</span><br>x = cat[:-1].clone()                <span style="color:#9FB0CC"># modele giren 11 token</span><br>y = cat[1:].clone()                 <span style="color:#9FB0CC"># hedef: bir sonraki token</span><br>y[:self.length-1] = -1              <span style="color:#9FB0CC"># girdi kısmında loss yok</span></p>
+</div>
+<div style="width:560px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;flex-direction:column;gap:4px;border-top:1px solid #D9D5CA;padding:14px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#B4460F">3⁶ = 729 girdi</p>
+<p style="font-size:24px;line-height:1.4">Olası bütün girdiler sayılabilecek kadar az; modeli hepsinde, örnekleme yapmadan test edebiliyoruz.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:4px;border-top:1px solid #D9D5CA;padding:14px 0px 0px 0px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">%100 doğru</p>
+<p style="font-size:24px;line-height:1.4">Eğitilmiş gpt-nano, 729 girdinin hepsini doğru sıralıyor.</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">9 · minGPT ve FPGA</p>
+<aside>Bu sunumdaki bütün örnekleri tek bir görev üzerinden vereceğim. Bu görev minGPT’nin kendi demo görevi: 0, 1 ve 2 rakamlarından oluşan altı rakamlık bir diziyi küçükten büyüğe sıralamak. Mesela girdi 2 0 1 1 0 2 ise beklenen çıktı 0 0 1 1 2 2. Burada ilginç olan, modelin sıralama algoritması bilmemesi. Model yalnızca bir language model; yani girdiyi ve çıktıyı yan yana koyduğumuz 12 token’lık diziyi görüyor ve her pozisyonda bir sonraki token’ı tahmin etmeyi öğreniyor. Soldaki kod eğitim örneğinin nasıl kurulduğunu gösteriyor. Girdi sıralanıyor, ikisi uç uca ekleniyor, 12 token oluyor. Modele ilk 11 token veriliyor; hedef ise bir kaydırılmış dizi, yani her pozisyonda bir sonraki token. Son satır önemli: girdi kısmındaki hedefler eksi bir yapılıyor. Bu, “burada loss hesaplama” demek. Çünkü girdinin bir sonraki rakamını tahmin etmek anlamsız, girdi rastgele. Model yalnızca çıktı kısmında, yani sıralı rakamları yazarken değerlendiriliyor. Bu görevi seçmemizin büyük bir avantajı var: olası girdi sayısı 3 üzeri 6, yani yalnızca 729. Örneklem almak yerine modeli bütün girdi uzayında test edebiliyoruz. Eğitilmiş gpt-nano 729 girdinin hepsini doğru sıralıyor. Şimdi bu modelin bir token’ı nasıl işlediğine adım adım bakalım.</aside>
+</section>

@@ -1,0 +1,34 @@
+<section id="attn2" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · minGPT adım adım · attention’a giriş</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Attention’ın fikri: bir sözlükte arama yapmanın “yumuşak” bir versiyonu</h2>
+</div>
+<div style="display:flex;gap:28px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px 28px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Sert arama: Python dict</h3>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#14213D;white-space:nowrap">d = {"kedi": v0, "köpek": v1, "kuş": v2}<br>y = d["kedi"]  <span style="color:#5A6474"># tek bir key eşleşir</span></p>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:150px;color:#14213D">key “kedi”</p><div style="width:300px;height:26px;background:#2A5C9A;border-radius:4px"></div><p style="font-size:24px">1 → v0 döner</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:150px;color:#14213D">key “köpek”</p><div style="width:4px;height:26px;background:#2A5C9A"></div><p style="font-size:24px">0</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:150px;color:#14213D">key “kuş”</p><div style="width:4px;height:26px;background:#2A5C9A"></div><p style="font-size:24px">0</p></div>
+</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:2px solid #B4460F;border-radius:12px;padding:24px 28px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Yumuşak arama: attention</h3>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#14213D;white-space:nowrap">w = softmax([q @ k for k in keys])<br>y = sum(wi * vi for wi, vi in zip(w, values))</p>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:150px;color:#14213D">key k₀</p><div style="width:210px;height:26px;background:#B4460F;border-radius:4px"></div><p style="font-size:24px">0,70 × v₀</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:150px;color:#14213D">key k₁</p><div style="width:60px;height:26px;background:#B4460F;border-radius:4px"></div><p style="font-size:24px">0,20 × v₁</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:150px;color:#14213D">key k₂</p><div style="width:30px;height:26px;background:#B4460F;border-radius:4px"></div><p style="font-size:24px">0,10 × v₂</p></div>
+</div>
+</div>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> dict’te query tek bir key ile birebir eşleşir ve yalnızca onun value’su döner. Attention’da query bütün key’lerle karşılaştırılır; benzerlikler weight’e çevrilir ve value’ların karışımı döner (weight’ler temsilî).</p>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#F6E3D7;border-radius:10px;padding:18px 24px"><p style="font-size:30px;font-weight:600;color:#14213D">Query · q</p><p style="font-size:24px;line-height:1.4">“Ne arıyorum?” Şu anki token’ın arama vektörü.</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#DCE5F1;border-radius:10px;padding:18px 24px"><p style="font-size:30px;font-weight:600;color:#14213D">Key · k</p><p style="font-size:24px;line-height:1.4">“Bende ne var?” Her token’ın kendini tanıtan etiketi.</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#E3E5EA;border-radius:10px;padding:18px 24px"><p style="font-size:30px;font-weight:600;color:#14213D">Value · v</p><p style="font-size:24px;line-height:1.4">“Seçilirsem ne aktarırım?” Her token’ın içeriği.</p></div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">13 · minGPT ve FPGA</p>
+<aside>Ağırlıkları içeriğe göre nasıl hesaplarız? Bunun için en iyi benzetme bir sözlükte arama yapmak. Soldaki kutu sıradan bir Python dict’i. Her key’in bir value’su var. d["kedi"] dediğimizde aradığımız şey, yani query, tam olarak bir key ile eşleşiyor ve yalnızca o key’in value’su dönüyor. Eşleşen key’in ağırlığı 1, diğerlerinin 0. Attention bu aramanın yumuşak bir versiyonu. Sağdaki kutuya bakalım. Query yine var, key’ler ve value’lar yine var; ama tam eşleşme aramıyoruz. Query’yi her key ile karşılaştırıp bir benzerlik puanı hesaplıyoruz; bu puan iki vektörün dot product’ı. Sonra bu puanları softmax ile pozitif ve toplamı 1 olan ağırlıklara çeviriyoruz. Sonuç, value’ların bu ağırlıklarla alınmış karışımı. Örnekte query en çok k0’a benziyor, ağırlığın 0,70’i v0’a gidiyor; ama v1 ve v2 de az da olsa katkı yapıyor. Yumuşak aramanın büyük avantajı türevlenebilir olması: sert aramada “hangi key” sorusunun türevi yok, ama yumuşak aramada her ağırlık sürekli değişiyor. Bu yüzden model, training sırasında neye bakacağını gradient ile öğrenebiliyor. Alttaki üç kutu üç kavramı özetliyor. Query, şu anki token’ın “ne arıyorum” sorusu. Key, her token’ın “bende ne var” diye kendini tanıtan etiketi. Value ise o token seçilirse aktaracağı içerik. Kodun üç satırı da attention’ın neredeyse tamamı. Bir sonraki slaytta bu üç vektörün nereden geldiğini, sonra da gerçek formülü göstereceğim.</aside>
+</section>

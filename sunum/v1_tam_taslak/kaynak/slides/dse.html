@@ -1,0 +1,28 @@
+<section id="dse" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Doğrulama ve sonuçlar</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Tasarım uzayı: şerit sayısı <i>P</i> = 8, 16, 32</h2>
+</div>
+<div style="display:flex;gap:56px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:28%;text-align:left;color:#14213D">Çevrim/token</th><th style="width:18%;text-align:right;color:#14213D"><i>P</i> = 8</th><th style="width:18%;text-align:right;color:#14213D"><i>P</i> = 16</th><th style="width:18%;text-align:right;color:#14213D"><i>P</i> = 32</th><th style="width:18%;text-align:right;color:#14213D">8 → 32</th></tr>
+<tr><td>MLP</td><td style="text-align:right">6 632</td><td style="text-align:right">3 480</td><td style="text-align:right">2 056</td><td style="text-align:right"><b>3,23×</b></td></tr>
+<tr><td>GRU</td><td style="text-align:right">6 515</td><td style="text-align:right">3 683</td><td style="text-align:right">2 315</td><td style="text-align:right"><b>2,81×</b></td></tr>
+<tr><td>GPT-2</td><td style="text-align:right">8 620</td><td style="text-align:right">5 684</td><td style="text-align:right">4 540</td><td style="text-align:right">1,90×</td></tr>
+<tr><td>Llama 2</td><td style="text-align:right">9 396</td><td style="text-align:right">6 492</td><td style="text-align:right">5 548</td><td style="text-align:right">1,69×</td></tr>
+<tr><td>nanochat</td><td style="text-align:right">10 711</td><td style="text-align:right">8 031</td><td style="text-align:right">7 143</td><td style="text-align:right">1,50×</td></tr>
+<tr><td>stories260K</td><td style="text-align:right">59 092</td><td style="text-align:right">43 012</td><td style="text-align:right">35 724</td><td style="text-align:right">1,65×</td></tr>
+</table>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">18 noktanın hepsi RTL’de bit-exact. GPT-2 motoru (Yosys): LUT 7,3k → 8,2k → 10,0k; DSP 60 → 70 → 86.</p>
+</div>
+<div style="width:560px;display:flex;flex-direction:column;gap:16px;background:#14213D;border-radius:12px;padding:32px">
+<p style="font-size:24px;font-weight:600;color:#F2A65A">Amdahl yasası, stories260K</p>
+<p style="font-size:24px;line-height:1.4;color:#C9D2E3">GEMV payı <i>f</i> = 0,562 ve 3,37 kat hızlanıyor (33 209 → 9 841). Dikkat 8 şeritte, <i>P</i>’den bağımsız.</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#FBFBF8">1 / ((1 − 0,562) + 0,562 / 3,37) ≈ <b>1,65×</b></p>
+<p style="font-size:24px;line-height:1.4;color:#C9D2E3">Ölçülen değerle aynı. Uzun bağlamda bir sonraki hedef, GEMV değil dikkat birimi.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">39 · minGPT’den FPGA’ye</p>
+<aside>Motorun en önemli tasarım parametresi GEMV şerit sayısı P. Onu 8, 16 ve 32 yapıp altı modeli her birinde yeniden dışa aktardık, simüle ettik ve sentezledik; 18 noktanın hepsi bit-exact. Tablo çok net bir desen gösteriyor. Yalnızca matris-vektör çarpımından oluşan MLP 3,2 kat hızlanıyor; ideal olan 4 kata yakın. Dikkat içeren modeller daha az kazanıyor; nanochat yalnızca 1,5 kat. Neden? Dikkat birimi ve normalizasyon P’den bağımsız olarak 8 şeritte kalıyor. Bu, klasik Amdahl yasası. stories260K’da sürenin yüzde 56,2’si GEMV ve GEMV 3,37 kat hızlanıyor; Amdahl formülü toplam hızlanmanın 1,65 kat olacağını söylüyor ve ölçtüğümüz değer tam olarak bu. Kaynak tarafında DSP sayısı 60’tan 86’ya, LUT 7,3 binden 10 bine çıkıyor. Tasarım dersi: uzun bağlamlı modellerde bir sonraki iyileştirme daha çok GEMV şeridi değil, dikkat biriminin paralelleştirilmesi.</aside>
+</section>

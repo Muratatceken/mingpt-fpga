@@ -1,0 +1,36 @@
+<section id="gpttop" data-transition="fade" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">4 · İlk donanım</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">gpt_top: forward() bir durum makinesine dönüşür</h2>
+</div>
+<div style="display:flex;gap:10px;align-items:center">
+<p style="font-size:24px;padding:10px 16px;background:#14213D;color:#FBFBF8;border-radius:8px">EMB</p>
+<x-shape kind="arrow-right" style="width:32px;height:16px;background:#5A6474"></x-shape>
+<div style="display:flex;gap:8px;align-items:center;border:2px dashed #2A5C9A;border-radius:10px;padding:10px 14px">
+<p style="font-size:24px;padding:8px 12px;background:#DCE5F1;color:#14213D;border-radius:6px">LN1</p>
+<p style="font-size:24px;padding:8px 12px;background:#DCE5F1;color:#14213D;border-radius:6px">QKV</p>
+<p style="font-size:24px;padding:8px 12px;background:#F6E3D7;color:#14213D;border-radius:6px">ATT</p>
+<p style="font-size:24px;padding:8px 12px;background:#DCE5F1;color:#14213D;border-radius:6px">PROJ</p>
+<p style="font-size:24px;padding:8px 12px;background:#DCE5F1;color:#14213D;border-radius:6px">LN2</p>
+<p style="font-size:24px;padding:8px 12px;background:#DCE5F1;color:#14213D;border-radius:6px">FC</p>
+<p style="font-size:24px;padding:8px 12px;background:#DCE5F1;color:#14213D;border-radius:6px">MPROJ</p>
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">× 3</p>
+</div>
+<x-shape kind="arrow-right" style="width:32px;height:16px;background:#5A6474"></x-shape>
+<p style="font-size:24px;padding:10px 16px;background:#14213D;color:#FBFBF8;border-radius:8px">LNF</p>
+<p style="font-size:24px;padding:10px 16px;background:#14213D;color:#FBFBF8;border-radius:8px">HEAD</p>
+<p style="font-size:24px;padding:10px 16px;background:#B4460F;color:#FBFBF8;border-radius:8px">DONE</p>
+</div>
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:18%;text-align:left;color:#14213D">Durum</th><th style="width:40%;text-align:left;color:#14213D">Donanım birimi</th><th style="width:42%;text-align:left;color:#14213D">minGPT’deki karşılığı</th></tr>
+<tr><td>EMB</td><td>iki ROM okuması, doymalı INT16 toplama</td><td>wte(idx) + wpe(pos)</td></tr>
+<tr><td>LN1, LN2, LNF</td><td>layernorm (afin kısım katlanmış)</td><td>ln_1, ln_2, ln_f</td></tr>
+<tr><td>QKV</td><td>gemv 48 → 144, K ve V önbelleğe</td><td>c_attn(x).split(...)</td></tr>
+<tr><td>ATT</td><td>attention, 3 baş ardışık</td><td>softmax(q·kᵀ) @ v</td></tr>
+<tr><td>PROJ, MPROJ</td><td>gemv, artık akışa doymalı ekleme</td><td>x = x + c_proj(...)</td></tr>
+<tr><td>FC</td><td>gemv 48 → 192, çıkış GELU tablosundan</td><td>act(c_fc(x))</td></tr>
+<tr><td>HEAD</td><td>gemv 48 → 3, akış hâlinde argmax</td><td>lm_head(x), topk(k=1)</td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">26 · minGPT’den FPGA’ye</p>
+<aside>İlk donanımımız gpt_top yalnızca minGPT için tasarlandı. Arayüzü çok basit: bir start darbesiyle bir token ve konum veriliyor; donanım o tokenı bütün katmanlardan geçiriyor ve done ile bir sonraki tokenı ve logitleri veriyor. İçeride bir durum makinesi var ve bu makine minGPT’nin forward fonksiyonunu adım adım izliyor. Üstteki şerit durum sırasını gösteriyor: gömme, sonra her katmanda yedi durum, üç kez, en sonda son norm ve lm_head. Tablo her durumun hangi donanım birimini çalıştırdığını ve minGPT kodunda hangi satıra karşılık geldiğini gösteriyor. Bütün ağırlıklar çip içi ROM’larda (BRAM) duruyor; dış bellek kullanılmıyor. Her durum ilgili birimi başlatıp onun bitti sinyalini bekliyor. Dört temel birim var: layernorm, gemv, attention ve argmax. Hesabın büyük kısmını gemv yapıyor; onu bir sonraki slaytta açıyorum.</aside>
+</section>

@@ -1,0 +1,22 @@
+<section id="mfark" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">2 · minGPT nedir?</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">minGPT yeni bir mimari değil: GPT-2’nin eğitim amaçlı, sade bir yeniden yazımı</h2>
+</div>
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:22%;text-align:left;color:#14213D">Bileşen</th><th style="width:36%;text-align:left;color:#14213D">minGPT (GPT-2 mimarisi, 2019)</th><th style="width:42%;text-align:left;color:#14213D">Modern LLM’ler (ör. Llama 2, nanochat)</th></tr>
+<tr><td>Normalization</td><td>LayerNorm, pre-LN düzeni</td><td>RMSNorm (ortalama çıkarılmaz, daha basit)</td></tr>
+<tr><td>Pozisyon bilgisi</td><td>learned position embedding</td><td>RoPE: q ve k vektörlerini açıyla döndürür</td></tr>
+<tr><td>MLP</td><td>GELU, genişlik 4<i>C</i></td><td>SwiGLU veya ReLU²</td></tr>
+<tr><td>Attention</td><td>multi-head attention</td><td>GQA (head’ler key/value paylaşır), QK-norm</td></tr>
+<tr><td>Bias</td><td>her Linear’da var</td><td>yok</td></tr>
+<tr><td>Generation</td><td>KV cache yok: her adımda tüm prefix</td><td>KV cache: yalnız yeni token işlenir</td></tr>
+<tr><td>Ölçek</td><td>gpt-nano: 85,7 bin parametre</td><td>milyonlarca ile milyarlarca parametre</td></tr>
+</table>
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #B4460F;padding:6px 0px 6px 24px">
+<p style="font-size:24px;font-weight:600;color:#B4460F">Asıl mesaj</p>
+<p style="font-size:24px;line-height:1.4">minGPT, OpenAI’nin GPT-2 weight’lerini from_pretrained() ile doğrudan yükleyebiliyor; bu ancak mimari birebir aynıysa mümkün. Çekirdek mekanizma bütün bu modellerde aynı: decoder-only transformer. Modern LLM’ler bu çekirdeğin ince ayarlı ve çok büyütülmüş hâli.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">7 · minGPT ve FPGA</p>
+<aside>minGPT’nin ne olduğunu doğru konumlandırmak gerekiyor, çünkü “minGPT diğer LLM’lerden ne farklı yapıyor” sorusunun cevabı biraz şaşırtıcı: mimari olarak hiçbir şeyi farklı yapmıyor. Andrej Karpathy minGPT’yi 2020’de, GPT’nin nasıl çalıştığını göstermek için yazdı. Mimari, OpenAI’nin 2019’daki GPT-2’siyle birebir aynı. Bunun en güçlü kanıtı şu: minGPT’de from_pretrained diye bir fonksiyon var ve OpenAI’nin yayımladığı GPT-2 weight’lerini olduğu gibi yükleyip çalıştırabiliyor. Mimari bir parametre bile farklı olsaydı bu mümkün olmazdı. Peki modern LLM’ler, örneğin Meta’nın Llama 2’si ya da Karpathy’nin daha yeni nanochat’i, neyi farklı yapıyor? Tablo bunu özetliyor. Normalization’da LayerNorm yerine RMSNorm kullanıyorlar; ortalamayı çıkarmadan yalnızca büyüklüğe göre ölçekliyor, biraz daha ucuz. Pozisyon bilgisini ayrı bir tablodan eklemek yerine RoPE ile veriyorlar; q ve k vektörlerini pozisyona bağlı bir açıyla döndürüyor. MLP’de GELU yerine SwiGLU ya da ReLU kare kullanıyorlar. Attention’da GQA kullanabiliyorlar: birkaç query head’i aynı key ve value’yu paylaşıyor, bu da bellek tasarrufu sağlıyor. Bias’ları kaldırıyorlar. Generation sırasında KV cache kullanıyorlar; minGPT’nin generate fonksiyonu bunu yapmıyor, her adımda bütün diziyi baştan hesaplıyor. Ve tabii ölçek: gpt-nano 85 bin parametre, modern modeller milyarlarca. Ama asıl mesaj alttaki kutuda: çekirdek mekanizma aynı. Hepsi decoder-only transformer; embedding, tekrarlanan block’lar, her block’ta attention ve MLP, residual connection. Modern LLM’ler bu çekirdeğin ince ayarlı ve çok büyütülmüş hâli. Bu yüzden minGPT’yi baştan sona anlamak, hepsinin temelini anlamak demek. Bizim için seçim sebebi de bu: küçük, okunabilir ve tamamen anlaşılabilir.</aside>
+</section>

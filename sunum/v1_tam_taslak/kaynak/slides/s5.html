@@ -1,0 +1,27 @@
+<section id="s5" style="background:#F2EFE7;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:44px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">7 · Gerçekten anladık mı? · Soru 5 / 5</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">İsimlerde GRU neden önde? Transformer ne zaman kazanır?</h2>
+</div>
+<div style="display:flex;gap:56px;align-items:start">
+<div style="width:620px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Kısa cevap</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D">16 harflik bir geçmişi sabit boyutlu bir durum yeterince taşır. Bağlam uzayınca dikkatin her tokena doğrudan erişimi fark yaratır.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FBFBF8;border-radius:12px;padding:32px 40px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Veri (ön sonuç, tek tohum)</p>
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:28%;text-align:left;color:#14213D">Model</th><th style="width:24%;text-align:right;color:#14213D">İsimler</th><th style="width:24%;text-align:right;color:#14213D">Hikâyeler</th><th style="width:24%;text-align:right;color:#14213D">Çevrim</th></tr>
+<tr><td>GRU</td><td style="text-align:right"><b>1,956</b></td><td style="text-align:right">1,610</td><td style="text-align:right">28 861</td></tr>
+<tr><td>GPT-2</td><td style="text-align:right">2,000</td><td style="text-align:right">1,438</td><td style="text-align:right">40 236</td></tr>
+<tr><td>Llama 2</td><td style="text-align:right">2,003</td><td style="text-align:right"><b>1,346</b></td><td style="text-align:right">48 852</td></tr>
+</table>
+<p style="font-size:24px;line-height:1.4">Test kaybı (nat/token). İsimler: 50k, <i>T</i> ≤ 16. Hikâyeler: kendi eğittiğimiz 260k modeller, <i>T</i> = 256; çevrim bu modellerde, 256 konum ortalaması.</p>
+</div>
+</div>
+<div style="display:flex;gap:16px;align-items:center;border-left:6px solid #B4460F;padding:8px 0px 8px 24px">
+<p style="font-size:24px;line-height:1.4"><b>Bedeli:</b> GRU’nun çevrimi konumdan bağımsız; dikkatinki her katmanda <i>H</i>·2(<i>t</i>+1) ile doğrusal artar. Kalite kazancı ve donanım maliyeti aynı tabloda okunur.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">44 · minGPT’den FPGA’ye</p>
+<aside>Son soru sonuçlarımızın kendisiyle ilgili. İsim verisinde en iyi model bir GRU’ydu; transformerlar daha pahalıydı ama daha iyi değildi. Bu bir hata mı? Hayır. Bir isim en fazla 16 karakter. Tekrarlayan bir model bütün geçmişi sabit boyutlu bir durum vektörüne sıkıştırıyor; bu kadar kısa bir geçmiş için bu sıkıştırma yeterli. Dikkatin avantajı, geçmişteki her tokena doğrudan, mesafeden bağımsız erişebilmesi; bu avantaj uzun bağlamda ortaya çıkıyor. Hikâye verisinde, 256 tokenlık bağlamda, tablo tersine dönüyor: Llama 1,346, GPT-2 1,438, GRU 1,610. Fark isimlerdekinden çok daha büyük. Ama bunun bir bedeli var: GRU’nun token başına çevrimi konumdan bağımsız, yaklaşık 28 900. Dikkatin maliyeti ise konumla doğrusal artıyor; Llama ortalamada 48 900 çevrim. Bu çalışmanın asıl katkısı tam olarak bu: kalite kazancı ve donanım maliyeti aynı ölçekte, aynı tabloda. Dürüstlük notu: hikâye sonuçları tek tohumlu ve kampanyanın 16 koşusundan yalnızca 5’i bitti.</aside>
+</section>

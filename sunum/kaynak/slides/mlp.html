@@ -1,0 +1,36 @@
+<section id="mlp" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · minGPT adım adım</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Adım 7 · MLP her token’ı kendi içinde işler: önce dört kat genişletir, GELU’dan geçirir, sonra daraltır</h2>
+</div>
+<div style="display:flex;gap:12px;align-items:center">
+<p style="font-size:24px;padding:12px 18px;background:#E3E5EA;color:#14213D;border-radius:8px">LN₂(x) · 48</p>
+<x-shape kind="arrow-right" style="width:36px;height:18px;background:#5A6474"></x-shape>
+<p style="font-size:24px;padding:12px 18px;background:#14213D;color:#FBFBF8;border-radius:8px">c_fc · Linear 48 → 192</p>
+<x-shape kind="arrow-right" style="width:36px;height:18px;background:#5A6474"></x-shape>
+<p style="font-size:24px;padding:12px 18px;background:#B4460F;color:#FBFBF8;border-radius:8px">GELU · 192</p>
+<x-shape kind="arrow-right" style="width:36px;height:18px;background:#5A6474"></x-shape>
+<p style="font-size:24px;padding:12px 18px;background:#14213D;color:#FBFBF8;border-radius:8px">c_proj · Linear 192 → 48</p>
+<x-shape kind="arrow-right" style="width:36px;height:18px;background:#5A6474"></x-shape>
+<p style="font-size:24px;padding:12px 18px;background:#E3E5EA;color:#14213D;border-radius:8px">residual’a ekle</p>
+</div>
+<div style="display:flex;gap:44px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<div style="background:#F2EFE7;border-radius:12px;padding:22px 30px;display:flex;flex-direction:column;gap:8px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D">MLP(<i>a</i>) = <i>W</i>₂ · GELU(<i>W</i>₁ <i>a</i> + <i>b</i>₁) + <i>b</i>₂</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D">GELU(<i>x</i>) = ½ <i>x</i> (1 + tanh(√(2/π) (<i>x</i> + 0,044715 <i>x</i>³)))</p>
+</div>
+<p style="font-size:24px;line-height:1.4"><b>Neden non-linearity?</b> GELU olmasaydı iki Linear arka arkaya tek bir Linear’a çökerdi. Modelin ifade gücü bu fonksiyondan gelir. Attention bilgiyi token’lar arasında taşır; MLP o bilgiyi her token’da işler.</p>
+<div style="display:flex;flex-direction:column;gap:10px;background:#14213D;border-radius:12px;padding:22px 30px">
+<p style="font-size:24px;color:#9FB0CC">minGPT · Block.__init__</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">c_fc = nn.Linear(n_embd, 4 * n_embd)    <span style="color:#9FB0CC"># 48 → 192</span><br>c_proj = nn.Linear(4 * n_embd, n_embd)  <span style="color:#9FB0CC"># 192 → 48</span><br>self.mlpf = <span style="color:#F2A65A">lambda</span> x: m.dropout(m.c_proj(m.act(m.c_fc(x))))</p>
+</div>
+</div>
+<div style="width:620px;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px 28px">
+<svg aria-label="GELU eğrisi −4 ile 3 aralığında; negatif tarafta sıfıra yakın, küçük bir çukur yapıyor; ReLU ile karşılaştırmalı" width="560" height="300" viewBox="0 0 560 300"><line x1="40" y1="250" x2="520" y2="250" stroke="#9AA3B2" stroke-width="2"/><line x1="314.3" y1="20" x2="314.3" y2="280" stroke="#9AA3B2" stroke-width="2"/><polyline points="40,250 314.3,250 520,40" fill="none" stroke="#2A5C9A" stroke-width="4" stroke-dasharray="12 10"/><path d="M40.0 250.0 L67.4 250.0 L94.9 250.1 L122.3 250.5 L149.7 251.3 L177.1 253.2 L204.6 256.2 L232.0 259.7 L245.7 261.1 L259.4 261.9 L273.1 261.5 L286.9 259.6 L300.6 255.9 L314.3 250.0 L328.0 241.9 L341.7 231.6 L355.4 219.5 L369.1 205.9 L382.9 191.1 L396.6 175.7 L410.3 159.9 L424.0 144.2 L437.7 128.5 L451.4 113.2 L465.1 98.1 L478.9 83.3 L492.6 68.8 L506.3 54.5 L520.0 40.3" fill="none" stroke="#B4460F" stroke-width="6"/></svg>
+<p style="font-size:24px;line-height:1.4"><b>Şekil:</b> <span style="color:#B4460F"><b>GELU</b></span> (düz) ve <span style="color:#2A5C9A"><b>ReLU</b></span> (kesikli), <i>x</i> ∈ [−4, 3]. GELU’nun köşesi yumuşak; negatif tarafta küçük bir çukur var.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">21 · minGPT ve FPGA</p>
+<aside>Yedinci adım MLP. Attention token’lar arasında bilgi taşıyordu; MLP ise her token’ın vektörünü kendi içinde, diğer token’lara bakmadan işliyor. Yapısı üstteki şeritte: normalize edilmiş 48 boyutlu vektör önce c_fc adlı Linear ile 192 boyuta, yani dört katına genişletiliyor. Sonra her elemana GELU adlı doğrusal olmayan fonksiyon uygulanıyor. Sonra c_proj adlı ikinci Linear ile tekrar 48 boyuta indiriliyor ve sonuç residual stream’e ekleniyor. Neden ortada doğrusal olmayan bir fonksiyon var? Çünkü iki Linear katman arka arkaya gelirse, matematiksel olarak tek bir Linear katmana eşittir: iki matrisin çarpımı yine bir matristir. Ortada bir non-linearity olmazsa genişletmenin hiçbir anlamı kalmaz. Modelin karmaşık ilişkileri temsil edebilmesi bu fonksiyonlar sayesinde. Sağdaki grafik GELU’yu gösteriyor; kesikli mavi çizgi karşılaştırma için ReLU. İkisi de pozitif değerleri neredeyse olduğu gibi geçiriyor, negatifleri sıfıra yakın bastırıyor. GELU’nun farkı, köşesinin yumuşak olması ve negatif tarafta küçük bir çukur bırakması; bu, türevin her yerde düzgün olmasını sağlıyor. minGPT, GPT-2 ile aynı tanh yaklaşımlı formülü kullanıyor; formül biraz karmaşık görünüyor ama tek girişli bir fonksiyon. Bu, donanım için önemli bir avantaj: tek girişli bir fonksiyon, giriş değerleri sınırlıysa önceden hesaplanmış bir tabloyla temsil edilebilir. Kodda MLP tek satırlık bir lambda: c_fc, GELU, c_proj ve dropout sırayla uygulanıyor. Bir de parametre sayısı açısından not: MLP’nin iki Linear’ı, her block’taki parametrelerin yaklaşık üçte ikisini oluşturuyor.</aside>
+</section>

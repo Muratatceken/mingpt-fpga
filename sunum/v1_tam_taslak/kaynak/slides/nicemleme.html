@@ -1,0 +1,28 @@
+<section id="nicemleme" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · Tamsayı aritmetiği</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Nicemleme: gerçel sayı = ölçek × tamsayı</h2>
+</div>
+<div style="display:flex;gap:56px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:28px">
+<div style="background:#F2EFE7;border-radius:12px;padding:28px 36px;display:flex;flex-direction:column;gap:8px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D"><i>q</i> = clip( round(<i>r</i> / <i>S</i>), −128, 127 )</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D"><i>r̂</i> = <i>S q</i> ,   aralık içinde |<i>r</i> − <i>r̂</i>| ≤ <i>S</i>/2</p>
+</div>
+<p style="font-size:30px;line-height:1.4"><b>Örnek:</b> <i>S</i> = 0,02, <i>r</i> = 0,537 → <i>r</i>/<i>S</i> = 26,85 → <i>q</i> = 27 → <i>r̂</i> = 0,54; hata 0,003 ≤ 0,01.</p>
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:34%;text-align:left;color:#14213D">Tensör</th><th style="width:22%;text-align:left;color:#14213D">Biçim</th><th style="width:44%;text-align:left;color:#14213D">Ölçek</th></tr>
+<tr><td>Ağırlıklar</td><td>INT8</td><td>çıkış kanalı başına, max|<i>W</i>ₒ|/127</td></tr>
+<tr><td>Aktivasyonlar</td><td>INT8</td><td>tensör başına, kalibrasyondan</td></tr>
+<tr><td>Artık akış</td><td>INT16</td><td>2⁻¹² (Q3.12), 2’nin kuvveti</td></tr>
+</table>
+</div>
+<div style="width:640px;display:flex;flex-direction:column;gap:12px;background:#14213D;border-radius:12px;padding:32px">
+<p style="font-size:24px;color:#9FB0CC">sw/intmodel.py · doyma (clip)</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap"><span style="color:#F2A65A">def</span> sat(v, bits):<br>&#160;&#160;&#160;&#160;lo = -(1 &lt;&lt; (bits - 1))<br>&#160;&#160;&#160;&#160;hi = (1 &lt;&lt; (bits - 1)) - 1<br>&#160;&#160;&#160;&#160;<span style="color:#F2A65A">return</span> max(lo, min(hi, v))</p>
+<p style="font-size:24px;line-height:1.4;color:#C9D2E3">Her ek bit, sinyal/nicemleme gürültüsü oranını ≈ 6,02 dB artırır.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">20 · minGPT’den FPGA’ye</p>
+<aside>Nicemleme, bir gerçel sayıyı bir ölçek ile bir tamsayının çarpımı olarak yazmaktır. Ölçek S ile böler, en yakın tamsayıya yuvarlar ve 8 bitlik aralığa sığdırırız (−128 ile 127). Geri dönüşte S ile çarparız. Aralığın içinde kalındığı sürece hata en fazla yarım adımdır. Örnek: S = 0,02 iken 0,537 sayısı 26,85’e karşılık gelir, 27’ye yuvarlanır, geri dönüşte 0,54 olur; hata 0,003, yani sınır olan 0,01’in altında. Biçim seçimlerimiz şöyle: ağırlıklar INT8 ve her çıkış kanalının kendi ölçeği var; aktivasyonlar INT8 ve ölçekleri kalibrasyon verisinden sabit seçiliyor; artık akış 16 bit ve ölçeği 2’nin kuvveti. Sağdaki kod, doymanın, yani aralık dışına çıkan değeri sınıra kırpmanın yazılımdaki karşılığı. Donanımda da birebir aynı işlem yapılıyor. Genel kural: her ek bit sinyalin nicemleme gürültüsüne oranını yaklaşık 6 dB artırır.</aside>
+</section>

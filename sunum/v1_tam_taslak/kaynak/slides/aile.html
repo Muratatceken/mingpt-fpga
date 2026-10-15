@@ -1,0 +1,21 @@
+<section id="aile" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">5 · Model ailesi ve motor</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Dokuz mimari, 50 bin parametre, isim verisi</h2>
+</div>
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:12%;text-align:left;color:#14213D">Model</th><th style="width:15%;text-align:left;color:#14213D">Kaynak</th><th style="width:33%;text-align:left;color:#14213D">Ayırt edici fikir</th><th style="width:16%;text-align:right;color:#14213D">Test kaybı</th><th style="width:11%;text-align:right;color:#14213D">Δ INT8</th><th style="width:13%;text-align:right;color:#14213D">Çevrim/token</th></tr>
+<tr><td>Bigram</td><td>makemore</td><td>önceki harfe göre tablo</td><td style="text-align:right">2,451</td><td style="text-align:right">0,000</td><td style="text-align:right">36</td></tr>
+<tr><td>MLP</td><td>makemore</td><td>sabit pencere, gizli katman</td><td style="text-align:right">1,986</td><td style="text-align:right">+0,001</td><td style="text-align:right">6 632</td></tr>
+<tr><td>RNN</td><td>makemore</td><td>tekrarlayan gizli durum</td><td style="text-align:right">1,964</td><td style="text-align:right">+0,003</td><td style="text-align:right">6 374</td></tr>
+<tr style="background:#F6E3D7"><td><b>GRU</b></td><td>makemore</td><td>kapılı tekrarlayan durum</td><td style="text-align:right"><b>1,956 (en iyi)</b></td><td style="text-align:right">+0,000</td><td style="text-align:right">6 515</td></tr>
+<tr><td>BoW</td><td>makemore</td><td>önek ortalaması</td><td style="text-align:right">2,045</td><td style="text-align:right">−0,000</td><td style="text-align:right">6 277</td></tr>
+<tr><td>GPT-2</td><td>minGPT</td><td>LayerNorm, öğrenilen konum, GELU</td><td style="text-align:right">2,000</td><td style="text-align:right">+0,002</td><td style="text-align:right">8 620</td></tr>
+<tr><td>microgpt</td><td>microgpt (2026)</td><td>parametresiz RMSNorm, ReLU</td><td style="text-align:right">1,971</td><td style="text-align:right">+0,003</td><td style="text-align:right">8 657</td></tr>
+<tr><td>Llama 2</td><td>llama2.c</td><td>RMSNorm, RoPE, SwiGLU, GQA</td><td style="text-align:right">2,003</td><td style="text-align:right">+0,001</td><td style="text-align:right">9 396</td></tr>
+<tr><td>nanochat</td><td>nanochat</td><td>RoPE, QK-norm, ReLU², GQA</td><td style="text-align:right">1,969</td><td style="text-align:right">+0,006</td><td style="text-align:right">10 711</td></tr>
+</table>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">Ön sonuç: tek tohum, öğrenme oranı taraması sürüyor. Kayıp nat/token (1000 isimlik test kümesi). Bigram 729 parametre.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">30 · minGPT’den FPGA’ye</p>
+<aside>Ailenin dokuz üyesi. İlk beşi Karpathy’nin makemore deposundan: bigram, Bengio’nun 2003 MLP’si, düz RNN, GRU ve kelime torbası (BoW). Sonraki dördü transformer: minGPT ile aynı GPT-2 bloğu, Karpathy’nin 2026 tarihli microgpt’si, llama2.c’deki Llama 2 ve nanochat’in çekirdek mimarisi. Hepsini her biri yaklaşık 50 bin parametre olacak şekilde boyutlandırdık; yalnızca bigram yapısı gereği 27 çarpı 27 = 729 parametre. Üç gözlem. Birincisi: INT8 kaybı her modelde 0,01 nat’ın altında; nicemleme bu ölçekte kaliteyi bozmuyor. İkincisi: bu kısa bağlamda (en fazla 16 harf) en iyi model bir GRU. GRU, transformerlardan yüzde 24 ile 39 daha az çevrim harcıyor; transformerlar kalitede öne geçmiyor. Üçüncüsü: bunlar ön sonuçlar. Tek tohumla eğitildiler ve öğrenme oranı taraması sürüyor. Aradaki farklar küçük olduğu için kesin sıralamayı çok tohumlu sonuçlar belirleyecek. Bu tabloyu tez için kesin sonuç olarak değil, yöntemin çalıştığının kanıtı olarak sunuyorum.</aside>
+</section>

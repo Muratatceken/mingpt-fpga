@@ -1,0 +1,73 @@
+<section id="maske" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:30px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · minGPT adım adım</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Causal mask: her token yalnızca kendisine ve geçmişine bakabilir, gelecek tamamen gizlenir</h2>
+</div>
+<div style="display:flex;gap:56px;align-items:start">
+<div style="width:612px;display:flex;flex-direction:column;gap:12px">
+<div style="display:grid;grid-template-columns:72px repeat(6, 84px);grid-template-rows:repeat(7, 54px);gap:6px">
+<p style="font-size:24px"></p>
+<p style="font-size:24px;text-align:center;color:#5A6474">j=0</p>
+<p style="font-size:24px;text-align:center;color:#5A6474">1</p>
+<p style="font-size:24px;text-align:center;color:#5A6474">2</p>
+<p style="font-size:24px;text-align:center;color:#5A6474">3</p>
+<p style="font-size:24px;text-align:center;color:#5A6474">4</p>
+<p style="font-size:24px;text-align:center;color:#5A6474">5</p>
+<p style="font-size:24px;color:#5A6474">t=0</p>
+<p style="font-size:24px;background:#B4460F;border-radius:6px"></p>
+<p style="font-size:24px;text-align:center;line-height:2.25;background:#E9E6DD;color:#5A6474;border-radius:6px">−∞</p>
+<p style="font-size:24px;text-align:center;line-height:2.25;background:#E9E6DD;color:#5A6474;border-radius:6px">−∞</p>
+<p style="font-size:24px;text-align:center;line-height:2.25;background:#E9E6DD;color:#5A6474;border-radius:6px">−∞</p>
+<p style="font-size:24px;text-align:center;line-height:2.25;background:#E9E6DD;color:#5A6474;border-radius:6px">−∞</p>
+<p style="font-size:24px;text-align:center;line-height:2.25;background:#E9E6DD;color:#5A6474;border-radius:6px">−∞</p>
+<p style="font-size:24px;color:#5A6474">1</p>
+<p style="font-size:24px;background:#CF7A4C;border-radius:6px"></p>
+<p style="font-size:24px;background:#B4460F;border-radius:6px"></p>
+<p style="font-size:24px;text-align:center;line-height:2.25;background:#E9E6DD;color:#5A6474;border-radius:6px">−∞</p>
+<p style="font-size:24px;text-align:center;line-height:2.25;background:#E9E6DD;color:#5A6474;border-radius:6px">−∞</p>
+<p style="font-size:24px;text-align:center;line-height:2.25;background:#E9E6DD;color:#5A6474;border-radius:6px">−∞</p>
+<p style="font-size:24px;text-align:center;line-height:2.25;background:#E9E6DD;color:#5A6474;border-radius:6px">−∞</p>
+<p style="font-size:24px;color:#5A6474">2</p>
+<p style="font-size:24px;background:#E3A982;border-radius:6px"></p>
+<p style="font-size:24px;background:#B4460F;border-radius:6px"></p>
+<p style="font-size:24px;background:#CF7A4C;border-radius:6px"></p>
+<p style="font-size:24px;text-align:center;line-height:2.25;background:#E9E6DD;color:#5A6474;border-radius:6px">−∞</p>
+<p style="font-size:24px;text-align:center;line-height:2.25;background:#E9E6DD;color:#5A6474;border-radius:6px">−∞</p>
+<p style="font-size:24px;text-align:center;line-height:2.25;background:#E9E6DD;color:#5A6474;border-radius:6px">−∞</p>
+<p style="font-size:24px;color:#5A6474">3</p>
+<p style="font-size:24px;background:#E3A982;border-radius:6px"></p>
+<p style="font-size:24px;background:#CF7A4C;border-radius:6px"></p>
+<p style="font-size:24px;background:#B4460F;border-radius:6px"></p>
+<p style="font-size:24px;background:#E3A982;border-radius:6px"></p>
+<p style="font-size:24px;text-align:center;line-height:2.25;background:#E9E6DD;color:#5A6474;border-radius:6px">−∞</p>
+<p style="font-size:24px;text-align:center;line-height:2.25;background:#E9E6DD;color:#5A6474;border-radius:6px">−∞</p>
+<p style="font-size:24px;color:#5A6474">4</p>
+<p style="font-size:24px;background:#F0CDB4;border-radius:6px"></p>
+<p style="font-size:24px;background:#E3A982;border-radius:6px"></p>
+<p style="font-size:24px;background:#CF7A4C;border-radius:6px"></p>
+<p style="font-size:24px;background:#B4460F;border-radius:6px"></p>
+<p style="font-size:24px;background:#CF7A4C;border-radius:6px"></p>
+<p style="font-size:24px;text-align:center;line-height:2.25;background:#E9E6DD;color:#5A6474;border-radius:6px">−∞</p>
+<p style="font-size:24px;color:#5A6474">5</p>
+<p style="font-size:24px;background:#E3A982;border-radius:6px"></p>
+<p style="font-size:24px;background:#F0CDB4;border-radius:6px"></p>
+<p style="font-size:24px;background:#CF7A4C;border-radius:6px"></p>
+<p style="font-size:24px;background:#E3A982;border-radius:6px"></p>
+<p style="font-size:24px;background:#B4460F;border-radius:6px"></p>
+<p style="font-size:24px;background:#CF7A4C;border-radius:6px"></p>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> satırlar query pozisyonu <i>t</i>, sütunlar key pozisyonu <i>j</i>. Gri hücreler (<i>j</i> &gt; <i>t</i>) maskelenir; renkli hücreler softmax weight’leri (tonlar temsilî). Her satırın toplamı 1.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;line-height:1.45"><b>Neden?</b> Training’de model her pozisyonda bir sonraki token’ı tahmin ediyor. Geleceği görebilseydi cevabı doğrudan kopyalardı ve hiçbir şey öğrenmezdi.</p>
+<p style="font-size:24px;line-height:1.45"><b>Nasıl?</b> <i>j</i> &gt; <i>t</i> olan score’lar −∞ yapılır. exp(−∞) = 0 olduğu için bu weight’ler yaklaşık değil, tam olarak sıfırdır.</p>
+<p style="font-size:24px;line-height:1.45"><b>Bonus:</b> Her pozisyon yalnızca kendi geçmişini gördüğü için dizideki bütün pozisyonlar tek forward’da, paralel eğitilebilir.</p>
+<p style="font-size:24px;line-height:1.45;color:#14213D"><b>Sonuç:</b> <i>t</i> pozisyonunun çıktısı yalnızca 0…<i>t</i> token’larına bağlıdır. KV cache bu gerçeğe dayanır.</p>
+<div style="background:#14213D;border-radius:12px;padding:20px 28px">
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">torch.tril(torch.ones(block_size, block_size))<br><span style="color:#9FB0CC"># alt üçgen: 1 = bakılabilir, 0 = maskeli</span></p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">17 · minGPT ve FPGA</p>
+<aside>Formülde j küçük eşit t koşulu vardı. Bu koşulu sağlayan mekanizmaya causal mask diyoruz. Soldaki tablo bütün query ve key pozisyon çiftlerini gösteriyor. Satırlar query pozisyonu, yani “şu an hangi token’dayım”; sütunlar key pozisyonu, yani “hangi token’a bakıyorum”. Gri hücreler gelecek: j, t’den büyük. Bu hücrelerin score’u eksi sonsuz yapılıyor. Renkli hücreler ise softmax sonrası weight’ler; tonlar temsilî, gerçek değerler modele göre değişir. Her satır kendi içinde toplamı 1 olan bir dağılım. Neden böyle bir maske gerekli? Training sırasında model her pozisyonda bir sonraki token’ı tahmin etmeye çalışıyor. Eğer gelecekteki token’ları görebilseydi, cevap zaten önünde olurdu; kopyalardı ve hiçbir şey öğrenmezdi. Maske tam olarak nasıl çalışıyor? Score eksi sonsuz yapılınca softmax’taki üstel değer sıfır oluyor. Yani maskelenen weight yaklaşık olarak değil, tam olarak sıfır. Bunun güzel bir yan etkisi var: her pozisyon yalnızca kendi geçmişini gördüğü için, bir dizideki bütün pozisyonların tahmini tek bir forward geçişinde, birbirini bozmadan, paralel olarak yapılabiliyor. minGPT’nin training’i bu yüzden verimli. Ve en önemli sonuç alttaki cümle: t pozisyonundaki çıktı yalnızca 0’dan t’ye kadar olan token’lara bağlı. Yeni bir token geldiğinde eski pozisyonların hiçbir değeri değişmiyor. Bu, birkaç slayt sonra anlatacağım KV cache’in, yani generation’ı ucuzlatan fikrin matematiksel temeli. Kodda maske, torch.tril ile oluşturulan bir alt üçgen matris; bir kez oluşturulup modelin içinde saklanıyor.</aside>
+</section>

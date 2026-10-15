@@ -1,0 +1,36 @@
+<section id="dilmodeli" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">1 · Teorik zemin</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Dil modeli: bir sonraki sembolün olasılığı</h2>
+</div>
+<div style="display:flex;gap:64px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:32px">
+<div style="background:#F2EFE7;border-radius:12px;padding:32px 36px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D"><i>p</i>(<i>x</i>₁, …, <i>x</i><span style="color:#14213D">ₙ</span>) = ∏ₜ <i>p</i>(<i>x</i>ₜ | <i>x</i>₁, …, <i>x</i>ₜ₋₁)</p>
+</div>
+<ul style="font-size:30px;line-height:1.4;display:flex;flex-direction:column;gap:16px">
+<li>Olasılığın zincir kuralı: yaklaşıklık değil, tam bir eşitlik.</li>
+<li>Model tek bir şey öğrenir: geçmişe bakıp bir sonraki sembol için bir dağılım vermek.</li>
+<li>Üretim: dağılımdan seç, sona ekle, tekrarla (otoregresif).</li>
+</ul>
+</div>
+<div style="width:620px;display:flex;flex-direction:column;gap:24px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:36px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Örnek: isim üreten model</p>
+<div style="display:flex;gap:12px">
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:72px;text-align:center;background:#14213D;color:#FBFBF8;border-radius:8px;padding:8px 0px">e</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:72px;text-align:center;background:#14213D;color:#FBFBF8;border-radius:8px;padding:8px 0px">m</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:72px;text-align:center;background:#14213D;color:#FBFBF8;border-radius:8px;padding:8px 0px">m</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:40px;width:72px;text-align:center;border:2px dashed #B4460F;color:#B4460F;border-radius:8px;padding:6px 0px">?</p>
+</div>
+<p style="font-size:24px;color:#5A6474">Sonraki harf için dağılım (temsilî)</p>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:16px;align-items:center"><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:30px;width:40px">a</p><div style="width:400px;height:28px;background:#B4460F;border-radius:4px"></div></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:30px;width:40px">i</p><div style="width:170px;height:28px;background:#2A5C9A;border-radius:4px"></div></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:30px;width:40px">e</p><div style="width:110px;height:28px;background:#2A5C9A;border-radius:4px"></div></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:30px;width:40px">y</p><div style="width:60px;height:28px;background:#2A5C9A;border-radius:4px"></div></div>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">4 · minGPT’den FPGA’ye</p>
+<aside>Dil modeli bir metnin olasılığını verir. Zincir kuralı sayesinde bu olasılık, her adımda “şimdiye kadar görülenlere göre bir sonraki sembol” olasılıklarının çarpımına ayrılır. Bu bir yaklaşıklık değil, olasılık kuramında tam bir eşitliktir. Dolayısıyla bütün iş, geçmişi alıp bir sonraki sembol için bir olasılık dağılımı veren bir fonksiyon öğrenmektir. Sağdaki örnek isim modelimizden: “emm” görüldükten sonra model “a” harfine yüksek olasılık verir (emma). Çubukların boyu temsilîdir, ölçülmüş bir değer değildir. Metin üretmek için bu dağılımdan bir harf seçer, sona ekler ve aynı işlemi tekrar ederiz; buna otoregresif üretim denir. Donanımımızın her çağrıda yaptığı iş tam olarak budur: bir token alır, bir sonraki token için dağılımı (logitleri) verir.</aside>
+</section>

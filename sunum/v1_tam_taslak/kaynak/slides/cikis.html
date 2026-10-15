@@ -1,0 +1,24 @@
+<section id="cikis" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">2 · minGPT adım adım</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Adım 8 · Çıkış ve üretim: logitten tokena</h2>
+</div>
+<div style="display:flex;gap:56px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:28px">
+<div style="background:#F2EFE7;border-radius:12px;padding:28px 36px;display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D"><i>z</i>ₜ = lm_head( ln_f(<i>x</i>ₜ) ) ∈ ℝ<span style="color:#14213D">ⱽ</span></p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D">τₜ₊₁ = argmax<span style="color:#14213D">ᵢ</span> softmax(<i>z</i>ₜ)ᵢ = argmax<span style="color:#14213D">ᵢ</span> <i>z</i>ₜᵢ</p>
+</div>
+<ul style="font-size:30px;line-height:1.4;display:flex;flex-direction:column;gap:16px">
+<li>Softmax monoton artan: en büyük olasılık en büyük logittedir. Açgözlü üretimde softmax gereksiz.</li>
+<li>minGPT her adımda <b>bütün diziyi</b> baştan hesaplar. Donanım bunu yapmaz (sonraki slayt).</li>
+</ul>
+</div>
+<div style="width:820px;display:flex;flex-direction:column;gap:12px;background:#14213D;border-radius:12px;padding:32px">
+<p style="font-size:24px;color:#9FB0CC">minGPT · GPT.generate (döngü gövdesi)</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">logits, _ = self(idx_cond)  <span style="color:#9FB0CC"># tüm önek!</span><br>logits = logits[:, -1, :] / temperature<br>probs = F.softmax(logits, dim=-1)<br><span style="color:#F2A65A">if</span> do_sample:<br>&#160;&#160;&#160;&#160;idx_next = torch.multinomial(probs, 1)<br><span style="color:#F2A65A">else</span>:<br>&#160;&#160;&#160;&#160;_, idx_next = torch.topk(probs, k=1, dim=-1)<br>idx = torch.cat((idx, idx_next), dim=1)</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">17 · minGPT’den FPGA’ye</p>
+<aside>Son blokta bir LayerNorm daha uygulanır, ardından lm_head sözlükteki her token için bir skor, yani logit üretir. Eğitimde bu logitler çapraz entropiye girer. Üretimde iki seçenek var: softmax ile olasılığa çevirip örneklemek ya da en büyüğünü seçmek (açgözlü kod çözme). Softmax monoton artan bir fonksiyon olduğu için en büyük olasılık en büyük logite karşılık gelir; açgözlü üretimde softmax hiç hesaplanmadan argmax alınabilir. Donanım tam olarak bunu yapar: logitleri tamsayı olarak karşılaştırır, eşitlikte en küçük indeksi seçer. Koddaki önemli ayrıntı ilk satır: minGPT her yeni token için self(idx_cond) çağırır, yani bütün öneki baştan hesaplar. Bu basit ama israflıdır. Bir sonraki slaytta bunun neden gereksiz olduğunu ispatlayacağım. (multinomial çağrısı burada kısaltıldı; asıl kodda num_samples=1 yazar.)</aside>
+</section>

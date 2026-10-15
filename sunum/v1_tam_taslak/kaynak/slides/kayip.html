@@ -1,0 +1,32 @@
+<section id="kayip" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">1 · Teorik zemin</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">Ölçü ve eğitim: çapraz entropi ve AdamW</h2>
+</div>
+<div style="display:flex;gap:48px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:28px">
+<div style="background:#F2EFE7;border-radius:12px;padding:28px 36px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;line-height:1.3;color:#14213D"><i>ℒ</i> = − (1/<i>N</i>) Σₜ ln <i>p</i>(<i>x</i>ₜ | <i>x</i>₁, …, <i>x</i>ₜ₋₁)</p>
+</div>
+<p style="font-size:30px;line-height:1.4">Doğru tokena verilen olasılığın eksi logaritması; birimi <b>nat/token</b>. Küçük olan iyi.</p>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:300px">Rastgele (ln 27)</p><div style="width:400px;height:28px;background:#9AA3B2;border-radius:4px"></div><p style="font-size:24px;font-weight:600;color:#14213D">3,30</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:300px">Bigram</p><div style="width:297px;height:28px;background:#2A5C9A;border-radius:4px"></div><p style="font-size:24px;font-weight:600;color:#14213D">2,45</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="font-size:24px;width:300px">En iyi 50k model</p><div style="width:237px;height:28px;background:#B4460F;border-radius:4px"></div><p style="font-size:24px;font-weight:600;color:#14213D">1,96</p></div>
+</div>
+<p style="font-size:24px;color:#5A6474">e<span style="color:#5A6474">¹·⁹⁶</span> ≈ 7: model, 27 harf yerine ortalama ~7 aday arasında kararsız.</p>
+</div>
+<div style="width:780px;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-direction:column;gap:12px;background:#14213D;border-radius:12px;padding:32px">
+<p style="font-size:24px;color:#9FB0CC">minGPT · trainer.py (eğitim döngüsü)</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">logits, self.loss = model(x, y)<br>model.zero_grad(set_to_none=True)<br>self.loss.backward()<br>clip_grad_norm_(model.parameters(), 1.0)<br>self.optimizer.step()  <span style="color:#9FB0CC"># AdamW</span></p>
+</div>
+<div style="background:#F2EFE7;border-radius:12px;padding:24px 32px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D">θ ← θ − η ( <i>m̂</i> / (√<i>v̂</i> + ε) + λθ )</p>
+<p style="font-size:24px;line-height:1.4">m, v: gradyanın ve karesinin kayan ortalaması; λ: ağırlık çürümesi</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">6 · minGPT’den FPGA’ye</p>
+<aside>Bir dil modelinin ne kadar iyi olduğunu çapraz entropiyle ölçeriz: doğru gelen tokena modelin verdiği olasılığın eksi doğal logaritmasının ortalaması. Doğal logaritma kullandığımız için birim nat/token. Referans noktaları: hiçbir şey bilmeyen bir model 27 harfe eşit olasılık verir; kaybı ln 27 = 3,30 olur. Yalnızca bir önceki harfe bakan bigram 2,45’e iner. 50 bin parametreli en iyi modelimiz yaklaşık 1,96’da. Bunun sezgisel anlamı: e üzeri 1,96 yaklaşık 7 eder (perplexity), yani model her adımda ortalama 7 aday arasında kararsız kalıyormuş gibi davranıyor. Eğitim: bu kaybın parametrelere göre gradyanını geri yayılımla hesaplayıp AdamW ile küçük adımlar atıyoruz. Sağdaki kod minGPT’nin eğitim döngüsü (clip satırı kısaltıldı; asıl kodda eşik config.grad_norm_clip’ten gelir, varsayılanı 1,0). Önemli not: eğitim tamamen kayan noktada ve bilgisayarda yapılıyor; FPGA yalnızca eğitilmiş modeli çalıştırıyor (çıkarım).</aside>
+</section>

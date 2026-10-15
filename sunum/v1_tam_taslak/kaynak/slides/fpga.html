@@ -1,0 +1,43 @@
+<section id="fpga" data-transition="fade" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · Tamsayı aritmetiği</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">FPGA nedir, neden tamsayı?</h2>
+</div>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:28px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">53 200</p>
+<p style="font-size:24px;font-weight:600;color:#B4460F">LUT</p>
+<p style="font-size:24px;line-height:1.4">6 girişli tablo: herhangi bir mantık fonksiyonu</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:28px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">106 400</p>
+<p style="font-size:24px;font-weight:600;color:#B4460F">FF</p>
+<p style="font-size:24px;line-height:1.4">tek bitlik yazmaç: durum ve boru hattı</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:28px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">140</p>
+<p style="font-size:24px;font-weight:600;color:#B4460F">BRAM (36 Kb)</p>
+<p style="font-size:24px;line-height:1.4">çip içi bellek, toplam ~4,9 Mb</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:28px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">220</p>
+<p style="font-size:24px;font-weight:600;color:#B4460F">DSP48</p>
+<p style="font-size:24px;line-height:1.4">25 × 18 bit tamsayı çarpıcı ve toplayıcı</p>
+</div>
+</div>
+<div style="display:flex;gap:48px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">PYNQ-Z2 kartı: Zynq XC7Z020</h3>
+<p style="font-size:30px;line-height:1.4">Tek çipte çift çekirdekli ARM Cortex-A9 (yazılım) ve yukarıdaki programlanabilir mantık (donanımımız).</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Neden tamsayı?</h3>
+<ul style="font-size:30px;line-height:1.4;display:flex;flex-direction:column;gap:8px">
+<li>INT8 çarpma-toplama: bir DSP, her çevrimde bir tane.</li>
+<li>INT8 ağırlık float32’nin dörtte biri: model çip içine sığar.</li>
+</ul>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">19 · minGPT’den FPGA’ye</p>
+<aside>Şimdi donanım tarafına geçiyoruz. FPGA, işlevi üretimden sonra belirlenen bir çiptir. İçinde dört tür kaynak var: LUT’lar (6 girişli küçük doğruluk tabloları; her mantık fonksiyonu bunlarla kurulur), flip-floplar (tek bitlik yazmaçlar), BRAM’ler (36 kilobitlik çip içi bellek blokları) ve DSP48 dilimleri (hazır tamsayı çarpıcı ve toplayıcılar). Kartımız PYNQ-Z2 ve üzerindeki Zynq XC7Z020 çipi. Bu çipte aynı kılıfta çift çekirdekli bir ARM işlemci ve programlanabilir mantık birlikte bulunuyor. İşlemci modeli yükler ve sonucu okur; hızlandırıcı programlanabilir mantıkta çalışır. Neden tamsayı? Birincisi, bir DSP her çevrimde bir INT8 çarpma-toplama yapar; kayan nokta işlemleri ise birden çok DSP ve hizalama ile normalizasyon için ek mantık ister. İkincisi bellek: INT8 ağırlıklar float32’nin dörtte biri kadar yer kaplar. Böylece gpt-nano’nun yaklaşık 84 KB’lık ağırlıkları dış DRAM’e gerek kalmadan çip içi BRAM’e sığar. Bu çip kaynak açısından küçük; tasarımın her kararını bu sınır belirliyor.</aside>
+</section>

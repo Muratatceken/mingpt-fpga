@@ -1,0 +1,33 @@
+<section id="isa" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">5 · Model ailesi ve motor</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">15 işlemlik komut kümesi ve bir GPT-2 programı</h2>
+</div>
+<div style="display:flex;gap:48px;align-items:start">
+<div style="width:620px;display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;color:#B4460F">Gömme ve çıkış</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#14213D">EMB16 · EMB8 · EMBWIN · TABLOGIT</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;color:#B4460F">Ana hesap</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#14213D">NORM · GEMV · ATTN · ROPE · KVSTORE</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;color:#B4460F">Eleman bazlı ve durum</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#14213D">MUL · GRUUPD · COPY · REQ · BOW · HRESET</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;border-left:6px solid #2A5C9A;padding:8px 0px 8px 24px">
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">GEMV modları</p>
+<p style="font-size:24px;line-height:1.4">o8: INT8 çıkış · radd: artığa ekle · lut: tablo aktivasyonu (GELU, SiLU…) · logit: INT16</p>
+</div>
+<p style="font-size:24px;line-height:1.4">Program uzunluğu: RNN 6, GRU 9, GPT-2 44, Llama 60, nanochat 61 komut.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#14213D;border-radius:12px;padding:32px">
+<p style="font-size:24px;color:#9FB0CC">GPT-2 (isimler), derleyici çıktısı</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap"><span style="color:#F2A65A">EMB16</span>&#160;&#160;&#160;wte + wpe → R<br><span style="color:#F2A65A">NORM</span>&#160;&#160;&#160;&#160;ln: R → A<br><span style="color:#F2A65A">GEMV</span>&#160;&#160;&#160;&#160;l0.q, l0.k, l0.v: A → Q, K, V (o8)<br><span style="color:#F2A65A">KVSTORE</span>&#160;l0: K, V → önbellek<br><span style="color:#F2A65A">ATTN</span>&#160;&#160;&#160;&#160;l0: Q → B (4 baş, dₕ = 8)<br><span style="color:#F2A65A">GEMV</span>&#160;&#160;&#160;&#160;l0.proj: B → R (radd)<br><span style="color:#F2A65A">NORM</span>&#160;&#160;&#160;&#160;ln: R → A<br><span style="color:#F2A65A">GEMV</span>&#160;&#160;&#160;&#160;l0.fc: A → F (lut, gelu)<br><span style="color:#F2A65A">GEMV</span>&#160;&#160;&#160;&#160;l0.mproj: F → R (radd)<br><span style="color:#9FB0CC">...&#160;&#160;&#160;&#160;&#160;katman 1–3 aynı</span><br><span style="color:#F2A65A">NORM</span>&#160;&#160;&#160;&#160;ln: R → A<br><span style="color:#F2A65A">GEMV</span>&#160;&#160;&#160;&#160;head: A → L (logit)</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">33 · minGPT’den FPGA’ye</p>
+<aside>Komut kümesi 15 işlemden oluşuyor ve bu dokuz mimarinin hepsini ifade etmeye yetiyor. Gömme grubunda dört işlem var; örneğin EMBWIN, MLP modelinin son k harfin gömmelerini yan yana koymasını sağlıyor, TABLOGIT bigram’ın tablo okumasını yapıyor. Ana hesap grubunda normalizasyon, matris-vektör çarpımı, dikkat, RoPE ve KV önbelleğine yazma var. Son grup tekrarlayan modeller ve BoW için: eleman bazlı çarpma, GRU’nun güncelleme kuralı, kopya, yeniden nicemleme noktası, önek ortalaması ve başlangıç durumu. Sağda GPT-2’nin gerçek derleyici çıktısı var; okunabilirlik için q, k, v çarpımları tek satıra toplandı. minGPT’de gördüğümüz forward fonksiyonu burada açıkça görülüyor: norm, q-k-v, KV önbelleğine yazma, dikkat, artığa ekleyen projeksiyon; sonra norm, GELU’lu genişleme ve artığa ekleyen daraltma. Dört katman sonunda son norm ve logit çıkışı. Program uzunlukları da mimarinin karmaşıklığını gösteriyor: RNN 6 komut, Llama 60 komut.</aside>
+</section>
