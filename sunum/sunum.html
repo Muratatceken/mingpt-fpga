@@ -1717,6 +1717,59 @@ body.present .wrap.on{display:block}
   <p style="width:1500px; font-family:'Source Serif 4', Georgia, serif; font-size:40px; font-style:italic; line-height:1.3; color:#c9d2e3">Bir matrisin her sayısını ayrı ayrı saklamak yerine, onu birkaç ±1 deseni ve birkaç scale ile tarif etmek.</p>
   <p style="font-family:'IBM Plex Sans', Arial, sans-serif; font-size:24px; line-height:1.5; color:#c9d2e3">B. Lee, D. Kim, Y. You, Y. Kim · Samsung Research · “LittleBit: Ultra Low-Bit Quantization via Latent Factorization” · NeurIPS 2025 · arXiv:2506.13771</p>
 </section></div>
+<div class="wrap"><section id="lbG" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Araştırma konusu: LittleBit · terimler</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">LittleBit’i anlamak için sekiz terim yeter; hepsi tek bir formülde buluşuyor</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:16px">
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #14213D;border-radius:12px;padding:14px 20px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><h3 style="font-size:28px;font-weight:600;color:#14213D">Quantization</h3><p style="font-size:24px;color:#5A6474">s. 40</p></div>
+<p style="font-size:24px;line-height:1.35">Sayıları daha az seviyeyle, yani daha az bitle saklamak.</p>
+<p style="font-family:'IBM Plex Mono', monospace;font-size:24px;line-height:1.35;color:#14213D">0,25 → 106 (INT8)</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:14px 20px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><h3 style="font-size:28px;font-weight:600;color:#14213D">Scale</h3><p style="font-size:24px;color:#5A6474">s. 40, 45</p></div>
+<p style="font-size:24px;line-height:1.35">Tamsayıları ya da işaretleri gerçek büyüklüğe döndüren tek bir çarpan.</p>
+<p style="font-family:'IBM Plex Mono', monospace;font-size:24px;line-height:1.35;color:#14213D">106 × 0,00236 = 0,250</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #14213D;border-radius:12px;padding:14px 20px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><h3 style="font-size:28px;font-weight:600;color:#14213D">Sign</h3><p style="font-size:24px;color:#5A6474">s. 40, 45</p></div>
+<p style="font-size:24px;line-height:1.35">Yalnızca işaret: +1 ya da −1, yani 1 bit. ±1 ile çarpmak toplama ya da çıkarmadır.</p>
+<p style="font-family:'IBM Plex Mono', monospace;font-size:24px;line-height:1.35;color:#14213D">−0,30 → −1</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:14px 20px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><h3 style="font-size:28px;font-weight:600;color:#14213D">BPW</h3><p style="font-size:24px;color:#5A6474">s. 39, 51</p></div>
+<p style="font-size:24px;line-height:1.35">Bits per weight: saklanan toplam bit bölü weight sayısı.</p>
+<p style="font-family:'IBM Plex Mono', monospace;font-size:24px;line-height:1.35;color:#14213D">FP16: 16 · LittleBit: 0,1</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:14px 20px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><h3 style="font-size:28px;font-weight:600;color:#14213D">Low-rank factorization</h3></div>
+<p style="font-size:24px;line-height:1.35">Matrisi iki ince matrisin çarpımı olarak yazmak: <i>W</i> ≈ <i>U V</i>ᵀ. Her “desen” bir rank-1 component.</p>
+<p style="font-family:'IBM Plex Mono', monospace;font-size:24px;line-height:1.35;color:#14213D">16,8 M → 0,7 M · s. 42</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:14px 20px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><h3 style="font-size:28px;font-weight:600;color:#14213D">SVD</h3><p style="font-size:24px;color:#5A6474">s. 43</p></div>
+<p style="font-size:24px;line-height:1.35">Matrisi önem sırasına dizilmiş desenlere ayırır; ilk <i>r</i> desen, en iyi rank-<i>r</i> yaklaşımdır.</p>
+<p style="font-family:'IBM Plex Mono', monospace;font-size:24px;line-height:1.35;color:#14213D">σ = 9,66 · 2,29 · 0,04</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #5A6474;border-radius:12px;padding:14px 20px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><h3 style="font-size:28px;font-weight:600;color:#14213D">LoRA</h3><p style="font-size:24px;color:#5A6474">s. 44</p></div>
+<p style="font-size:24px;line-height:1.35">Fine-tuning’de <i>W</i>’yi dondurup yalnızca değişimi low-rank öğrenmek. Modeli küçültmez.</p>
+<p style="font-family:'IBM Plex Mono', monospace;font-size:24px;line-height:1.35;color:#14213D">W′ = W + B·A</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #5A6474;border-radius:12px;padding:14px 20px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><h3 style="font-size:28px;font-weight:600;color:#14213D">Residual</h3><p style="font-size:24px;color:#5A6474">s. 49, 51</p></div>
+<p style="font-size:24px;line-height:1.35">İlk yaklaşımın hatası; ikinci bir yol onu yakalar. minGPT’deki residual connection değil.</p>
+<p style="font-family:'IBM Plex Mono', monospace;font-size:24px;line-height:1.35;color:#14213D">W − Ŵₚᵣᵢ</p>
+</div>
+</div>
+<div style="display:flex;gap:40px;align-items:center;background:#14213D;border-radius:12px;padding:18px 30px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#FBFBF8"><i>Ŵ</i>ᵢⱼ = <i>h</i>ᵢ · <i>g</i>ⱼ · Σₖ ℓₖ · sign(<i>U</i>ᵢₖ) · sign(<i>V</i>ⱼₖ)</p>
+<p style="flex:1;font-size:24px;line-height:1.4;color:#C9D2E3"><i>h</i>, <i>g</i>, ℓ: scale · sign: 1 bit · Σₖ: <i>r</i> desen, SVD’den başlar · aynısından ikinci bir kopya: residual yol</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">38 · minGPT ve FPGA</p>
+</section></div>
 <div class="wrap"><section id="lb2" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Araştırma konusu: LittleBit</p>
@@ -1748,7 +1801,41 @@ body.present .wrap.on{display:block}
 </div>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">38 · minGPT ve FPGA</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">39 · minGPT ve FPGA</p>
+</section></div>
+<div class="wrap"><section id="lbQ" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Araştırma konusu: LittleBit · temel: quantization, scale, sign</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Quantization sayıları az seviyeyle saklar; scale büyüklüğü geri verir; en uç hâlinde yalnızca sign kalır</h2>
+</div>
+<div style="display:flex;gap:28px;align-items:stretch">
+<div style="width:1060px;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:16px 24px">
+<div style="display:flex;gap:16px"><p style="width:230px"></p><div style="position:relative;width:760px;height:30px"><p style="position:absolute;left:-16.2px;width:80px;text-align:center;font-size:24px;color:#5A6474">−0,30</p><p style="position:absolute;left:340.0px;width:80px;text-align:center;font-size:24px;color:#5A6474">0</p><p style="position:absolute;left:482.5px;width:80px;text-align:center;font-size:24px;color:#5A6474">0,12</p><p style="position:absolute;left:636.9px;width:80px;text-align:center;font-size:24px;color:#5A6474">0,25</p></div></div>
+<div style="display:flex;align-items:center;gap:16px"><p style="width:230px;font-size:24px;color:#14213D">FP16 · <i>w</i></p><div style="position:relative;width:760px;height:38px"><div style="position:absolute;left:0px;top:18px;width:760px;height:2px;background:#C9CED8"></div><div style="position:absolute;left:514.5px;top:11px;width:16px;height:16px;border-radius:8px;background:#B4460F"></div><div style="position:absolute;left:15.8px;top:11px;width:16px;height:16px;border-radius:8px;background:#B4460F"></div><div style="position:absolute;left:668.9px;top:11px;width:16px;height:16px;border-radius:8px;background:#B4460F"></div></div></div>
+<div style="display:flex;align-items:center;gap:16px"><p style="width:230px;font-size:24px;color:#14213D">INT8 · 255 seviye</p><div style="position:relative;width:760px;height:38px"><div style="position:absolute;left:0px;top:18px;width:760px;height:2px;background:#C9CED8"></div><div style="position:absolute;left:23.8px;top:7px;width:712.5px;height:24px;background:#DCE5F1"></div><div style="position:absolute;left:515.1px;top:11px;width:16px;height:16px;border-radius:8px;background:#B4460F"></div><div style="position:absolute;left:15.8px;top:11px;width:16px;height:16px;border-radius:8px;background:#B4460F"></div><div style="position:absolute;left:669.4px;top:11px;width:16px;height:16px;border-radius:8px;background:#B4460F"></div></div></div>
+<div style="display:flex;align-items:center;gap:16px"><p style="width:230px;font-size:24px;color:#14213D">INT4 · 15 seviye</p><div style="position:relative;width:760px;height:38px"><div style="position:absolute;left:0px;top:18px;width:760px;height:2px;background:#C9CED8"></div><div style="position:absolute;left:22.8px;top:5px;width:2px;height:28px;background:#5A6474"></div><div style="position:absolute;left:73.6px;top:5px;width:2px;height:28px;background:#5A6474"></div><div style="position:absolute;left:124.5px;top:5px;width:2px;height:28px;background:#5A6474"></div><div style="position:absolute;left:175.4px;top:5px;width:2px;height:28px;background:#5A6474"></div><div style="position:absolute;left:226.3px;top:5px;width:2px;height:28px;background:#5A6474"></div><div style="position:absolute;left:277.2px;top:5px;width:2px;height:28px;background:#5A6474"></div><div style="position:absolute;left:328.1px;top:5px;width:2px;height:28px;background:#5A6474"></div><div style="position:absolute;left:379.0px;top:5px;width:2px;height:28px;background:#5A6474"></div><div style="position:absolute;left:429.9px;top:5px;width:2px;height:28px;background:#5A6474"></div><div style="position:absolute;left:480.8px;top:5px;width:2px;height:28px;background:#5A6474"></div><div style="position:absolute;left:531.7px;top:5px;width:2px;height:28px;background:#5A6474"></div><div style="position:absolute;left:582.6px;top:5px;width:2px;height:28px;background:#5A6474"></div><div style="position:absolute;left:633.5px;top:5px;width:2px;height:28px;background:#5A6474"></div><div style="position:absolute;left:684.4px;top:5px;width:2px;height:28px;background:#5A6474"></div><div style="position:absolute;left:735.2px;top:5px;width:2px;height:28px;background:#5A6474"></div><div style="position:absolute;left:524.7px;top:11px;width:16px;height:16px;border-radius:8px;background:#B4460F"></div><div style="position:absolute;left:15.8px;top:11px;width:16px;height:16px;border-radius:8px;background:#B4460F"></div><div style="position:absolute;left:677.4px;top:11px;width:16px;height:16px;border-radius:8px;background:#B4460F"></div></div></div>
+<div style="display:flex;align-items:center;gap:16px"><p style="width:230px;font-size:24px;color:#14213D">binary · 2 seviye</p><div style="position:relative;width:760px;height:38px"><div style="position:absolute;left:0px;top:18px;width:760px;height:2px;background:#C9CED8"></div><div style="position:absolute;left:113.8px;top:1px;width:2px;height:36px;background:#14213D"></div><div style="position:absolute;left:644.2px;top:1px;width:2px;height:36px;background:#14213D"></div><div style="position:absolute;left:637.2px;top:11px;width:16px;height:16px;border-radius:8px;background:#B4460F"></div><div style="position:absolute;left:106.8px;top:11px;width:16px;height:16px;border-radius:8px;background:#B4460F"></div><div style="position:absolute;left:637.2px;top:11px;width:16px;height:16px;border-radius:8px;background:#B4460F"></div></div></div>
+<p style="font-size:24px;line-height:1.35;color:#5A6474"><b>Şekil:</b> weight’ler (turuncu) en yakın seviyeye kayar; seviye azaldıkça kayma büyür.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#F2EFE7;border-radius:12px;padding:18px 26px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">INT8 (8 bit)</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:28px;line-height:1.4;color:#14213D"><i>s</i> = max|<i>w</i>| / 127<br><i>q</i> = round(<i>w</i> / <i>s</i>) ,  <i>ŵ</i> = <i>s</i> · <i>q</i></p>
+<p style="font-size:24px;font-weight:600;color:#5A6474">binary (1 bit)</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:28px;line-height:1.4;color:#14213D"><i>ŵ</i> = α · sign(<i>w</i>) ,  sign(<i>x</i>) = ±1<br>en iyi α = (1/<i>n</i>) Σ |<i>w</i>ᵢ|</p>
+<p style="font-size:24px;line-height:1.35;color:#5A6474">∂/∂α ‖<i>w</i> − α sign(<i>w</i>)‖² = 0’dan</p>
+</div>
+</div>
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:26%;text-align:left;color:#14213D">temsil</th><th style="width:8%;text-align:right;color:#14213D">bit</th><th style="width:16%;text-align:right;color:#14213D">0,12</th><th style="width:18%;text-align:right;color:#14213D">−0,30</th><th style="width:16%;text-align:right;color:#14213D">0,25</th><th style="width:16%;text-align:right;color:#14213D">göreli hata</th></tr>
+<tr><td>INT8, <i>s</i> = 0,00236</td><td style="text-align:right">8</td><td style="text-align:right">51 → 0,1205</td><td style="text-align:right">−127 → −0,3000</td><td style="text-align:right">106 → 0,2504</td><td style="text-align:right">%0,15</td></tr>
+<tr><td>INT4, <i>s</i> = 0,0429</td><td style="text-align:right">4</td><td style="text-align:right">3 → 0,129</td><td style="text-align:right">−7 → −0,300</td><td style="text-align:right">6 → 0,257</td><td style="text-align:right">%2,7</td></tr>
+<tr style="background:#F6E3D7"><td><b>binary</b>, α = 0,223</td><td style="text-align:right">1</td><td style="text-align:right">+1 → 0,223</td><td style="text-align:right">−1 → −0,223</td><td style="text-align:right">+1 → 0,223</td><td style="text-align:right"><b>%32</b></td></tr>
+</table>
+<div style="display:flex;gap:40px;align-items:center;background:#14213D;border-radius:12px;padding:16px 30px">
+<p style="flex:1;font-size:24px;line-height:1.4;color:#FBFBF8"><b>LittleBit’in farkı:</b> <i>W</i>’yi doğrudan sign’a indirmek çok hata verir. LittleBit sign’ı <i>W</i>’ye değil, onun low-rank factor’larına uygular; tek bir α yerine üç scale vektörü kullanır: <i>h</i>, <i>g</i>, ℓ.</p>
+<p style="width:420px;font-size:24px;line-height:1.4;color:#C9D2E3">Bizim FPGA tasarımımız INT8 + scale kullanıyor.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">40 · minGPT ve FPGA</p>
 </section></div>
 <div class="wrap"><section id="lbO" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -1779,7 +1866,7 @@ body.present .wrap.on{display:block}
 <p style="flex:1;font-size:24px;line-height:1.4;color:#FBFBF8"><b>Sonuç:</b> 4096 × 4096’lık bir katman 33,6 MB yerine 209 KB tutar (0,1 bit/weight); hesapta çarpma yerine toplama ve çıkarma yapılır.</p>
 <p style="width:600px;font-size:24px;line-height:1.4;color:#C9D2E3">İki yardımcı fikir: akıllı başlangıç (Dual-SVID) ve ikinci düzeltme yolu (residual).</p>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">39 · minGPT ve FPGA</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">41 · minGPT ve FPGA</p>
 </section></div>
 <div class="wrap"><section id="lbA" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -1818,7 +1905,11 @@ body.present .wrap.on{display:block}
 <p style="font-size:24px;line-height:1.4"><b>Kazanç:</b> <i>m</i> · <i>n</i> sayı yerine <i>r</i>(<i>m</i> + <i>n</i>) sayı. 4096 × 4096’da <i>r</i> = 86: 16,8 M yerine 0,7 M sayı (%4).</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">40 · minGPT ve FPGA</p>
+<div style="display:flex;gap:40px;align-items:center;background:#14213D;border-radius:12px;padding:18px 30px">
+<p style="flex:1;font-size:24px;line-height:1.4;color:#FBFBF8"><b>Bu yazımın adı low-rank factorization.</b> Her desen (<i>u v</i>ᵀ) bir rank-1 component; rank, matrisi kurmak için gereken bağımsız desen sayısıdır.</p>
+<p style="width:640px;font-size:24px;line-height:1.4;color:#C9D2E3">Hesap da ucuzlar: <i>W x</i> = <i>U</i> (<i>V</i>ᵀ <i>x</i>), yani <i>m n</i> yerine <span style="white-space:nowrap"><i>r</i>(<i>m</i> + <i>n</i>)</span> çarpma.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">42 · minGPT ve FPGA</p>
 </section></div>
 <div class="wrap"><section id="lb3" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -1846,7 +1937,56 @@ body.present .wrap.on{display:block}
 <p style="font-size:24px;line-height:1.4"><b>Parametre sayısı:</b> <i>d</i>ₒᵤₜ · <i>d</i>ᵢₙ yerine <i>r</i> (<i>d</i>ₒᵤₜ + <i>d</i>ᵢₙ). Yazarlar, LLM weight’lerindeki low-rank yapıya dayanıyor.</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">41 · minGPT ve FPGA</p>
+<div style="display:flex;gap:32px;align-items:center;background:#F2EFE7;border-radius:12px;padding:14px 28px">
+<div style="width:300px;display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;font-weight:600;color:#14213D">Bizim 4 × 4 örneğimizin SVD’si (s. 49)</p><p style="font-size:24px;color:#5A6474">sağda: enerji payı σᵢ² / Σ σ²</p></div>
+<div style="display:flex;flex-direction:column;gap:4px"><div style="display:flex;gap:12px;align-items:center"><p style="width:150px;font-family:'Source Serif 4', Georgia, serif;font-size:24px;color:#14213D">σ₁ = 9,66</p><div style="width:400px;display:flex"><div style="width:400px;height:22px;background:#B4460F;border-radius:2px"></div></div><p style="width:90px;text-align:right;font-size:24px;color:#5A6474">%94,7</p></div><div style="display:flex;gap:12px;align-items:center"><p style="width:150px;font-family:'Source Serif 4', Georgia, serif;font-size:24px;color:#14213D">σ₂ = 2,29</p><div style="width:400px;display:flex"><div style="width:95px;height:22px;background:#B4460F;border-radius:2px"></div></div><p style="width:90px;text-align:right;font-size:24px;color:#5A6474">%5,3</p></div><div style="display:flex;gap:12px;align-items:center"><p style="width:150px;font-family:'Source Serif 4', Georgia, serif;font-size:24px;color:#14213D">σ₃ = 0,04</p><div style="width:400px;display:flex"><div style="width:2px;height:22px;background:#B4460F;border-radius:2px"></div></div><p style="width:90px;text-align:right;font-size:24px;color:#5A6474">%0,0</p></div><div style="display:flex;gap:12px;align-items:center"><p style="width:150px;font-family:'Source Serif 4', Georgia, serif;font-size:24px;color:#14213D">σ₄ = 0</p><div style="width:400px;display:flex"><div style="width:0px;height:22px;background:#B4460F;border-radius:2px"></div></div><p style="width:90px;text-align:right;font-size:24px;color:#5A6474">%0</p></div></div>
+<p style="flex:1;font-size:24px;line-height:1.4">Yalnız 1. desen: hata %23,1. İlk iki desen: hata <b>%0,4</b>. Bu matris aslında iki desenden oluşuyor.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">43 · minGPT ve FPGA</p>
+</section></div>
+<div class="wrap"><section id="lbL" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Araştırma konusu: LittleBit · karşılaştırma: LoRA</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">LoRA da low-rank kullanır ama modeli küçültmez: <i>W</i>’ye bir düzeltme ekler; LittleBit ise <i>W</i>’nin yerine geçer</h2>
+</div>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #5A6474;border-radius:12px;padding:18px 26px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">LoRA · fine-tuning için</h3>
+<div style="display:flex;gap:14px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:4px;align-items:center"><div style="width:88px;height:88px;background:#9AA3B2;border-radius:3px"></div><p style="font-size:24px;color:#5A6474"><i>W</i> · donmuş</p></div>
+<p style="font-size:36px;color:#14213D">+</p>
+<div style="display:flex;flex-direction:column;gap:4px;align-items:center"><div style="display:flex;gap:6px;align-items:flex-start"><div style="width:18px;height:88px;background:#B4460F;border-radius:2px"></div><div style="width:88px;height:18px;background:#B4460F;border-radius:2px"></div></div><p style="font-size:24px;color:#5A6474"><i>B</i> · <i>A</i>, <i>r</i> = 8</p></div>
+<p style="font-size:36px;color:#14213D">=</p>
+<div style="display:flex;flex-direction:column;gap:4px;align-items:center"><div style="width:88px;height:88px;background:#2A5C9A;border-radius:3px"></div><p style="font-size:24px;color:#5A6474"><i>W</i>′</p></div>
+</div>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:28px;line-height:1.4;color:#14213D"><i>W</i>′ = <i>W</i> + <i>B A</i> ,  <i>B</i> ∈ ℝ^(<i>d</i>×<i>r</i>), <i>A</i> ∈ ℝ^(<i>r</i>×<i>k</i>) ,  <i>B</i>₀ = 0</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:18px 26px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">LittleBit · sıkıştırma için</h3>
+<div style="display:flex;gap:10px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:4px;align-items:center"><div style="width:88px;height:88px;border:3px dashed #9AA3B2;border-radius:3px"></div><p style="font-size:24px;color:#5A6474"><i>W</i> · kaldırılır</p></div>
+<p style="font-size:36px;color:#14213D">→</p>
+<p style="font-size:24px;padding:10px 12px;background:#DCE5F1;color:#14213D;border-radius:8px"><i>h</i></p>
+<p style="font-size:24px;padding:10px 12px;background:#14213D;color:#FBFBF8;border-radius:8px"><i>U</i>_sign</p>
+<p style="font-size:24px;padding:10px 12px;background:#E9E6DD;color:#14213D;border-radius:8px">ℓ</p>
+<p style="font-size:24px;padding:10px 12px;background:#14213D;color:#FBFBF8;border-radius:8px"><i>V</i>_signᵀ</p>
+<p style="font-size:24px;padding:10px 12px;background:#DCE5F1;color:#14213D;border-radius:8px"><i>g</i></p>
+</div>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:28px;line-height:1.4;color:#14213D"><i>Ŵ</i> = diag(<i>h</i>) <i>U</i>_sign diag(ℓ) <i>V</i>_signᵀ diag(<i>g</i>) + residual yol</p>
+</div>
+</div>
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:28%;text-align:left;color:#14213D"></th><th style="width:36%;text-align:left;color:#14213D">LoRA</th><th style="width:36%;text-align:left;color:#14213D">LittleBit</th></tr>
+<tr><td>low-rank olan</td><td>Δ<i>W</i>, yani weight’teki değişim</td><td><i>W</i>’nin kendisi</td></tr>
+<tr><td>orijinal <i>W</i></td><td>aynen kalır, eğitilmez</td><td>kaldırılır</td></tr>
+<tr><td>factor’lar</td><td>FP16 sayılar</td><td>±1 işaretler + FP16 scale’ler</td></tr>
+<tr style="background:#F6E3D7"><td>4096 × 4096 bellek</td><td>33,6 MB + 131 KB (<i>r</i> = 8)</td><td><b>209 KB</b> (0,1 BPW)</td></tr>
+</table>
+<div style="display:flex;gap:40px;align-items:center;background:#F2EFE7;border-radius:12px;padding:16px 30px">
+<p style="flex:1;font-size:24px;line-height:1.4"><b>Ortak fikir:</b> weight matrislerindeki bilgi az sayıda desende toplanır. LoRA bunu değişime, LittleBit matrisin kendisine uygular.</p>
+<p style="width:440px;font-size:24px;line-height:1.4;color:#5A6474">LoRA: Hu vd., ICLR 2022 · arXiv:2106.09685</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">44 · minGPT ve FPGA</p>
 </section></div>
 <div class="wrap"><section id="lbB" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -1885,7 +2025,7 @@ body.present .wrap.on{display:block}
 </div>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">42 · minGPT ve FPGA</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">45 · minGPT ve FPGA</p>
 </section></div>
 <div class="wrap"><section id="lb4" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -1911,7 +2051,7 @@ body.present .wrap.on{display:block}
 <p style="font-size:24px;line-height:1.4"><b>Saklanan:</b> işaretler <i>r</i>(<i>d</i>ₒᵤₜ + <i>d</i>ᵢₙ) bit, scale’ler 16(<i>d</i>ₒᵤₜ + <i>d</i>ᵢₙ + <i>r</i>) bit (FP16).</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">43 · minGPT ve FPGA</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">46 · minGPT ve FPGA</p>
 </section></div>
 <div class="wrap"><section id="lbC" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -1942,7 +2082,7 @@ body.present .wrap.on{display:block}
 <p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> 1. desenin büyüklükleri iyi yaklaşılıyor; 2. desenin profili farklı olduğu için aynı satır scale’leriyle yakalanamıyor (0,87 yerine 0,41).</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">44 · minGPT ve FPGA</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">47 · minGPT ve FPGA</p>
 </section></div>
 <div class="wrap"><section id="lb6" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -1965,7 +2105,7 @@ body.present .wrap.on{display:block}
 <p style="font-size:24px;line-height:1.4">diag(ℓᵤ) diag(ℓᵥ) = diag(ℓᵤ ⊙ ℓᵥ) olduğu için ℓ₀ tek bir vektöre iner. Training, LittleBit yapısının içinde SVD çözümüne yakın bir noktadan başlar.</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">45 · minGPT ve FPGA</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">48 · minGPT ve FPGA</p>
 </section></div>
 <div class="wrap"><section id="lbD" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -1997,14 +2137,14 @@ body.present .wrap.on{display:block}
 <div style="flex:1;display:flex;flex-direction:column;gap:8px"><p style="font-size:24px;line-height:1.4"><b>Ŵ</b>, Dual-SVID başlangıcıdır: işaretler ve scale’ler SVD’den. Farkın büyük olduğu hücreler, bir önceki slayttaki 2. desenin yakalanamayan kısmıdır.</p></div>
 </div>
 <table style="font-size:24px;color:#3B4456">
-<tr><th style="width:70%;text-align:left;color:#14213D">Temsil (aynı 4 × 4 matris)</th><th style="width:30%;text-align:right;color:#14213D">göreli hata ‖<i>W</i> − <i>Ŵ</i>‖ / ‖<i>W</i>‖</th></tr>
-<tr><td>SVD, rank 2 (gerçek sayılarla, sıkıştırmasız)</td><td style="text-align:right">%0,4</td></tr>
-<tr><td>LittleBit, tek yol, <i>r</i> = 2 · Dual-SVID başlangıcı</td><td style="text-align:right">%17,7</td></tr>
-<tr><td>aynı yapı, scale’ler ve işaretler eğitilince*</td><td style="text-align:right">%14,5</td></tr>
-<tr style="background:#F6E3D7"><td><b>ana yol + residual yol, her biri <i>r</i> = 1</b> · başlangıç</td><td style="text-align:right"><b>%0,4</b></td></tr>
+<tr><th style="width:50%;text-align:left;color:#14213D">Temsil (aynı 4 × 4 matris)</th><th style="width:13%;text-align:right;color:#14213D">işaret biti</th><th style="width:11%;text-align:right;color:#14213D">scale</th><th style="width:26%;text-align:right;color:#14213D">göreli hata ‖<i>W</i> − <i>Ŵ</i>‖ / ‖<i>W</i>‖</th></tr>
+<tr><td>SVD, rank 2 (gerçek sayılarla, sıkıştırmasız)</td><td colspan="2" style="text-align:right">18 FP16 sayı</td><td style="text-align:right">%0,4</td></tr>
+<tr><td>LittleBit, tek yol, <i>r</i> = 2 · Dual-SVID başlangıcı</td><td style="text-align:right">16</td><td style="text-align:right">10</td><td style="text-align:right">%17,7</td></tr>
+<tr><td>aynı yapı, scale’ler ve işaretler eğitilince*</td><td style="text-align:right">16</td><td style="text-align:right">10</td><td style="text-align:right">%14,5</td></tr>
+<tr style="background:#F6E3D7"><td><b>ana yol + residual yol, her biri <i>r</i> = 1</b> · başlangıç</td><td style="text-align:right">16</td><td style="text-align:right">18</td><td style="text-align:right"><b>%0,4</b></td></tr>
 </table>
 <p style="font-size:24px;line-height:1.4;color:#5A6474">* Bizim oyuncak hesabımız: makaledeki loss yerine doğrudan ‖<i>W</i> − <i>Ŵ</i>‖² küçültüldü (Adam, SmoothSign). Her yol tek desen taşıyınca işaret + scale kayıpsızdır. 4 × 4’te bit kazancı yok; kazanç büyük matrislerde.</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">46 · minGPT ve FPGA</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">49 · minGPT ve FPGA</p>
 </section></div>
 <div class="wrap"><section id="lb5" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:24px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -2053,7 +2193,7 @@ body.present .wrap.on{display:block}
 <p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D"><i>y</i> = <i>h</i> ⊙ ( <i>U</i>_sign ( ℓ ⊙ ( <i>V</i>_signᵀ ( <i>g</i> ⊙ <i>x</i> ) ) ) )</p>
 <p style="flex:1;font-size:24px;line-height:1.4">Turuncu adımlarda hiç çarpma yok: sign(<i>v</i>) · <i>a</i> = ±<i>a</i>. Makale: A100’de 1-bit kernel ile 11,6 kata kadar (kernel düzeyi).</p>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">47 · minGPT ve FPGA</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">50 · minGPT ve FPGA</p>
 </section></div>
 <div class="wrap"><section id="lb7" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -2081,7 +2221,12 @@ body.present .wrap.on{display:block}
 </table>
 <p style="flex:1;font-size:24px;line-height:1.4"><b>Okunuşu:</b> küçük matriste scale’ler baskındır ve kazanç yoktur; matris büyüdükçe bit başına maliyet hızla düşer.</p>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">48 · minGPT ve FPGA</p>
+<div style="display:flex;gap:28px;align-items:center;background:#14213D;border-radius:12px;padding:16px 28px">
+<p style="width:280px;font-size:24px;font-weight:600;line-height:1.35;color:#F2A65A">Dikkat: aynı kelime, iki ayrı anlam</p>
+<p style="flex:1;font-size:24px;line-height:1.4;color:#FBFBF8"><b>minGPT (s. 28):</b> residual connection, <i>x</i> + <i>f</i>(<i>x</i>); girdiyi block’un çıktısına ekler.</p>
+<p style="flex:1;font-size:24px;line-height:1.4;color:#FBFBF8"><b>LittleBit:</b> residual = <i>W</i> − <i>Ŵ</i>ₚᵣᵢ; ilk yaklaşımın hatası, ikinci yol onu yaklaşır.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">51 · minGPT ve FPGA</p>
 </section></div>
 <div class="wrap"><section id="lbT" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -2108,7 +2253,7 @@ body.present .wrap.on{display:block}
 <p style="font-size:24px;line-height:1.4;color:#5A6474">Training boyunca U ve V gerçek sayı olarak tutulur, forward’da yalnızca işaretleri kullanılır. Veri: WikiText-2 ve C4 parçaları; 5 epoch, dizi uzunluğu 2048.</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">49 · minGPT ve FPGA</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">52 · minGPT ve FPGA</p>
 </section></div>
 <div class="wrap"><section id="lb8" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -2138,7 +2283,7 @@ body.present .wrap.on{display:block}
 </div>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">50 · minGPT ve FPGA</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">53 · minGPT ve FPGA</p>
 </section></div>
 <div class="wrap"><section id="lb9" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -2175,7 +2320,7 @@ body.present .wrap.on{display:block}
 <p style="flex:1;font-size:24px;line-height:1.4"><b>3 ·</b> FP16 scale’ler integer’a indirilip bit-exact bir donanım kurulabilir mi?</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">51 · minGPT ve FPGA</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">54 · minGPT ve FPGA</p>
 </section></div>
 <div class="wrap"><section id="son" data-transition="fade" style="background:#14213D;color:#FBFBF8;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:36px">
 <p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#F2A65A">Özet</p>
