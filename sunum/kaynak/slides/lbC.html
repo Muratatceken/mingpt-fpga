@@ -1,18 +1,18 @@
 <section id="lbC" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Araştırma konusu: LittleBit · kayıp nerede doğar?</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Kayıp, birden çok desen aynı satır düğmesini paylaşmak zorunda kalınca doğar</h2>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Kayıp, birden çok desen aynı satır scale’ini paylaşmak zorunda kalınca doğar</h2>
 </div>
 <div style="display:flex;gap:44px;align-items:start">
 <div style="flex:1;display:flex;flex-direction:column;gap:16px">
-<p style="font-size:24px;line-height:1.4"><i>r</i> desen varsa her satırın <i>r</i> tane büyüklüğü vardır: |<i>U</i>ᵢ₁|, …, |<i>U</i>ᵢᵣ|. Ama LittleBit her satır için tek düğme (<i>h</i>ᵢ) ve her desen için tek düğme (ℓₖ) saklar:</p>
+<p style="font-size:24px;line-height:1.4"><i>r</i> desen varsa her satırın <i>r</i> tane büyüklüğü vardır: |<i>U</i>ᵢ₁|, …, |<i>U</i>ᵢᵣ|. Ama LittleBit her satır için tek scale (<i>h</i>ᵢ) ve her desen için tek scale (ℓₖ) saklar:</p>
 <div style="background:#F2EFE7;border-radius:12px;padding:20px 28px">
 <p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D">|<i>U</i>ᵢₖ| ≈ <i>h</i>ᵢ · ℓₖ   (büyüklük tablosunun rank-1 yaklaşımı)</p>
 </div>
 <p style="font-size:24px;line-height:1.4">Tablonun gerçek yapısı “satır × desen” çarpımına uymuyorsa hata doğar. Tek desende (<i>r</i> = 1) tablo tek sütundur ve <i>h</i> = |<i>u</i>| alınır: kayıp yoktur.</p>
 <div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 24px">
 <p style="font-size:24px;font-weight:600;color:#2A5C9A">İki çare</p>
-<p style="font-size:24px;line-height:1.4">Training düğmeleri ve işaretleri birlikte ayarlar. Residual yol, ikinci bir düğme takımı ekler.</p>
+<p style="font-size:24px;line-height:1.4">Training scale’leri ve işaretleri birlikte ayarlar. Residual yol, ikinci bir scale takımı ekler.</p>
 </div>
 </div>
 <div style="width:640px;display:flex;flex-direction:column;gap:10px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px 28px">
@@ -24,9 +24,9 @@
 <tr><td>3</td><td style="text-align:right">0,84</td><td style="text-align:right">0,80</td><td style="text-align:right">1,00</td><td style="text-align:right;color:#B4460F"><b>0,43</b></td></tr>
 <tr><td>4</td><td style="text-align:right">2,38</td><td style="text-align:right">0,54</td><td style="text-align:right">2,20</td><td style="text-align:right;color:#B4460F"><b>0,95</b></td></tr>
 </table>
-<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> 1. desenin büyüklükleri iyi yaklaşılıyor; 2. desenin profili farklı olduğu için aynı satır düğmeleriyle yakalanamıyor (0,87 yerine 0,41).</p>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> 1. desenin büyüklükleri iyi yaklaşılıyor; 2. desenin profili farklı olduğu için aynı satır scale’leriyle yakalanamıyor (0,87 yerine 0,41).</p>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">44 · minGPT ve FPGA</p>
-<aside>Tek desen için işaret artı düğme yazımı kayıpsızdı. Peki bilgi nerede kayboluyor? Birden çok desen olduğunda. r desen varsa, U matrisinin her satırında r tane sayı, yani r tane büyüklük var. Ama LittleBit her satır için yalnızca bir düğme, h_i, ve her desen için yalnızca bir düğme, ℓ_k, saklıyor. Dolayısıyla i’nci satırın k’ncı desendeki büyüklüğünü h_i çarpı ℓ_k olarak yaklaşmak zorunda. Bu, büyüklük tablosunun rank-1 yaklaşımı: tabloyu bir satır vektörü ile bir sütun vektörünün çarpımına sığdırmak. Tablonun gerçek yapısı bu çarpıma uyuyorsa sorun yok; uymuyorsa hata doğuyor. Sağdaki tablo bunu 4 çarpı 4’lük bir örnek matriste, iki desenle gösteriyor; sayılar gerçekten hesaplandı. Soldaki iki sütun gerçek büyüklükler, sağdaki iki sütun h çarpı ℓ yaklaşımı. Birinci desen için yaklaşım iyi: 1,65’e karşı 1,67, 2,38’e karşı 2,20. Ama ikinci desenin büyüklük profili çok farklı: hemen hemen düz, 0,5 ile 0,9 arasında. Aynı satır düğmeleriyle bu düz profil yakalanamıyor; birinci satırda 0,87 yerine 0,41 çıkıyor. İşte LittleBit’in kaybettiği bilgi bu. Tek desen olduğunda tablo tek bir sütun, onu h’ye birebir yazabiliyoruz; kayıp yok. LittleBit bu kaybı iki yolla azaltıyor. Birincisi training: düğmeler ve işaretler, loss’u azaltacak şekilde birlikte ayarlanıyor. İkincisi residual yol: ilk yolun hatasını, kendi ayrı düğme takımı olan ikinci bir yol yakalıyor. Bir sonraki slaytlarda önce düğmelerin başlangıç değerlerinin nasıl seçildiğini, sonra bütün bunların bu küçük örnekte nasıl çalıştığını göstereceğim.</aside>
+<aside>Tek desen için işaret artı scale yazımı kayıpsızdı. Peki bilgi nerede kayboluyor? Birden çok desen olduğunda. r desen varsa, U matrisinin her satırında r tane sayı, yani r tane büyüklük var. Ama LittleBit her satır için yalnızca bir scale, h_i, ve her desen için yalnızca bir scale, ℓ_k, saklıyor. Dolayısıyla i’nci satırın k’ncı desendeki büyüklüğünü h_i çarpı ℓ_k olarak yaklaşmak zorunda. Bu, büyüklük tablosunun rank-1 yaklaşımı: tabloyu bir satır vektörü ile bir sütun vektörünün çarpımına sığdırmak. Tablonun gerçek yapısı bu çarpıma uyuyorsa sorun yok; uymuyorsa hata doğuyor. Sağdaki tablo bunu 4 çarpı 4’lük bir örnek matriste, iki desenle gösteriyor; sayılar gerçekten hesaplandı. Soldaki iki sütun gerçek büyüklükler, sağdaki iki sütun h çarpı ℓ yaklaşımı. Birinci desen için yaklaşım iyi: 1,65’e karşı 1,67, 2,38’e karşı 2,20. Ama ikinci desenin büyüklük profili çok farklı: hemen hemen düz, 0,5 ile 0,9 arasında. Aynı satır scale’leriyle bu düz profil yakalanamıyor; birinci satırda 0,87 yerine 0,41 çıkıyor. İşte LittleBit’in kaybettiği bilgi bu. Tek desen olduğunda tablo tek bir sütun, onu h’ye birebir yazabiliyoruz; kayıp yok. LittleBit bu kaybı iki yolla azaltıyor. Birincisi training: scale’ler ve işaretler, loss’u azaltacak şekilde birlikte ayarlanıyor. İkincisi residual yol: ilk yolun hatasını, kendi ayrı scale takımı olan ikinci bir yol yakalıyor. Bir sonraki slaytlarda önce scale’lerin başlangıç değerlerinin nasıl seçildiğini, sonra bütün bunların bu küçük örnekte nasıl çalıştığını göstereceğim.</aside>
 </section>
