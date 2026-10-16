@@ -1,0 +1,32 @@
+<section id="lbO" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Araştırma konusu: LittleBit · tek bakışta</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">LittleBit’in hilesi: matrisi sayı sayı saklamak yerine birkaç ± desen ve birkaç “ses düğmesi” ile tarif etmek</h2>
+</div>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:22px 26px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1;color:#2A5C9A">1</p>
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Desenlere ayır</h3>
+<p style="font-size:24px;line-height:1.4">Büyük matris, birkaç basit desenin toplamı olarak yazılır. Her desen bir sütun ile bir satırın çarpımıdır.</p>
+<div style="display:flex;gap:10px;align-items:center"><div style="width:72px;height:72px;background:#2A5C9A;border-radius:3px"></div><p style="font-size:30px;color:#14213D">≈</p><div style="width:16px;height:72px;background:#7F9DC4"></div><div style="width:72px;height:16px;background:#7F9DC4"></div><p style="font-size:24px;color:#5A6474">× <i>r</i></p></div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #14213D;border-radius:12px;padding:22px 26px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1;color:#14213D">2</p>
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Yalnız işareti tut</h3>
+<p style="font-size:24px;line-height:1.4">Desenlerdeki her sayının yalnızca + mı − mi olduğu saklanır: sayı başına 1 bit.</p>
+<div style="display:flex;gap:4px"><p style="font-size:24px;width:40px;text-align:center;background:#F6E3D7;color:#14213D">+</p><p style="font-size:24px;width:40px;text-align:center;background:#14213D;color:#FBFBF8">−</p><p style="font-size:24px;width:40px;text-align:center;background:#F6E3D7;color:#14213D">+</p><p style="font-size:24px;width:40px;text-align:center;background:#F6E3D7;color:#14213D">+</p><p style="font-size:24px;width:40px;text-align:center;background:#14213D;color:#FBFBF8">−</p></div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:22px 26px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1;color:#B4460F">3</p>
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Düğmelerle telafi et</h3>
+<p style="font-size:24px;line-height:1.4">Kaybolan büyüklükleri, her satır, her sütun ve her desen için birer ölçek sayısı geri verir: <i>h</i>, <i>g</i>, ℓ.</p>
+<div style="display:flex;gap:8px"><p style="font-size:24px;padding:4px 14px;background:#DCE5F1;color:#14213D;border-radius:20px">satır <i>h</i></p><p style="font-size:24px;padding:4px 14px;background:#DCE5F1;color:#14213D;border-radius:20px">sütun <i>g</i></p><p style="font-size:24px;padding:4px 14px;background:#E9E6DD;color:#14213D;border-radius:20px">desen ℓ</p></div>
+</div>
+</div>
+<div style="display:flex;gap:40px;align-items:center;background:#14213D;border-radius:12px;padding:20px 30px">
+<p style="flex:1;font-size:24px;line-height:1.4;color:#FBFBF8"><b>Sonuç:</b> 4096 × 4096’lık bir katman 33,6 MB yerine 209 KB tutar (0,1 bit/weight); hesapta çarpma yerine toplama ve çıkarma yapılır.</p>
+<p style="width:600px;font-size:24px;line-height:1.4;color:#C9D2E3">İki yardımcı fikir: akıllı başlangıç (Dual-SVID) ve ikinci düzeltme yolu (residual).</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">39 · minGPT ve FPGA</p>
+<aside>Ayrıntılara girmeden önce LittleBit’in bütün fikrini tek slaytta, hiç formül kullanmadan söyleyeyim. Normalde bir weight matrisini sayı sayı saklarız: 4096 çarpı 4096’lık bir matris için 16,8 milyon sayı. LittleBit bunu yapmıyor; matrisi tarif ediyor. Üç hamle var. Birinci hamle: matrisi desenlere ayır. Büyük bir matris, birkaç basit desenin toplamı olarak yazılabiliyor; her desen bir sütun vektörü ile bir satır vektörünün çarpımı. 16,8 milyon sayı yerine birkaç yüz desen. İkinci hamle: desenlerdeki sayıların yalnızca işaretini tut. Her sayının artı mı eksi mi olduğunu saklıyoruz; bu, sayı başına tek bir bit. Üçüncü hamle: işareti tutunca sayıların büyüklüğü kayboldu; onu küçük “ses düğmeleri” ile geri veriyoruz. Her satırın bir düğmesi var, her sütunun bir düğmesi var, her desenin bir düğmesi var; makalede bunlara h, g ve ℓ deniyor. Bir mikser masası düşünün: artı-eksi desen hangi yöne itileceğini söylüyor, düğmeler ne kadar itileceğini. Sonuç olarak 4096 çarpı 4096’lık bir katman 33,6 megabayt yerine 209 kilobayta sığıyor; weight başına 0,1 bit. Üstelik hesap sırasında çarpma yerine yalnızca toplama ve çıkarma yapılıyor, çünkü artı ya da eksi bir ile çarpmak toplama ya da çıkarma demek. Bu üç hamleye iki yardımcı fikir ekleniyor: training’i rastgele değil akıllı bir noktadan başlatmak ve ilk yaklaşımın hatasını ikinci bir yolla düzeltmek. Şimdi her hamleyi önce sayısal bir örnekle, sonra matematiğiyle açacağım.</aside>
+</section>

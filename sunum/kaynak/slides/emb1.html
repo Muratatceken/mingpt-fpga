@@ -1,40 +1,52 @@
 <section id="emb1" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · minGPT adım adım · embedding’in matematiği</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Embedding matematikte bir one-hot vektör ile matris çarpımıdır; sonucu tablonun tek bir satırıdır</h2>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Embedding lookup aslında bir matris çarpımıdır: one-hot vektör, tablonun tek bir satırını seçer</h2>
 </div>
-<div style="display:flex;gap:40px;align-items:start">
-<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#F2EFE7;border-radius:12px;padding:24px 32px">
-<p style="font-size:24px;line-height:1.4;color:#5A6474"><i>V</i>: vocabulary boyutu · <i>C</i>: vektör boyutu · <i>T</i>: context · <i>W</i>ₜₑ ∈ ℝ<span style="color:#5A6474">ⱽˣᶜ</span>, <i>W</i>ₚₑ ∈ ℝ<span style="color:#5A6474">ᵀˣᶜ</span></p>
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><b>e</b>(τ) ∈ {0, 1}<span style="color:#14213D">ⱽ</span>,  <b>e</b>(τ)ᵢ = 1 eğer <i>i</i> = τ, değilse 0</p>
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><b>e</b>(τ)ᵀ <i>W</i>ₜₑ = Σᵢ <b>e</b>(τ)ᵢ · <i>W</i>ₜₑ[<i>i</i>, :] = <i>W</i>ₜₑ[τ, :]</p>
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><i>X</i>[<i>b</i>, <i>t</i>, :] = <i>W</i>ₜₑ[idx[<i>b</i>, <i>t</i>], :] + <i>W</i>ₚₑ[<i>t</i>, :]   → (<i>B</i> × <i>T</i> × <i>C</i>)</p>
+<div style="display:flex;gap:44px;align-items:start">
+<div style="width:820px;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px 28px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Sayısal örnek: <i>V</i> = 5, <i>d</i> = 3, 3. token</p>
+<div style="display:flex;gap:14px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:6px;align-items:center">
+<div style="display:flex;gap:4px"><p style="font-size:24px;width:40px;text-align:center;background:#E9E6DD;color:#14213D">0</p><p style="font-size:24px;width:40px;text-align:center;background:#E9E6DD;color:#14213D">0</p><p style="font-size:24px;width:40px;text-align:center;background:#B4460F;color:#FBFBF8">1</p><p style="font-size:24px;width:40px;text-align:center;background:#E9E6DD;color:#14213D">0</p><p style="font-size:24px;width:40px;text-align:center;background:#E9E6DD;color:#14213D">0</p></div>
+<p style="font-size:24px;color:#5A6474"><b>x</b>ᵀ · 1 × 5</p>
 </div>
-<div style="width:560px;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px 28px">
-<div style="display:flex;gap:12px;align-items:center">
-<div style="display:flex;gap:4px"><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;width:32px;text-align:center;padding:2px 0px;background:#E9E6DD;color:#14213D;border-radius:4px">0</p><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;width:32px;text-align:center;padding:2px 0px;background:#E9E6DD;color:#14213D;border-radius:4px">0</p><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;width:32px;text-align:center;padding:2px 0px;background:#B4460F;color:#FBFBF8;border-radius:4px">1</p></div>
 <p style="font-size:30px;color:#14213D">×</p>
-<div style="display:flex;flex-direction:column;gap:4px">
-<div style="display:flex;gap:4px"><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div></div>
-<div style="display:flex;gap:4px"><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div></div>
-<div style="display:flex;gap:4px"><div style="width:26px;height:26px;background:#B4460F;border-radius:3px"></div><div style="width:26px;height:26px;background:#CF7A4C;border-radius:3px"></div><div style="width:26px;height:26px;background:#E3A982;border-radius:3px"></div><div style="width:26px;height:26px;background:#B4460F;border-radius:3px"></div><div style="width:26px;height:26px;background:#CF7A4C;border-radius:3px"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px;align-items:center">
+<div style="display:grid;grid-template-columns:repeat(3, 66px);gap:4px">
+<p style="font-size:24px;text-align:center;background:#DCE5F1;color:#14213D">0,2</p><p style="font-size:24px;text-align:center;background:#DCE5F1;color:#14213D">0,7</p><p style="font-size:24px;text-align:center;background:#DCE5F1;color:#14213D">−0,1</p>
+<p style="font-size:24px;text-align:center;background:#DCE5F1;color:#14213D">0,5</p><p style="font-size:24px;text-align:center;background:#DCE5F1;color:#14213D">−0,3</p><p style="font-size:24px;text-align:center;background:#DCE5F1;color:#14213D">0,8</p>
+<p style="font-size:24px;text-align:center;background:#B4460F;color:#FBFBF8">−0,4</p><p style="font-size:24px;text-align:center;background:#B4460F;color:#FBFBF8">0,6</p><p style="font-size:24px;text-align:center;background:#B4460F;color:#FBFBF8">0,2</p>
+<p style="font-size:24px;text-align:center;background:#DCE5F1;color:#14213D">0,1</p><p style="font-size:24px;text-align:center;background:#DCE5F1;color:#14213D">0,9</p><p style="font-size:24px;text-align:center;background:#DCE5F1;color:#14213D">−0,7</p>
+<p style="font-size:24px;text-align:center;background:#DCE5F1;color:#14213D">0,8</p><p style="font-size:24px;text-align:center;background:#DCE5F1;color:#14213D">0,1</p><p style="font-size:24px;text-align:center;background:#DCE5F1;color:#14213D">0,4</p>
+</div>
+<p style="font-size:24px;color:#5A6474"><i>E</i> · 5 × 3</p>
 </div>
 <p style="font-size:30px;color:#14213D">=</p>
-<div style="display:flex;gap:4px"><div style="width:26px;height:26px;background:#B4460F;border-radius:3px"></div><div style="width:26px;height:26px;background:#CF7A4C;border-radius:3px"></div><div style="width:26px;height:26px;background:#E3A982;border-radius:3px"></div><div style="width:26px;height:26px;background:#B4460F;border-radius:3px"></div><div style="width:26px;height:26px;background:#CF7A4C;border-radius:3px"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px;align-items:center">
+<div style="display:flex;gap:4px"><p style="font-size:24px;width:66px;text-align:center;background:#B4460F;color:#FBFBF8">−0,4</p><p style="font-size:24px;width:66px;text-align:center;background:#B4460F;color:#FBFBF8">0,6</p><p style="font-size:24px;width:66px;text-align:center;background:#B4460F;color:#FBFBF8">0,2</p></div>
+<p style="font-size:24px;color:#5A6474"><b>e</b> · 1 × 3</p>
 </div>
-<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> τ = 2 için one-hot vektör [0 0 1], tablonun yalnızca 2 numaralı satırını seçer; diğer satırlar 0 ile çarpılıp kaybolur.</p>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> one-hot vektördeki tek 1, <i>E</i>’nin 3. satırını seçer; diğer satırlar 0 ile çarpılıp kaybolur.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#F2EFE7;border-radius:12px;padding:24px 30px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><b>x</b> ∈ ℝ<span style="color:#14213D">ⱽ</span>, yalnızca <i>i</i>’nci eleman 1</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#B4460F"><b>e</b> = <b>x</b>ᵀ<i>E</i> = Σⱼ <i>x</i>ⱼ <i>E</i>[<i>j</i>, :] = <i>E</i>[<i>i</i>, :]</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D">boyutlar: (1 × <i>V</i>)(<i>V</i> × <i>d</i>) = 1 × <i>d</i></p>
+<p style="font-size:24px;line-height:1.4">Toplamdaki bütün terimler 0 ile çarpılır; geriye yalnızca <i>i</i>’nci satır kalır.</p>
 </div>
 </div>
-<div style="display:flex;gap:40px;align-items:start">
+<div style="display:flex;gap:44px;align-items:start">
 <div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#14213D;border-radius:12px;padding:22px 30px">
 <p style="font-size:24px;color:#9FB0CC">PyTorch: iki yol, aynı sonuç (gpt-nano’da denendi)</p>
 <p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">x1 = self.transformer.wte(idx)              <span style="color:#9FB0CC"># satır okuma</span><br>x2 = F.one_hot(idx, V).float() @ wte.weight  <span style="color:#9FB0CC"># matris çarpımı</span><br>torch.allclose(x1, x2)                       <span style="color:#F2A65A"># True</span></p>
 </div>
 <div style="width:560px;display:flex;flex-direction:column;gap:8px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 24px">
-<p style="font-size:24px;font-weight:600;color:#2A5C9A">Maliyet ve boyut</p>
-<p style="font-size:24px;line-height:1.4">Çarpım olarak <i>V</i>·<i>C</i> MAC, okuma olarak <i>C</i> okuma ve 0 çarpma. gpt-nano’da tablolar 144 + 528 = 672 parametre (%0,8). GPT-2 small’da <i>W</i>ₜₑ tek başına 38,6 M parametre (%31).</p>
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Maliyet</p>
+<p style="font-size:24px;line-height:1.4">Çarpım olarak <i>V</i>·<i>d</i> MAC; okuma olarak <i>d</i> sayı, 0 çarpma. Bu yüzden kod <span style="color:#2A5C9A">embedding[token_id]</span> yazar.</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">11 · minGPT ve FPGA</p>
-<aside>Hocam embedding’i şimdi matematiksel olarak tam açmak istiyorum. Notasyon: V vocabulary boyutu, C vektör boyutu, T en uzun context. İki tablomuz var: token embedding tablosu Wₜₑ, V satır C sütun; position embedding tablosu Wₚₑ, T satır C sütun. Bir token’ı, τ numaralı token’ı, matematikte V uzunluğunda bir one-hot vektörle gösteriyoruz: τ’ncu elemanı 1, diğer bütün elemanları 0. Bu vektörü satır vektörü olarak Wₜₑ ile çarparsak ne olur? Çarpım, Wₜₑ’nin satırlarının, one-hot vektörün elemanlarıyla ağırlıklandırılmış toplamı. Bütün ağırlıklar sıfır, yalnızca τ’ncu ağırlık bir. Toplamda geriye yalnızca Wₜₑ’nin τ’ncu satırı kalıyor. Yani embedding, formül olarak bir matris çarpımı ama sonucu bir satır seçimi. Sağdaki şekil bunu gösteriyor: τ = 2 için [0 0 1] vektörü, tablonun 2 numaralı satırını seçiyor; diğer satırlar sıfırla çarpılıp yok oluyor. Batch hâlinde düşünürsek: elimizde B tane dizi, her birinde T token var; idx, B çarpı T boyutunda bir tamsayı matrisi. Çıktı X, B çarpı T çarpı C boyutunda bir tensör ve her eleman, ilgili token’ın satırı ile ilgili pozisyonun satırının toplamı. Bu eşdeğerliği gerçekten test ettik: gpt-nano’da nn.Embedding’in çıktısıyla one-hot matris çarpımının çıktısı birebir aynı. PyTorch’un bunu çarpım olarak değil, indeksleme olarak yapmasının nedeni maliyet: çarpım olarak V çarpı C çarpma-toplama gerekirdi; okuma olarak yalnızca C sayı okunuyor, hiç çarpma yok. Boyut açısından da ilginç bir karşılaştırma var: gpt-nano’da iki tablo toplam 672 parametre, modelin yüzde 0,8’i, çünkü vocabulary yalnızca 3 token. Ama GPT-2 small’da vocabulary 50 257 token; embedding tablosu tek başına 38,6 milyon parametre, modelin yaklaşık üçte biri. Bu yüzden büyük modellerde embedding tablosu bellek açısından çok önemli; sunumun sonundaki LittleBit makalesinde de embedding’in ayrı tutulduğunu göreceğiz.</aside>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">12 · minGPT ve FPGA</p>
+<aside>Kodda embedding genellikle embedding[token_id] diye, yani bir indeksleme olarak yazılır. Ama matematiksel olarak bunu bir matris çarpımı olarak da yazabiliriz ve bu yazım, embedding’in aslında ne olduğunu anlamak için önemli. Token ID’si i olsun. Bunun one-hot gösterimi, V uzunluğunda, yalnızca i’nci elemanı 1, diğer bütün elemanları 0 olan bir vektör. Embedding, bu vektörün satır hâlinin E ile çarpımı: e eşittir x transpoz E. Boyutları kontrol edelim: 1 çarpı V’lik bir satır vektörü ile V çarpı d’lik bir matrisin çarpımı 1 çarpı d; yani d boyutlu bir vektör. Neden bu çarpım tam olarak bir satır seçiyor? Çarpımı açarsak, E’nin satırlarının x’in elemanlarıyla ağırlıklandırılmış toplamı. x’in yalnızca i’nci elemanı 1, diğerleri 0; dolayısıyla toplamdaki bütün terimler sıfırla çarpılıyor ve geriye yalnızca E’nin i’nci satırı kalıyor. Soldaki sayısal örnek bunu somut gösteriyor: V = 5, d = 3. Embedding matrisi 5 satır 3 sütun. 3. token için one-hot vektör [0 0 1 0 0]. Çarpımın sonucu [−0,4; 0,6; 0,2]; bu, E’nin tam olarak 3. satırı. Bu eşdeğerliği kendi modelimizde de test ettik: nn.Embedding’in çıktısı ile one-hot matris çarpımının çıktısı birebir aynı. O zaman kod neden çarpım değil de indeksleme kullanıyor? Maliyet yüzünden: çarpım olarak V çarpı d çarpma-toplama yapmamız gerekirdi, oysa indeksleme olarak yalnızca d tane sayı okuyoruz, hiç çarpma yok. Bu, embedding’in matematiksel olarak bir Linear katman olduğu, ama girişi one-hot olduğu için hesabının bir tablo okumasına indiği anlamına geliyor.</aside>
 </section>

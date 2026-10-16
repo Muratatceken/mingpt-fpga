@@ -1,0 +1,40 @@
+<section id="lbA" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Araştırma konusu: LittleBit · hamle 1, sezgi</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Hamle 1 · Bir matris, birkaç basit desenin toplamı olarak yazılabilir</h2>
+</div>
+<div style="display:flex;gap:24px;align-items:center;justify-content:center;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px 28px">
+<div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+<p style="font-size:24px;width:64px;text-align:center;background:#F6E3D7;color:#14213D">1</p><p style="font-size:24px;width:64px;text-align:center;background:#F6E3D7;color:#14213D">2</p><p style="font-size:24px;width:64px;text-align:center;background:#F6E3D7;color:#14213D">−1</p><p style="font-size:24px;width:64px;text-align:center;background:#F6E3D7;color:#14213D">3</p>
+<p style="font-size:24px;color:#5A6474"><i>u</i> (sütun)</p>
+</div>
+<p style="font-size:40px;color:#14213D">×</p>
+<div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+<div style="display:flex;gap:4px"><p style="font-size:24px;width:64px;text-align:center;background:#DCE5F1;color:#14213D">2</p><p style="font-size:24px;width:64px;text-align:center;background:#DCE5F1;color:#14213D">−1</p><p style="font-size:24px;width:64px;text-align:center;background:#DCE5F1;color:#14213D">0,5</p><p style="font-size:24px;width:64px;text-align:center;background:#DCE5F1;color:#14213D">1</p></div>
+<p style="font-size:24px;color:#5A6474"><i>v</i>ᵀ (satır, desen)</p>
+</div>
+<p style="font-size:40px;color:#14213D">=</p>
+<div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+<div style="display:grid;grid-template-columns:repeat(4, 64px);gap:4px">
+<p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">2</p><p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">−1</p><p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">0,5</p><p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">1</p>
+<p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">4</p><p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">−2</p><p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">1</p><p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">2</p>
+<p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">−2</p><p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">1</p><p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">−0,5</p><p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">−1</p>
+<p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">6</p><p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">−3</p><p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">1,5</p><p style="font-size:24px;text-align:center;background:#E3E5EA;color:#14213D">3</p>
+</div>
+<p style="font-size:24px;color:#5A6474"><i>W</i> = <i>u v</i>ᵀ · 16 sayı</p>
+</div>
+<p style="width:420px;font-size:24px;line-height:1.4;color:#14213D"><b>16 sayı, ama hepsi 8 sayıdan üretiliyor:</b> her satır aynı desenin (<i>v</i>ᵀ) bir katı. 2. satır = 2 × desen, 3. satır = −1 × desen.</p>
+</div>
+<div style="display:flex;gap:40px;align-items:start">
+<div style="flex:1;background:#F2EFE7;border-radius:12px;padding:22px 30px;display:flex;flex-direction:column;gap:8px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D">Tek desen (rank 1): <i>W</i>ᵢⱼ = <i>u</i>ᵢ · <i>v</i>ⱼ</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><i>r</i> desen: <i>W</i> ≈ <i>u</i>₁<i>v</i>₁ᵀ + <i>u</i>₂<i>v</i>₂ᵀ + … + <i>u</i>ᵣ<i>v</i>ᵣᵀ = <i>U V</i>ᵀ</p>
+</div>
+<div style="width:620px;display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;line-height:1.4">Gerçek weight matrisleri tek bir desen değildir; ama birkaç desenin toplamına çok yakındır.</p>
+<p style="font-size:24px;line-height:1.4"><b>Kazanç:</b> <i>m</i> · <i>n</i> sayı yerine <i>r</i>(<i>m</i> + <i>n</i>) sayı. 4096 × 4096’da <i>r</i> = 86: 16,8 M yerine 0,7 M sayı (%4).</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">40 · minGPT ve FPGA</p>
+<aside>Birinci hamlenin sezgisi. Üstteki 4 çarpı 4’lük matrise bakın: 16 sayı var. Ama dikkatli bakınca hepsinin sadece 8 sayıdan üretildiğini görüyoruz. Sağda yatay duran satır, [2, −1, 0,5, 1], bir desen. Matrisin her satırı bu desenin bir katı: birinci satır desenin 1 katı, ikinci satır 2 katı, üçüncü satır eksi 1 katı, dördüncü satır 3 katı. Bu katsayılar soldaki dikey sütun vektörü, [1, 2, −1, 3]. Yani matris, bir sütun vektörü ile bir satır vektörünün çarpımı: W eşittir u çarpı v transpoz; her eleman W_ij, u_i çarpı v_j. Böyle bir matrise rank 1 denir, çünkü tek bir desenden oluşuyor. 16 sayı yerine 8 sayı saklamak yeterli. Gerçek weight matrisleri tabii ki tek bir desenden oluşmuyor. Ama birkaç desenin, yani r tane desenin toplamına çok yakın olabiliyorlar: u1 v1 transpoz artı u2 v2 transpoz, böyle r tane. Bu desenleri sütun sütun yan yana koyarsak U, V matrislerini elde ediyoruz ve toplamın tamamı U çarpı V transpoz oluyor. Kazanç şu: m çarpı n sayı yerine r çarpı m artı n sayı saklıyoruz. 4096 çarpı 4096’lık bir matriste 86 desen kullanırsak, 16,8 milyon sayı yerine yaklaşık 0,7 milyon sayı; yüzde 4’ü. Peki en iyi desenleri nasıl buluruz? Bunun matematiksel olarak kesin bir cevabı var: SVD. Bir sonraki slayt bunun matematiği.</aside>
+</section>

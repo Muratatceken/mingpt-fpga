@@ -1,43 +1,50 @@
-<section id="lb5" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<section id="lb5" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:24px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Araştırma konusu: LittleBit · adım 3</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Ŵ hiç oluşturulmaz: y = Ŵx, iki binary matris-vektör çarpımı ve üç eleman bazlı ölçeklemeyle hesaplanır</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Araştırma konusu: LittleBit · hamle 3, hesap</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Hamle 3 · Ŵ hiç kurulmaz: y = Ŵx yalnızca toplama, çıkarma ve birkaç ölçeklemeyle bulunur</h2>
 </div>
 <div style="display:flex;gap:10px;align-items:center">
 <p style="font-size:24px;padding:12px 16px;background:#E3E5EA;color:#14213D;border-radius:8px"><i>x</i> · <i>d</i>ᵢₙ</p>
 <x-shape kind="arrow-right" style="width:32px;height:16px;background:#5A6474"></x-shape>
 <p style="font-size:24px;padding:12px 16px;background:#DCE5F1;color:#14213D;border-radius:8px">⊙ <i>g</i></p>
 <x-shape kind="arrow-right" style="width:32px;height:16px;background:#5A6474"></x-shape>
-<p style="font-size:24px;padding:12px 16px;background:#14213D;color:#FBFBF8;border-radius:8px"><i>V</i>_signᵀ · <i>r</i> × <i>d</i>ᵢₙ · ±1</p>
+<p style="font-size:24px;padding:12px 16px;background:#14213D;color:#FBFBF8;border-radius:8px"><i>V</i>_signᵀ · ±1 ile topla</p>
 <x-shape kind="arrow-right" style="width:32px;height:16px;background:#5A6474"></x-shape>
 <p style="font-size:24px;padding:12px 16px;background:#E9E6DD;color:#14213D;border-radius:8px">⊙ ℓ</p>
 <x-shape kind="arrow-right" style="width:32px;height:16px;background:#5A6474"></x-shape>
-<p style="font-size:24px;padding:12px 16px;background:#14213D;color:#FBFBF8;border-radius:8px"><i>U</i>_sign · <i>d</i>ₒᵤₜ × <i>r</i> · ±1</p>
+<p style="font-size:24px;padding:12px 16px;background:#14213D;color:#FBFBF8;border-radius:8px"><i>U</i>_sign · ±1 ile topla</p>
 <x-shape kind="arrow-right" style="width:32px;height:16px;background:#5A6474"></x-shape>
 <p style="font-size:24px;padding:12px 16px;background:#DCE5F1;color:#14213D;border-radius:8px">⊙ <i>h</i></p>
 <x-shape kind="arrow-right" style="width:32px;height:16px;background:#5A6474"></x-shape>
 <p style="font-size:24px;padding:12px 16px;background:#B4460F;color:#FBFBF8;border-radius:8px"><i>y</i></p>
 </div>
 <div style="display:flex;gap:40px;align-items:start">
-<div style="flex:1;display:flex;flex-direction:column;gap:16px">
-<div style="background:#F2EFE7;border-radius:12px;padding:22px 30px;display:flex;flex-direction:column;gap:8px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><i>y</i> = <i>h</i> ⊙ ( <i>U</i>_sign ( ℓ ⊙ ( <i>V</i>_signᵀ ( <i>g</i> ⊙ <i>x</i> ) ) ) )</p>
-<p style="font-size:24px;line-height:1.4">Matrislerin birleşme özelliği sayesinde sağdan sola hesaplanır; <i>d</i>ₒᵤₜ × <i>d</i>ᵢₙ boyutlu Ŵ hiçbir zaman bellekte oluşmaz.</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Elle örnekteki <i>Ŵ</i> ile, <i>x</i> = [1; 2; 0; −1]</p>
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:6%;text-align:left;color:#14213D">#</th><th style="width:48%;text-align:left;color:#14213D">işlem</th><th style="width:46%;text-align:left;color:#14213D">sonuç</th></tr>
+<tr><td>1</td><td><i>g</i> ⊙ <i>x</i> (sütun düğmeleri)</td><td>[1,36; 1,61; 0; −0,80]</td></tr>
+<tr style="background:#F6E3D7"><td>2</td><td>± topla: (+ − + +), (+ + + −)</td><td>[−1,05; 3,78]</td></tr>
+<tr><td>3</td><td>ℓ ⊙, ℓ = [2,84; 0,53]</td><td>[−2,98; 2,01]</td></tr>
+<tr style="background:#F6E3D7"><td>4</td><td>± topla: <i>U</i>_sign’ın satırları</td><td>[−0,97; −4,98; 4,98; −0,97]</td></tr>
+<tr><td>5</td><td><i>h</i> ⊙, <i>h</i> = [0,57; 0,99; 0,60; 1,31]</td><td><i>y</i> = [−0,55; −4,94; 2,97; −1,26]</td></tr>
+</table>
 </div>
-<p style="font-size:24px;line-height:1.4"><b>±1 ile çarpma, toplama ya da çıkarmadır:</b> sign(<i>v</i>) · <i>a</i> = ±<i>a</i>. Ağır işin hiçbir adımında çarpıcı gerekmez; çarpma yalnızca <i>d</i>ᵢₙ + <i>r</i> + <i>d</i>ₒᵤₜ tane scale için yapılır.</p>
-<p style="font-size:24px;line-height:1.4;color:#5A6474">Makale: A100’de özel 1-bit GEMV kernel’i, Llama2-70B’nin bir MLP katmanında FP16’ya göre 11,6 kata kadar hızlı (kernel düzeyi, uçtan uca değil).</p>
-</div>
-<div style="width:700px;display:flex;flex-direction:column;gap:10px">
+<div style="width:560px;display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;color:#5A6474">Bir 4096 × 4096 katmanı, 0,1 BPW (<i>r</i> = 86, iki yol)</p>
 <table style="font-size:24px;color:#3B4456">
-<tr><th style="width:32%;text-align:left;color:#14213D"></th><th style="width:30%;text-align:right;color:#14213D">FP16</th><th style="width:38%;text-align:right;color:#14213D">LittleBit</th></tr>
-<tr><td>ağır işlem</td><td style="text-align:right">16,8 M MAC</td><td style="text-align:right">1,41 M ± toplama</td></tr>
+<tr><th style="width:36%;text-align:left;color:#14213D"></th><th style="width:28%;text-align:right;color:#14213D">FP16</th><th style="width:36%;text-align:right;color:#14213D">LittleBit</th></tr>
+<tr><td>ağır işlem</td><td style="text-align:right">16,8 M MAC</td><td style="text-align:right">1,41 M ±</td></tr>
 <tr><td>çarpma</td><td style="text-align:right">16,8 M</td><td style="text-align:right">16 556</td></tr>
-<tr><td>weight belleği</td><td style="text-align:right">33,6 MB</td><td style="text-align:right">209 KB</td></tr>
+<tr><td>bellek</td><td style="text-align:right">33,6 MB</td><td style="text-align:right">209 KB</td></tr>
 </table>
-<p style="font-size:24px;line-height:1.4;color:#5A6474">± toplama: 2 · 86 · (4096 + 4096). Çarpma: 2 · (4096 + 86 + 4096). Bellek: 1 673 920 bit (<i>b</i> = 0,0998). Hesaplar bizim.</p>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">Hesaplar bizim, makalenin formülüyle.</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">36 · minGPT ve FPGA</p>
-<aside>Üçüncü adım, ve bence bizim için en ilginç olanı: bu yapıyla hesabın nasıl yapıldığı. Yaklaşık matris Ŵ’yi hiç oluşturmamız gerekmiyor. Matris çarpımının birleşme özelliği sayesinde, Ŵ çarpı x’i sağdan sola, parça parça hesaplayabiliyoruz. Önce x’i eleman eleman g ile ölçekliyoruz. Sonra V_sign transpoz ile çarpıyoruz; bu, r çarpı d_in boyutlu, elemanları artı-eksi bir olan bir matris. Sonuç r boyutlu bir vektör. Onu ℓ ile ölçekliyoruz. Sonra U_sign ile çarpıyoruz; d_out çarpı r boyutlu, yine artı-eksi bir. Son olarak h ile ölçekliyoruz ve y’yi elde ediyoruz. Üstteki şerit bu sırayı gösteriyor. Makale aynı işlemi satır vektörleri için yazıyor; aynı şey. Asıl önemli gözlem şu: artı ya da eksi bir ile çarpmak aslında bir toplama ya da çıkarmadır. Ağır işin, yani iki büyük matris-vektör çarpımının hiçbir adımında çarpıcı gerekmiyor; sadece toplayıcılar. Çarpma yalnızca scale’ler için yapılıyor ve onların sayısı d_in artı r artı d_out kadar. Sağdaki tablo bunu somut sayılarla gösteriyor; bu sayıları makalenin formülüyle kendimiz hesapladık. 4096 çarpı 4096’lık bir katmanı 0,1 BPW’ye indirmek için, residual yol ile birlikte rank 86 çıkıyor. Normal FP16 hesapta 16,8 milyon çarpma-toplama var. LittleBit’te iki yol için toplam 1,41 milyon toplama ya da çıkarma, ve yalnızca 16 556 çarpma. Weight belleği 33,6 megabayttan 209 kilobayta iniyor. Yazarlar bunu GPU’da da göstermiş: A100 üzerinde kendi yazdıkları 1-bit matris-vektör kernel’i, Llama2-70B’nin bir MLP katmanında FP16’ya göre 11,6 kata kadar hızlı. Ama bu bir kernel ölçümü, uçtan uca bir inference ölçümü değil; yazarlar da kernel’in tam optimize olmadığını söylüyor. FPGA açısından ise çarpıcı gerektirmeyen bir matris-vektör çarpımı, LUT’larla kurulabilecek bir şey; buna son slaytta döneceğim.</aside>
+<div style="display:flex;gap:40px;align-items:center;background:#F2EFE7;border-radius:12px;padding:18px 30px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D"><i>y</i> = <i>h</i> ⊙ ( <i>U</i>_sign ( ℓ ⊙ ( <i>V</i>_signᵀ ( <i>g</i> ⊙ <i>x</i> ) ) ) )</p>
+<p style="flex:1;font-size:24px;line-height:1.4">Turuncu adımlarda hiç çarpma yok: sign(<i>v</i>) · <i>a</i> = ±<i>a</i>. Makale: A100’de 1-bit kernel ile 11,6 kata kadar (kernel düzeyi).</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">47 · minGPT ve FPGA</p>
+<aside>Üçüncü hamle hesabın kendisi ve bence FPGA için en önemli kısım. Yaklaşık matris Ŵ’yi hiç kurmamıza gerek yok. Matris çarpımının birleşme özelliği sayesinde Ŵ çarpı x’i sağdan sola, parça parça hesaplıyoruz; üstteki şerit sırayı gösteriyor. Tablo bunu elle örnekteki tek yollu Ŵ ile, gerçek sayılarla adım adım yapıyor; giriş x = [1, 2, 0, −1]. Birinci adım: x’i eleman eleman sütun düğmeleriyle çarpıyoruz; dört küçük çarpma. İkinci adım, turuncu satır: V_sign transpoz ile çarpım. Bu matrisin elemanları artı ya da eksi bir olduğu için çarpma yok; yalnızca işaretlere göre topluyoruz. Birinci desenin işaretleri artı, eksi, artı, artı: 1,36 eksi 1,61 artı 0 artı eksi 0,80, sonuç eksi 1,05. İkinci desen artı, artı, artı, eksi: sonuç 3,78. Üçüncü adım: bu iki sayıyı desen düğmeleriyle çarpıyoruz; iki çarpma. Dördüncü adım, yine turuncu: U_sign ile çarpım; yine yalnızca toplama ve çıkarma. Beşinci adım: satır düğmeleriyle çarpıp y’yi buluyoruz. Ŵ yaklaşık olduğu için bu y, gerçek W çarpı x’ten farklı; burada önemli olan doğruluk değil, işlem türleri. Ağır kısım, yani iki büyük matris-vektör çarpımı, tamamen toplama ve çıkarmadan oluşuyor; çarpma yalnızca düğme sayısı kadar. Sağdaki tablo bunu gerçek bir boyutta gösteriyor: 4096 çarpı 4096’lık bir katman 0,1 BPW’de 16,8 milyon çarpma-toplama yerine 1,41 milyon toplama-çıkarma ve yalnızca 16 556 çarpma; bellek 33,6 megabayttan 209 kilobayta. Bu sayıları makalenin formülüyle biz hesapladık. Yazarlar GPU’da da kendi 1-bit kernel’leriyle bir katmanda 11,6 kata kadar hızlanma ölçmüş; ama bu kernel düzeyinde bir ölçüm, uçtan uca değil.</aside>
 </section>

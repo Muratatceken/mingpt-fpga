@@ -1,0 +1,34 @@
+<section id="embO" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · minGPT adım adım · embedding’in matematiği</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Neden one-hot’ta kalmıyoruz? One-hot vektörlerin hepsi birbirine eşit uzaklıktadır, benzerlik bilgisi taşımaz</h2>
+</div>
+<div style="display:flex;gap:28px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #9AA3B2;border-radius:12px;padding:22px 28px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">One-hot</h3>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#14213D">kedi  = [1, 0, 0]<br>köpek = [0, 1, 0]<br>masa  = [0, 0, 1]</p>
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:60%;text-align:left;color:#14213D">çift</th><th style="width:40%;text-align:right;color:#14213D">uzaklık</th></tr>
+<tr><td>kedi – köpek</td><td style="text-align:right">√2 ≈ 1,41</td></tr>
+<tr><td>kedi – masa</td><td style="text-align:right">√2 ≈ 1,41</td></tr>
+</table>
+<p style="font-size:24px;line-height:1.4">Her <i>i</i> ≠ <i>j</i> için ‖<b>e</b>ᵢ − <b>e</b>ⱼ‖₂ = √2. “Kedi köpeğe masadan daha benzer” bilgisi temsil edilemez.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:2px solid #B4460F;border-radius:12px;padding:22px 28px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Embedding (temsilî, <i>d</i> = 3)</h3>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#14213D">kedi  = [ 0,80; 0,70; 0,10]<br>köpek = [ 0,75; 0,68; 0,15]<br>masa  = [−0,20; 0,10; 0,90]</p>
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:40%;text-align:left;color:#14213D">çift</th><th style="width:30%;text-align:right;color:#14213D">uzaklık</th><th style="width:30%;text-align:right;color:#14213D">cosine</th></tr>
+<tr><td>kedi – köpek</td><td style="text-align:right"><b>0,07</b></td><td style="text-align:right"><b>1,00</b></td></tr>
+<tr><td>kedi – masa</td><td style="text-align:right">1,41</td><td style="text-align:right">0,00</td></tr>
+</table>
+<p style="font-size:24px;line-height:1.4">Kedi ile köpek aynı yönde, kedi ile masa dik. Benzerlik geometriye dönüştü.</p>
+</div>
+</div>
+<div style="display:flex;gap:40px;align-items:center;background:#F2EFE7;border-radius:12px;padding:20px 30px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D">cos θ = <i>x</i>·<i>y</i> / (‖<i>x</i>‖ ‖<i>y</i>‖)</p>
+<p style="flex:1;font-size:24px;line-height:1.4">1 aynı yön, 0 dik, −1 zıt yön. Embedding’in amacı: <b>anlamsal yakınlık ≈ geometrik yakınlık</b>.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">13 · minGPT ve FPGA</p>
+<aside>Madem embedding one-hot vektörle bir çarpım, neden modele doğrudan one-hot vektörü vermiyoruz? Çünkü one-hot gösterimi hiçbir anlamsal bilgi taşımaz. Soldaki kutuya bakalım: kedi, köpek ve masa için üç one-hot vektör. Bunların her biri farklı bir eksen üzerinde duruyor. İki farklı one-hot vektör arasındaki Öklid uzaklığı her zaman √2, yaklaşık 1,41: kedi ile köpek arasında da, kedi ile masa arasında da aynı. Yani one-hot uzayında “kedi köpeğe masadan daha benzerdir” bilgisi temsil edilemez; bütün token’lar birbirinden eşit uzaklıkta. Embedding uzayı ise bunu öğrenebilir. Sağdaki kutu kavramsal bir örnek, üç boyutlu ve temsilî. Kedi ve köpek vektörleri neredeyse aynı yöne bakıyor; aralarındaki uzaklık 0,07, cosine benzerlikleri neredeyse 1. Masa ise başka bir yöne bakıyor; kedi ile masa arasındaki cosine 0, yani dikler. Böylece anlamsal benzerlik geometrik benzerliğe dönüşmüş oluyor. Alttaki kutu, benzerliği ölçmek için en çok kullanılan araç: cosine benzerlik. İki vektörün iç çarpımının uzunluklarının çarpımına bölümü; esasen aralarındaki açının kosinüsü. 1 aynı yön, 0 dik, eksi 1 tam ters yön demek. İyi bir embedding’in temel amacını tek cümleyle şöyle söyleyebiliriz: anlamsal yakınlık yaklaşık olarak vektörel yakınlık olmalı. Bunu bizim modelimizde de ölçeceğim; birkaç slayt sonra gpt-nano’nun öğrendiği embedding’lerin cosine benzerliklerini göstereceğim.</aside>
+</section>

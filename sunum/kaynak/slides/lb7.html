@@ -1,32 +1,29 @@
 <section id="lb7" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Araştırma konusu: LittleBit · residual, bit bütçesi, training</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">İkinci bir yol kalan hatayı yakalar; rank bit bütçesinden çözülür; training işaretleri yumuşak bir türevle öğrenir</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Araştırma konusu: LittleBit · residual ve bit bütçesi</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">İkinci bir yol ilk yolun hatasını yakalar; kaç desen kullanılacağı, hedef BPW’den hesaplanır</h2>
 </div>
 <div style="display:flex;gap:24px">
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:20px 26px">
 <h3 style="font-size:30px;font-weight:600;color:#14213D">Residual compensation</h3>
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:28px;line-height:1.5;color:#14213D"><i>Ŵ</i> = <i>Ŵ</i>ₚᵣᵢ + <i>Ŵ</i>ᵣₑₛ<br><i>W</i>ᵣₑₛ,₀ = <i>W</i> − <i>Ŵ</i>ₚᵣᵢ,₀</p>
-<p style="font-size:24px;line-height:1.4"><i>Ŵ</i>ᵣₑₛ aynı yapıda (kendi <i>h</i>, <i>g</i>, ℓ ve işaretleri) ve kalan hataya Dual-SVID uygulanarak başlatılır. Bit bütçesi artmaz, iki yol arasında paylaşılır.</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:28px;line-height:1.5;color:#14213D"><i>Ŵ</i> = <i>Ŵ</i>ₚᵣᵢ + <i>Ŵ</i>ᵣₑₛ ,  <i>W</i>ᵣₑₛ,₀ = <i>W</i> − <i>Ŵ</i>ₚᵣᵢ,₀</p>
+<p style="font-size:24px;line-height:1.4">İlk yaklaşımın hatasına, aynı türden ikinci bir yaklaşım eklenir; kendi işaretleri ve kendi düğme takımı (<i>h</i>, <i>g</i>, ℓ) vardır. Kalan hataya Dual-SVID uygulanarak başlatılır; iki yol birlikte eğitilir.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:20px 26px">
 <h3 style="font-size:30px;font-weight:600;color:#14213D">Bit bütçesi ve rank</h3>
 <p style="font-family:'Source Serif 4', Georgia, serif;font-size:28px;line-height:1.5;color:#14213D"><i>b</i> = [2<i>r</i>(<i>d</i>ₒ + <i>d</i>ᵢ) + 32(<i>d</i>ₒ + <i>d</i>ᵢ) + 32<i>r</i>] / (<i>d</i>ₒ <i>d</i>ᵢ)<br><i>r</i> = [<i>b</i> <i>d</i>ₒ <i>d</i>ᵢ − 32(<i>d</i>ₒ + <i>d</i>ᵢ)] / [2(<i>d</i>ₒ + <i>d</i>ᵢ) + 32]</p>
-<p style="font-size:24px;line-height:1.4">Makaledeki örnekler: 4096 × 4096, <i>b</i> = 0,55 → <i>r</i> = 546. 4096 × 11 008, <i>b</i> = 0,1 → <i>r</i> = 133. Başta 2: iki yol.</p>
+<p style="font-size:24px;line-height:1.4">Baştaki 2: iki yol. İşaretler <i>r</i>(<i>d</i>ₒ + <i>d</i>ᵢ) bit, düğmeler 16(<i>d</i>ₒ + <i>d</i>ᵢ + <i>r</i>) bit. Makalenin örneği: 4096 × 4096, <i>b</i> = 0,55 → <i>r</i> = 546.</p>
 </div>
 </div>
-<div style="display:flex;gap:40px;align-items:start;background:#F2EFE7;border-radius:12px;padding:22px 30px">
-<div style="flex:1;display:flex;flex-direction:column;gap:8px">
-<h3 style="font-size:30px;font-weight:600;color:#14213D">QAT + knowledge distillation</h3>
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:28px;line-height:1.5;color:#14213D"><i>ℒ</i> = <i>ℒ</i>ₒᵤₜ + λ <i>ℒ</i>ᵢₙₜₑᵣ ,  λ = 10</p>
-<p style="font-size:24px;line-height:1.4">Teacher: orijinal FP16 model. <i>ℒ</i>ₒᵤₜ çıkış dağılımları arasındaki KL divergence, <i>ℒ</i>ᵢₙₜₑᵣ ara katman çıktılarının MSE’si.</p>
+<div style="display:flex;gap:40px;align-items:start">
+<table style="width:1000px;font-size:24px;color:#3B4456">
+<tr><th style="width:44%;text-align:left;color:#14213D">katman (aynı formül)</th><th style="width:34%;text-align:left;color:#14213D">desen, yol</th><th style="width:22%;text-align:right;color:#14213D">BPW</th></tr>
+<tr><td>4 × 4 (elle örnek)</td><td><i>r</i> = 2, tek yol</td><td style="text-align:right">11</td></tr>
+<tr><td>4096 × 4096</td><td><i>r</i> = 86, iki yol</td><td style="text-align:right">0,1</td></tr>
+<tr><td>4096 × 11 008 (makale)</td><td><i>r</i> = 133, iki yol</td><td style="text-align:right">0,1</td></tr>
+</table>
+<p style="flex:1;font-size:24px;line-height:1.4"><b>Okunuşu:</b> küçük matriste düğmeler baskındır ve kazanç yoktur; matris büyüdükçe bit başına maliyet hızla düşer.</p>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:8px">
-<h3 style="font-size:30px;font-weight:600;color:#14213D">SmoothSign</h3>
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:28px;line-height:1.5;color:#14213D">ileri: sign(<i>x</i>) · geri: <i>k</i>(1 − tanh²(<i>kx</i>)), <i>k</i> = 100</p>
-<p style="font-size:24px;line-height:1.4">sign’ın türevi sıfır olduğundan gradient akmaz. Backward’da tanh(100<i>x</i>)’in türevi kullanılır; yazarlar bunu STE’den iyi buluyor.</p>
-</div>
-</div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">38 · minGPT ve FPGA</p>
-<aside>Bu slaytta üç parça var. Birincisi residual compensation. Tek bir LittleBit yolu, özellikle çok düşük bitlerde, W’yi yeterince iyi yaklaşamayabilir. Bu yüzden aynı yapıda ikinci bir yol ekleniyor: kendi h, g, ℓ vektörleri ve kendi işaret matrisleri olan bir Ŵ_res. Toplam yaklaşık matris, iki yolun toplamı. İkinci yol, ilk yolun başlangıçtaki hatası, yani W eksi Ŵ_pri,0 üzerine yine Dual-SVID uygulanarak başlatılıyor; böylece ilk yolun yakalayamadığını yakalamaya başlıyor. Önemli: bit bütçesi artmıyor; aynı hedef BPW iki yol arasında paylaşılıyor, yani her yolun rank’ı daha küçük oluyor. İkincisi bit bütçesi. Bir katmanda saklanan bitler: iki yol için, her yolda işaretler r çarpı d_out artı d_in bit, ve FP16 olan h, g, ℓ vektörleri 16 bit çarpı d_out artı d_in artı r. Bunu matristeki weight sayısına bölünce BPW formülü çıkıyor. Formül r’ye göre doğrusal; ters çevirince hedef bir BPW için gereken rank’ı veren ikinci satırı elde ediyoruz. Makaledeki örnekler: 4096 çarpı 4096’lık bir katman 0,55 BPW için rank 546; 4096 çarpı 11 008’lik bir MLP katmanı 0,1 BPW için rank 133. Bir önceki slayttaki 86 rank’ını da aynı formülle hesapladık. Üçüncüsü training. Model sıfırdan değil, quantization-aware training ile eğitiliyor ve bir öğretmen kullanılıyor: orijinal FP16 model. Loss iki terimden oluşuyor: öğrencinin ve öğretmenin çıkış dağılımları arasındaki KL divergence ve ara katman çıktıları arasındaki ortalama kare hata, λ = 10 ağırlıkla. Asıl teknik zorluk sign fonksiyonu: türevi her yerde sıfır, dolayısıyla gradient U ve V’ye hiç ulaşamaz. Yaygın çözüm straight-through estimator, yani backward’da türevi bir saymak. LittleBit ise SmoothSign kullanıyor: forward’da gerçek sign, backward’da tanh(100x)’in türevi. tanh(100x), sign’a çok yakın ama sıfır civarında türevlenebilir bir fonksiyon; türevi 100 çarpı 1 eksi tanh kare. Yazarlar bunun ultra düşük bitte STE’den daha iyi çalıştığını raporluyor. Eğitim verisi WikiText-2 ve C4’ün bazı parçaları; dizi uzunluğu 2048, 5 epoch, Adam ve cosine öğrenme hızı.</aside>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">48 · minGPT ve FPGA</p>
+<aside>Bu slaytta iki şey var. Birincisi residual compensation, yani ikinci düzeltme yolu. Fikir çok basit: ilk yaklaşımın bir hatası var; bu hataya aynı türden ikinci bir yaklaşım daha ekliyoruz. İkinci yolun kendi işaretleri ve kendi düğme takımı var. Başlangıçta, ilk yolun hatası olan W eksi Ŵ_pri üzerine Dual-SVID uygulanarak kuruluyor; sonra iki yol birlikte eğitiliyor. Elle örnekte gördüğümüz gibi, iki desenin aynı düğmeleri paylaşmasından doğan kayıp, ikinci yolun kendi düğmeleri sayesinde büyük ölçüde gideriliyor. Önemli bir nokta: toplam bit bütçesi artmıyor; aynı hedef BPW iki yol arasında paylaşılıyor, dolayısıyla her yolun rank’ı daha küçük oluyor. İkincisi bit bütçesi. Bir katmanda saklanan bitleri sayalım. Her yolda işaretler r çarpı d_out artı d_in bit; düğmeler FP16, yani 16 çarpı d_out artı d_in artı r bit. İki yol olduğu için hepsi iki ile çarpılıyor. Bunu matristeki eleman sayısına bölünce BPW formülü çıkıyor; formül r’ye göre doğrusal olduğu için ters çevirip hedef bir BPW için kaç desen kullanılabileceğini hesaplayabiliyoruz. Makalenin örneği: 4096 çarpı 4096’lık bir katman için 0,55 BPW’de 546 desen. Alttaki tablo aynı formülün farklı boyutlarda ne verdiğini gösteriyor. Elle örnekteki 4 çarpı 4’lük matris, iki desen ve tek yol ile weight başına 11 bit harcıyor; yani FP16’dan ancak biraz iyi, çünkü düğmeler baskın. 4096 çarpı 4096’da 86 desen ve iki yol ile 0,1 bit. Makaledeki 4096 çarpı 11 008’lik MLP katmanında 133 desen ile yine 0,1 bit. Ders şu: LittleBit’in kazancı matris büyüdükçe ortaya çıkıyor; bunu son slaytta bizim küçük modellerimiz için tekrar ele alacağım.</aside>
 </section>

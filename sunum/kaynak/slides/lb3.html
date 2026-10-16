@@ -1,7 +1,7 @@
 <section id="lb3" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Araştırma konusu: LittleBit · adım 1</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Low-rank factorization: büyük matris iki ince matrisin çarpımıyla yaklaşılır; en iyi yaklaşımı SVD verir</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Araştırma konusu: LittleBit · hamle 1, matematik</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Hamle 1 · Matematik: en iyi desenleri SVD bulur; bu, low-rank factorization’dır</h2>
 </div>
 <div style="display:flex;gap:44px;align-items:start">
 <div style="width:620px;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px 28px">
@@ -24,6 +24,6 @@
 <p style="font-size:24px;line-height:1.4"><b>Parametre sayısı:</b> <i>d</i>ₒᵤₜ · <i>d</i>ᵢₙ yerine <i>r</i> (<i>d</i>ₒᵤₜ + <i>d</i>ᵢₙ). Yazarlar, LLM weight’lerindeki low-rank yapıya dayanıyor.</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">34 · minGPT ve FPGA</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">41 · minGPT ve FPGA</p>
 <aside>Birinci adım low-rank factorization. d_out çarpı d_in boyutlu bir weight matrisini, d_out çarpı r boyutlu bir U matrisi ile d_in çarpı r boyutlu bir V matrisinin transpozunun çarpımı olarak yazıyoruz; r, iki boyuttan da çok daha küçük. Şekilde mavi kare W; turuncu ince matrisler U ve V transpoz. Saklanan sayı sayısı d_out çarpı d_in yerine r çarpı d_out artı d_in oluyor. Örneğin 4096 çarpı 4096’lık bir matris 16,8 milyon sayı; r = 546 seçersek iki ince matris toplam 4,47 milyon sayı, yani yüzde 27’si. Peki U ve V’yi nasıl seçeriz ki yaklaşım en iyi olsun? Burada lineer cebirin en güzel sonuçlarından biri devreye giriyor. Her matrisin bir tekil değer ayrışımı, SVD’si var: W, σᵢ uᵢ vᵢ transpoz terimlerinin toplamı; σ’lar tekil değerler, büyükten küçüğe sıralı, uᵢ ve vᵢ ortonormal vektörler. Bu toplamın yalnızca ilk r terimini alırsak W_r’yi elde ederiz. Eckart–Young teoremi şunu söylüyor: rank’ı en fazla r olan bütün matrisler arasında W’ye Frobenius normunda en yakın olanı tam olarak W_r’dir ve hata, atılan tekil değerlerin kareleri toplamının kareköküdür. Yani en iyi düşük-rank yaklaşım sorusunun kapalı bir cevabı var. Bunun pratik anlamı: bir matrisin tekil değerleri hızla küçülüyorsa, yani bilgi ilk birkaç yüz yönde yoğunlaşıyorsa, küçük bir r ile hatayı küçük tutabiliriz. LittleBit’in yazarları, LLM weight’lerindeki bu düşük-rank yapıya dayanıyor ve yüksek sıkıştırma oranlarında SVD tabanlı sıkıştırmanın pruning’den daha iyi dayandığını raporluyor. Ama yalnız factorization ile 0,1 BPW’ye inemeyiz; U ve V hâlâ 16 bitlik sayılar. İkinci adım bunları bire indiriyor.</aside>
 </section>

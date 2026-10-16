@@ -1,0 +1,36 @@
+<section id="embK" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · minGPT adım adım · embedding’in matematiği</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Embedding öğrenilmiş bir koordinat sistemidir: eksenlerin anlamını biz değil, training belirler</h2>
+</div>
+<div style="display:flex;gap:44px;align-items:start">
+<div style="width:720px;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px 28px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Oyuncak örnek, <i>d</i> = 3</p>
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:28%;text-align:left;color:#14213D">token</th><th style="width:24%;text-align:right;color:#14213D">canlılık</th><th style="width:24%;text-align:right;color:#14213D">insanlık</th><th style="width:24%;text-align:right;color:#14213D">mekân</th></tr>
+<tr><td>kedi</td><td style="text-align:right">0,95</td><td style="text-align:right">0,10</td><td style="text-align:right">0,05</td></tr>
+<tr><td>köpek</td><td style="text-align:right">0,93</td><td style="text-align:right">0,08</td><td style="text-align:right">0,04</td></tr>
+<tr><td>doktor</td><td style="text-align:right">0,90</td><td style="text-align:right">0,95</td><td style="text-align:right">0,10</td></tr>
+<tr><td>ev</td><td style="text-align:right">0,05</td><td style="text-align:right">0,05</td><td style="text-align:right">0,96</td></tr>
+</table>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> eksenlerin anlamı bizim varsayımımız. Cosine: kedi–köpek 1,00, kedi–doktor 0,76, kedi–ev 0,11.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #B4460F;padding:6px 0px 6px 24px">
+<p style="font-size:24px;font-weight:600;color:#B4460F">Distributed representation</p>
+<p style="font-size:24px;line-height:1.4">Gerçek modellerde (<i>d</i> = 2048, 4096, 8192…) bir kavram tek bir eksende durmaz: “canlılık” ≈ 0,2 <i>e</i>₄ − 0,7 <i>e</i>₈₁ + 0,13 <i>e</i>₉₄₆ + … (temsilî). 4096 boyut 4096 kavram demek değildir.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 24px">
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Yönler anlam taşıyabilir</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.4;color:#14213D"><b>e</b>(king) − <b>e</b>(man) + <b>e</b>(woman) ≈ <b>e</b>(queen)</p>
+<p style="font-size:24px;line-height:1.4">Word2Vec’in ünlü örneği (Mikolov vd., 2013): bazı ilişkiler yaklaşık doğrusal yönlerdir. Modern LLM’lerin temsilleri bu kadar basit aritmetikle açıklanamaz.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #14213D;padding:6px 0px 6px 24px">
+<p style="font-size:24px;font-weight:600;color:#14213D"><i>d</i> neden büyük?</p>
+<p style="font-size:24px;line-height:1.4">Dilde çok sayıda gizli özellik var: syntax, anlam, zaman kipi, dil, alan, dünya bilgisi ve bunların kombinasyonları.</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">14 · minGPT ve FPGA</p>
+<aside>Embedding’in bence en önemli yanı şu: embedding, öğrenilmiş bir koordinat sistemi. Model kelimelere bizim önceden belirlediğimiz canlılık, cinsiyet, büyüklük, fiil olma gibi özellikler atamıyor; eğitim sırasında uygun bir koordinat sistemi kendiliğinden oluşuyor. Bunu anlamak için oyuncak bir örnek düşünelim: üç boyutlu bir embedding ve eksenlerin kabaca canlılık, insanlık ve mekân anlamına geldiğini varsayalım. O zaman kedi ve köpek canlılık ekseninde yüksek, diğerlerinde düşük; doktor hem canlı hem insan; ev ise mekân ekseninde. Bu vektörlerden cosine hesaplarsak kedi ile köpek neredeyse 1, kedi ile doktor 0,76, kedi ile ev 0,11 çıkıyor. Bu sayıları gerçekten hesapladık. Ama dürüst olmak gerekirse gerçek modeller böyle temiz değil. Gerçek LLM’lerde boyut 2048, 4096, 8192 gibi değerler ve özellikler tek tek eksenlere dağılmıyor. Buna distributed representation deniyor: “canlılık” gibi bir kavram tek bir boyutta tutulmuyor, birçok boyutun bir karışımı olarak, yani uzayda bir yön olarak temsil ediliyor. Bu yüzden “4096 boyut, 4096 kavram” demek yanlış. Yönlerin anlam taşıyabildiğinin en ünlü örneği Word2Vec’ten: king vektöründen man’i çıkarıp woman’ı eklediğinizde queen’e yakın bir noktaya geliyorsunuz. Yani “erkekten kadına” gibi bazı ilişkiler uzayda yaklaşık sabit bir yön olarak kodlanıyor. Modern LLM’lerde temsillerin hepsi bu kadar basit doğrusal aritmetikle açıklanamıyor, ama sezgi değerli. Son olarak d neden bu kadar büyük? Çünkü doğal dilde çok sayıda gizli özellik var ve bunların kombinasyonlarını temsil etmek için geniş bir uzay gerekiyor.</aside>
+</section>

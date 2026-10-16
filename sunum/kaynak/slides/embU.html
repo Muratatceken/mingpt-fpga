@@ -1,0 +1,38 @@
+<section id="embU" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">4 · Generation ve KV cache</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Çıkış tarafı: unembedding; her logit, son hidden state ile bir token vektörünün dot product’ıdır</h2>
+</div>
+<div style="display:flex;gap:10px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:2px;padding:10px 16px;background:#E3E5EA;border-radius:8px"><p style="font-size:24px;font-weight:600;color:#14213D">token</p><p style="font-size:24px">ayrık</p></div>
+<x-shape kind="arrow-right" style="width:32px;height:16px;background:#5A6474"></x-shape>
+<div style="display:flex;flex-direction:column;gap:2px;padding:10px 16px;background:#DCE5F1;border-radius:8px"><p style="font-size:24px;font-weight:600;color:#14213D">embedding <i>E</i></p><p style="font-size:24px">ℝᵈ’ye taşı</p></div>
+<x-shape kind="arrow-right" style="width:32px;height:16px;background:#5A6474"></x-shape>
+<div style="display:flex;flex-direction:column;gap:2px;padding:10px 16px;background:#14213D;border-radius:8px"><p style="font-size:24px;font-weight:600;color:#F2A65A">Transformer</p><p style="font-size:24px;color:#FBFBF8">ℝ<span style="color:#FBFBF8">^(T×d)</span> → ℝ<span style="color:#FBFBF8">^(T×d)</span></p></div>
+<x-shape kind="arrow-right" style="width:32px;height:16px;background:#5A6474"></x-shape>
+<div style="display:flex;flex-direction:column;gap:2px;padding:10px 16px;background:#DCE5F1;border-radius:8px"><p style="font-size:24px;font-weight:600;color:#14213D">unembedding <i>W</i>ᵤ</p><p style="font-size:24px">ℝⱽ logit</p></div>
+<x-shape kind="arrow-right" style="width:32px;height:16px;background:#5A6474"></x-shape>
+<div style="display:flex;flex-direction:column;gap:2px;padding:10px 16px;background:#F6E3D7;border-radius:8px"><p style="font-size:24px;font-weight:600;color:#14213D">softmax</p><p style="font-size:24px">olasılık dağılımı</p></div>
+</div>
+<div style="display:flex;gap:40px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<div style="background:#F2EFE7;border-radius:12px;padding:22px 30px;display:flex;flex-direction:column;gap:6px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><i>z</i> = <i>W</i>ᵤ <i>h</i>ₜ ,  <i>W</i>ᵤ ∈ ℝ<span style="color:#14213D">^(V × d)</span>  ⇒  <i>z</i>ᵢ = <i>u</i>ᵢᵀ <i>h</i>ₜ</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><i>P</i>(<i>x</i>ₜ₊₁ = <i>j</i>) = <i>e</i>^(<i>z</i>ⱼ) / Σₖ <i>e</i>^(<i>z</i>ₖ)</p>
+</div>
+<p style="font-size:24px;line-height:1.4"><b>Geometrik yorum:</b> model, “şu anki hidden state hangi token’ın yönüyle en uyumlu?” sorusunu çözer. “Paris is the capital of” sonrası <i>h</i>, <i>u</i>(France) ile aynı yöne bakıyorsa <i>z</i>(France) büyük, <i>P</i>(France) yüksek olur.</p>
+</div>
+<div style="width:640px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 24px">
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Weight tying</p>
+<p style="font-size:24px;line-height:1.4">Bazı modellerde <i>W</i>ᵤ = <i>E</i>: aynı tablo hem girişte hem çıkışta kullanılır (GPT-2’nin orijinali, llama2.c). minGPT’de lm_head ayrı, bias’sız bir matristir.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;background:#14213D;border-radius:12px;padding:20px 28px">
+<p style="font-size:24px;color:#9FB0CC">minGPT · model.py</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">self.lm_head = nn.Linear(n_embd,<br>&#160;&#160;&#160;&#160;vocab_size, bias=False)<br>logits = self.lm_head(x)</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">31 · minGPT ve FPGA</p>
+<aside>Embedding’in bir de çıkış tarafında aynası var. Üstteki zincir bir LLM’in en kaba matematiksel resmi: ayrık token’lar embedding ile sürekli bir vektör uzayına taşınıyor; Transformer bu uzayda, T çarpı d boyutlu matrisleri yine T çarpı d boyutlu matrislere dönüştürerek hesap yapıyor; sonunda unembedding ile vocabulary uzayına geri dönülüyor ve softmax bir olasılık dağılımı veriyor. Ayrık semboller, sürekli hesap, sonra yine ayrık bir dağılım. Bence embedding’i anlamanın en doğru zihinsel modeli bu. Çıkıştaki matrise unembedding matrisi deniyor: V satır d sütun. Logit vektörü z, bu matris ile son hidden state h’nin çarpımı. Bunu satır satır yazarsak çok güzel bir yorum çıkıyor: i’nci token’ın logit’i, unembedding matrisinin i’nci satırı ile h’nin dot product’ı. Yani her token’ın çıkış tarafında da bir vektörü var ve model aslında şu soruyu çözüyor: “şu anki hidden state hangi token’ın yönüyle en uyumlu?” Örneğin “Paris is the capital of” cümlesinden sonra hidden state, France token’ının vektörüyle aynı yöne bakıyorsa, o dot product büyük çıkıyor ve softmax’tan sonra France’ın olasılığı yüksek oluyor. Gerçek modellerde yapı daha karmaşık, ama bu sezgi çok faydalı. Bazı modellerde unembedding matrisi doğrudan embedding matrisinin kendisi; buna weight tying deniyor ve güzel bir simetri yaratıyor: aynı tablo hem token’ı uzaya taşıyor hem de uzaydan geri okuyor. GPT-2’nin orijinali ve llama2.c böyle. minGPT ise lm_head’i ayrı ve bias’sız bir Linear katman olarak tutuyor; kod sağda.</aside>
+</section>

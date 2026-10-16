@@ -1,0 +1,22 @@
+<section id="embC" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · minGPT adım adım · embedding’in matematiği</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Token embedding sabittir; layer’lar ilerledikçe aynı token’ın vektörü bağlama göre değişir</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#F2EFE7;border-radius:12px;padding:22px 30px">
+<div style="display:flex;gap:40px">
+<p style="flex:1;font-size:24px;line-height:1.4">“I deposited money in the <b>bank</b>.” → para yatırılan banka</p>
+<p style="flex:1;font-size:24px;line-height:1.4">“He sat on the river <b>bank</b>.” → nehir kıyısı</p>
+</div>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><i>h</i>ᵢ⁽⁰⁾ = <i>E</i>[<i>x</i>ᵢ] + <i>p</i>ᵢ  →  <i>H</i>⁽ˡ⁺¹⁾ = <i>F</i>ₗ(<i>H</i>⁽ˡ⁾)  →  <i>h</i>ᵢ⁽ᴸ⁾ = <i>f</i>(<i>x</i>ᵢ; <i>x</i>₁, …, <i>x</i>ₙ)</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D">attention: <i>z</i>ᵢ = Σⱼ αᵢⱼ <i>v</i>ⱼ  ⇒  <b>token kimliği + bağlam bilgisi</b></p>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">İki cümlede “bank” başlangıçta aynı satırdan (<i>h</i>⁽⁰⁾ aynı token vektörü), son layer’da ise farklı vektörlerle temsil edilir.</p>
+</div>
+<div style="display:flex;gap:22px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:20px 26px"><h3 style="font-size:30px;font-weight:600;color:#14213D">Token embedding</h3><p style="font-size:24px;line-height:1.4">Transformer’a girmeden önce: <i>E</i>’nin satırı. Bir token için her cümlede aynıdır.</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:20px 26px"><h3 style="font-size:30px;font-weight:600;color:#14213D">Contextual</h3><p style="font-size:24px;line-height:1.4"><i>L</i> layer sonra: <i>h</i>ᵢ⁽ᴸ⁾ bütün cümleye bağlıdır. LLM’lerin gücünün kaynağı budur.</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #14213D;border-radius:12px;padding:20px 26px"><h3 style="font-size:30px;font-weight:600;color:#14213D">Sentence embedding</h3><p style="font-size:24px;line-height:1.4">RAG’de ayrı bir model bütün metni tek vektöre çevirir; arama cosine ile yapılır. Token embedding ile aynı şey değildir.</p></div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">18 · minGPT ve FPGA</p>
+<aside>Embedding kelimesi LLM konuşmalarında iki, hatta üç farklı şeyi ifade edebiliyor; bu ayrımı netleştirmek istiyorum. Birincisi token embedding: Transformer’a girmeden önceki vektör, yani E matrisinin bir satırı. Bu sabit. “bank” token’ının embedding tablosundaki satırı, hangi cümlede geçerse geçsin aynı. Ama “bank” İngilizcede hem para yatırılan banka hem de nehir kıyısı demek. Model bu iki anlamı nasıl ayırıyor? Cevap formüllerde. İlk temsil, token embedding artı pozisyon bilgisi. Sonra her layer bir öncekinin çıktısını alıp yeni bir temsil üretiyor: H l artı bir, F_l’nin H l’ye uygulanması. L layer sonra i’nci token’ın temsili artık yalnızca o token’a değil, bütün cümleye bağlı bir fonksiyon. Bunun mekanizması attention: yeni temsil z_i, diğer token’ların value’larının ağırlıklı bir toplamı. Yani Transformer katmanlarında bir token’ın vektörü kabaca “token kimliği artı bağlam bilgisi” hâline geliyor. Bu yüzden iki cümlede “bank” başlangıçta aynı vektörle başlıyor ama son layer’da farklı vektörlerle temsil ediliyor. Buna contextual representation deniyor ve LLM’lerin gücünün çok önemli bir parçası. Üçüncü anlam, RAG sistemlerinde kullanılan sentence embedding. Orada ayrı bir embedding modeli bütün bir cümleyi ya da dokümanı tek bir vektöre çeviriyor; sorgu vektörü ile doküman vektörleri cosine benzerlikle karşılaştırılıp en yakın dokümanlar bulunuyor. Bu, vector search’ün mantığı. Ama bu, bizim konuştuğumuz token embedding ile aynı şey değil. Bu sunumda “embedding” dediğimde hep birincisini kastediyorum.</aside>
+</section>
