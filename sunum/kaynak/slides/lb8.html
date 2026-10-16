@@ -1,0 +1,31 @@
+<section id="lb8" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Araştırma konusu: LittleBit · yazarların bildirdiği sonuçlar</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Sonuçlar: model 0,1 BPW’de bile çalışıyor, ama 0,3’ten 0,1’e geçişte kalite belirgin düşüyor</h2>
+</div>
+<div style="display:flex;gap:44px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px">
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:22%;text-align:left;color:#14213D">BPW</th><th style="width:26%;text-align:right;color:#14213D">LittleBit 7B</th><th style="width:26%;text-align:right;color:#14213D">LittleBit 13B</th><th style="width:26%;text-align:right;color:#14213D">STBLLM 7B</th></tr>
+<tr style="background:#F2EFE7"><td>16 (FP16)</td><td style="text-align:right">5,47</td><td style="text-align:right">4,88</td><td style="text-align:right">—</td></tr>
+<tr><td>1,0</td><td style="text-align:right">9,08</td><td style="text-align:right">8,18</td><td style="text-align:right">—</td></tr>
+<tr><td>0,8</td><td style="text-align:right">9,53</td><td style="text-align:right">8,52</td><td style="text-align:right">13,81</td></tr>
+<tr><td>0,7</td><td style="text-align:right">9,85</td><td style="text-align:right">8,76</td><td style="text-align:right">19,17</td></tr>
+<tr><td>0,55</td><td style="text-align:right">10,47</td><td style="text-align:right">9,24</td><td style="text-align:right">30,67</td></tr>
+<tr><td>0,3</td><td style="text-align:right">12,00</td><td style="text-align:right">10,48</td><td style="text-align:right">1 800</td></tr>
+<tr style="background:#F6E3D7"><td><b>0,1</b></td><td style="text-align:right"><b>15,92</b></td><td style="text-align:right"><b>15,09</b></td><td style="text-align:right">—</td></tr>
+</table>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">WikiText-2 perplexity, Llama2; düşük olan iyi. Kaynak: makale, Tablo 1. Sayıları kendimiz yeniden üretmedik.</p>
+</div>
+<div style="width:620px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #D9D5CA;padding:14px 0px 0px 0px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#B4460F">26,06 → 0,84 GB</p><p style="font-size:24px;line-height:1.4">Llama2-13B, 0,1 BPW’de 31,0 kat küçük. 70B: 138,04 → 1,98 GB (69,7×).</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #D9D5CA;padding:14px 0px 0px 0px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">11,6× kernel</p><p style="font-size:24px;line-height:1.4">A100’de 1-bit GEMV kernel’i, FP16’ya göre; uçtan uca inference değil.</p></div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#F2EFE7;border-radius:10px;padding:16px 22px">
+<p style="font-size:24px;font-weight:600;color:#14213D">Dikkat edilecekler</p>
+<p style="font-size:24px;line-height:1.4">FP16’ya göre perplexity üç kat (5,47 → 15,92). 1 bitte BinaryMoS daha iyi (7,74). Residual yol, OPT-1.3B’de 0,1 BPW’de zarar veriyor (+11,5).</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">39 · minGPT ve FPGA</p>
+<aside>Yazarların bildirdiği sonuçlara bakalım; bu sayıları kendimiz yeniden üretmedik, hepsi makalenin tablolarından. Soldaki tablo WikiText-2 üzerinde perplexity; düşük olan daha iyi. FP16 Llama2-7B’nin perplexity’si 5,47. LittleBit 1 BPW’de 9,08, 0,55’te 10,47, 0,3’te 12,00 ve 0,1’de 15,92. Karşılaştırma için STBLLM, 1 bitin altındaki önceki en iyi yöntem: 0,55 BPW’de 30,67, 0,3 BPW’de 1 800 civarı, yani model fiilen çökmüş. LittleBit’in asıl katkısı burada: aynı bit bütçesinde, 1 bitin altında çok daha kullanılabilir bir model. Sağ tarafta bellek: Llama2-13B, 26 gigabayttan 0,84 gigabayta, yani 31 kat küçülüyor; 70B modelde küçülme 70 kata yaklaşıyor, çünkü büyük modelde sıkıştırılmayan embedding’in payı daha küçük. Hız tarafında yazarlar kendi 1-bit kernel’leriyle bir katmanda 11,6 kata kadar hızlanma ölçmüş; ama bu kernel düzeyinde, uçtan uca bir inference hızı değil. Dürüstçe söylemem gereken sınırlar da var. Birincisi, kalite kaybı küçük değil: 0,1 BPW’de perplexity FP16’nın yaklaşık üç katı; 0,3 ile 0,1 arasında belirgin bir uçurum var. İkincisi, tam 1 bitte LittleBit en iyisi değil; BinaryMoS 7,74 ile daha iyi. Üçüncüsü, residual yol her zaman yardımcı değil: küçük bir model olan OPT-1.3B’de 0,1 BPW’de perplexity’yi 11,5 artırıyor. Yazarlar büyük modellerde yararlı olduğunu söyleyip bütün deneylerde kullanıyor. Bu son gözlem bizim için önemli; çünkü bizim modellerimiz çok daha küçük.</aside>
+</section>

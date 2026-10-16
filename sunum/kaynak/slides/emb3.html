@@ -1,0 +1,36 @@
+<section id="emb3" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · minGPT adım adım · embedding’in matematiği</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Pozisyon bilgisi üç yolla verilir: learned tablo, sinusoidal formül ya da RoPE ile döndürme</h2>
+</div>
+<div style="display:flex;gap:22px">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FEFEFC;border:2px solid #B4460F;border-radius:12px;padding:22px 26px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Learned · minGPT, GPT-2</h3>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:28px;line-height:1.4;color:#14213D"><i>x</i>ₜ = <i>W</i>ₜₑ[τₜ] + <i>W</i>ₚₑ[<i>t</i>]</p>
+<p style="font-size:24px;line-height:1.4"><i>T</i> × <i>C</i> parametre, training ile öğrenilir. Tablo <i>T</i> satırlı olduğu için daha uzun context’e genelleşmez.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:22px 26px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Sinusoidal · Vaswani 2017</h3>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:28px;line-height:1.4;color:#14213D">PE(<i>t</i>, 2<i>i</i>) = sin(<i>t</i> / 10000<span style="color:#14213D">^(2i/C)</span>)<br>PE(<i>t</i>, 2<i>i</i>+1) = cos(<i>t</i> / 10000<span style="color:#14213D">^(2i/C)</span>)</p>
+<p style="font-size:24px;line-height:1.4">Parametre yok. Her boyut çifti farklı frekansta dönen bir saat gibi.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:22px 26px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">RoPE · Llama, nanochat</h3>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:28px;line-height:1.4;color:#14213D"><i>q</i>′ = <i>R</i>(<i>t</i>θᵢ) <i>q</i> ,  θᵢ = 10000<span style="color:#14213D">^(−2i/dₕ)</span></p>
+<p style="font-size:24px;line-height:1.4"><i>x</i>’e değil, <i>q</i> ve <i>k</i>’nin her (2<i>i</i>, 2<i>i</i>+1) çiftine uygulanır; 2×2 döndürme matrisi <i>R</i>.</p>
+</div>
+</div>
+<div style="display:flex;gap:40px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#F2EFE7;border-radius:12px;padding:24px 32px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">RoPE neden işe yarar? Bir satırlık ispat</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D">(<i>R</i>(<i>t</i>θ) <i>q</i>)ᵀ (<i>R</i>(<i>s</i>θ) <i>k</i>) = <i>q</i>ᵀ <i>R</i>(<i>t</i>θ)ᵀ <i>R</i>(<i>s</i>θ) <i>k</i> = <i>q</i>ᵀ <i>R</i>((<i>s</i> − <i>t</i>)θ) <i>k</i></p>
+<p style="font-size:24px;line-height:1.4">Döndürme matrisleri için <i>R</i>(<i>a</i>)ᵀ<i>R</i>(<i>b</i>) = <i>R</i>(<i>b</i> − <i>a</i>). Score yalnızca göreli uzaklığa (<i>s</i> − <i>t</i>) bağlı kalır.</p>
+</div>
+<div style="width:520px;display:flex;flex-direction:column;gap:8px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 24px">
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Donanım açısından</p>
+<p style="font-size:24px;line-height:1.4">Learned position bir tablo okuması ve bir toplama. RoPE ise her token’da her head için cos/sin değerleriyle çarpma ister.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">13 · minGPT ve FPGA</p>
+<aside>Embedding’in ikinci yarısı pozisyon bilgisi. Bunu vermenin üç yaygın yolu var ve minGPT bunların en basitini kullanıyor. Birincisi learned position embedding, minGPT ve GPT-2’nin yolu: her pozisyon için ayrı bir öğrenilen vektör, token vektörüne ekleniyor. T çarpı C parametre gerekiyor. Zayıf yanı: tabloda yalnızca T satır olduğu için, model training’de görmediği daha uzun bir context’e genelleşemez. İkincisi, orijinal Transformer makalesindeki sinusoidal kodlama. Burada tablo öğrenilmiyor, bir formülle hesaplanıyor: her boyut çifti için, pozisyon t’ye bağlı bir sinüs ve kosinüs; her çiftin frekansı farklı. Bunu, farklı hızlarda dönen saatler gibi düşünebiliriz: düşük boyutlar hızlı, yüksek boyutlar yavaş dönüyor. Parametresi yok ve pozisyon k kadar kaydırıldığında her çift sabit bir açıyla dönüyor, yani doğrusal bir dönüşümle elde ediliyor. Üçüncüsü RoPE, Llama ve nanochat’in yolu. Burada pozisyon bilgisi x’e eklenmiyor; attention içinde q ve k vektörlerine uygulanıyor. q’nun her boyut çifti, t çarpı θᵢ açısıyla döndürülüyor. Alttaki kutu RoPE’nin neden çalıştığının ispatı ve tek satır. t pozisyonundaki query’yi tθ kadar, s pozisyonundaki key’i sθ kadar döndürdüğümüzü düşünelim. Dot product’ları, q transpoz, R(tθ) transpoz, R(sθ), k. Döndürme matrisleri ortogonal olduğu için R(a) transpoz R(b), R(b eksi a)’ya eşit. Dolayısıyla score yalnızca q’ya, k’ya ve iki pozisyon arasındaki farka, s eksi t’ye bağlı. Mutlak pozisyon kayboluyor, yalnızca göreli uzaklık kalıyor. Bu, dil için doğal bir özellik: iki kelimenin ilişkisi metnin neresinde durduklarından çok, aralarındaki mesafeye bağlı. Donanım açısından fark net: minGPT’nin learned position’ı bir tablo okuması ve bir toplama; RoPE ise her token’da, her head için, her boyut çiftinde kosinüs ve sinüs değerleriyle çarpma gerektiriyor.</aside>
+</section>

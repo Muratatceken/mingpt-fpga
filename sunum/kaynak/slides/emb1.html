@@ -1,0 +1,40 @@
+<section id="emb1" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · minGPT adım adım · embedding’in matematiği</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Embedding matematikte bir one-hot vektör ile matris çarpımıdır; sonucu tablonun tek bir satırıdır</h2>
+</div>
+<div style="display:flex;gap:40px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#F2EFE7;border-radius:12px;padding:24px 32px">
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><i>V</i>: vocabulary boyutu · <i>C</i>: vektör boyutu · <i>T</i>: context · <i>W</i>ₜₑ ∈ ℝ<span style="color:#5A6474">ⱽˣᶜ</span>, <i>W</i>ₚₑ ∈ ℝ<span style="color:#5A6474">ᵀˣᶜ</span></p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><b>e</b>(τ) ∈ {0, 1}<span style="color:#14213D">ⱽ</span>,  <b>e</b>(τ)ᵢ = 1 eğer <i>i</i> = τ, değilse 0</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><b>e</b>(τ)ᵀ <i>W</i>ₜₑ = Σᵢ <b>e</b>(τ)ᵢ · <i>W</i>ₜₑ[<i>i</i>, :] = <i>W</i>ₜₑ[τ, :]</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><i>X</i>[<i>b</i>, <i>t</i>, :] = <i>W</i>ₜₑ[idx[<i>b</i>, <i>t</i>], :] + <i>W</i>ₚₑ[<i>t</i>, :]   → (<i>B</i> × <i>T</i> × <i>C</i>)</p>
+</div>
+<div style="width:560px;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px 28px">
+<div style="display:flex;gap:12px;align-items:center">
+<div style="display:flex;gap:4px"><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;width:32px;text-align:center;padding:2px 0px;background:#E9E6DD;color:#14213D;border-radius:4px">0</p><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;width:32px;text-align:center;padding:2px 0px;background:#E9E6DD;color:#14213D;border-radius:4px">0</p><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;width:32px;text-align:center;padding:2px 0px;background:#B4460F;color:#FBFBF8;border-radius:4px">1</p></div>
+<p style="font-size:30px;color:#14213D">×</p>
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;gap:4px"><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div></div>
+<div style="display:flex;gap:4px"><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div><div style="width:26px;height:26px;background:#C3D2E6;border-radius:3px"></div></div>
+<div style="display:flex;gap:4px"><div style="width:26px;height:26px;background:#B4460F;border-radius:3px"></div><div style="width:26px;height:26px;background:#CF7A4C;border-radius:3px"></div><div style="width:26px;height:26px;background:#E3A982;border-radius:3px"></div><div style="width:26px;height:26px;background:#B4460F;border-radius:3px"></div><div style="width:26px;height:26px;background:#CF7A4C;border-radius:3px"></div></div>
+</div>
+<p style="font-size:30px;color:#14213D">=</p>
+<div style="display:flex;gap:4px"><div style="width:26px;height:26px;background:#B4460F;border-radius:3px"></div><div style="width:26px;height:26px;background:#CF7A4C;border-radius:3px"></div><div style="width:26px;height:26px;background:#E3A982;border-radius:3px"></div><div style="width:26px;height:26px;background:#B4460F;border-radius:3px"></div><div style="width:26px;height:26px;background:#CF7A4C;border-radius:3px"></div></div>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> τ = 2 için one-hot vektör [0 0 1], tablonun yalnızca 2 numaralı satırını seçer; diğer satırlar 0 ile çarpılıp kaybolur.</p>
+</div>
+</div>
+<div style="display:flex;gap:40px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#14213D;border-radius:12px;padding:22px 30px">
+<p style="font-size:24px;color:#9FB0CC">PyTorch: iki yol, aynı sonuç (gpt-nano’da denendi)</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2;white-space:nowrap">x1 = self.transformer.wte(idx)              <span style="color:#9FB0CC"># satır okuma</span><br>x2 = F.one_hot(idx, V).float() @ wte.weight  <span style="color:#9FB0CC"># matris çarpımı</span><br>torch.allclose(x1, x2)                       <span style="color:#F2A65A"># True</span></p>
+</div>
+<div style="width:560px;display:flex;flex-direction:column;gap:8px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 24px">
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Maliyet ve boyut</p>
+<p style="font-size:24px;line-height:1.4">Çarpım olarak <i>V</i>·<i>C</i> MAC, okuma olarak <i>C</i> okuma ve 0 çarpma. gpt-nano’da tablolar 144 + 528 = 672 parametre (%0,8). GPT-2 small’da <i>W</i>ₜₑ tek başına 38,6 M parametre (%31).</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">11 · minGPT ve FPGA</p>
+<aside>Hocam embedding’i şimdi matematiksel olarak tam açmak istiyorum. Notasyon: V vocabulary boyutu, C vektör boyutu, T en uzun context. İki tablomuz var: token embedding tablosu Wₜₑ, V satır C sütun; position embedding tablosu Wₚₑ, T satır C sütun. Bir token’ı, τ numaralı token’ı, matematikte V uzunluğunda bir one-hot vektörle gösteriyoruz: τ’ncu elemanı 1, diğer bütün elemanları 0. Bu vektörü satır vektörü olarak Wₜₑ ile çarparsak ne olur? Çarpım, Wₜₑ’nin satırlarının, one-hot vektörün elemanlarıyla ağırlıklandırılmış toplamı. Bütün ağırlıklar sıfır, yalnızca τ’ncu ağırlık bir. Toplamda geriye yalnızca Wₜₑ’nin τ’ncu satırı kalıyor. Yani embedding, formül olarak bir matris çarpımı ama sonucu bir satır seçimi. Sağdaki şekil bunu gösteriyor: τ = 2 için [0 0 1] vektörü, tablonun 2 numaralı satırını seçiyor; diğer satırlar sıfırla çarpılıp yok oluyor. Batch hâlinde düşünürsek: elimizde B tane dizi, her birinde T token var; idx, B çarpı T boyutunda bir tamsayı matrisi. Çıktı X, B çarpı T çarpı C boyutunda bir tensör ve her eleman, ilgili token’ın satırı ile ilgili pozisyonun satırının toplamı. Bu eşdeğerliği gerçekten test ettik: gpt-nano’da nn.Embedding’in çıktısıyla one-hot matris çarpımının çıktısı birebir aynı. PyTorch’un bunu çarpım olarak değil, indeksleme olarak yapmasının nedeni maliyet: çarpım olarak V çarpı C çarpma-toplama gerekirdi; okuma olarak yalnızca C sayı okunuyor, hiç çarpma yok. Boyut açısından da ilginç bir karşılaştırma var: gpt-nano’da iki tablo toplam 672 parametre, modelin yüzde 0,8’i, çünkü vocabulary yalnızca 3 token. Ama GPT-2 small’da vocabulary 50 257 token; embedding tablosu tek başına 38,6 milyon parametre, modelin yaklaşık üçte biri. Bu yüzden büyük modellerde embedding tablosu bellek açısından çok önemli; sunumun sonundaki LittleBit makalesinde de embedding’in ayrı tutulduğunu göreceğiz.</aside>
+</section>

@@ -1,0 +1,34 @@
+<section id="lb2" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Araştırma konusu: LittleBit</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Problem: LLM’in belleği weight’lerden gelir; 1 bitin altına inmek ancak weight’leri tek tek saklamamakla mümkün</h2>
+</div>
+<div style="display:flex;gap:44px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:18px">
+<div style="background:#F2EFE7;border-radius:12px;padding:22px 30px;display:flex;flex-direction:column;gap:8px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D">BPW = <i>b</i> = (saklanan toplam bit) / (<i>d</i>ₒᵤₜ · <i>d</i>ᵢₙ)</p>
+<p style="font-size:24px;line-height:1.4">Bits per weight: matrisi temsil etmek için harcanan bitin, matristeki weight sayısına oranı.</p>
+</div>
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:44%;text-align:left;color:#14213D">Temsil</th><th style="width:18%;text-align:right;color:#14213D">BPW</th><th style="width:38%;text-align:left;color:#14213D">nasıl?</th></tr>
+<tr><td>FP16</td><td style="text-align:right">16</td><td>her weight bir sayı</td></tr>
+<tr><td>INT8 quantization</td><td style="text-align:right">8</td><td>her weight 8 bit</td></tr>
+<tr><td>binary (±1)</td><td style="text-align:right">1</td><td>her weight 1 bit</td></tr>
+<tr style="background:#F6E3D7"><td><b>LittleBit</b></td><td style="text-align:right"><b>0,1 – 1</b></td><td>matris bir bütün olarak</td></tr>
+</table>
+<p style="font-size:24px;line-height:1.4"><b>Ana fikir:</b> her weight için ayrı bir değer saklarsak en az 1 bit gerekir. <i>b</i> &lt; 1 için matrisin tamamı, eleman sayısından çok daha az parametreyle temsil edilmelidir.</p>
+</div>
+<div style="width:600px;display:flex;flex-direction:column;gap:14px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:26px 28px">
+<p style="font-size:24px;font-weight:600;color:#5A6474">Llama2-13B’nin belleği (makale, Tablo 3)</p>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;color:#14213D">FP16 · 26,06 GB</p><div style="width:540px;height:28px;background:#9AA3B2;border-radius:4px"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;color:#14213D">LittleBit 0,3 BPW · 1,15 GB (22,7×)</p><div style="width:24px;height:28px;background:#2A5C9A;border-radius:4px"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;color:#14213D">LittleBit 0,1 BPW · <b>0,84 GB (31,0×)</b></p><div style="width:17px;height:28px;background:#B4460F;border-radius:4px"></div></div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> sıkıştırma oranı 16/0,1 = 160× değil 31×; çünkü embedding ve lm_head FP16 bırakılıyor.</p>
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 20px">
+<p style="font-size:24px;line-height:1.4"><b>Bizim için:</b> çipteki ~630 KB BRAM, 0,1 BPW’de kabaca 50 milyon weight demek.</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">33 · minGPT ve FPGA</p>
+<aside>Önce problemi tanımlayalım. Bir LLM’in belleğinin neredeyse tamamı weight’lerden geliyor. Sıkıştırmanın ölçüsü bits per weight, kısaca BPW: bir weight matrisini temsil etmek için harcadığımız toplam bit sayısının, matristeki weight sayısına oranı. Normal FP16 saklamada her weight 16 bit. Bilinen quantization yöntemleri bunu 8 bite, 4 bite, hatta her weight’i yalnızca işaretiyle saklayarak 1 bite indiriyor. Burada kritik bir gözlem var: her weight için ayrı bir değer saklıyorsak, BPW en az 1 olmak zorunda; en az bir bitlik bilgi gerekiyor. 1’in altına inmenin tek yolu, matrisi tek tek elemanlar olarak değil bir bütün olarak, eleman sayısından çok daha az parametreyle temsil etmek. LittleBit tam olarak bunu yapıyor ve 0,1 BPW’ye kadar iniyor. Sağdaki çubuklar makalenin Tablo 3’ünden: Llama2-13B, FP16 olarak 26,06 gigabayt. 0,3 BPW’de 1,15 gigabayt, 0,1 BPW’de 0,84 gigabayt; yaklaşık 31 kat küçülme. Bir ayrıntıya dikkat: 16’dan 0,1’e inmek 160 kat demek, ama toplam küçülme 31 kat. Çünkü embedding tablosu ve lm_head sıkıştırılmıyor, FP16 kalıyor; bir önceki bölümde GPT-2’de embedding’in modelin üçte biri olduğunu görmüştük. Bunun bizim projemiz için anlamı şu: çipimizde yaklaşık 630 kilobayt BRAM var. 0,1 BPW’de bu, kabaca 50 milyon weight’e yer demek; embedding’i, activation’ları ve KV cache’i hesaba katmadan, teorik bir üst sınır olarak. Bu, bugün çalıştırdığımız modellerin yüzlerce katı.</aside>
+</section>
