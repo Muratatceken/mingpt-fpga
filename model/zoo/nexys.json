@@ -1,13 +1,13 @@
 {
  "bigram": {
   "yosys": {
-   "lut_logic": 2143,
+   "lut_logic": 2106,
    "lut_ram": 12,
-   "lut": 2155,
+   "lut": 2118,
    "ff": 1314,
    "bram": 2.0,
    "dsp": 10,
-   "carry": 212
+   "carry": 213
   },
   "sim_pass": true,
   "sim_runs": 3,
@@ -42,7 +42,9 @@
    "bram": 19.5,
    "dsp": 58,
    "carry": 524
-  }
+  },
+  "int_nll": 2.001598479898846,
+  "tokens": 7166
  },
  "gpt2-bin": {
   "sim_pass": true,
@@ -51,14 +53,16 @@
   "cycles_per_token": 4983.2,
   "tokens_per_s_50mhz": 10033.7,
   "yosys": {
-   "lut_logic": 10504,
+   "lut_logic": 10533,
    "lut_ram": 620,
-   "lut": 11124,
-   "ff": 5776,
-   "bram": 10.5,
+   "lut": 11153,
+   "ff": 5778,
+   "bram": 10.0,
    "dsp": 60,
    "carry": 849
-  }
+  },
+  "int_nll": 2.0280697796874505,
+  "tokens": 7166
  },
  "gru": {
   "sim_pass": true,
@@ -112,7 +116,9 @@
    "bram": 14.0,
    "dsp": 22,
    "carry": 295
-  }
+  },
+  "int_nll": 1.9873579699307948,
+  "tokens": 7166
  },
  "mlp-lb25p1": {
   "sim_pass": true,
@@ -121,14 +127,16 @@
   "cycles_per_token": 1874.0,
   "tokens_per_s_50mhz": 26680.9,
   "yosys": {
-   "lut_logic": 7417,
+   "lut_logic": 7348,
    "lut_ram": 592,
-   "lut": 8009,
+   "lut": 7940,
    "ff": 4767,
    "bram": 5.0,
    "dsp": 25,
    "carry": 633
-  }
+  },
+  "int_nll": 2.1419155022111234,
+  "tokens": 7166
  },
  "nanochat": {
   "sim_pass": true,
@@ -139,13 +147,13 @@
   "V": 27,
   "T": 16,
   "yosys": {
-   "lut_logic": 7722,
-   "lut_ram": 836,
-   "lut": 8558,
-   "ff": 3249,
+   "lut_logic": 6905,
+   "lut_ram": 620,
+   "lut": 7525,
+   "ff": 3221,
    "bram": 16.0,
-   "dsp": 71,
-   "carry": 620
+   "dsp": 65,
+   "carry": 571
   }
  },
  "rnn": {
@@ -166,13 +174,33 @@
   "V": 512,
   "T": 256,
   "yosys": {
-   "lut_logic": 8104,
+   "lut_logic": 8146,
    "lut_ram": 856,
-   "lut": 8960,
+   "lut": 9002,
    "ff": 3312,
    "bram": 97.5,
    "dsp": 66,
    "carry": 586
+  },
+  "int_nll": 1.2910762873123252,
+  "tokens": 4096
+ },
+ "stories260k-bin": {
+  "sim_pass": true,
+  "sim_runs": 2,
+  "sim_tokens": 512,
+  "cycles_per_token": 27992.0,
+  "tokens_per_s_50mhz": 1786.2,
+  "int_nll": 1.9270331900806559,
+  "tokens": 4096,
+  "yosys": {
+   "lut_logic": 11262,
+   "lut_ram": 856,
+   "lut": 12118,
+   "ff": 5920,
+   "bram": 56.0,
+   "dsp": 68,
+   "carry": 915
   }
  },
  "ts_gpt2": {
@@ -186,13 +214,13 @@
  },
  "ts_gru": {
   "yosys": {
-   "lut_logic": 7934,
+   "lut_logic": 4823,
    "lut_ram": 1088,
-   "lut": 9022,
-   "ff": 3286,
-   "bram": 72.0,
-   "dsp": 71,
-   "carry": 616
+   "lut": 5911,
+   "ff": 2227,
+   "bram": 69.5,
+   "dsp": 25,
+   "carry": 339
   },
   "sim_pass": true,
   "sim_runs": 3,

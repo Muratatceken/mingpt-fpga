@@ -18,7 +18,7 @@ package zoo_pkg;
   localparam int    TAB_W      = 16;
   localparam int    PROG_DEPTH = 52;
   localparam int    W_DEPTH    = 128;
-  localparam int    PRM_DEPTH  = 1824;
+  localparam int    PRM_DEPTH  = 1184;
   localparam int    TAB_DEPTH  = 1632;
   localparam int    LUT_DEPTH  = 1024;
   localparam int    WB_DEPTH   = 1280;

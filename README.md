@@ -28,6 +28,20 @@ tamsayı aritmetiğine (INT8/INT16) dönüştürülür ve SystemVerilog ile yaz�
 Ayrıntılar: [docs/05_nexys_a7.md](docs/05_nexys_a7.md). Kısa yol: `make nexys-sim MODEL=stories260k`,
 bitstream için `make nexys-bit MODEL=stories260k` (Vivado).
 
+**Düşük bitli weight'ler (Larq, LittleBit).** Hocamızın önerdiği iki yöntem Mac'te QAT ile denendi
+(`sw/zoo/lowbit.py`; FPGA yalnızca inference).
+
+- **Engine:** 1-bit weight'li bir matris-vektör birimi (GEMVB, 64 toplama/çıkarma hattı, DSP yok) ve
+  SCALE op'u eklendi. Larq tarzı binary modeller ve tek yollu LittleBit aynı birimde çalışır.
+- **Kartta bit-exact çalışan düşük bitli modeller:**
+  - binary GPT-2: 1,75 kat hızlı, +0,03 nat;
+  - LittleBit makemore MLP: 0,59 BPW, 3,6 kat hızlı, 4,9 kat küçük, +0,16 nat;
+  - binary stories260K: 1,8 kat hızlı, BRAM %72 → %41, +0,64 nat.
+- **Bulgu:** LittleBit'in scale vektörleri dar katmanlarda (d ≤ 64) weight başına ~0,5–1 bit tutuyor;
+  bu yüzden LittleBit ancak geniş katmanlarda binary'yi geçiyor.
+
+Ayrıntılar: [docs/06_dusuk_bit.md](docs/06_dusuk_bit.md).
+
 **Karpathy model ailesi (Kısım IV):** dokuz mimari (Bigram, MLP, RNN, GRU, BoW, GPT-2, microgpt,
 Llama 2, nanochat) `names.txt` üzerinde ~50K parametreyle eğitildi, INT8'e çevrildi ve **tek bir
 mikrokodlu RTL'de** (`rtl/zoo/zoo_core.sv`) çalıştırıldı. Modele özgü olan yalnızca bellek içerikleridir.
@@ -57,6 +71,7 @@ tamsayı referansla **bit-exact**; RTL, referansla token token aynı 200 tokenl�
 3. [docs/03_dogrulama.md](docs/03_dogrulama.md): Doğrulama metodolojisi ve sonuçları.
 4. [docs/04_kart.md](docs/04_kart.md): Eski hedef PYNQ-Z2, yerleşik öz-test.
 5. [docs/05_nexys_a7.md](docs/05_nexys_a7.md): **Nexys A7-100T**: model kartta tek başına çalışır (VGA, sampling, kart üstü kontrol), Mac'te tam kart simülasyonu, Vivado/openFPGALoader ile programlama.
+6. [docs/06_dusuk_bit.md](docs/06_dusuk_bit.md): **Düşük bitli weight'ler**: Larq tarzı binary/ternary ve LittleBit QAT sonuçları, LittleBit'in küçük modellerde BPW sınırı, engine'deki 1-bit GEMV (GEMVB) ve SCALE, kartta ölçülen hız/bellek/kalite.
 
 ## Dizin yapısı
 

@@ -100,7 +100,8 @@ Vivado macOS'ta çalışmaz. Bu yüzden kartın **bütün üst modülü** Verila
 
 ```bash
 make nexys-sim MODEL=stories260k   # = board.py export + board_sim.py --press CUD --sw1 1 --frame
-make nexys-all                     # 15 modelin hepsi
+make nexys-all                     # 15 INT8 modelin hepsi
+scripts/nexys_ci.sh gru gpt2-bin   # Python'suz kısa kontrol (CI'da da çalışır)
 make nexys-synth MODEL=stories260k # Yosys kaynak tahmini
 ```
 
@@ -109,40 +110,50 @@ token, koşu hash'i, kart üstü kontrolün sonucu ve 80 × 28'lik metin alanı 
 VGA karesi: `build/nexys/stories260k/frame.png`.
 
 **Sonuçlar** (`model/zoo/nexys.json`). Her model için 4 koşu yapıldı: otomatik ilk koşu (sampling),
-BTNC (devam), SW0 açıkken BTNU (greedy) ve BTND (temizle). 15 modelin **hepsi bit-exact**: token'lar,
-hash'ler, kontrol LED'i ve ekran metni referansla aynı.
+BTNC (devam), SW0 açıkken BTNU (greedy) ve BTND (temizle). 18 modelin **hepsi bit-exact**: token'lar,
+hash'ler, kontrol LED'i ve ekran metni referansla aynı. Bu 18 modelin 15'i INT8; 3'ü düşük bitli QAT
+modeli ([06_dusuk_bit.md](06_dusuk_bit.md)).
 
-| Model | Veri | cycle/token | token/s (50 MHz) |
-|---|---|---:|---:|
-| bigram | names | 126 | 396 825 |
-| mlp | names | 6 722 | 7 438 |
-| rnn | names | 6 464 | 7 735 |
-| gru | names | 6 605 | 7 570 |
-| bow | names | 6 368 | 7 852 |
-| gpt2 | names | 8 713 | 5 739 |
-| microgpt | names | 8 746 | 5 717 |
-| llama | names | 9 491 | 5 268 |
-| nanochat | names | 10 813 | 4 624 |
-| stories260k (Karpathy) | TinyStories | 50 397 | 992 |
-| ts_gpt2 | TinyStories | 41 781 | 1 197 |
-| ts_gru | TinyStories | 30 407 | 1 644 |
-| ts_llama | TinyStories | 50 397 | 992 |
-| ts_microgpt | TinyStories | 40 570 | 1 232 |
-| ts_nanochat | TinyStories | 50 680 | 987 |
+| Model | Veri | Weight'ler | cycle/token | token/s (50 MHz) |
+|---|---|---|---:|---:|
+| bigram | names | INT8 | 126 | 396 825 |
+| mlp | names | INT8 | 6 722 | 7 438 |
+| rnn | names | INT8 | 6 464 | 7 735 |
+| gru | names | INT8 | 6 605 | 7 570 |
+| bow | names | INT8 | 6 368 | 7 852 |
+| gpt2 | names | INT8 | 8 712 | 5 739 |
+| microgpt | names | INT8 | 8 746 | 5 717 |
+| llama | names | INT8 | 9 490 | 5 268 |
+| nanochat | names | INT8 | 10 813 | 4 624 |
+| stories260k (Karpathy) | TinyStories | INT8 | 50 397 | 992 |
+| ts_gpt2 | TinyStories | INT8 | 41 781 | 1 197 |
+| ts_gru | TinyStories | INT8 | 30 407 | 1 644 |
+| ts_llama | TinyStories | INT8 | 50 397 | 992 |
+| ts_microgpt | TinyStories | INT8 | 40 570 | 1 232 |
+| ts_nanochat | TinyStories | INT8 | 50 680 | 987 |
+| gpt2-bin | names | binary | 4 983 | 10 034 |
+| mlp-lb25p1 | names | LittleBit | 1 874 | 26 681 |
+| stories260k-bin | TinyStories | binary | 27 992 | 1 786 |
 
 cycle/token, otomatik ilk koşunun ortalamasıdır: engine ve sampler dahil, ekran yazımı hariç. Ekran
 yazımı bir sonraki adımın hesabıyla paralel yürür. TinyStories modellerinde context
 $T = 256$ ile sınırlanmıştır, böylece KV cache BRAM'e sığar.
 
-**Kaynaklar** (Yosys `synth_xilinx`; zamanlama yok, Vivado'nun sayıları farklı olabilir):
+**Kaynaklar** (Yosys `synth_xilinx`; zamanlama yok, Vivado'nun sayıları farklı olabilir). Her bitstream tek
+bir model taşıdığı için engine yalnızca o modelin kullandığı birimlerle sentezlenir (`SPECIALIZE=1`):
 
 | Model | LUT | FF | BRAM36 | DSP |
 |---|---:|---:|---:|---:|
-| stories260k | 9 830 (%16) | 3 340 (%3) | 97,5 (%72) | 71 (%30) |
-| ts_gru | 9 022 (%14) | 3 286 (%3) | 72 (%53) | 71 (%30) |
-| gru | 8 208 (%13) | 3 362 (%3) | 16 (%12) | 71 (%30) |
-| nanochat | 8 558 (%13) | 3 249 (%3) | 16 (%12) | 71 (%30) |
-| bigram | 2 155 (%3) | 1 314 (%1) | 2 (%1) | 10 (%4) |
+| bigram | 2 118 (%3) | 1 314 (%1) | 2 (%1) | 10 (%4) |
+| mlp | 4 949 (%8) | 2 167 (%2) | 14 (%10) | 22 (%9) |
+| gru | 5 021 (%8) | 2 199 (%2) | 16 (%12) | 25 (%10) |
+| gpt2 | 7 112 (%11) | 3 082 (%2) | 19,5 (%14) | 58 (%24) |
+| nanochat | 7 525 (%12) | 3 221 (%3) | 16 (%12) | 65 (%27) |
+| stories260k | 9 002 (%14) | 3 312 (%3) | 97,5 (%72) | 66 (%28) |
+| ts_gru | 5 911 (%9) | 2 227 (%2) | 69,5 (%51) | 25 (%10) |
+| gpt2-bin | 11 153 (%18) | 5 778 (%5) | 10 (%7) | 60 (%25) |
+| mlp-lb25p1 | 7 940 (%13) | 4 767 (%4) | 5 (%4) | 25 (%10) |
+| stories260k-bin | 12 118 (%19) | 5 920 (%5) | 56 (%41) | 68 (%28) |
 
 ## 5. Bitstream ve kartı programlama
 
@@ -174,6 +185,6 @@ Flash'tan açılış için JP1 jumper'ı QSPI konumunda olmalıdır.
   zincirleri (NORM çıkışı, attention'daki üs alma) 50 MHz'i zorlayabilir; betik bu durumda 25 MHz'e
   iner. Gerçek Fmax ilk Vivado koşusunun `result.json` dosyasında görülecek.
 - **Bir bitstream, bir model.** Modeller BRAM'de bitstream'le birlikte gelir. stories260k tek başına
-  BRAM'in %72'sini kullanır.
+  BRAM'in %72'sini kullanır (binary sürümü %41).
 - **TinyStories modellerinde context 256 token'la sınırlı.** Model 512 token'la eğitildi, ama
   BRAM'e sığması için KV cache yarıya indirildi.

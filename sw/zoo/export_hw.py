@@ -90,7 +90,7 @@ def export(name, seqs, gen=0, gen_start=0, q=None, out=None, quiet=False):
                     else:
                         wd |= (int(Wp[ob * P + p, i]) & 0xFF) << (8 * p)
                 (blines if L.get("bin") else wlines).append(hexw(wd, BL if L.get("bin") else 8 * P))
-        for o in range(n_pad):
+        for o in range(n_out if L.get("bin") else n_pad):      # GEMVB drains only the real outputs: no padding
             if o < n_out:
                 bb, mm, ss = int(b[o]), int(m0[o]), int(sh[o])
             else:

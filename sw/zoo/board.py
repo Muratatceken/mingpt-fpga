@@ -406,9 +406,43 @@ endpackage
     return out
 
 
+def evaluate(name, n_names=1000, n_windows=16):
+    """test loss of the float model and of the integer program the board runs (bit-exact with the FPGA):
+    names: the test names (as evaluate.py); TinyStories: the first test windows of pipeline.py"""
+    from ir import FloatRunner, attach_rope
+    from quant import nll
+    q = qprog(name)
+    base = name.partition("-")[0]
+    if q.V == 27:
+        from evaluate import seqs_of
+        from data import load
+        test = seqs_of(*load()["test"])[:n_names]
+    else:
+        from tinystories import val_windows
+        Xt, Yt = val_windows(256, "test")
+        test = [(Xt[i].tolist(), Yt[i].tolist()) for i in range(n_windows)]
+    ti = n = 0
+    for x, y in test:
+        ir = IntRunner(q)
+        for t, (tok, tgt) in enumerate(zip(x, y)):
+            ti += nll(ir.step(int(tok), t) * q.s_logit, int(tgt))
+            n += 1
+    res = dict(int_nll=ti / n, tokens=n)
+    path = os.path.join(ROOT, "model", "zoo", "nexys.json")
+    allr = json.load(open(path)) if os.path.exists(path) else {}
+    allr.setdefault(name, {}).update(res)
+    json.dump(dict(sorted(allr.items())), open(path, "w"), indent=1)
+    print(f"{name}: integer test loss {res['int_nll']:.4f} ({n} tokens)")
+    return res
+
+
 def main():
     a = sys.argv[1:]
     opt = lambda k, d: int(a[a.index(k) + 1]) if k in a else d
+    if a and a[0] == "eval":
+        for name in a[1:]:
+            evaluate(name)
+        return
     if not a or a[0] not in ("export", "ref"):
         print(__doc__)
         return
