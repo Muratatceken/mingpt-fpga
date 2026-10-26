@@ -70,7 +70,10 @@ Eğitilmiş bir modelin küçük weight'lerinde öğrenme oranı kritik: INT4'te
 | int4 | 4,21 | 1,428 | 1,311 (2 000, lr 1e-4) |
 | bin | 1,21 | 7,281 | 1,933 (3 000, lr 1,5e-3) |
 | lb25p2 | 1,63 | 12,58 | 2,743 (300, lr 1e-3) |
+| lb25p1 | 0,82 | 17,86 | 2,486 (3 000, lr 1,5e-3) |
 
+LittleBit (tek yol, 0,82 BPW) aynı eğitim bütçesinde binary'nin 0,55 nat gerisinde kalıyor. Katmanların
+genişliği 64 ve §3'teki formüle göre scale'ler bu genişlikte bitlerin önemli bir kısmını tutuyor.
 Binary 3 000 adımda +0,66 nat kaybediyor. TinyStories, isimlerden çok daha zor bir görev ve 260 binlik
 model kapasitesinin sınırında. Bu yüzden binary'nin bedeli burada ağır. Kayıp, son adımlarda hâlâ
 hızla düşüyordu (2,10 → 1,93); daha uzun bir QAT farkı kapatacaktır.
