@@ -12,7 +12,11 @@
 #             LOAD=1 MODEL=mem/zoo/universal/gpt2 scripts/zoo_sim.sh universal
 # Verilator runs with --assert (address ranges, accumulator overflow, divider precondition).
 set -euo pipefail
-export PATH="/opt/homebrew/bin:$PATH"     # ARM Verilator/Yosys/sv2v/Icarus (macOS)
+export PATH="/opt/homebrew/bin:/usr/bin:$PATH"     # ARM Verilator/Yosys/sv2v/Icarus (macOS)
+# macOS: if xcrun picks a Command Line Tools SDK newer than the selected Xcode's linker, use Xcode's SDK
+XSDK="$(xcode-select -p 2>/dev/null)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+if [ "$(uname)" = Darwin ] && [ -z "${SDKROOT:-}" ] && [ -d "$XSDK" ] && \
+   ! xcrun --show-sdk-path 2>/dev/null | grep -q "^$(xcode-select -p)"; then export SDKROOT="$XSDK"; fi
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 M="$1"; NSEQ="${2:-1000000}"

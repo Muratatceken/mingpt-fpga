@@ -1,0 +1,18 @@
+{
+ "V": 512,
+ "T": 256,
+ "NL": 5,
+ "C": 64,
+ "VLEN": 152,
+ "KVD": 64,
+ "TAB_W": 16,
+ "PROG_DEPTH": 55,
+ "W_DEPTH": 26496,
+ "PRM_DEPTH": 2872,
+ "TAB_DEPTH": 49152,
+ "LUT_DEPTH": 1280,
+ "N_INSTR": 55,
+ "OPS_USED": 18114,
+ "N_PARAMS": 263992,
+ "S_LOGIT": 0.0007498466878236998
+}

@@ -3,7 +3,11 @@
 #   scripts/zoo_axi_sim.sh <model image dir> [NSEQ]     e.g. mem/zoo/universal/gpt2
 # Uses the universal (one-bitstream) package mem/zoo/universal/zoo_pkg.sv.
 set -euo pipefail
-export PATH="/opt/homebrew/bin:$PATH"
+export PATH="/opt/homebrew/bin:/usr/bin:$PATH"
+# macOS: if xcrun picks a Command Line Tools SDK newer than the selected Xcode's linker, use Xcode's SDK
+XSDK="$(xcode-select -p 2>/dev/null)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+if [ "$(uname)" = Darwin ] && [ -z "${SDKROOT:-}" ] && [ -d "$XSDK" ] && \
+   ! xcrun --show-sdk-path 2>/dev/null | grep -q "^$(xcode-select -p)"; then export SDKROOT="$XSDK"; fi
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 OBJ="$ROOT/build/zoo/obj_axi"

@@ -7,7 +7,11 @@
 #   modelin programını/ağırlıklarını sabit sayıp mantığı katlayamaz.
 # Kaynak kullanımı tahmini; zamanlama (Fmax) yok. Çıktı: build/zoo/yosys/stat_<model>[_spec].txt
 set -euo pipefail
-export PATH="/opt/homebrew/bin:$PATH"     # ARM Verilator/Yosys/sv2v (macOS)
+export PATH="/opt/homebrew/bin:/usr/bin:$PATH"     # ARM Verilator/Yosys/sv2v (macOS)
+# macOS: if xcrun picks a Command Line Tools SDK newer than the selected Xcode's linker, use Xcode's SDK
+XSDK="$(xcode-select -p 2>/dev/null)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+if [ "$(uname)" = Darwin ] && [ -z "${SDKROOT:-}" ] && [ -d "$XSDK" ] && \
+   ! xcrun --show-sdk-path 2>/dev/null | grep -q "^$(xcode-select -p)"; then export SDKROOT="$XSDK"; fi
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 M="$1"; SPEC=0; TAG=""
 if [ "${2:-}" = spec ]; then SPEC=1; TAG=_spec; fi

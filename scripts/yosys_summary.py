@@ -1,9 +1,9 @@
-"""Summarise a Yosys `stat` report for xc7z020 (PYNQ-Z2).  python3 yosys_summary.py stat.txt [name] [--json]"""
+"""Summarise a Yosys `stat` report for xc7a100t (Nexys A7-100T).  python3 yosys_summary.py stat.txt [name] [--json]"""
 import json
 import re
 import sys
 
-CAP = dict(LUT=53200, FF=106400, BRAM=140, DSP=220)
+CAP = dict(LUT=63400, FF=126800, BRAM=135, DSP=240)     # xc7a100t (xc7z020: 53200, 106400, 140, 220)
 
 
 def summary(path):
@@ -36,5 +36,5 @@ if __name__ == "__main__":
         for k, lab, cap in [("lut_logic", "LUT (mantık)", None), ("lut_ram", "LUT (dağıtık RAM/SRL)", None),
                             ("lut", "LUT toplam", "LUT"), ("ff", "FF", "FF"), ("bram", "BRAM (RAMB36 eşd.)", "BRAM"),
                             ("dsp", "DSP48E1", "DSP")]:
-            pct = f"  {100 * s[k] / CAP[cap]:5.1f}% / xc7z020" if cap else ""
+            pct = f"  {100 * s[k] / CAP[cap]:5.1f}% / xc7a100t" if cap else ""
             print(f"  {lab:24s} {s[k]:8g}{pct}")

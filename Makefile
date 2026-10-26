@@ -8,7 +8,8 @@ VFLAGS = --binary --timing --timescale 1ns/1ps -j 0 -Wall -Wno-fatal \
 RTL    = $(shell cat scripts/files.f)
 
 .PHONY: all model train quantize eval export sim test-arith selftest lint synth report clean \
-        zoo-train zoo-quant zoo-sim zoo-synth zoo-pipeline zoo-fuzz zoo-arith zoo-dse paper
+        zoo-train zoo-quant zoo-sim zoo-synth zoo-pipeline zoo-fuzz zoo-arith zoo-dse paper \
+        nexys nexys-sim nexys-all nexys-synth nexys-bit nexys-prog lowbit
 
 all: test-arith sim selftest
 
@@ -76,6 +77,32 @@ zoo-arith:         # exhaustive / random tests of the divider and square root
 
 zoo-dse:           # GEMV lane count P = 8, 16, 32 -> model/zoo/dse.json
 	cd sw/zoo && $(PYTHON) dse.py
+
+# ---------------- Nexys A7-100T: the model runs on the FPGA (board/nexys_a7, docs/05_nexys_a7.md) ----------------
+MODEL ?= stories260k
+NEXYS_MODELS = bigram mlp rnn gru bow gpt2 microgpt llama nanochat stories260k ts_gpt2 ts_gru ts_llama ts_microgpt ts_nanochat
+MHZ ?= 50
+
+nexys:             # model images in BRAM form: mem/nexys/$(MODEL)/
+	cd sw/zoo && $(PYTHON) board.py export $(MODEL)
+
+nexys-sim: nexys  # whole board design in Verilator, bit-exact vs sw/zoo/board.py, VGA frame -> build/nexys/$(MODEL)/frame.png
+	cd sw/zoo && $(PYTHON) board_sim.py $(MODEL) --press CUD --sw1 1 --frame
+
+nexys-all:         # every model of the family
+	for m in $(NEXYS_MODELS); do (cd sw/zoo && $(PYTHON) board.py export $$m && $(PYTHON) board_sim.py $$m --press CUD --sw1 1) || exit 1; done
+
+nexys-synth: nexys # Yosys resource estimate of the board design (no timing)
+	scripts/nexys_synth.sh $(MODEL)
+
+nexys-bit: nexys   # Vivado (Linux/Windows): bitstream -> build/nexys/$(MODEL)/vivado/nexys_$(MODEL).bit
+	vivado -mode batch -source scripts/vivado_nexys_a7.tcl -tclargs $(MODEL) $(MHZ)
+
+nexys-prog:        # program the board over USB-JTAG (Vivado); without Vivado: openFPGALoader -b nexys_a7_100 <bit>
+	vivado -mode batch -source scripts/vivado_program_nexys.tcl -tclargs $(MODEL)
+
+lowbit:            # low-bit weights study (Larq-style binary/ternary, LittleBit): QAT on the Mac
+	cd sw/zoo && $(PYTHON) lowbit.py sweep gpt2 llama nanochat gru mlp && $(PYTHON) lowbit.py table
 
 # ---------------- makale (İngilizce, IEEE) ----------------
 paper:

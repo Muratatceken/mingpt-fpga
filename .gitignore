@@ -20,3 +20,6 @@ paper/*.fls
 paper/*.fdb_latexmk
 paper/*.blg
 paper/*.out
+
+# low-bit study: materialised checkpoints (results are the .json files)
+model/zoo/lowbit/*/*.pt
