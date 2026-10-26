@@ -67,7 +67,7 @@ Eğitilmiş bir modelin küçük weight'lerinde öğrenme oranı kritik: INT4'te
 | Yöntem | BPW | Eğitimsiz | QAT (adım) |
 |---|---:|---:|---:|
 | int8 | 8,21 | 1,269 | – |
-| int4 | 4,21 | 1,428 | 1,316 (300, lr 1e-4) |
+| int4 | 4,21 | 1,428 | 1,311 (2 000, lr 1e-4) |
 | bin | 1,21 | 7,281 | 1,933 (3 000, lr 1,5e-3) |
 | lb25p2 | 1,63 | 12,58 | 2,743 (300, lr 1e-3) |
 
