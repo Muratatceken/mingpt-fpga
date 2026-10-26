@@ -398,7 +398,9 @@ module zoo_core
     e_n    = e_u >> e_f;
     e_kk   = (e_u >> (e_f - 6'd8)) & 64'hFF;
     e_val  = (e_n > 64'd15) ? 16'd0 : (exp_lut[e_kk[7:0]] >> e_n[3:0]);
-    att_y  = (64'(att_a[j[LDH-1:0]]) * $signed({1'b0, att_r}) + 64'sh8000_0000) >>> 32;
+    // explicit $signed: sv2v turns a size cast of a signed array element into an unsigned one (IEEE 1800
+    // 6.24.1 keeps the sign), which made this >>> a logical shift in the sv2v-based flows (Icarus, Yosys)
+    att_y  = ($signed(64'(att_a[j[LDH-1:0]])) * $signed({1'b0, att_r}) + 64'sh8000_0000) >>> 32;
   end
 
   // ---- ROPE ----
@@ -754,7 +756,7 @@ module zoo_core
               end
               if (rq_act) begin
                 g1_v   <= 1'b1;
-                g1_acc <= g_bin ? 32'(bshadow[rq_p % BLN]) : shadow[rq_p % P];
+                g1_acc <= g_bin ? $signed(32'(bshadow[rq_p % BLN])) : shadow[rq_p % P];
                 g1_idx <= 16'(32'(rq_ob) * 32'(g_lanes) + 32'(rq_p));
                 rq_p   <= rq_p + 1'b1;
                 if (16'(rq_p) == g_lanes - 16'd1 || (g_bin && g_drlast)) rq_act <= 1'b0;

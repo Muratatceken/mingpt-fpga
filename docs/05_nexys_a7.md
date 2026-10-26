@@ -166,6 +166,17 @@ Bu testler iki gerçek RTL hatası buldu, ikisi de düzeltildi:
 1. Kuyruktaki bir koşunun başladığı çevrime denk gelen BTNU basışı kayboluyordu.
 2. Heartbeat sayacının reset'i yoktu; 4-state simülasyonda LED0 X kalıyordu.
 
+**sv2v tabanlı akışlarda attention yanlış hesaplanıyordu (düzeltildi).** Icarus ve Yosys netlist akışları
+SystemVerilog'u önce sv2v (0.0.13) ile Verilog'a çeviriyor.
+
+- **Hata:** sv2v, signed bir dizi elemanına uygulanan boyut cast'ini (`64'(att_a[j])`) işaretsiz bir
+  fonksiyona çeviriyor. Standart (IEEE 1800 §6.24.1) cast'in işareti koruduğunu söylüyor.
+- **Sonuç:** attention çıkışındaki `>>> 32` mantıksal kaydırmaya dönüşüyor, negatif değerler +127'ye
+  doyuyordu. Attention kullanan bütün modeller sv2v çıktısında bozuk çıkıyordu; daha önceki RTL de dahil.
+- **Etkilenmeyenler:** Verilator ve Vivado SystemVerilog'u doğrudan okuduğu için doğruydu.
+- **Düzeltme:** ifade açıkça `$signed(...)` ile yazıldı. Artık Icarus'ta gpt2, llama, nanochat, microgpt,
+  bow ve gpt2-bin de bit-exact; Verilator'daki pin imzaları değişmedi.
+
 **Kaynaklar** (Yosys `synth_xilinx`; zamanlama yok, Vivado'nun sayıları farklı olabilir). Her bitstream tek
 bir model taşıdığı için engine yalnızca o modelin kullandığı birimlerle sentezlenir (`SPECIALIZE=1`):
 
