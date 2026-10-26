@@ -1,0 +1,3313 @@
+{
+ "bigram": {
+  "ok": true,
+  "cases": 40,
+  "failed": 0,
+  "runs": 153,
+  "aborted_runs": 1,
+  "tokens": 21102,
+  "idle_points": 198,
+  "cycles": 3866036,
+  "keys": {
+   "C": 54,
+   "U": 46,
+   "D": 57,
+   "R": 1,
+   "c": 5,
+   "u": 7,
+   "d": 7,
+   "r": 1
+  },
+  "greedy_runs": 35,
+  "runs_with_onboard_check": 46,
+  "sampling_settings": "30 of 32",
+  "taus": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "minps": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "seed": 2026,
+  "seconds": 7,
+  "failures": [],
+  "cases_list": [
+   {
+    "case": 0,
+    "keys": "DD",
+    "sws": [
+     "0d15",
+     "0d15",
+     "0d15"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 1,
+    "tokens": 54
+   },
+   {
+    "case": 1,
+    "keys": "DDC",
+    "sws": [
+     "9b36",
+     "9b36",
+     "9b36",
+     "9b36"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 2,
+    "tokens": 249
+   },
+   {
+    "case": 2,
+    "keys": "UDU",
+    "sws": [
+     "6a28",
+     "262d",
+     "262d",
+     "d824"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 305
+   },
+   {
+    "case": 3,
+    "keys": "CUD",
+    "sws": [
+     "f830",
+     "8b18",
+     "0d0b",
+     "0d0b"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 364
+   },
+   {
+    "case": 4,
+    "keys": "CDUCCD",
+    "sws": [
+     "85be",
+     "85be",
+     "85be",
+     "722a",
+     "5e90",
+     "5e90",
+     "5e90"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 943
+   },
+   {
+    "case": 5,
+    "keys": "CCD",
+    "sws": [
+     "1200",
+     "1200",
+     "1200",
+     "1200"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 436
+   },
+   {
+    "case": 6,
+    "keys": "DDC",
+    "sws": [
+     "b793",
+     "b793",
+     "b793",
+     "b793"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 2,
+    "tokens": 108
+   },
+   {
+    "case": 7,
+    "keys": "DCC",
+    "sws": [
+     "0b3a",
+     "0b3a",
+     "0b3a",
+     "f61e"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 451
+   },
+   {
+    "case": 8,
+    "keys": "UDC",
+    "sws": [
+     "93ae",
+     "93ae",
+     "93ae",
+     "93ae"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 738
+   },
+   {
+    "case": 9,
+    "keys": "cU",
+    "sws": [
+     "bf8f",
+     "bf8f",
+     "6a04"
+    ],
+    "dlys": {
+     "0": 35
+    },
+    "ok": true,
+    "runs": 3,
+    "tokens": 263
+   },
+   {
+    "case": 10,
+    "keys": "CDCCCU",
+    "sws": [
+     "87a6",
+     "87a6",
+     "87a6",
+     "b20c",
+     "58be",
+     "58be",
+     "062a"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 6,
+    "tokens": 1032
+   },
+   {
+    "case": 11,
+    "keys": "DDDCUUU",
+    "sws": [
+     "0439",
+     "0439",
+     "0439",
+     "0439",
+     "49a0",
+     "0000",
+     "0b00",
+     "429d"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 543
+   },
+   {
+    "case": 12,
+    "keys": "CdcDCU",
+    "sws": [
+     "0000",
+     "6122",
+     "6122",
+     "6122",
+     "6122",
+     "cd82",
+     "3092"
+    ],
+    "dlys": {
+     "1": 8,
+     "2": 101
+    },
+    "ok": true,
+    "runs": 5,
+    "tokens": 953
+   },
+   {
+    "case": 13,
+    "keys": "DCDDU",
+    "sws": [
+     "5b33",
+     "5b33",
+     "5b33",
+     "5b33",
+     "5b33",
+     "5b33"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 162
+   },
+   {
+    "case": 14,
+    "keys": "CU",
+    "sws": [
+     "0000",
+     "a2b5",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 358
+   },
+   {
+    "case": 15,
+    "keys": "uDDDU",
+    "sws": [
+     "cfac",
+     "0d24",
+     "0d24",
+     "0d24",
+     "0d24",
+     "0000"
+    ],
+    "dlys": {
+     "0": 215
+    },
+    "ok": true,
+    "runs": 3,
+    "tokens": 512
+   },
+   {
+    "case": 16,
+    "keys": "DUDUDC",
+    "sws": [
+     "0798",
+     "0798",
+     "fb8a",
+     "fb8a",
+     "2926",
+     "2926",
+     "a58c"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 601
+   },
+   {
+    "case": 17,
+    "keys": "DCDUD",
+    "sws": [
+     "fd2b",
+     "fd2b",
+     "bb90",
+     "bb90",
+     "8539",
+     "8539"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 263
+   },
+   {
+    "case": 18,
+    "keys": "dd",
+    "sws": [
+     "e71c",
+     "e71c",
+     "e71c"
+    ],
+    "dlys": {
+     "0": 159,
+     "1": 164
+    },
+    "ok": true,
+    "runs": 1,
+    "tokens": 200
+   },
+   {
+    "case": 19,
+    "keys": "UUUDU",
+    "sws": [
+     "0000",
+     "e988",
+     "3b94",
+     "3b94",
+     "3b94",
+     "d8b3"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 604
+   },
+   {
+    "case": 20,
+    "keys": "UCC",
+    "sws": [
+     "fb1e",
+     "14b6",
+     "45b4",
+     "361a"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 560
+   },
+   {
+    "case": 21,
+    "keys": "dD",
+    "sws": [
+     "8196",
+     "8196",
+     "8196"
+    ],
+    "dlys": {
+     "0": 106
+    },
+    "ok": true,
+    "runs": 1,
+    "tokens": 144
+   },
+   {
+    "case": 22,
+    "keys": "DCCCCDC",
+    "sws": [
+     "7c04",
+     "7c04",
+     "7c04",
+     "48b0",
+     "b499",
+     "b499",
+     "b499",
+     "b98a"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 6,
+    "tokens": 734
+   },
+   {
+    "case": 23,
+    "keys": "UDDUUUD",
+    "sws": [
+     "4d0c",
+     "4d0c",
+     "4d0c",
+     "4d0c",
+     "4d0c",
+     "4d0c",
+     "633e",
+     "633e"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 1063
+   },
+   {
+    "case": 24,
+    "keys": "cUuD",
+    "sws": [
+     "8a20",
+     "8a20",
+     "0000",
+     "f101",
+     "f101"
+    ],
+    "dlys": {
+     "0": 23,
+     "2": 36
+    },
+    "ok": true,
+    "runs": 4,
+    "tokens": 563
+   },
+   {
+    "case": 25,
+    "keys": "CCCDC",
+    "sws": [
+     "4b02",
+     "4b02",
+     "a012",
+     "a012",
+     "a012",
+     "a012"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 883
+   },
+   {
+    "case": 26,
+    "keys": "CCCUUC",
+    "sws": [
+     "6d06",
+     "713a",
+     "961f",
+     "7537",
+     "7537",
+     "b434",
+     "b434"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 7,
+    "tokens": 711
+   },
+   {
+    "case": 27,
+    "keys": "ruDCCuu",
+    "sws": [
+     "419a",
+     "419a",
+     "dcaf",
+     "dcaf",
+     "dcaf",
+     "dcaf",
+     "dcaf",
+     "b396"
+    ],
+    "dlys": {
+     "0": 48,
+     "1": 83,
+     "5": 36,
+     "6": 41
+    },
+    "ok": true,
+    "runs": 6,
+    "tokens": 444
+   },
+   {
+    "case": 28,
+    "keys": "CCUUDU",
+    "sws": [
+     "6da4",
+     "6da4",
+     "b70f",
+     "e404",
+     "a631",
+     "a631",
+     "2618"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 6,
+    "tokens": 742
+   },
+   {
+    "case": 29,
+    "keys": "DCU",
+    "sws": [
+     "340a",
+     "340a",
+     "4fa6",
+     "4d0d"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 328
+   },
+   {
+    "case": 30,
+    "keys": "cD",
+    "sws": [
+     "9e90",
+     "deb8",
+     "deb8"
+    ],
+    "dlys": {
+     "0": 113
+    },
+    "ok": true,
+    "runs": 2,
+    "tokens": 314
+   },
+   {
+    "case": 31,
+    "keys": "DUCDU",
+    "sws": [
+     "d93c",
+     "d93c",
+     "d93c",
+     "a722",
+     "a722",
+     "e683"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 731
+   },
+   {
+    "case": 32,
+    "keys": "DUUCD",
+    "sws": [
+     "1214",
+     "1214",
+     "1214",
+     "15b3",
+     "ab86",
+     "ab86"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 544
+   },
+   {
+    "case": 33,
+    "keys": "CudDUD",
+    "sws": [
+     "15b6",
+     "2835",
+     "ae1a",
+     "ae1a",
+     "ae1a",
+     "a4ae",
+     "a4ae"
+    ],
+    "dlys": {
+     "1": 19,
+     "2": 37
+    },
+    "ok": true,
+    "runs": 4,
+    "tokens": 534
+   },
+   {
+    "case": 34,
+    "keys": "CDCUCCD",
+    "sws": [
+     "da28",
+     "da28",
+     "da28",
+     "54ad",
+     "4324",
+     "4324",
+     "4324",
+     "4324"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 6,
+    "tokens": 844
+   },
+   {
+    "case": 35,
+    "keys": "DC",
+    "sws": [
+     "0000",
+     "0000",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 2,
+    "tokens": 306
+   },
+   {
+    "case": 36,
+    "keys": "UcUCUuD",
+    "sws": [
+     "7d3e",
+     "5faa",
+     "7891",
+     "bcb8",
+     "bcb8",
+     "7420",
+     "5780",
+     "5780"
+    ],
+    "dlys": {
+     "1": 119,
+     "5": 169
+    },
+    "ok": true,
+    "runs": 7,
+    "tokens": 995
+   },
+   {
+    "case": 37,
+    "keys": "DCUU",
+    "sws": [
+     "0000",
+     "0000",
+     "0000",
+     "9c00",
+     "f29c"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 665
+   },
+   {
+    "case": 38,
+    "keys": "DDDUCU",
+    "sws": [
+     "0000",
+     "0000",
+     "0000",
+     "0000",
+     "0000",
+     "9112",
+     "9112"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 647
+   },
+   {
+    "case": 39,
+    "keys": "dRdC",
+    "sws": [
+     "3b3a",
+     "3b3a",
+     "db9f",
+     "db9f",
+     "db9f"
+    ],
+    "dlys": {
+     "0": 32,
+     "2": 45
+    },
+    "ok": true,
+    "runs": 3,
+    "tokens": 211
+   }
+  ]
+ },
+ "gru": {
+  "ok": true,
+  "cases": 40,
+  "failed": 0,
+  "runs": 163,
+  "aborted_runs": 4,
+  "tokens": 31132,
+  "idle_points": 194,
+  "cycles": 205952028,
+  "keys": {
+   "C": 46,
+   "U": 62,
+   "D": 46,
+   "c": 8,
+   "u": 7,
+   "d": 3,
+   "r": 4
+  },
+  "greedy_runs": 26,
+  "runs_with_onboard_check": 39,
+  "sampling_settings": "31 of 32",
+  "taus": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "minps": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "seed": 2026,
+  "seconds": 54,
+  "failures": [],
+  "cases_list": [
+   {
+    "case": 0,
+    "keys": "DD",
+    "sws": [
+     "4ebc",
+     "4ebc",
+     "4ebc"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 1,
+    "tokens": 199
+   },
+   {
+    "case": 1,
+    "keys": "DDC",
+    "sws": [
+     "3a8a",
+     "3a8a",
+     "3a8a",
+     "f087"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 2,
+    "tokens": 400
+   },
+   {
+    "case": 2,
+    "keys": "UDU",
+    "sws": [
+     "0000",
+     "902c",
+     "902c",
+     "6d05"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 574
+   },
+   {
+    "case": 3,
+    "keys": "CUD",
+    "sws": [
+     "37bf",
+     "37bf",
+     "0a94",
+     "0a94"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 573
+   },
+   {
+    "case": 4,
+    "keys": "DD",
+    "sws": [
+     "3712",
+     "3712",
+     "3712"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 1,
+    "tokens": 183
+   },
+   {
+    "case": 5,
+    "keys": "CCCDDCC",
+    "sws": [
+     "8883",
+     "7ba8",
+     "7ba8",
+     "1930",
+     "1930",
+     "1930",
+     "1930",
+     "e5ae"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 6,
+    "tokens": 1153
+   },
+   {
+    "case": 6,
+    "keys": "UDDUDDC",
+    "sws": [
+     "5617",
+     "eb25",
+     "eb25",
+     "eb25",
+     "4ebc",
+     "4ebc",
+     "4ebc",
+     "2b0c"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 770
+   },
+   {
+    "case": 7,
+    "keys": "UDD",
+    "sws": [
+     "2922",
+     "668e",
+     "668e",
+     "668e"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 2,
+    "tokens": 383
+   },
+   {
+    "case": 8,
+    "keys": "UU",
+    "sws": [
+     "1b80",
+     "1b80",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 600
+   },
+   {
+    "case": 9,
+    "keys": "CrUD",
+    "sws": [
+     "d018",
+     "81b2",
+     "0cbe",
+     "0cbe",
+     "0cbe"
+    ],
+    "dlys": {
+     "1": 33
+    },
+    "ok": true,
+    "runs": 4,
+    "tokens": 618
+   },
+   {
+    "case": 10,
+    "keys": "UCUCU",
+    "sws": [
+     "ed1b",
+     "59b6",
+     "da92",
+     "31b4",
+     "5b10",
+     "c5a0"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 6,
+    "tokens": 1169
+   },
+   {
+    "case": 11,
+    "keys": "DUDDUC",
+    "sws": [
+     "35a0",
+     "35a0",
+     "35a0",
+     "35a0",
+     "35a0",
+     "f3ba",
+     "f3ba"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 824
+   },
+   {
+    "case": 12,
+    "keys": "dCCuCdC",
+    "sws": [
+     "b3ae",
+     "b3ae",
+     "5526",
+     "0000",
+     "0000",
+     "0616",
+     "0616",
+     "0616"
+    ],
+    "dlys": {
+     "0": 151,
+     "3": 166,
+     "5": 96
+    },
+    "ok": true,
+    "runs": 6,
+    "tokens": 1172
+   },
+   {
+    "case": 13,
+    "keys": "UC",
+    "sws": [
+     "270c",
+     "270c",
+     "270c"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 553
+   },
+   {
+    "case": 14,
+    "keys": "CDUUDCD",
+    "sws": [
+     "1786",
+     "1786",
+     "1786",
+     "0eaa",
+     "0eaa",
+     "0eaa",
+     "1500",
+     "1500"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 971
+   },
+   {
+    "case": 15,
+    "keys": "DUuUr",
+    "sws": [
+     "0000",
+     "0000",
+     "3c84",
+     "3c84",
+     "aab8",
+     "9098"
+    ],
+    "dlys": {
+     "2": 184,
+     "4": 74
+    },
+    "ok": true,
+    "runs": 5,
+    "tokens": 836
+   },
+   {
+    "case": 16,
+    "keys": "UDDCU",
+    "sws": [
+     "7e14",
+     "7e14",
+     "7e14",
+     "7e14",
+     "7e14",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 759
+   },
+   {
+    "case": 17,
+    "keys": "CDUUCU",
+    "sws": [
+     "12b5",
+     "12b5",
+     "12b5",
+     "0000",
+     "0000",
+     "0000",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 6,
+    "tokens": 1159
+   },
+   {
+    "case": 18,
+    "keys": "cuCUcc",
+    "sws": [
+     "b1a8",
+     "3630",
+     "3630",
+     "3630",
+     "3630",
+     "b82e",
+     "81a6"
+    ],
+    "dlys": {
+     "0": 74,
+     "1": 87,
+     "4": 18,
+     "5": 144
+    },
+    "ok": true,
+    "runs": 5,
+    "tokens": 999
+   },
+   {
+    "case": 19,
+    "keys": "DUDUUDU",
+    "sws": [
+     "c725",
+     "c725",
+     "033c",
+     "033c",
+     "430c",
+     "430c",
+     "430c",
+     "3b08"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 965
+   },
+   {
+    "case": 20,
+    "keys": "CUCDUU",
+    "sws": [
+     "c00f",
+     "0000",
+     "0000",
+     "0000",
+     "0000",
+     "720a",
+     "5506"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 6,
+    "tokens": 1186
+   },
+   {
+    "case": 21,
+    "keys": "DUc",
+    "sws": [
+     "349e",
+     "349e",
+     "e72c",
+     "e72c"
+    ],
+    "dlys": {
+     "2": 21
+    },
+    "ok": true,
+    "runs": 3,
+    "tokens": 554
+   },
+   {
+    "case": 22,
+    "keys": "UCUUUCC",
+    "sws": [
+     "3bb2",
+     "3bb2",
+     "3bb2",
+     "6ebe",
+     "6ebe",
+     "4495",
+     "4495",
+     "4495"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 8,
+    "tokens": 1512
+   },
+   {
+    "case": 23,
+    "keys": "UUD",
+    "sws": [
+     "0ab6",
+     "0012",
+     "0012",
+     "0012"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 558
+   },
+   {
+    "case": 24,
+    "keys": "cUuc",
+    "sws": [
+     "0000",
+     "0e3a",
+     "0e3a",
+     "0e3a",
+     "fb02"
+    ],
+    "dlys": {
+     "0": 81,
+     "2": 178,
+     "3": 181
+    },
+    "ok": true,
+    "runs": 4,
+    "tokens": 777
+   },
+   {
+    "case": 25,
+    "keys": "DD",
+    "sws": [
+     "42a6",
+     "42a6",
+     "42a6"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 1,
+    "tokens": 197
+   },
+   {
+    "case": 26,
+    "keys": "UU",
+    "sws": [
+     "7189",
+     "7189",
+     "8fa2"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 574
+   },
+   {
+    "case": 27,
+    "keys": "UDUuU",
+    "sws": [
+     "e22a",
+     "d481",
+     "d481",
+     "d481",
+     "811e",
+     "811e"
+    ],
+    "dlys": {
+     "3": 189
+    },
+    "ok": true,
+    "runs": 5,
+    "tokens": 970
+   },
+   {
+    "case": 28,
+    "keys": "DCDCCDC",
+    "sws": [
+     "0000",
+     "0000",
+     "0000",
+     "0000",
+     "0000",
+     "8d38",
+     "8d38",
+     "8d38"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 1002
+   },
+   {
+    "case": 29,
+    "keys": "UDCU",
+    "sws": [
+     "df1c",
+     "601a",
+     "601a",
+     "e437",
+     "e437"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 772
+   },
+   {
+    "case": 30,
+    "keys": "cCUuUCU",
+    "sws": [
+     "bf10",
+     "bf10",
+     "d620",
+     "d620",
+     "d620",
+     "d620",
+     "0000",
+     "993b"
+    ],
+    "dlys": {
+     "0": 196,
+     "3": 149
+    },
+    "ok": true,
+    "runs": 8,
+    "tokens": 1468
+   },
+   {
+    "case": 31,
+    "keys": "UUU",
+    "sws": [
+     "a7b0",
+     "a7b0",
+     "a7b0",
+     "73ae"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 779
+   },
+   {
+    "case": 32,
+    "keys": "DUCCDUD",
+    "sws": [
+     "82bc",
+     "82bc",
+     "0f8c",
+     "0f8c",
+     "0f8c",
+     "0f8c",
+     "a288",
+     "a288"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 987
+   },
+   {
+    "case": 33,
+    "keys": "dCr",
+    "sws": [
+     "d98a",
+     "d98a",
+     "d98a",
+     "d98a"
+    ],
+    "dlys": {
+     "0": 111,
+     "2": 151
+    },
+    "ok": true,
+    "runs": 3,
+    "tokens": 545
+   },
+   {
+    "case": 34,
+    "keys": "CCU",
+    "sws": [
+     "18ac",
+     "18ac",
+     "3b85",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 778
+   },
+   {
+    "case": 35,
+    "keys": "CDUC",
+    "sws": [
+     "4c3e",
+     "4c3e",
+     "4c3e",
+     "9595",
+     "9595"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 757
+   },
+   {
+    "case": 36,
+    "keys": "CUDC",
+    "sws": [
+     "3412",
+     "3412",
+     "1cb5",
+     "1cb5",
+     "5d90"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 753
+   },
+   {
+    "case": 37,
+    "keys": "UDU",
+    "sws": [
+     "1302",
+     "cb28",
+     "cb28",
+     "4fb0"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 576
+   },
+   {
+    "case": 38,
+    "keys": "CCU",
+    "sws": [
+     "bf96",
+     "bf96",
+     "bf96",
+     "bf96"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 784
+   },
+   {
+    "case": 39,
+    "keys": "Uurc",
+    "sws": [
+     "0522",
+     "f70e",
+     "0000",
+     "0000",
+     "0000"
+    ],
+    "dlys": {
+     "1": 29,
+     "2": 162,
+     "3": 112
+    },
+    "ok": true,
+    "runs": 4,
+    "tokens": 743
+   }
+  ]
+ },
+ "nanochat": {
+  "ok": true,
+  "cases": 40,
+  "failed": 0,
+  "runs": 159,
+  "aborted_runs": 4,
+  "tokens": 32074,
+  "idle_points": 193,
+  "cycles": 346926028,
+  "keys": {
+   "C": 61,
+   "U": 44,
+   "D": 47,
+   "R": 1,
+   "c": 8,
+   "u": 5,
+   "d": 4,
+   "r": 4
+  },
+  "greedy_runs": 27,
+  "runs_with_onboard_check": 35,
+  "sampling_settings": "32 of 32",
+  "taus": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "minps": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "seed": 2026,
+  "seconds": 104,
+  "failures": [],
+  "cases_list": [
+   {
+    "case": 0,
+    "keys": "DD",
+    "sws": [
+     "798b",
+     "798b",
+     "798b"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 1,
+    "tokens": 243
+   },
+   {
+    "case": 1,
+    "keys": "DDC",
+    "sws": [
+     "4704",
+     "4704",
+     "4704",
+     "d39e"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 2,
+    "tokens": 394
+   },
+   {
+    "case": 2,
+    "keys": "UDU",
+    "sws": [
+     "4214",
+     "df2e",
+     "df2e",
+     "0521"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 639
+   },
+   {
+    "case": 3,
+    "keys": "CUD",
+    "sws": [
+     "6e2a",
+     "2d92",
+     "0000",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 598
+   },
+   {
+    "case": 4,
+    "keys": "DCDD",
+    "sws": [
+     "05ba",
+     "05ba",
+     "0000",
+     "0000",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 2,
+    "tokens": 386
+   },
+   {
+    "case": 5,
+    "keys": "DU",
+    "sws": [
+     "0ab0",
+     "0ab0",
+     "ea32"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 2,
+    "tokens": 390
+   },
+   {
+    "case": 6,
+    "keys": "udcc",
+    "sws": [
+     "69a3",
+     "0000",
+     "0000",
+     "0000",
+     "0000"
+    ],
+    "dlys": {
+     "0": 76,
+     "1": 194,
+     "2": 239,
+     "3": 240
+    },
+    "ok": true,
+    "runs": 2,
+    "tokens": 451
+   },
+   {
+    "case": 7,
+    "keys": "DDUUUCC",
+    "sws": [
+     "fb8e",
+     "fb8e",
+     "fb8e",
+     "fb8e",
+     "f4b4",
+     "cf84",
+     "cf84",
+     "cf84"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 6,
+    "tokens": 1125
+   },
+   {
+    "case": 8,
+    "keys": "DDUCD",
+    "sws": [
+     "99ac",
+     "99ac",
+     "99ac",
+     "99ac",
+     "99ac",
+     "99ac"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 587
+   },
+   {
+    "case": 9,
+    "keys": "rC",
+    "sws": [
+     "619a",
+     "990c",
+     "b4aa"
+    ],
+    "dlys": {
+     "0": 192
+    },
+    "ok": true,
+    "runs": 3,
+    "tokens": 591
+   },
+   {
+    "case": 10,
+    "keys": "UCU",
+    "sws": [
+     "86a7",
+     "7dbd",
+     "ccba",
+     "ccba"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 886
+   },
+   {
+    "case": 11,
+    "keys": "DUDDU",
+    "sws": [
+     "e796",
+     "e796",
+     "e796",
+     "e796",
+     "e796",
+     "7124"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 609
+   },
+   {
+    "case": 12,
+    "keys": "rCRcC",
+    "sws": [
+     "5fb7",
+     "5fb7",
+     "5fb7",
+     "5fb7",
+     "5fb7",
+     "5fb7"
+    ],
+    "dlys": {
+     "0": 81,
+     "3": 243
+    },
+    "ok": true,
+    "runs": 6,
+    "tokens": 1296
+   },
+   {
+    "case": 13,
+    "keys": "CCUU",
+    "sws": [
+     "3da8",
+     "d810",
+     "0000",
+     "ac8e",
+     "6634"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 969
+   },
+   {
+    "case": 14,
+    "keys": "UCCDU",
+    "sws": [
+     "f49e",
+     "f49e",
+     "f49e",
+     "f49e",
+     "f49e",
+     "f49e"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 971
+   },
+   {
+    "case": 15,
+    "keys": "Cr",
+    "sws": [
+     "f72e",
+     "c0a1",
+     "0000"
+    ],
+    "dlys": {
+     "1": 107
+    },
+    "ok": true,
+    "runs": 3,
+    "tokens": 524
+   },
+   {
+    "case": 16,
+    "keys": "UCUUDDD",
+    "sws": [
+     "7092",
+     "9c88",
+     "9c88",
+     "0000",
+     "2026",
+     "2026",
+     "2026",
+     "2026"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 979
+   },
+   {
+    "case": 17,
+    "keys": "DDCC",
+    "sws": [
+     "ad00",
+     "ad00",
+     "ad00",
+     "b01c",
+     "1f96"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 599
+   },
+   {
+    "case": 18,
+    "keys": "CUC",
+    "sws": [
+     "dc33",
+     "dc33",
+     "f63e",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 860
+   },
+   {
+    "case": 19,
+    "keys": "UCCC",
+    "sws": [
+     "90b8",
+     "90b8",
+     "90b8",
+     "90b8",
+     "078b"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 1055
+   },
+   {
+    "case": 20,
+    "keys": "UDC",
+    "sws": [
+     "ba34",
+     "d704",
+     "d704",
+     "819e"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 587
+   },
+   {
+    "case": 21,
+    "keys": "UuD",
+    "sws": [
+     "4398",
+     "a794",
+     "a794",
+     "a794"
+    ],
+    "dlys": {
+     "1": 195
+    },
+    "ok": true,
+    "runs": 3,
+    "tokens": 588
+   },
+   {
+    "case": 22,
+    "keys": "DDUDCUC",
+    "sws": [
+     "6c0c",
+     "6c0c",
+     "6c0c",
+     "6c0c",
+     "6c0c",
+     "6c0c",
+     "0000",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 964
+   },
+   {
+    "case": 23,
+    "keys": "UUUCC",
+    "sws": [
+     "9ebc",
+     "e0ba",
+     "0000",
+     "0000",
+     "0000",
+     "6180"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 6,
+    "tokens": 1173
+   },
+   {
+    "case": 24,
+    "keys": "cCdCu",
+    "sws": [
+     "44a4",
+     "8930",
+     "a5b2",
+     "a5b2",
+     "a5b2",
+     "403f"
+    ],
+    "dlys": {
+     "0": 187,
+     "2": 33,
+     "4": 54
+    },
+    "ok": true,
+    "runs": 5,
+    "tokens": 1004
+   },
+   {
+    "case": 25,
+    "keys": "CCCUC",
+    "sws": [
+     "f102",
+     "f102",
+     "f102",
+     "f102",
+     "f102",
+     "3822"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 6,
+    "tokens": 1132
+   },
+   {
+    "case": 26,
+    "keys": "CCUDCCD",
+    "sws": [
+     "3610",
+     "0e0e",
+     "0e0e",
+     "95b5",
+     "95b5",
+     "f884",
+     "2d9e",
+     "2d9e"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 6,
+    "tokens": 1192
+   },
+   {
+    "case": 27,
+    "keys": "UC",
+    "sws": [
+     "1586",
+     "1586",
+     "1586"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 596
+   },
+   {
+    "case": 28,
+    "keys": "DDCUUU",
+    "sws": [
+     "9d21",
+     "9d21",
+     "9d21",
+     "759b",
+     "f38c",
+     "f38c",
+     "5aaa"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 1114
+   },
+   {
+    "case": 29,
+    "keys": "CDDCC",
+    "sws": [
+     "3209",
+     "3209",
+     "3209",
+     "3209",
+     "4826",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 872
+   },
+   {
+    "case": 30,
+    "keys": "UcCdcuc",
+    "sws": [
+     "4e1c",
+     "9f16",
+     "0024",
+     "0024",
+     "0024",
+     "8430",
+     "8430",
+     "8430"
+    ],
+    "dlys": {
+     "1": 24,
+     "3": 183,
+     "4": 183,
+     "5": 183,
+     "6": 192
+    },
+    "ok": true,
+    "runs": 5,
+    "tokens": 993
+   },
+   {
+    "case": 31,
+    "keys": "CCC",
+    "sws": [
+     "dc3e",
+     "a136",
+     "2c82",
+     "a3a3"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 806
+   },
+   {
+    "case": 32,
+    "keys": "CUUDDU",
+    "sws": [
+     "fa8a",
+     "fa8a",
+     "ea28",
+     "2b11",
+     "2b11",
+     "2b11",
+     "218e"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 1040
+   },
+   {
+    "case": 33,
+    "keys": "CUrDDCc",
+    "sws": [
+     "4585",
+     "4585",
+     "b41e",
+     "2286",
+     "2286",
+     "2286",
+     "0000",
+     "91ac"
+    ],
+    "dlys": {
+     "2": 154,
+     "6": 40
+    },
+    "ok": true,
+    "runs": 6,
+    "tokens": 1232
+   },
+   {
+    "case": 34,
+    "keys": "DDCDCU",
+    "sws": [
+     "4c94",
+     "4c94",
+     "4c94",
+     "fe2e",
+     "fe2e",
+     "47a0",
+     "d41a"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 784
+   },
+   {
+    "case": 35,
+    "keys": "CDC",
+    "sws": [
+     "2baa",
+     "2baa",
+     "2baa",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 595
+   },
+   {
+    "case": 36,
+    "keys": "CdD",
+    "sws": [
+     "e7ba",
+     "e7ba",
+     "e7ba",
+     "e7ba"
+    ],
+    "dlys": {
+     "1": 207
+    },
+    "ok": true,
+    "runs": 2,
+    "tokens": 406
+   },
+   {
+    "case": 37,
+    "keys": "CCC",
+    "sws": [
+     "40b0",
+     "07b2",
+     "07b2",
+     "a3be"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 753
+   },
+   {
+    "case": 38,
+    "keys": "UCDCCUU",
+    "sws": [
+     "53a2",
+     "3a38",
+     "3a38",
+     "3a38",
+     "0000",
+     "0000",
+     "0000",
+     "148a"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 7,
+    "tokens": 1425
+   },
+   {
+    "case": 39,
+    "keys": "uDDU",
+    "sws": [
+     "060e",
+     "a4b5",
+     "a4b5",
+     "a4b5",
+     "fa05"
+    ],
+    "dlys": {
+     "0": 180
+    },
+    "ok": true,
+    "runs": 3,
+    "tokens": 666
+   }
+  ]
+ },
+ "llama": {
+  "ok": true,
+  "cases": 40,
+  "failed": 0,
+  "runs": 164,
+  "aborted_runs": 3,
+  "tokens": 32405,
+  "idle_points": 201,
+  "cycles": 307780184,
+  "keys": {
+   "C": 45,
+   "U": 63,
+   "D": 51,
+   "R": 2,
+   "c": 9,
+   "u": 7,
+   "d": 5,
+   "r": 3
+  },
+  "greedy_runs": 30,
+  "runs_with_onboard_check": 53,
+  "sampling_settings": "32 of 32",
+  "taus": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "minps": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "seed": 2026,
+  "seconds": 92,
+  "failures": [],
+  "cases_list": [
+   {
+    "case": 0,
+    "keys": "DD",
+    "sws": [
+     "3caf",
+     "3caf",
+     "3caf"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 1,
+    "tokens": 216
+   },
+   {
+    "case": 1,
+    "keys": "DDC",
+    "sws": [
+     "180b",
+     "180b",
+     "180b",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 2,
+    "tokens": 420
+   },
+   {
+    "case": 2,
+    "keys": "UDU",
+    "sws": [
+     "40ac",
+     "7027",
+     "7027",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 593
+   },
+   {
+    "case": 3,
+    "keys": "CUD",
+    "sws": [
+     "ff0e",
+     "7e91",
+     "691a",
+     "691a"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 598
+   },
+   {
+    "case": 4,
+    "keys": "UUD",
+    "sws": [
+     "2784",
+     "2784",
+     "b6be",
+     "b6be"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 569
+   },
+   {
+    "case": 5,
+    "keys": "DCDD",
+    "sws": [
+     "b3a3",
+     "b3a3",
+     "b3a3",
+     "b3a3",
+     "b3a3"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 2,
+    "tokens": 432
+   },
+   {
+    "case": 6,
+    "keys": "UCUUcD",
+    "sws": [
+     "ea9c",
+     "5420",
+     "462e",
+     "9dbc",
+     "9dbc",
+     "9dbc",
+     "9dbc"
+    ],
+    "dlys": {
+     "4": 117
+    },
+    "ok": true,
+    "runs": 6,
+    "tokens": 1176
+   },
+   {
+    "case": 7,
+    "keys": "DUDDDCC",
+    "sws": [
+     "d688",
+     "d688",
+     "7f8c",
+     "7f8c",
+     "7f8c",
+     "7f8c",
+     "520a",
+     "13a9"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 786
+   },
+   {
+    "case": 8,
+    "keys": "UUDU",
+    "sws": [
+     "2314",
+     "2c02",
+     "0000",
+     "0000",
+     "1aac"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 773
+   },
+   {
+    "case": 9,
+    "keys": "DDDCuCC",
+    "sws": [
+     "ffb3",
+     "ffb3",
+     "ffb3",
+     "ffb3",
+     "c718",
+     "0000",
+     "2c0e",
+     "2c0e"
+    ],
+    "dlys": {
+     "4": 46
+    },
+    "ok": true,
+    "runs": 5,
+    "tokens": 992
+   },
+   {
+    "case": 10,
+    "keys": "UUUC",
+    "sws": [
+     "e080",
+     "91a4",
+     "91a4",
+     "df04",
+     "df04"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 962
+   },
+   {
+    "case": 11,
+    "keys": "CDDU",
+    "sws": [
+     "0000",
+     "0206",
+     "0206",
+     "0206",
+     "c5b6"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 570
+   },
+   {
+    "case": 12,
+    "keys": "UdCccUC",
+    "sws": [
+     "e1b8",
+     "5fb4",
+     "5fb4",
+     "5fb4",
+     "519c",
+     "519c",
+     "d720",
+     "752f"
+    ],
+    "dlys": {
+     "1": 91,
+     "3": 104,
+     "4": 128
+    },
+    "ok": true,
+    "runs": 6,
+    "tokens": 1172
+   },
+   {
+    "case": 13,
+    "keys": "CUUUC",
+    "sws": [
+     "0000",
+     "fe3c",
+     "fe3c",
+     "0000",
+     "a83a",
+     "6888"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 6,
+    "tokens": 1178
+   },
+   {
+    "case": 14,
+    "keys": "CUUCUCU",
+    "sws": [
+     "a9a8",
+     "a9a8",
+     "7096",
+     "4114",
+     "2002",
+     "0dad",
+     "8527",
+     "7692"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 8,
+    "tokens": 1581
+   },
+   {
+    "case": 15,
+    "keys": "UuCCUuC",
+    "sws": [
+     "9c26",
+     "4792",
+     "4792",
+     "a332",
+     "a332",
+     "1918",
+     "368f",
+     "368f"
+    ],
+    "dlys": {
+     "1": 11,
+     "5": 194
+    },
+    "ok": true,
+    "runs": 8,
+    "tokens": 1583
+   },
+   {
+    "case": 16,
+    "keys": "UD",
+    "sws": [
+     "ed11",
+     "661b",
+     "661b"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 2,
+    "tokens": 432
+   },
+   {
+    "case": 17,
+    "keys": "CDUUC",
+    "sws": [
+     "0000",
+     "d3be",
+     "d3be",
+     "239e",
+     "0000",
+     "e587"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 1000
+   },
+   {
+    "case": 18,
+    "keys": "ccDCUuc",
+    "sws": [
+     "2cb1",
+     "5d2b",
+     "5d2b",
+     "5d2b",
+     "3838",
+     "32b5",
+     "671c",
+     "bd20"
+    ],
+    "dlys": {
+     "0": 159,
+     "1": 169,
+     "5": 26,
+     "6": 65
+    },
+    "ok": true,
+    "runs": 5,
+    "tokens": 1039
+   },
+   {
+    "case": 19,
+    "keys": "CDCDUCD",
+    "sws": [
+     "fe20",
+     "28ae",
+     "28ae",
+     "85bc",
+     "85bc",
+     "523a",
+     "6d08",
+     "6d08"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 972
+   },
+   {
+    "case": 20,
+    "keys": "UDC",
+    "sws": [
+     "738d",
+     "c70a",
+     "c70a",
+     "a6a8"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 624
+   },
+   {
+    "case": 21,
+    "keys": "dcU",
+    "sws": [
+     "d202",
+     "d202",
+     "d202",
+     "d202"
+    ],
+    "dlys": {
+     "0": 125,
+     "1": 192
+    },
+    "ok": true,
+    "runs": 3,
+    "tokens": 585
+   },
+   {
+    "case": 22,
+    "keys": "UU",
+    "sws": [
+     "4098",
+     "0000",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 593
+   },
+   {
+    "case": 23,
+    "keys": "DCUDUC",
+    "sws": [
+     "5724",
+     "5724",
+     "1884",
+     "0000",
+     "0000",
+     "07be",
+     "07be"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 966
+   },
+   {
+    "case": 24,
+    "keys": "CuU",
+    "sws": [
+     "0000",
+     "dfb7",
+     "0000",
+     "0000"
+    ],
+    "dlys": {
+     "1": 216
+    },
+    "ok": true,
+    "runs": 4,
+    "tokens": 801
+   },
+   {
+    "case": 25,
+    "keys": "UU",
+    "sws": [
+     "0000",
+     "0000",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 585
+   },
+   {
+    "case": 26,
+    "keys": "UUCUCDU",
+    "sws": [
+     "0000",
+     "5bbb",
+     "0000",
+     "0000",
+     "0000",
+     "3088",
+     "3088",
+     "3088"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 7,
+    "tokens": 1406
+   },
+   {
+    "case": 27,
+    "keys": "drc",
+    "sws": [
+     "1416",
+     "1416",
+     "2d14",
+     "2d14"
+    ],
+    "dlys": {
+     "0": 149,
+     "1": 172,
+     "2": 22
+    },
+    "ok": true,
+    "runs": 3,
+    "tokens": 562
+   },
+   {
+    "case": 28,
+    "keys": "DDUUC",
+    "sws": [
+     "d893",
+     "d893",
+     "d893",
+     "6132",
+     "5c98",
+     "5c98"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 4,
+    "tokens": 797
+   },
+   {
+    "case": 29,
+    "keys": "CDDUUU",
+    "sws": [
+     "d49a",
+     "b800",
+     "b800",
+     "b800",
+     "1324",
+     "9484",
+     "81bf"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 986
+   },
+   {
+    "case": 30,
+    "keys": "ucudRrU",
+    "sws": [
+     "0000",
+     "d79f",
+     "d207",
+     "a8b6",
+     "a8b6",
+     "a8b6",
+     "a8b6",
+     "a622"
+    ],
+    "dlys": {
+     "0": 185,
+     "1": 186,
+     "2": 188,
+     "3": 192,
+     "5": 125
+    },
+    "ok": true,
+    "runs": 5,
+    "tokens": 925
+   },
+   {
+    "case": 31,
+    "keys": "CDDUCC",
+    "sws": [
+     "4aaa",
+     "4aaa",
+     "4aaa",
+     "4aaa",
+     "f638",
+     "6f34",
+     "6f34"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 1005
+   },
+   {
+    "case": 32,
+    "keys": "DDDUUD",
+    "sws": [
+     "a9ae",
+     "a9ae",
+     "a9ae",
+     "a9ae",
+     "a9ae",
+     "8dbc",
+     "8dbc"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 545
+   },
+   {
+    "case": 33,
+    "keys": "RDC",
+    "sws": [
+     "fd0a",
+     "aba8",
+     "aba8",
+     "aba8"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 617
+   },
+   {
+    "case": 34,
+    "keys": "CDU",
+    "sws": [
+     "53ac",
+     "53ac",
+     "53ac",
+     "0d27"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 588
+   },
+   {
+    "case": 35,
+    "keys": "CDDCUUU",
+    "sws": [
+     "488e",
+     "0410",
+     "0410",
+     "0410",
+     "e31a",
+     "e31a",
+     "0000",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 6,
+    "tokens": 1157
+   },
+   {
+    "case": 36,
+    "keys": "rDCUd",
+    "sws": [
+     "3185",
+     "3185",
+     "3185",
+     "3185",
+     "fd3f",
+     "fd3f"
+    ],
+    "dlys": {
+     "0": 175,
+     "4": 53
+    },
+    "ok": true,
+    "runs": 4,
+    "tokens": 823
+   },
+   {
+    "case": 37,
+    "keys": "UCDUC",
+    "sws": [
+     "0922",
+     "3230",
+     "3230",
+     "3230",
+     "57aa",
+     "57aa"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 5,
+    "tokens": 979
+   },
+   {
+    "case": 38,
+    "keys": "DD",
+    "sws": [
+     "521d",
+     "521d",
+     "521d"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 1,
+    "tokens": 216
+   },
+   {
+    "case": 39,
+    "keys": "DUDU",
+    "sws": [
+     "a288",
+     "a288",
+     "a288",
+     "a288",
+     "dc8c"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 601
+   }
+  ]
+ },
+ "stories260k": {
+  "ok": true,
+  "cases": 6,
+  "failed": 0,
+  "runs": 16,
+  "aborted_runs": 1,
+  "tokens": 4002,
+  "idle_points": 19,
+  "cycles": 199853852,
+  "keys": {
+   "C": 3,
+   "U": 6,
+   "D": 4,
+   "u": 1,
+   "r": 1
+  },
+  "greedy_runs": 4,
+  "runs_with_onboard_check": 7,
+  "sampling_settings": "6 of 32",
+  "taus": [
+   0,
+   2,
+   5,
+   6,
+   7
+  ],
+  "minps": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "seed": 2026,
+  "seconds": 65,
+  "failures": [],
+  "cases_list": [
+   {
+    "case": 0,
+    "keys": "DU",
+    "sws": [
+     "0000",
+     "0000",
+     "fc31"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 2,
+    "tokens": 512
+   },
+   {
+    "case": 1,
+    "keys": "UDC",
+    "sws": [
+     "ab1a",
+     "0000",
+     "0000",
+     "0000"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 768
+   },
+   {
+    "case": 2,
+    "keys": "UD",
+    "sws": [
+     "c13c",
+     "902c",
+     "902c"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 2,
+    "tokens": 446
+   },
+   {
+    "case": 3,
+    "keys": "urC",
+    "sws": [
+     "973e",
+     "8a84",
+     "17ab",
+     "17ab"
+    ],
+    "dlys": {
+     "0": 91,
+     "1": 228
+    },
+    "ok": true,
+    "runs": 3,
+    "tokens": 740
+   },
+   {
+    "case": 4,
+    "keys": "DUC",
+    "sws": [
+     "a180",
+     "a180",
+     "a180",
+     "a180"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 768
+   },
+   {
+    "case": 5,
+    "keys": "UU",
+    "sws": [
+     "ab17",
+     "0000",
+     "3824"
+    ],
+    "dlys": {},
+    "ok": true,
+    "runs": 3,
+    "tokens": 768
+   }
+  ]
+ },
+ "directed": {
+  "btnc_twice_during_run": {
+   "model": "gru",
+   "keys": "cc",
+   "sws": [
+    "0000",
+    "0000",
+    "0000"
+   ],
+   "dlys": {
+    "0": 10,
+    "1": 120
+   },
+   "ok": true,
+   "behaviour": "BTNC twice during a run: one queued run (random state continues), not two",
+   "runs": 2,
+   "tokens": 389,
+   "seconds": 1,
+   "command": "python3 board_sim.py gru --press cc --sw 0000 --dly0 10 --dly1 120",
+   "report": [
+    "run 0 (U sw 0000): 196 tokens (identical), hash dce47855 = dce47855, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "run 1 (C sw 0000): 193 tokens (identical), hash e3c63e97 = e3c63e97, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "idle 0: after run 1, screen, status, check, LEDs, 7-segment OK"
+   ]
+  },
+  "btnu_then_btnc_during_run": {
+   "model": "gru",
+   "keys": "uc",
+   "sws": [
+    "0000",
+    "5a0a",
+    "5a0a"
+   ],
+   "dlys": {
+    "0": 30,
+    "1": 31
+   },
+   "ok": true,
+   "behaviour": "BTNU then BTNC during a run: one queued reseeded run with the switches when it starts (C keeps the reseed)",
+   "runs": 2,
+   "tokens": 384,
+   "seconds": 1,
+   "command": "python3 board_sim.py gru --press uc --sw 0000 --sw0 5a0a --dly0 30 --dly1 31",
+   "report": [
+    "run 0 (U sw 0000): 196 tokens (identical), hash dce47855 = dce47855, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "run 1 (U sw 5a0a): 188 tokens (identical), hash a68f7cc9 = a68f7cc9, 6606 cycles/token = 7569 tokens/s at 50 MHz",
+    "idle 0: after run 1, screen, status, check, LEDs, 7-segment OK"
+   ]
+  },
+  "btnc_then_btnu_during_run": {
+   "model": "gru",
+   "keys": "cu",
+   "sws": [
+    "0300",
+    "0300",
+    "0326"
+   ],
+   "dlys": {
+    "0": 5,
+    "1": 150
+   },
+   "ok": true,
+   "behaviour": "BTNC then BTNU during a run: one queued reseeded run",
+   "runs": 2,
+   "tokens": 401,
+   "seconds": 1,
+   "command": "python3 board_sim.py gru --press cu --sw 0300 --sw1 0326 --dly0 5 --dly1 150",
+   "report": [
+    "run 0 (U sw 0300): 199 tokens (identical), hash 6572e9e8 = 6572e9e8, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "run 1 (U sw 0326): 202 tokens (identical), hash 807d921e = 807d921e, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "idle 0: after run 1, screen, status, check, LEDs, 7-segment OK"
+   ]
+  },
+  "btnd_during_run": {
+   "model": "gru",
+   "keys": "dC",
+   "sws": [
+    "0000",
+    "0000",
+    "0000"
+   ],
+   "dlys": {
+    "0": 40
+   },
+   "ok": true,
+   "behaviour": "BTND during a run: ignored (not queued); the run's text is complete at idle",
+   "runs": 2,
+   "tokens": 389,
+   "seconds": 1,
+   "command": "python3 board_sim.py gru --press dC --sw 0000 --dly0 40",
+   "report": [
+    "run 0 (U sw 0000): 196 tokens (identical), hash dce47855 = dce47855, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "run 1 (C sw 0000): 193 tokens (identical), hash e3c63e97 = e3c63e97, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "idle 0: after run 0, screen, status, check, LEDs, 7-segment OK",
+    "idle 1: after run 1, screen, status, check, LEDs, 7-segment OK"
+   ]
+  },
+  "btnd_idle": {
+   "model": "gru",
+   "keys": "DCDD",
+   "sws": [
+    "0000",
+    "0000",
+    "0041",
+    "0041",
+    "0041"
+   ],
+   "dlys": {},
+   "ok": true,
+   "behaviour": "BTND at idle: the text area is cleared, status row / check / 7-segment keep the last run",
+   "runs": 2,
+   "tokens": 385,
+   "seconds": 1,
+   "command": "python3 board_sim.py gru --press DCDD --sw 0000 --sw1 0041",
+   "report": [
+    "run 0 (U sw 0000): 196 tokens (identical), hash dce47855 = dce47855, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "run 1 (C sw 0041): 189 tokens (identical), hash 1dd4e14a = 1dd4e14a, 6546 cycles/token = 7639 tokens/s at 50 MHz",
+    "idle 0: after run 0, screen, status, check, LEDs, 7-segment OK",
+    "idle 1: clear, screen, status, check, LEDs, 7-segment OK",
+    "idle 2: after run 1, screen, status, check, LEDs, 7-segment OK",
+    "idle 3: clear, screen, status, check, LEDs, 7-segment OK",
+    "idle 4: clear, screen, status, check, LEDs, 7-segment OK"
+   ]
+  },
+  "reset_at_first_step": {
+   "model": "gru",
+   "keys": "r",
+   "sws": [
+    "0000",
+    "1100"
+   ],
+   "dlys": {
+    "0": 0
+   },
+   "ok": true,
+   "behaviour": "CPU_RESET during the clear / first step: the board restarts with a reseeded run (seed from SW[15:8])",
+   "runs": 2,
+   "tokens": 193,
+   "seconds": 1,
+   "command": "python3 board_sim.py gru --press r --sw 0000 --sw0 1100 --dly0 0",
+   "report": [
+    "run 0 (U sw 0000): aborted by CPU_RESET after 0 tokens (>= 0), prefix of the reference",
+    "run 1 (U sw 1100): 193 tokens (identical), hash 5700b242 = 5700b242, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "idle 0: after run 1, screen, status, check, LEDs, 7-segment OK"
+   ]
+  },
+  "reset_before_last_token": {
+   "model": "gru",
+   "keys": "r",
+   "sws": [
+    "0000",
+    "0000"
+   ],
+   "dlys": {
+    "0": 195
+   },
+   "ok": true,
+   "behaviour": "CPU_RESET just before the last token: the run is aborted, a fresh reseeded run follows",
+   "runs": 2,
+   "tokens": 391,
+   "seconds": 1,
+   "command": "python3 board_sim.py gru --press r --sw 0000 --dly0 195",
+   "report": [
+    "run 0 (U sw 0000): aborted by CPU_RESET after 195 tokens (>= 195), prefix of the reference",
+    "run 1 (U sw 0000): 196 tokens (identical), hash dce47855 = dce47855, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "idle 0: after run 1, screen, status, check, LEDs, 7-segment OK"
+   ]
+  },
+  "reset_new_seed": {
+   "model": "gru",
+   "keys": "Cr",
+   "sws": [
+    "0300",
+    "0300",
+    "7714"
+   ],
+   "dlys": {
+    "1": 80
+   },
+   "ok": true,
+   "behaviour": "CPU_RESET during a BTNC run with new switches: the restart is seeded from the switches, not continued",
+   "runs": 3,
+   "tokens": 467,
+   "seconds": 2,
+   "command": "python3 board_sim.py gru --press Cr --sw 0300 --sw1 7714 --dly1 80",
+   "report": [
+    "run 0 (U sw 0300): 199 tokens (identical), hash 6572e9e8 = 6572e9e8, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "run 1 (C sw 0300): aborted by CPU_RESET after 80 tokens (>= 80), prefix of the reference",
+    "run 2 (U sw 7714): 188 tokens (identical), hash 33eed9bd = 33eed9bd, 6606 cycles/token = 7569 tokens/s at 50 MHz",
+    "idle 0: after run 0, screen, status, check, LEDs, 7-segment OK",
+    "idle 1: after run 2, screen, status, check, LEDs, 7-segment OK"
+   ]
+  },
+  "reset_drops_queued_run": {
+   "model": "gru",
+   "keys": "ur",
+   "sws": [
+    "0000",
+    "0101",
+    "0101"
+   ],
+   "dlys": {
+    "0": 20,
+    "1": 60
+   },
+   "ok": true,
+   "behaviour": "BTNU queued, then CPU_RESET: the queued run is dropped, only the run after the reset follows",
+   "runs": 2,
+   "tokens": 249,
+   "seconds": 1,
+   "command": "python3 board_sim.py gru --press ur --sw 0000 --sw0 0101 --dly0 20 --dly1 60",
+   "report": [
+    "run 0 (U sw 0000): aborted by CPU_RESET after 60 tokens (>= 60), prefix of the reference",
+    "run 1 (U sw 0101): 189 tokens (identical), hash 1dd4e14a = 1dd4e14a, 6546 cycles/token = 7639 tokens/s at 50 MHz",
+    "idle 0: after run 1, screen, status, check, LEDs, 7-segment OK"
+   ]
+  },
+  "reset_idle": {
+   "model": "gru",
+   "keys": "R",
+   "sws": [
+    "0000",
+    "2a02"
+   ],
+   "dlys": {},
+   "ok": true,
+   "behaviour": "CPU_RESET at idle: as at power-up",
+   "runs": 2,
+   "tokens": 392,
+   "seconds": 1,
+   "command": "python3 board_sim.py gru --press R --sw 0000 --sw0 2a02",
+   "report": [
+    "run 0 (U sw 0000): 196 tokens (identical), hash dce47855 = dce47855, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "run 1 (U sw 2a02): 196 tokens (identical), hash 4782b0f9 = 4782b0f9, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "idle 0: after run 0, screen, status, check, LEDs, 7-segment OK",
+    "idle 1: after run 1, screen, status, check, LEDs, 7-segment OK"
+   ]
+  },
+  "btnc_at_end_of_run": {
+   "model": "gru",
+   "keys": "cU",
+   "sws": [
+    "0000",
+    "0000",
+    "0000"
+   ],
+   "dlys": {
+    "0": 196
+   },
+   "ok": true,
+   "behaviour": "BTNC as the run ends (G_FIN / idle): exactly one more run",
+   "runs": 3,
+   "tokens": 585,
+   "seconds": 2,
+   "command": "python3 board_sim.py gru --press cU --sw 0000 --dly0 196",
+   "report": [
+    "run 0 (U sw 0000): 196 tokens (identical), hash dce47855 = dce47855, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "run 1 (C sw 0000): 193 tokens (identical), hash e3c63e97 = e3c63e97, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "run 2 (U sw 0000): 196 tokens (identical), hash dce47855 = dce47855, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "idle 0: after run 1, screen, status, check, LEDs, 7-segment OK",
+    "idle 1: after run 2, screen, status, check, LEDs, 7-segment OK"
+   ]
+  },
+  "typewriter": {
+   "model": "gru",
+   "keys": "U",
+   "sws": [
+    "0000",
+    "0040"
+   ],
+   "dlys": {},
+   "ok": true,
+   "behaviour": "SW6 typewriter: same tokens, screen and counted cycles (status row), SLOW_CYC+1 clocks per token pause",
+   "runs": 2,
+   "tokens": 392,
+   "seconds": 1,
+   "command": "python3 board_sim.py gru --press U --sw 0000 --sw0 0040",
+   "report": [
+    "run 0 (U sw 0000): 196 tokens (identical), hash dce47855 = dce47855, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "run 1 (U sw 0040): 196 tokens (identical), hash dce47855 = dce47855, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "idle 0: after run 0, screen, status, check, LEDs, 7-segment OK",
+    "idle 1: after run 1, screen, status, check, LEDs, 7-segment OK",
+    "typewriter: counted cycles 1294590 = 1294590 of the normal run with the same tokens",
+    "run 0 (normal): uncounted clocks between tokens exactly 1 per token (196 tokens)",
+    "run 1 (typewriter): uncounted clocks between tokens exactly 65 per token (196 tokens)"
+   ]
+  },
+  "typewriter_queued": {
+   "model": "gru",
+   "keys": "Uc",
+   "sws": [
+    "0000",
+    "0040",
+    "0040"
+   ],
+   "dlys": {
+    "1": 25
+   },
+   "ok": true,
+   "behaviour": "typewriter run with a BTNC queued during it: the queued run is also a typewriter run",
+   "runs": 3,
+   "tokens": 585,
+   "seconds": 2,
+   "command": "python3 board_sim.py gru --press Uc --sw 0000 --sw0 0040 --dly1 25",
+   "report": [
+    "run 0 (U sw 0000): 196 tokens (identical), hash dce47855 = dce47855, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "run 1 (U sw 0040): 196 tokens (identical), hash dce47855 = dce47855, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "run 2 (C sw 0040): 193 tokens (identical), hash e3c63e97 = e3c63e97, 6605 cycles/token = 7570 tokens/s at 50 MHz",
+    "idle 0: after run 0, screen, status, check, LEDs, 7-segment OK",
+    "idle 1: after run 2, screen, status, check, LEDs, 7-segment OK",
+    "typewriter: counted cycles 1294590 = 1294590 of the normal run with the same tokens",
+    "run 0 (normal): uncounted clocks between tokens exactly 1 per token (196 tokens)",
+    "run 1 (typewriter): uncounted clocks between tokens exactly 65 per token (196 tokens)",
+    "run 2 (typewriter): uncounted clocks between tokens exactly 65 per token (193 tokens)"
+   ]
+  },
+  "stories_reset_after_scroll": {
+   "model": "stories260k",
+   "keys": "r",
+   "sws": [
+    "0000",
+    "0000"
+   ],
+   "dlys": {
+    "0": 200
+   },
+   "ok": true,
+   "behaviour": "CPU_RESET after the text has scrolled (TinyStories): the restart clears the scrolled text area",
+   "runs": 2,
+   "tokens": 456,
+   "seconds": 11,
+   "command": "python3 board_sim.py stories260k --press r --sw 0000 --dly0 200",
+   "report": [
+    "run 0 (U sw 0000): aborted by CPU_RESET after 200 tokens (>= 200), prefix of the reference",
+    "run 1 (U sw 0000): 256 tokens (identical), hash 44fe319f = 44fe319f, 50397 cycles/token = 992 tokens/s at 50 MHz",
+    "idle 0: after run 1, screen, status, check, LEDs, 7-segment OK"
+   ]
+  },
+  "stories_btnd_during_run": {
+   "model": "stories260k",
+   "keys": "dD",
+   "sws": [
+    "0000",
+    "0000",
+    "0000"
+   ],
+   "dlys": {
+    "0": 100
+   },
+   "ok": true,
+   "behaviour": "BTND during a TinyStories run: ignored; BTND at idle clears",
+   "runs": 1,
+   "tokens": 256,
+   "seconds": 7,
+   "command": "python3 board_sim.py stories260k --press dD --sw 0000 --dly0 100",
+   "report": [
+    "run 0 (U sw 0000): 256 tokens (identical), hash 44fe319f = 44fe319f, 50397 cycles/token = 992 tokens/s at 50 MHz",
+    "idle 0: after run 0, screen, status, check, LEDs, 7-segment OK",
+    "idle 1: clear, screen, status, check, LEDs, 7-segment OK"
+   ]
+  },
+  "btnu_at_queued_run_start": {
+   "ok": true,
+   "outcomes": {
+    "reseeded queued run": [
+     -30,
+     -7,
+     24
+    ],
+    "queued run + reseeded run": [
+     -6,
+     10,
+     17
+    ]
+   },
+   "behaviour": "BTNU pressed around the cycle a queued run starts: always a reseeded run"
+  }
+ },
+ "four_state_rtl": {
+  "model": "gru",
+  "script": "scripts/nexys_icarus.sh gru --press rC --dly0 20",
+  "ok": true,
+  "cycles": 2710081,
+  "runs": [
+   {
+    "tokens": 20,
+    "cycles": null,
+    "aborted": true
+   },
+   {
+    "tokens": 196,
+    "cycles": 1294590,
+    "aborted": false
+   },
+   {
+    "tokens": 193,
+    "cycles": 1274817,
+    "aborted": false
+   }
+  ],
+  "x_on_pins_or_text_ram_port": 0
+ },
+ "netlist": {
+  "model": "gru",
+  "script": "scripts/nexys_netlist_sim.sh gru (synth_xilinx -nodsp, Verilator)",
+  "ok": true,
+  "keys": "CUD",
+  "cycles": 5040047,
+  "pin_signature": "55c5afd1",
+  "seconds": 418,
+  "icarus_x_check": "NETSIM=icarus MAXCYC=20000: 0 unknown values on the pins",
+  "dsp_note": "with DSP48E1 mapping (DSP=1) the Yosys 0.69 netlist is wrong: scripts/requant_netlist_check.sh"
+ }
+}

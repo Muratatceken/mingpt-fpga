@@ -186,8 +186,8 @@ module lm_gen
 
       case (gs)
         G_IDLE: if (run_p && !m_clr) begin
-          run_p     <= 1'b0;
-          reseed_p  <= 1'b0;
+          run_p     <= run || reseed;            // a press in this very cycle counts as one during the run:
+          reseed_p  <= reseed;                   // one more run (reseeded for BTNU), not dropped
           fresh_run <= reseed_p;
           if (reseed_p) begin
             rng    <= 32'h9E37_79B9 ^ (32'(seed) << 16) ^ 32'(seed);
