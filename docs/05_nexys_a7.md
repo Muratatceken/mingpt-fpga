@@ -116,7 +116,7 @@ modeli ([06_dusuk_bit.md](06_dusuk_bit.md)).
 
 | Model | Veri | Weight'ler | cycle/token | token/s (50 MHz) |
 |---|---|---|---:|---:|
-| bigram | names | INT8 | 126 | 396 825 |
+| bigram | names | INT8 | 157 | 318 098 |
 | mlp | names | INT8 | 6 722 | 7 438 |
 | rnn | names | INT8 | 6 464 | 7 735 |
 | gru | names | INT8 | 6 605 | 7 570 |
@@ -135,9 +135,36 @@ modeli ([06_dusuk_bit.md](06_dusuk_bit.md)).
 | mlp-lb25p1 | names | LittleBit | 1 874 | 26 681 |
 | stories260k-bin | TinyStories | binary | 27 992 | 1 786 |
 
-cycle/token, otomatik ilk koşunun ortalamasıdır: engine ve sampler dahil, ekran yazımı hariç. Ekran
-yazımı bir sonraki adımın hesabıyla paralel yürür. TinyStories modellerinde context
+cycle/token, otomatik ilk koşunun ortalamasıdır. Daktilo beklemesi dışındaki her çevrim sayılır.
+Ekran yazımı normalde bir sonraki adımın hesabıyla paralel yürür ve maliyetsizdir. Yalnızca bigram,
+durum satırının güncellenmesinden hızlı olduğu için ekranı bekler. TinyStories modellerinde context
 $T = 256$ ile sınırlanmıştır, böylece KV cache BRAM'e sığar.
+
+**Ek doğrulama.** Testbench, kartın pinlerinden okunabilen her şeyi denetler.
+
+- **Giriş/çıkış zamanlaması:** girişler düşen kenarda sürülür, çıkışlar düşen kenarda örneklenir.
+- **Pin imzası:** her çevrimde bütün pinlerin imzası tutulur.
+- **Görüntü:** 7-segment okunur; VGA karesi pinlerden alınır ve senkron sinyalleri kontrol edilir.
+- **Ekran:** her boşta kalma anında durum satırı, başlık, LED token sayacı ve hash yazmacı referansla
+  karşılaştırılır.
+
+| Test | Komut | Kapsam | Sonuç |
+|---|---|---|---|
+| Rastgele (fuzz) | `make nexys-fuzz` | bigram, gru, nanochat, llama: 40'ar durum; stories260k: 6 | 655 koşu, ~121 000 token, sampling ayarlarının 30–32/32'si; hepsi aynı |
+| Köşe durumları | `board_fuzz.py --directed` | 15 durum (aşağıda) | hepsi geçti |
+| 4-state, X kontrolü | `make nexys-icarus` | gru, koşu ortasında reset dahil 2,7 M çevrim | pinlerde ve metin RAM yazma portunda 0 X |
+| Sentez sonrası netlist | `make nexys-netlist` | gru: gerçek üst modülün Yosys netlist'i (MMCM, BUFG, BRAM) | her pinde RTL ile çevrimi çevrimine aynı; VGA karesi aynı |
+| CI | `scripts/nexys_ci.sh` | gru, nanochat, gpt2-bin, mlp-lb25p1 | kart üstü kontrol OK |
+
+Köşe durumları:
+- koşu sırasında basılan BTNC/BTNU kuyruğa alınır; BTND yok sayılır;
+- koşu sırasında CPU_RESET verilirse yarım kalan koşunun token'ları referansın önekidir ve ardından
+  yeniden tohumlanmış bir koşu gelir;
+- daktilo modu token'ları ve sayılan çevrimleri değiştirmez.
+
+Bu testler iki gerçek RTL hatası buldu, ikisi de düzeltildi:
+1. Kuyruktaki bir koşunun başladığı çevrime denk gelen BTNU basışı kayboluyordu.
+2. Heartbeat sayacının reset'i yoktu; 4-state simülasyonda LED0 X kalıyordu.
 
 **Kaynaklar** (Yosys `synth_xilinx`; zamanlama yok, Vivado'nun sayıları farklı olabilir). Her bitstream tek
 bir model taşıdığı için engine yalnızca o modelin kullandığı birimlerle sentezlenir (`SPECIALIZE=1`):
@@ -181,6 +208,12 @@ Flash'tan açılış için JP1 jumper'ı QSPI konumunda olmalıdır.
 
 ## 6. Bilinen sınırlar
 
+- **Yosys'in DSP eşlemesinde bir hata var.** Yosys 0.69 `synth_xilinx`, requant çarpımını DSP48E1'e
+  eşlediğinde (girişler registerden geliyorsa) çarpımın işaret uzatmasını düşürüyor. Bu yüzden negatif
+  akümülatörler +max'a doyuyor. RTL doğru; `scripts/requant_netlist_check.sh` hatayı tek başına gösteriyor.
+  Netlist simülasyonu bu yüzden çarpıcıları LUT'a eşler (`-nodsp`). Aynı sebeple ve BRAM modelleri boş
+  olduğu için eski `scripts/zoo_netlist_sim.sh` bu Yosys sürümüyle geçmez. Vivado bu hatadan etkilenmez,
+  ama kaynak tahminlerindeki DSP sayıları Yosys'in eşlemesidir.
 - **Fmax ölçülmedi.** Vivado olmadan zamanlama analizi yapılamıyor. Engine'deki geniş çarpıcı
   zincirleri (NORM çıkışı, attention'daki üs alma) 50 MHz'i zorlayabilir; betik bu durumda 25 MHz'e
   iner. Gerçek Fmax ilk Vivado koşusunun `result.json` dosyasında görülecek.

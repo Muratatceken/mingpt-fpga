@@ -9,7 +9,7 @@ RTL    = $(shell cat scripts/files.f)
 
 .PHONY: all model train quantize eval export sim test-arith selftest lint synth report clean \
         zoo-train zoo-quant zoo-sim zoo-synth zoo-pipeline zoo-fuzz zoo-arith zoo-dse paper \
-        nexys nexys-sim nexys-all nexys-synth nexys-bit nexys-prog lowbit
+        nexys nexys-sim nexys-all nexys-fuzz nexys-icarus nexys-netlist nexys-synth nexys-bit nexys-prog lowbit
 
 all: test-arith sim selftest
 
@@ -91,6 +91,15 @@ nexys-sim: nexys  # whole board design in Verilator, bit-exact vs sw/zoo/board.p
 
 nexys-all:         # every model of the family
 	for m in $(NEXYS_MODELS); do (cd sw/zoo && $(PYTHON) board.py export $$m && $(PYTHON) board_sim.py $$m --press CUD --sw1 1) || exit 1; done
+
+nexys-fuzz:        # random switches + key sequences (incl. presses during a run, CPU_RESET), directed corner cases
+	cd sw/zoo && $(PYTHON) board_fuzz.py && $(PYTHON) board_fuzz.py --directed && $(PYTHON) board_fuzz.py --race
+
+nexys-icarus:      # 4-state (sv2v + Icarus) board simulation with X checks on every output pin
+	scripts/nexys_icarus.sh $(MODEL)
+
+nexys-netlist:     # Yosys netlist of the real top (MMCM, BRAM; multipliers in LUTs) simulated cycle-exactly vs the RTL
+	scripts/nexys_netlist_sim.sh $(MODEL)
 
 nexys-synth: nexys # Yosys resource estimate of the board design (no timing)
 	scripts/nexys_synth.sh $(MODEL)

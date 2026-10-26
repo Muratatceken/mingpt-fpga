@@ -11,13 +11,17 @@
 //   BTNU  reseed the random generator from SW[15:8], then run
 //   BTND  clear the text area
 //   CPU_RESET  reset; the first run after reset uses a fresh seed
+//   During a run: BTNC / BTNU are remembered and start one more run when the current one ends (BTNU:
+//   reseeded from SW[15:8] as they are then; several presses give one run, a BTNU among them reseeds);
+//   BTND is ignored. CPU_RESET aborts the run; the board starts again as after configuration (a reseeded
+//   run, which clears the text area). The switches are read when a run starts (the seed only on a reseed).
 //   SW0   greedy (up) / sampling (down)          SW[3:1]  temperature (000 = 0.8, see board.py TAUS)
 //   SW[5:4] min-p cut-off (00 = 1/32)            SW6      typewriter: 25 tokens/s
 //   SW7   7-segment: tokens/s (down) / cycles per token (up)       SW[15:8] seed
 //
 //   LED0 heartbeat   LED1 generating   LED2 check OK   LED3 check FAIL   LED[15:4] tokens of the run
 //   LED16 RGB: blue = generating, green = check OK, red = FAIL (check: greedy runs, and the first
-//   run after a reseed with all switches down, against the hash computed by sw/zoo/board.py)
+//   run after a reseed with SW[5:1] and SW[15:8] down, against the hash computed by sw/zoo/board.py)
 // ---------------------------------------------------------------------------
 `timescale 1ns / 1ps
 
@@ -128,8 +132,8 @@ module nexys_a7_top
   seg7 #(.DIGIT_CYC(SEG_CYC)) u_seg (.clk, .rst_n, .bcd(sw[7] ? cpt_bcd : toks_bcd), .seg, .dp(DP), .an(AN));
   assign {CG, CF, CE, CD, CC, CB, CA} = seg;
 
-  logic [25:0] hb;
-  always_ff @(posedge clk) hb <= hb + 1'b1;
+  logic [25:0] hb;                                    // heartbeat (reset: defined in 4-state simulation too)
+  always_ff @(posedge clk) hb <= rst_n ? hb + 1'b1 : '0;
   logic dim;                                          // the RGB LEDs are very bright: 1/8 duty
   assign dim = (hb[2:0] == 3'd0);
 

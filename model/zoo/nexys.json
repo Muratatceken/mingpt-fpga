@@ -12,8 +12,8 @@
   "sim_pass": true,
   "sim_runs": 3,
   "sim_tokens": 360,
-  "cycles_per_token": 126.0,
-  "tokens_per_s_50mhz": 396825.4,
+  "cycles_per_token": 157.2,
+  "tokens_per_s_50mhz": 318098.1,
   "V": 27,
   "T": 16
  },
@@ -187,8 +187,8 @@
  },
  "stories260k-bin": {
   "sim_pass": true,
-  "sim_runs": 2,
-  "sim_tokens": 512,
+  "sim_runs": 3,
+  "sim_tokens": 768,
   "cycles_per_token": 27992.0,
   "tokens_per_s_50mhz": 1786.2,
   "int_nll": 1.9270331900806559,

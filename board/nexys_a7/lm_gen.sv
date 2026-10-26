@@ -13,8 +13,9 @@
 // Bit-exact with sw/zoo/board.py:generate (tokens, random state, screen contents).
 //
 // Text RAM: row 0 title, rows 1..ROWS text (circular, scroll offset `top`), row ROWS+1 status.
-// Cycle count of a run: engine + sampler cycles only (not the screen, which overlaps with the next
-// engine step, and not the typewriter pause).
+// Cycle count of a run: every cycle from the first engine step to the last token except the typewriter
+// pause: engine, sampler, and any wait for the screen (it normally overlaps with the next engine step and
+// costs nothing; only bigram, faster than a status-row update, waits for it).
 // ---------------------------------------------------------------------------
 `timescale 1ns / 1ps
 
@@ -186,8 +187,8 @@ module lm_gen
 
       case (gs)
         G_IDLE: if (run_p && !m_clr) begin
-          run_p     <= 1'b0;
-          reseed_p  <= 1'b0;
+          run_p     <= run || reseed;            // a press in this very cycle counts as one during the run:
+          reseed_p  <= reseed;                   // one more run (reseeded for BTNU), not dropped
           fresh_run <= reseed_p;
           if (reseed_p) begin
             rng    <= 32'h9E37_79B9 ^ (32'(seed) << 16) ^ 32'(seed);
@@ -269,7 +270,8 @@ module lm_gen
           if (s3_v && s3_k == 16'(NV - 1)) gs <= G_PICK;
         end
 
-        G_PICK: if (!m_tok_v) begin              // the screen has taken the previous token
+        G_PICK: if (m_tok_v) cyc <= cyc + 1'b1;  // waiting for the screen to take the previous token
+        else begin
           cyc     <= cyc + 1'b1;
           ntok    <= ntok + 1'b1;
           hash    <= (hash << 5) - hash + 32'(nxt);
