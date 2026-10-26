@@ -1,7 +1,7 @@
 """
 Export an integer program (build/zoo/<name>.qprog.pkl) for the microcoded RTL (rtl/zoo/).
   python3 export_hw.py [model ...] [--nseq N]
-Writes mem/zoo/<name>/: prog.mem weights.mem params.mem tables.mem luts.mem exp.mem tv.txt zoo_pkg.sv
+Writes mem/zoo/<name>/: prog.mem weights.mem wbin.mem params.mem tables.mem luts.mem exp.mem tv.txt zoo_pkg.sv
 
 Instruction word (256 bit)                         Buffers: A..G=0..6, Q=7, K=8, Vb=9, HS=10, R=14, L=15
   [7:0] opcode  [11:8] dst  [15:12] src0  [19:16] src1  [23:20] mode  [31:24] aux8
@@ -22,7 +22,8 @@ from quant import EXP_LUT, IntRunner
 P = int(os.environ.get("ZOO_P", 8))     # GEMV lanes (8, 16, 32); ZOO_P=16 python3 export_hw.py ...
 DH = 8                                   # attention / KV lanes = head size
 OPC = dict(END=0, EMB16=1, EMB8=2, EMBWIN=3, TABLOGIT=4, HRESET=5, NORM=6, GEMV=7, ROPE=8,
-           KVSTORE=9, ATTN=10, MUL=11, GRUUPD=12, COPY=13, REQ=14, BOW=15)
+           KVSTORE=9, ATTN=10, MUL=11, GRUUPD=12, COPY=13, REQ=14, BOW=15, SCALE=17, GEMVB=18)
+BL = 64                                  # GEMVB: binary weights of 64 outputs per 64-bit word
 BUF = dict(A=0, B=1, C=2, D=3, E=4, F=5, G=6, Q=7, K=8, Vb=9, HS=10, R=14, L=15)
 MODE = dict(o8=0, radd=1, lut=2, logit=3)
 
@@ -65,7 +66,7 @@ def export(name, seqs, gen=0, gen_start=0, q=None, out=None, quiet=False):
     os.makedirs(out, exist_ok=True)
     tabs = Tables()
     luts = []
-    wlines, plines, prog = [], [], []
+    wlines, plines, blines, prog = [], [], [], []
     vlen, kvd, C = 1, 1, 1
     lin_seen = {}
 
@@ -75,16 +76,20 @@ def export(name, seqs, gen=0, gen_start=0, q=None, out=None, quiet=False):
         L = q.lin[key]
         W, b, m0, sh = L["W"], L["b"], L["m0"], L["sh"]
         n_out, n_in = W.shape
-        n_pad = -(-n_out // P) * P
-        wb, pb = len(wlines), len(plines)
+        lanes = BL if L.get("bin") else P
+        n_pad = -(-n_out // lanes) * lanes
+        wb, pb = (len(blines) if L.get("bin") else len(wlines)), len(plines)
         Wp = np.zeros((n_pad, n_in), dtype=np.int64)
         Wp[:n_out] = W
-        for ob in range(n_pad // P):
+        for ob in range(n_pad // lanes):
             for i in range(n_in):
                 wd = 0
-                for p in range(P):
-                    wd |= (int(Wp[ob * P + p, i]) & 0xFF) << (8 * p)
-                wlines.append(hexw(wd, 8 * P))
+                for p in range(lanes):
+                    if L.get("bin"):
+                        wd |= int(Wp[ob * BL + p, i] > 0) << p          # bit 1 = +1, bit 0 = -1
+                    else:
+                        wd |= (int(Wp[ob * P + p, i]) & 0xFF) << (8 * p)
+                (blines if L.get("bin") else wlines).append(hexw(wd, BL if L.get("bin") else 8 * P))
         for o in range(n_pad):
             if o < n_out:
                 bb, mm, ss = int(b[o]), int(m0[o]), int(sh[o])
@@ -142,7 +147,8 @@ def export(name, seqs, gen=0, gen_start=0, q=None, out=None, quiet=False):
                 luts.append([int(lut[((a ^ 0x80) & 0xFF)]) for a in range(256)])
             if o["mode"] in ("o8", "lut"):
                 vlen = max(vlen, n_out)
-            prog.append(word(op=OPC[op], dst=BUF[o["dst"]] if o["dst"] in BUF else 0, src0=BUF[srcs[0]], src1=s1,
+            prog.append(word(op=OPC["GEMVB" if q.lin[o["lin"]].get("bin") else "GEMV"],
+                             dst=BUF[o["dst"]] if o["dst"] in BUF else 0, src0=BUF[srcs[0]], src1=s1,
                              mode=MODE[o["mode"]], aux8=lut_id, n0=n0, n1=n1, n2=n_pad, n3=n_out, base0=wb, base1=pb))
             vlen = max(vlen, n0)
         elif op == "ROPE":
@@ -172,6 +178,10 @@ def export(name, seqs, gen=0, gen_start=0, q=None, out=None, quiet=False):
             prog.append(word(op=OPC[op], src0=BUF[o["src"]], dst=BUF[o["dst"]], n0=n))
         elif op == "REQ":
             prog.append(word(op=OPC[op], src0=BUF["R"], dst=BUF[o["dst"]], n0=C, k64=(o["m0"] << 8) | o["sh"]))
+        elif op == "SCALE":
+            tb = q.tab[o["table"]]
+            prog.append(word(op=OPC[op], src0=BUF[o["src"]], dst=BUF[o["dst"]], n0=len(tb),
+                             base0=tabs.put(o["table"], tb), k64=(o["m0"] << 8) | o["sh"]))
         elif op == "BOW":
             hl = [x for r in q.rcp for x in (int(r) >> 16, ((int(r) & 0xFFFF) ^ 0x8000) - 0x8000)]  # 16-bit halves
             prog.append(word(op=OPC[op], dst=BUF["R"], n0=C, base0=tabs.put("rcp", hl)))
@@ -193,6 +203,7 @@ def export(name, seqs, gen=0, gen_start=0, q=None, out=None, quiet=False):
 
     d_prog = w("prog.mem", [hexw(x, 256) for x in prog])
     d_w = w("weights.mem", wlines or [hexw(0, 8 * P)])
+    d_b = w("wbin.mem", blines or [hexw(0, BL)])
     d_p = w("params.mem", plines or [hexw(0, 64)])
     d_t = w("tables.mem", [hexw(x, tab_w) for x in tabs.data] or [hexw(0, tab_w)])
     d_l = w("luts.mem", [hexw(v, 8) for lut in luts for v in lut])
@@ -216,7 +227,7 @@ def export(name, seqs, gen=0, gen_start=0, q=None, out=None, quiet=False):
         w("gen.txt", [f"{gen} {gen_start}", " ".join(map(str, toks[1:]))])
 
     dims = dict(V=q.V, T=q.T, NL=max(1, q.n_layer), C=C, VLEN=vlen, KVD=kvd, TAB_W=tab_w, PROG_DEPTH=d_prog,
-                W_DEPTH=d_w, PRM_DEPTH=d_p, TAB_DEPTH=d_t, LUT_DEPTH=d_l, N_INSTR=len(prog),
+                W_DEPTH=d_w, WB_DEPTH=d_b, PRM_DEPTH=d_p, TAB_DEPTH=d_t, LUT_DEPTH=d_l, N_INSTR=len(prog),
                 OPS_USED=sum(1 << op for op in sorted({x & 0xFF for x in prog}) if op),
                 N_PARAMS=sum(L["W"].size + L["b"].size for L in q.lin.values()) + sum(q.tab[k].size for k in q.tab),
                 S_LOGIT=float(q.s_logit))                    # real value of one INT16 logit step (for sampling)
@@ -270,17 +281,19 @@ package zoo_pkg;
   localparam int    PRM_DEPTH  = {d["PRM_DEPTH"]};
   localparam int    TAB_DEPTH  = {d["TAB_DEPTH"]};
   localparam int    LUT_DEPTH  = {d["LUT_DEPTH"]};
+  localparam int    WB_DEPTH   = {d.get("WB_DEPTH", 2)};
   localparam int    PC_W       = {aw(d["PROG_DEPTH"])};
   localparam int    WA_W       = {aw(d["W_DEPTH"])};
   localparam int    PA_W       = {aw(d["PRM_DEPTH"])};
   localparam int    TA_W       = {aw(d["TAB_DEPTH"])};
   localparam int    LUA_W      = {aw(d["LUT_DEPTH"])};
+  localparam int    WBA_W      = {aw(d.get("WB_DEPTH", 2))};
   localparam int    TOK_W      = {aw(d["V"] + 1)};
   localparam int    POS_W      = {aw(d["T"])};
   localparam int    LA_W       = {aw(d["V"])};
   localparam int    RA_W       = {aw(d["C"])};
   localparam int    N_INSTR    = {d["N_INSTR"]};
-  localparam logic [15:0] OPS_USED = 16'h{d["OPS_USED"]:04x};
+  localparam logic [31:0] OPS_USED = 32'h{d["OPS_USED"]:08x};
   localparam int    N_PARAMS   = {d["N_PARAMS"]};
 endpackage
 """
@@ -293,14 +306,15 @@ def make_images(src, dst, d, tab_w, T):
     through ld_* (sizes.txt gives the number of words), golden vectors cut to T positions"""
     os.makedirs(dst, exist_ok=True)
     json.dump(d, open(os.path.join(dst, "dims.json"), "w"), indent=1)
-    for f in ("prog.mem", "weights.mem", "params.mem", "luts.mem"):
-        open(os.path.join(dst, f), "w").write(open(os.path.join(src, f)).read())
+    for f in ("prog.mem", "weights.mem", "params.mem", "luts.mem", "wbin.mem"):
+        fs = os.path.join(src, f)
+        open(os.path.join(dst, f), "w").write(open(fs).read() if os.path.exists(fs) else "0\n0\n")
     tw = d["TAB_W"]
     vals = [int(x, 16) for x in open(os.path.join(src, "tables.mem")).read().split()]
     vals = [v - (1 << tw) if v >= 1 << (tw - 1) else v for v in vals]              # sign
     open(os.path.join(dst, "tables.mem"), "w").write("\n".join(hexw(v, tab_w) for v in vals) + "\n")
     open(os.path.join(dst, "sizes.txt"), "w").write(
-        f"{d['PROG_DEPTH']} {d['W_DEPTH']} {d['PRM_DEPTH']} {d['TAB_DEPTH']} {d['LUT_DEPTH']}\n")
+        f"{d['PROG_DEPTH']} {d['W_DEPTH']} {d['PRM_DEPTH']} {d['TAB_DEPTH']} {d['LUT_DEPTH']} {d.get('WB_DEPTH', 2)}\n")
     tv = open(os.path.join(src, "tv.txt")).read().split("\n")
     nseq, v = map(int, tv[0].split())
     lines, i = [tv[0]], 1
@@ -325,7 +339,7 @@ def universal(models, T=256, out=None):
     os.makedirs(out, exist_ok=True)
     dims = {m: json.load(open(os.path.join(ROOT, "mem", "zoo", m, "dims.json"))) for m in models}
     u = {k: max(d[k] for d in dims.values()) for k in dims[models[0]] if k not in ("N_PARAMS", "OPS_USED", "S_LOGIT")}
-    u.update(T=min(u["T"], T), OPS_USED=0xFFFE, N_PARAMS=max(d["N_PARAMS"] for d in dims.values()))
+    u.update(T=min(u["T"], T), OPS_USED=0x6FFFE, N_PARAMS=max(d["N_PARAMS"] for d in dims.values()))
     write_pkg(out, "universal", u)
     json.dump(dict(u, models=models), open(os.path.join(out, "dims.json"), "w"), indent=1)
     src0 = os.path.join(ROOT, "mem", "zoo", models[0], "exp.mem")

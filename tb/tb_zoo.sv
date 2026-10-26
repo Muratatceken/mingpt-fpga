@@ -53,6 +53,7 @@ module tb_zoo;
   logic [63:0]      m_prm  [PRM_DEPTH];
   logic [TAB_W-1:0] m_tab  [TAB_DEPTH];
   logic [7:0]       m_lut  [LUT_DEPTH];
+  logic [63:0]      m_wb   [WB_DEPTH];
 
   task automatic ld_word(input int sel, input int addr, input logic [255:0] data);
     @(posedge clk);
@@ -67,9 +68,11 @@ module tb_zoo;
   string mdir;                                  // directory of the model images
   task automatic load_model();
     int sfd = 0, n_prog = PROG_DEPTH, n_w = W_DEPTH, n_prm = PRM_DEPTH, n_tab = TAB_DEPTH, n_lut = LUT_DEPTH, r = 0;
+    int n_wb = WB_DEPTH;
     sfd = $fopen({mdir, "/sizes.txt"}, "r");      // image sizes (universal engine: smaller than the memories)
     if (sfd != 0) begin
-      r = $fscanf(sfd, "%d %d %d %d %d", n_prog, n_w, n_prm, n_tab, n_lut);
+      r = $fscanf(sfd, "%d %d %d %d %d %d", n_prog, n_w, n_prm, n_tab, n_lut, n_wb);
+      if (r < 6) n_wb = 0;                          // older images: no binary weights
       $fclose(sfd);
     end
     $readmemh({mdir, "/prog.mem"}, m_prog, 0, n_prog - 1);
@@ -77,20 +80,22 @@ module tb_zoo;
     $readmemh({mdir, "/params.mem"}, m_prm, 0, n_prm - 1);
     $readmemh({mdir, "/tables.mem"}, m_tab, 0, n_tab - 1);
     $readmemh({mdir, "/luts.mem"}, m_lut, 0, n_lut - 1);
+    if (n_wb > 0) $readmemh({mdir, "/wbin.mem"}, m_wb, 0, n_wb - 1);
     for (int a = 0; a < n_prog; a++) ld_word(0, a, m_prog[a]);
     for (int a = 0; a < n_w; a++)    ld_word(1, a, 256'(m_w[a]));
     for (int a = 0; a < n_prm; a++)  ld_word(2, a, 256'(m_prm[a]));
     for (int a = 0; a < n_tab; a++)  ld_word(3, a, 256'(m_tab[a]));
     for (int a = 0; a < n_lut; a++)  ld_word(4, a, 256'(m_lut[a]));
-    $display("model %s loaded through ld_*: %0d words", mdir, n_prog + n_w + n_prm + n_tab + n_lut);
+    for (int a = 0; a < n_wb; a++)   ld_word(5, a, 256'(m_wb[a]));
+    $display("model %s loaded through ld_*: %0d words", mdir, n_prog + n_w + n_prm + n_tab + n_lut + n_wb);
   endtask
 
   longint cyc = 0;
   always @(posedge clk) cyc <= cyc + 1;
 
   // cycle profile per opcode (index 16 = fetch/decode)
-  longint prof [17];
-  initial for (int k = 0; k < 17; k++) prof[k] = 0;
+  longint prof [19];
+  initial for (int k = 0; k < 19; k++) prof[k] = 0;
   always @(posedge clk) if (busy) prof[dbg_op] <= prof[dbg_op] + 1;
 
   function automatic string op_name(input int k);
@@ -99,6 +104,7 @@ module tb_zoo;
       4: return "TABLOGIT"; 5: return "HRESET";   6: return "NORM";     7: return "GEMV";
       8: return "ROPE";     9: return "KVSTORE"; 10: return "ATTN";    11: return "MUL";
      12: return "GRUUPD";  13: return "COPY";    14: return "REQ";     15: return "BOW";
+     17: return "SCALE";   18: return "GEMVB";
       default: return "FETCH";
     endcase
   endfunction
@@ -213,12 +219,12 @@ module tb_zoo;
     $display("cycles/token: avg %0d  min %0d  max %0d   (%.1f us/token @ 100 MHz)",
              tot_cyc / steps, min_cyc, max_cyc, real'(tot_cyc) / steps / 100.0);
     $display("cycle profile:");
-    for (int k = 0; k < 17; k++)
+    for (int k = 0; k < 19; k++)
       if (prof[k] != 0)
         $display("  %-9s %10d  %5.1f%%", op_name(k), prof[k], 100.0 * real'(prof[k]) / real'(tot_cyc));
     $display("RESULT %s steps %0d bad_steps %0d errors %0d avg_cycles %0d min_cycles %0d max_cycles %0d",
              NAME, steps, bad_steps, errors, tot_cyc / steps, min_cyc, max_cyc);
-    for (int k = 0; k < 17; k++)
+    for (int k = 0; k < 19; k++)
       if (prof[k] != 0) $display("PROF %s %s %0d", NAME, op_name(k), prof[k]);
 `ifdef XCHECK
     $display("XCHECK %s unknown_logits %0d", NAME, xerr);

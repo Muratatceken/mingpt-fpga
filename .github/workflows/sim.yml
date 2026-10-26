@@ -26,3 +26,6 @@ jobs:
         run: |
           scripts/zoo_axi_sim.sh mem/zoo/universal/gru 3 | tee axi_gru.txt
           grep -q "PASS: AXI system bit-exact" axi_gru.txt
+      - name: Nexys A7 stand-alone design (whole board top; on-board check of a sampled and a greedy run)
+        timeout-minutes: 20
+        run: scripts/nexys_ci.sh gru nanochat gpt2-bin mlp-lb25p1

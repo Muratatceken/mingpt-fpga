@@ -1,0 +1,21 @@
+{
+ "model": "microgpt",
+ "method": "int8",
+ "steps": 0,
+ "lr": 0.0005,
+ "seed": 0,
+ "device": "cpu",
+ "float_nll": 1.9705595143707046,
+ "qbits": 411648,
+ "qweights": 49152,
+ "bpw": 8.375,
+ "ptq_nll": 1.9706388106733403,
+ "qat_nll": 1.9706388106733403,
+ "curve": [
+  [
+   0,
+   1.9706388106733403
+  ]
+ ],
+ "seconds": 1.6
+}

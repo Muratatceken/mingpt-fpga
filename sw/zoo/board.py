@@ -52,27 +52,65 @@ assert [w for _, w in STATUS.values()] == [5, 7, 7, 18, 4]          # widths fix
 
 
 # ----------------------------------------------------------------------------- integer programs
+def float_model(name):
+    """float PyTorch model of a board model name: <zoo model> | stories260k | ts_<arch>, optionally with
+    -<method>: the weights of a low-bit QAT run (model/zoo/lowbit/<base>/<method>.pt, sw/zoo/lowbit.py)"""
+    import torch
+    base, _, method = name.partition("-")
+    if base == "stories260k":
+        from stories import load_model
+        m = load_model()
+    elif base.startswith("ts_"):
+        from configs import build
+        run = json.load(open(os.path.join(ROOT, "model", "zoo", "runs", "stories260k", f"{base[3:]}_lr0.003_s0.json")))
+        m = build(run["spec"])
+        m.load_state_dict(torch.load(run["path"] + ".pt", map_location="cpu"))
+    else:
+        from check_ir import load_trained
+        m = load_trained(base)
+    if method:
+        m.load_state_dict(torch.load(os.path.join(ROOT, "model", "zoo", "lowbit", base, f"{method}.pt"), map_location="cpu"))
+    m.eval()
+    return m
+
+
+def calib_seqs(name):
+    """calibration inputs of the integer program, as in evaluate.py / stories.py / pipeline.py"""
+    base = name.partition("-")[0]
+    if base == "stories260k":
+        from stories import split
+        return [s[:-1] for s in split()[0]]
+    if base.startswith("ts_"):
+        from tinystories import Batches
+        X, _ = Batches("train", 256, seed=777).get(100)
+        return [x.tolist() for x in X]
+    from evaluate import N_CALIB, seqs_of
+    from data import load
+    return [x for x, _ in seqs_of(*load()["train"])[:N_CALIB]]
+
+
 def qprog(name):
     """quantised program of a model (cached in build/zoo/<name>.qprog.pkl)"""
     path = os.path.join(BUILD, f"{name}.qprog.pkl")
     if os.path.exists(path):
         return pickle.load(open(path, "rb"))
-    if not name.startswith("ts_"):
-        raise FileNotFoundError(f"{path}: run evaluate.py / stories.py first")
-    import torch
-    from configs import build
     from ir import attach_rope, compile_model
     from quant import calibrate, quantize
-    from tinystories import Batches
-    arch = name[3:]
-    run = json.load(open(os.path.join(ROOT, "model", "zoo", "runs", "stories260k", f"{arch}_lr0.003_s0.json")))
-    m = build(run["spec"])
-    m.load_state_dict(torch.load(run["path"] + ".pt", map_location="cpu"))
-    m.eval()
-    prog = attach_rope(compile_model(arch, m))
+    base = name.partition("-")[0]
+    arch = "llama" if base == "stories260k" else base[3:] if base.startswith("ts_") else base
+    prog = attach_rope(compile_model(arch, float_model(name)))
+    method = name.partition("-")[2]
+    if method == "bin":                            # 1-bit layers -> packed binary GEMV (GEMVB) + SCALE
+        from ir import factor_binary
+        prog = factor_binary(prog)
+    elif method.startswith("lb"):                  # LittleBit layers -> SCALE + two GEMVBs
+        import torch
+        from ir import factor_littlebit
+        fac = torch.load(os.path.join(ROOT, "model", "zoo", "lowbit", base, f"{method}.factors.pt"))
+        prog = factor_littlebit(prog, fac)
+        assert set(prog.littlebit.values()) == set(fac), (sorted(prog.littlebit), sorted(fac))   # every layer placed
     prog.name = name
-    X, _ = Batches("train", run["spec"]["kwargs"]["T"], seed=777).get(100)     # as pipeline.py
-    q = quantize(prog, calibrate(prog, [x.tolist() for x in X]))
+    q = quantize(prog, calibrate(prog, calib_seqs(name)))
     os.makedirs(BUILD, exist_ok=True)
     pickle.dump(q, open(path, "wb"))
     return q
@@ -277,10 +315,15 @@ def param_count(name):
     return n_params(load_trained(name))
 
 
+WFMT = {"": "INT8", "int4": "INT4", "tern": "ternary", "bin": "1-bit", "lb25p1": "LittleBit 0.6b"}
+
+
 def title_of(name, q):
-    arch = "Llama 2" if name == "stories260k" else ARCH.get(name[3:] if name.startswith("ts_") else name, name)
+    base, _, method = name.partition("-")
+    arch = "Llama 2" if base == "stories260k" else ARCH.get(base[3:] if base.startswith("ts_") else base, base)
     data = "names.txt" if q.V == 27 else "TinyStories"
-    t = f" {name}: {arch}, {param_count(name) / 1000:.0f}K params, INT8, {data} | Nexys A7-100T FPGA"
+    fmt = "LittleBit" if method.startswith("lb") else WFMT.get(method, method)
+    t = f" {name}: {arch}, {param_count(base) / 1000:.0f}K params, {fmt}, {data} | Nexys A7-100T FPGA"
     assert len(t) <= COLS, t
     return t
 
@@ -305,6 +348,7 @@ def export(name, T=256, mhz=50):
     q = cap_context(qprog(name), T)
     out = os.path.join(OUTROOT, name)
     export_model(name, [], q=q, out=out, quiet=True)          # program, weights, tables, ..., zoo_pkg.sv
+    os.remove(os.path.join(out, "tv.txt"))                   # (no golden vectors: board_sim checks whole runs)
     dims = json.load(open(os.path.join(out, "dims.json")))
     pcs, cfg = pieces(name, q.V), config(q, name)
     # detokeniser: tokmeta[k] = {len[3:0], off[15:0]}, tokstr = bytes

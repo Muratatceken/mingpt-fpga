@@ -141,8 +141,10 @@ def quantize(prog, rec):
             assert len(s_in) == W.shape[1], (o["lin"], len(s_in), W.shape)
             Weff = W * s_in[None, :]
             amax = np.abs(Weff).max(axis=1)
-            s_w = np.where(amax > 0, amax / 127.0, 1.0)
+            binary = o["lin"] in getattr(prog, "binary", ())
+            s_w = np.where(amax > 0, amax / (1.0 if binary else 127.0), 1.0)     # binary: weights +-1
             Wq = np.clip(np.round(Weff / s_w[:, None]), -127, 127).astype(np.int64)
+            assert not binary or np.all(np.abs(Wq) == 1), o["lin"]
             bq = np.round(b / s_w).astype(np.int64)
             mode = o["mode"]
             if mode == "o8":
@@ -163,7 +165,7 @@ def quantize(prog, rec):
                 s_out = q.s_logit
             m = [qmul(s_w[k] / s_out) for k in range(W.shape[0])]
             q.lin[o["lin"]] = dict(W=Wq, b=bq, m0=np.array([x[0] for x in m], dtype=np.int64),
-                                   sh=np.array([x[1] for x in m], dtype=np.int64))
+                                   sh=np.array([x[1] for x in m], dtype=np.int64), bin=binary)
             assert np.all(np.abs(bq) < 2 ** 31)
         elif op == "ROPE":
             cos, sin = prog.rope
@@ -193,6 +195,11 @@ def quantize(prog, rec):
             q.rcp = np.array([int(round(2 ** BOW_RS / (t + 1))) for t in range(q.T)], dtype=np.int64)
         elif op == "TABLOGIT":
             q.tab[o["table"]] = sat(np.round(prog.tab[o["table"]] / q.s_logit).astype(np.int64), 16)
+        elif op == "SCALE":                    # gains g in (0, 1] as INT16 (g = 1 -> 32767)
+            q.tab[o["table"]] = np.round(prog.tab[o["table"]] * 32767).astype(np.int64)
+            s_out = rec[(i, "out")] / 127.0
+            o["m0"], o["sh"] = qmul(sc[o["src"]] / 32767 / s_out)
+            sc[o["dst"]] = s_out
     return q
 
 
@@ -342,6 +349,8 @@ class IntRunner:
                 buf["R"] = sat(buf["R"] + avg, 16)
             elif op == "TABLOGIT":
                 buf["L"] = q.tab[o["table"]][tok].copy()
+            elif op == "SCALE":
+                buf[o["dst"]] = requant(buf[o["src"]] * q.tab[o["table"]], o["m0"], o["sh"], 8)
         return buf["L"]
 
 

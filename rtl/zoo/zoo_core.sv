@@ -23,6 +23,9 @@
 // Units
 //   GEMV  P-lane output-stationary MAC array, shadow bank, serial requantiser
 //         (the requantiser of block b overlaps the accumulation of block b+1)
+//   GEMVB the same unit with 1-bit weights (binary layers, sw/zoo/ir.py:factor_binary): a 64-bit word of
+//         wbin.mem holds the signs of 64 outputs for one input, 64 add/subtract lanes, no multipliers;
+//         the per-output scale is part of the requantisation. SCALE: input gains of a binary layer
 //   NORM  LayerNorm / RMSNorm: one pass for sum and sum of squares,
 //         normalised integer square root, one division per segment
 //   ATTN  P-lane dot products, exp LUT, P-lane weighted sum, one division per head
@@ -49,24 +52,31 @@ module zoo_core
   output logic signed [15:0] l_data,
   output logic [7:0]         dbg_op,     // opcode in execution (16 = fetch/decode)
   input  logic               ld_we,      // model load (LOADABLE = 1): write one word of memory ld_sel
-  input  logic [2:0]         ld_sel,     //   0 prog, 1 weights, 2 params, 3 tables, 4 luts
+  input  logic [2:0]         ld_sel,     //   0 prog, 1 weights, 2 params, 3 tables, 4 luts, 5 binary weights
   input  logic [19:0]        ld_addr,
   input  logic [255:0]       ld_data
 );
   localparam int LP  = $clog2(P);
   localparam int DH  = 8;                // attention / RoPE / KV lanes = head size
   localparam int LDH = 3;
-  localparam logic [15:0] EN = SPECIALIZE ? OPS_USED : 16'hFFFF;   // enabled opcodes (GEMV always)
+  localparam logic [31:0] EN = SPECIALIZE ? 32'(OPS_USED) : 32'hFFFF_FFFF;   // enabled opcodes (GEMV always)
+  localparam int BL  = 64;               // GEMVB lanes = bits of a binary weight word
+  localparam int BLN = EN[18] ? BL : 1;  // binary accumulator bank (only if the model has GEMVB)
+  localparam int BAW = 20;               // binary accumulators: |acc| <= 128 n_in < 2^19 for n_in <= 4096
+  localparam int RPW = $clog2((BLN > P) ? BLN : P);
+  localparam int GWA_W = (WA_W > WBA_W) ? WA_W : WBA_W;
   localparam string F_PROG = PRELOAD ? {MEM_DIR, "/prog.mem"}    : "";
   localparam string F_W    = PRELOAD ? {MEM_DIR, "/weights.mem"} : "";
   localparam string F_PRM  = PRELOAD ? {MEM_DIR, "/params.mem"}  : "";
   localparam string F_TAB  = PRELOAD ? {MEM_DIR, "/tables.mem"}  : "";
   localparam string F_LUT  = PRELOAD ? {MEM_DIR, "/luts.mem"}    : "";
+  localparam string F_WB   = PRELOAD ? {MEM_DIR, "/wbin.mem"}    : "";
 
   localparam logic [7:0] OP_END = 8'd0, OP_EMB16 = 8'd1, OP_EMB8 = 8'd2, OP_EMBWIN = 8'd3,
                          OP_TABLOGIT = 8'd4, OP_HRESET = 8'd5, OP_NORM = 8'd6, OP_GEMV = 8'd7,
                          OP_ROPE = 8'd8, OP_KVSTORE = 8'd9, OP_ATTN = 8'd10, OP_MUL = 8'd11,
-                         OP_GRUUPD = 8'd12, OP_COPY = 8'd13, OP_REQ = 8'd14, OP_BOW = 8'd15;
+                         OP_GRUUPD = 8'd12, OP_COPY = 8'd13, OP_REQ = 8'd14, OP_BOW = 8'd15,
+                         OP_SCALE = 8'd17, OP_GEMVB = 8'd18;          // 16: fetch / decode (dbg_op)
   localparam logic [3:0] B_HS = 4'd10;
   localparam logic [3:0] M_O8 = 4'd0, M_RADD = 4'd1, M_LUT = 4'd2, M_LOGIT = 4'd3;
 
@@ -221,6 +231,10 @@ module zoo_core
   zrom #(.WIDTH(8),     .DEPTH(LUT_DEPTH),  .AW(LUA_W), .INIT(F_LUT),  .LOADABLE(LOADABLE))
     u_lut  (.clk, .addr(lu_a), .dout(lu_d),
             .we(ld_we && ld_sel == 3'd4), .waddr(LUA_W'(ld_addr)), .wdata(ld_data[7:0]));
+  logic [BL-1:0]    wb_d;
+  zrom #(.WIDTH(BL),    .DEPTH(WB_DEPTH),   .AW(WBA_W), .INIT(F_WB),   .LOADABLE(LOADABLE))
+    u_wb   (.clk, .addr(WBA_W'(g_wa)), .dout(wb_d),
+            .we(ld_we && ld_sel == 3'd5), .waddr(WBA_W'(ld_addr)), .wdata(ld_data[BL-1:0]));
 
   logic [15:0] exp_lut [256];             // 2^15 * 2^(-k/256), asynchronous LUT-ROM
   initial $readmemh({MEM_DIR, "/exp.mem"}, exp_lut);
@@ -265,14 +279,16 @@ module zoo_core
   logic signed [31:0] st_tmp;
   // GEMV
   logic [15:0]        g_ob, g_i;
-  logic [WA_W-1:0]    g_wa;
+  logic [GWA_W-1:0]   g_wa;                 // weight address (INT8 or binary ROM)
   logic               a_v, a_first, a_last;
   logic signed [7:0]  a_x;
   logic [15:0]        a_ob;
   logic signed [31:0] acc [P];
   logic signed [31:0] shadow [P];
+  logic signed [BAW-1:0] bacc [BLN];
+  logic signed [BAW-1:0] bshadow [BLN];
   logic               rq_act;
-  logic [LP-1:0]      rq_p;
+  logic [RPW-1:0]     rq_p;
   logic [15:0]        rq_ob;
   logic               g1_v;
   logic signed [31:0] g1_acc;
@@ -293,6 +309,10 @@ module zoo_core
   logic signed [33:0] att_a [DH];     // sum e * v
   logic [33:0]        att_e;          // sum of exp weights (>= 2^15)
   logic [17:0]        att_r;          // 2^32 / att_e <= 2^17
+  // SCALE
+  logic               sc1_v;
+  logic [15:0]        sc1_i;
+  logic signed [7:0]  sc1_x;
   // ROPE / BOW
   logic [8*P-1:0]     rp_w, rp_n;
   logic signed [15:0] rp_c;
@@ -302,20 +322,33 @@ module zoo_core
   // combinational datapath
   // ======================================================================
   // ---- GEMV issue ----
-  logic        g_sel1, g_islast, g_can;
-  logic [15:0] g_idx, g_nblk;
+  logic        g_sel1, g_islast, g_can, g_bin, g_on;
+  logic [15:0] g_idx, g_nblk, g_lanes;
   logic signed [7:0] g_x;
+  assign g_bin    = (f_op == OP_GEMVB) && EN[18];
+  assign g_on     = (f_op == OP_GEMV) || g_bin;
+  assign g_lanes  = g_bin ? 16'(BL) : 16'(P);
   assign g_sel1   = (g_i >= f_n0);
   assign g_idx    = g_sel1 ? g_i - f_n0 : g_i;
   assign g_islast = (g_i == f_n0 + f_n1 - 16'd1);
-  assign g_nblk   = f_n2 >> LP;
-  assign g_can    = (st == S_EXEC) && (f_op == OP_GEMV) && (g_ob < g_nblk) &&
+  assign g_nblk   = g_bin ? f_n2 >> 6 : f_n2 >> LP;
+  logic  g_drlast;                       // GEMVB: the last real output is drained (padding lanes are skipped)
+  assign g_drlast = (32'(rq_ob) * BL + 32'(rq_p) == 32'(f_n3) - 32'd1);
+  assign g_can    = (st == S_EXEC) && g_on && (g_ob < g_nblk) &&
                     !(g_islast && (rq_act || (a_v && a_last)));
 
   logic signed [31:0] accn [P];
   always_comb
     for (int p = 0; p < P; p++)
       accn[p] = (a_first ? 32'sd0 : acc[p]) + $signed(w_d[8*p +: 8]) * a_x;
+
+  logic signed [BAW-1:0] bx, bxn;        // GEMVB: x and -x, shared by the 64 add/subtract lanes
+  logic signed [BAW-1:0] baccn [BLN];
+  assign bx  = BAW'(a_x);
+  assign bxn = -bx;
+  always_comb
+    for (int p = 0; p < BLN; p++)
+      baccn[p] = (a_first ? BAW'(0) : bacc[p]) + (wb_d[p] ? bx : bxn);         // weight +1 / -1
 
   // ---- NORM ----
   logic               n_ln, n_src16, n_dst16;
@@ -425,7 +458,7 @@ module zoo_core
     vw_a = '0; vw_be = '0; vw_d = '0;
     r_ra = '0; r_we = 1'b0; r_wa = '0; r_wd = '0;
     l_we = 1'b0; l_wa = '0; l_wd = '0;
-    w_a = g_wa; p_a = '0; t_a = '0; lu_a = '0;
+    w_a = WA_W'(g_wa); p_a = '0; t_a = '0; lu_a = '0;
     kv_ra = '0; kv_we = 1'b0; kv_wa = '0; kv_kd = '0; kv_vd = '0;
     sb_we = 1'b0; sb_wa = '0; sb_wd = '0;
     sm_we = 1'b0; sm_wd = '0;
@@ -479,10 +512,10 @@ module zoo_core
           end
         end
 
-        // ------------------------------------------------ GEMV
-        OP_GEMV: begin
+        // ------------------------------------------------ GEMV / GEMVB
+        OP_GEMV, OP_GEMVB: begin
           va_a = vaddr(g_sel1 ? f_src1 : f_src0, g_idx);
-          p_a  = PA_W'(f_b1 + 32'(rq_ob) * P + 32'(rq_p));
+          p_a  = PA_W'(f_b1 + 32'(rq_ob) * 32'(g_lanes) + 32'(rq_p));
           rq_in_v = g1_v; rq_in_idx = g1_idx; rq_acc = g1_acc;
           rq_bias = p_d[63:32]; rq_m0 = p_d[31:16]; rq_sh = p_d[5:0];
           rq_o16  = (f_mode == M_RADD) || (f_mode == M_LOGIT);
@@ -512,6 +545,20 @@ module zoo_core
           rq_in_v   = !iss_done;
           rq_in_idx = i;
           rq_acc    = (f_op == OP_MUL) ? 32'(lane(va_d, i)) * 32'(lane(vb_d, i)) : 32'(r_rd);
+          rq_m0     = f_k[23:8];
+          rq_sh     = f_k[5:0];
+          if (rq_ov) begin
+            vw_a = vaddr(f_dst, rq_oidx); vw_be = P'(1) << rq_oidx[LP-1:0]; vw_d = {P{rq_o[7:0]}};
+          end
+        end
+
+        // ------------------------------------------------ SCALE: dst[i] = requant(src[i] * gain[i])
+        OP_SCALE: if (EN[17]) begin
+          va_a      = vaddr(f_src0, i);
+          t_a       = TA_W'(f_b0 + 32'(i));
+          rq_in_v   = sc1_v;
+          rq_in_idx = sc1_i;
+          rq_acc    = 32'(sc1_x) * t_dx;
           rq_m0     = f_k[23:8];
           rq_sh     = f_k[5:0];
           if (rq_ov) begin
@@ -593,10 +640,12 @@ module zoo_core
     if (kv_we)  assert (int'(kv_wa) < KDEP)     else $error("KV write address %0d out of range", kv_wa);
     if (st == S_EXEC && f_op == OP_ATTN)
       assert (int'(kv_ra) < KDEP) else $error("KV read address %0d out of range", kv_ra);
-    if (a_v)
+    if (a_v && !g_bin)
       for (int p = 0; p < P; p++)
         assert (!acc_overflow(a_first ? 32'sd0 : acc[p], $signed(w_d[8*p +: 8]), a_x))
           else $error("GEMV accumulator overflow (lane %0d)", p);
+    if (st == S_EXEC && g_bin)
+      assert (f_n0 + f_n1 <= 16'd4096) else $error("GEMVB with %0d inputs: binary accumulators too narrow", f_n0 + f_n1);
   end
 `endif
 
@@ -635,7 +684,8 @@ module zoo_core
           iss_done <= 1'b0;
           g_ob     <= '0;
           g_i      <= '0;
-          g_wa     <= WA_W'(prog_dout[127:96]);
+          g_wa     <= GWA_W'(prog_dout[127:96]);
+          sc1_v    <= 1'b0;
           rq_act   <= 1'b0;
           if (prog_dout[7:0] == OP_END)
             st <= S_DONE;
@@ -690,8 +740,8 @@ module zoo_core
               end
             endcase
 
-            // -------------------------------------------- GEMV
-            OP_GEMV: begin
+            // -------------------------------------------- GEMV / GEMVB
+            OP_GEMV, OP_GEMVB: begin
               if (g_can) begin
                 a_v     <= 1'b1;
                 a_x     <= lane(va_d, g_idx);
@@ -704,15 +754,17 @@ module zoo_core
               end
               if (rq_act) begin
                 g1_v   <= 1'b1;
-                g1_acc <= shadow[rq_p];
-                g1_idx <= 16'(32'(rq_ob) * P + 32'(rq_p));
+                g1_acc <= g_bin ? 32'(bshadow[rq_p % BLN]) : shadow[rq_p % P];
+                g1_idx <= 16'(32'(rq_ob) * 32'(g_lanes) + 32'(rq_p));
                 rq_p   <= rq_p + 1'b1;
-                if (rq_p == LP'(P - 1)) rq_act <= 1'b0;
+                if (16'(rq_p) == g_lanes - 16'd1 || (g_bin && g_drlast)) rq_act <= 1'b0;
               end
               if (a_v) begin
-                for (int p = 0; p < P; p++) acc[p] <= accn[p];
+                if (g_bin) for (int p = 0; p < BLN; p++) bacc[p] <= baccn[p];
+                else       for (int p = 0; p < P; p++)   acc[p]  <= accn[p];
                 if (a_last) begin
-                  for (int p = 0; p < P; p++) shadow[p] <= accn[p];
+                  if (g_bin) for (int p = 0; p < BLN; p++) bshadow[p] <= baccn[p];
+                  else       for (int p = 0; p < P; p++)   shadow[p]  <= accn[p];
                   rq_act <= 1'b1;
                   rq_p   <= '0;
                   rq_ob  <= a_ob;
@@ -721,7 +773,7 @@ module zoo_core
               lw_v   <= rq_ov && (f_mode == M_LUT);
               lw_idx <= rq_oidx;
               if (wb_fire) wb_cnt <= wb_cnt + 1'b1;
-              if (g_ob == g_nblk && wb_cnt == f_n2) begin pc <= pc + 1'b1; st <= S_FETCH; end
+              if (g_ob == g_nblk && wb_cnt == (g_bin ? f_n3 : f_n2)) begin pc <= pc + 1'b1; st <= S_FETCH; end
             end
 
             // -------------------------------------------- MUL / REQ
@@ -731,6 +783,19 @@ module zoo_core
                 if (i == f_n0 - 1'b1) iss_done <= 1'b1;
               end
               if (wb_fire) wb_cnt <= wb_cnt + 1'b1;
+              if (wb_cnt == f_n0) begin pc <= pc + 1'b1; st <= S_FETCH; end
+            end
+
+            // -------------------------------------------- SCALE (table word one clock after its address)
+            OP_SCALE: if (EN[17]) begin
+              sc1_v <= !iss_done;
+              sc1_i <= i;
+              sc1_x <= lane(va_d, i);
+              if (!iss_done) begin
+                i <= i + 1'b1;
+                if (i == f_n0 - 1'b1) iss_done <= 1'b1;
+              end
+              if (rq_ov) wb_cnt <= wb_cnt + 1'b1;
               if (wb_cnt == f_n0) begin pc <= pc + 1'b1; st <= S_FETCH; end
             end
 

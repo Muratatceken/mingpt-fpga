@@ -24,6 +24,7 @@ Ops (dict with "op" key):
   BOW                        S += R ; R += S/(t+1)
   TABLOGIT table             logits = table[tok]
   HRESET table               at t=0: HS = table
+  SCALE  src, dst, table     dst = src * table (per element; input gains of a binary layer, factor_binary)
 """
 import math
 
@@ -477,6 +478,10 @@ class FloatRunner:
             elif op == "TABLOGIT":
                 buf["L"] = p.tab[o["table"]][tok].copy()
                 self.note(("L",), buf["L"])
+            elif op == "SCALE":
+                y = buf[o["src"]] * p.tab[o["table"]]
+                buf[o["dst"]] = y
+                self.note((i, "out"), y)
             else:
                 raise ValueError(op)
         return buf["L"]
@@ -511,3 +516,178 @@ def float_logits(prog, seq):
     """Logits for every position of a token sequence (teacher forcing)."""
     fr = FloatRunner(prog)
     return np.array([fr.step(int(tok), t) for t, tok in enumerate(seq)])
+
+
+# ----------------------------------------------------------------------------- binary layers
+def _writes(o):
+    op = o["op"]
+    if op in ("EMB16", "BOW"):
+        return {"R"}
+    if op in ("HRESET", "GRUUPD"):
+        return {"HS"}
+    if op == "TABLOGIT":
+        return {"L"}
+    if op == "ROPE":
+        return {o["buf"]}
+    if op == "GEMV":
+        return {"R"} if o["mode"] == "radd" else {"L"} if o["mode"] == "logit" else {o["dst"]}
+    return {o["dst"]} if "dst" in o else set()
+
+
+def _reads(o):
+    op = o["op"]
+    r = set(o.get("srcs", []))
+    for k in ("src", "a", "b", "q", "k", "v", "z", "hb"):
+        if k in o:
+            r.add(o[k])
+    if op == "ROPE":
+        r.add(o["buf"])
+    if op in ("GRUUPD", "BOW"):
+        r |= {"HS"} if op == "GRUUPD" else {"R"}
+    if op == "GEMV" and o["mode"] == "radd":
+        r.add("R")
+    return r
+
+
+def rank1_sign(W, tol=1e-5):
+    """W = diag(a) S diag(g) with S in {-1, +1}, a > 0, g > 0, max g = 1 -> (a, S, g), else None"""
+    A = np.abs(W)
+    if A.min() <= 0:
+        return None
+    g = A[0] / A[0].max()
+    a = A[:, int(np.argmax(g))]
+    if not np.allclose(A, np.outer(a, g), rtol=tol, atol=0):
+        return None
+    return a, np.sign(W), g
+
+
+def factor_binary(prog, tol=1e-5):
+    """Binary layers for the packed 1-bit GEMV of the engine. A QAT-binarised linear layer is
+    W = diag(alpha) sign(w); compiling folds the gains gamma of the preceding norm into it, which gives
+    W = diag(a) S diag(g). Such a single-source GEMV keeps diag(a) S (binary up to a per-output scale, folded
+    into the requantisation) and the input gains g become a SCALE op on its input buffer, shared by all
+    readers of the same value (q, k, v after one norm). A group with a non-binary reader stays folded.
+    Sets prog.binary = {lin keys}; returns the program."""
+    ops = prog.ops
+    prog.binary = set()
+    fac = {}
+    for i, o in enumerate(ops):
+        if o["op"] == "GEMV" and len(o["srcs"]) == 1 and o["mode"] != "logit":
+            f = rank1_sign(prog.lin[o["lin"]][0], tol)
+            if f is not None:
+                fac[i] = f
+    groups = {}                                        # (producer index, buffer) -> reader indices
+    for i, o in enumerate(ops):
+        for b in _reads(o):
+            prod = max((j for j in range(i) if b in _writes(ops[j])), default=-1)
+            groups.setdefault((prod, b), []).append(i)
+    inserts = {}
+    for (prod, b), readers in groups.items():
+        if b in ("R", "HS", "L") or not readers or not all(r in fac for r in readers):
+            continue
+        g0 = fac[readers[0]][2]
+        if not all(np.allclose(fac[r][2], g0, rtol=1e-4) for r in readers):
+            continue
+        for r in readers:
+            a, S, g = fac[r]
+            key = ops[r]["lin"]
+            prog.lin[key] = (S * a[:, None], prog.lin[key][1])
+            prog.binary.add(key)
+        if not np.allclose(g0, 1.0, rtol=1e-6):
+            tkey = f"gain{prod}_{b}"
+            prog.tab[tkey] = g0
+            inserts[prod] = dict(op="SCALE", src=b, dst=b, table=tkey)
+    prog.ops = []
+    for i, o in enumerate(ops):
+        prog.ops.append(o)
+        if i in inserts:
+            prog.ops.append(inserts[i])
+    return prog
+
+
+def _free_buffers(ops, n):
+    used = {"R", "L", "HS"}
+    for o in ops:
+        used |= _reads(o) | _writes(o)
+    free = [b for b in ("C", "D", "E", "G", "F", "B") if b not in used]
+    assert len(free) >= n, f"no free buffers for LittleBit layers (used: {sorted(used)})"
+    return free[:n]
+
+
+def _fit_rowcol(Wf, Wh, tol):
+    """Wf = diag(rho) Wh diag(gamma)?  -> (rho, gamma) or None"""
+    m = np.abs(Wh) > 1e-3 * np.abs(Wh).max()
+    if not m.any(axis=1).all() or not m.any(axis=0).all():
+        return None
+    R = np.where(m, Wf / np.where(m, Wh, 1.0), np.nan)
+    gam = np.ones(Wf.shape[1])
+    for _ in range(4):
+        rho = np.nanmedian(R / gam[None, :], axis=1)
+        gam = np.nanmedian(R / rho[:, None], axis=0)
+    err = np.abs(Wf - rho[:, None] * Wh * gam[None, :]).max()
+    return (rho, gam) if err <= tol * np.abs(Wf).max() else None
+
+
+def factor_littlebit(prog, factors, tol=1e-4):
+    """Single-path LittleBit layers as two binary GEMVs on the engine (no new hardware):
+        W_hat = diag(h) sign(U) diag(l) sign(V)^T diag(g)                 (lowbit.py, <method>.factors.pt)
+    A compiled GEMV whose weight is diag(rho) W_hat[rows] diag(gamma) -- rows: a block of the layer's outputs
+    (q / k / v of a fused c_attn), rho and gamma: what compiling folded in (1/sqrt(dh), norm gains) -- becomes
+        SCALE  x -> T  by g * gamma / c           (c = max |g * gamma|, INT16 gains)
+        GEMVB  T -> Z  c * diag(l) sign(V)^T      (r outputs, the per-output scale goes to the requantisation)
+        GEMVB  Z -> y  diag(rho * h) sign(U)      (original bias, destination and mode)
+    GEMVs that read the same value through the same factors share SCALE and the first GEMVB.
+    Adds the binary lins to prog.binary; returns the program."""
+    fx = {}
+    for name, paths in factors.items():
+        assert len(paths) == 1, f"{name}: only single-path LittleBit runs on the engine"
+        f = {k: np.asarray(v, dtype=np.float64) for k, v in paths[0].items()}
+        f["W"] = (f["h"][:, None] * f["U"] * f["l"][None, :]) @ (f["V"] * f["g"][:, None]).T
+        fx[name] = f
+    ops = prog.ops
+    T, Z = _free_buffers(ops, 2)
+    prog.binary = set(getattr(prog, "binary", set()))
+    match = {}
+    for i, o in enumerate(ops):
+        if o["op"] != "GEMV" or len(o["srcs"]) != 1 or o["mode"] == "logit":
+            continue
+        Wf = prog.lin[o["lin"]][0]
+        for name, f in fx.items():
+            n_out = Wf.shape[0]
+            if f["W"].shape[1] != Wf.shape[1] or f["W"].shape[0] % n_out:
+                continue
+            for blk in range(f["W"].shape[0] // n_out):
+                rows = slice(blk * n_out, (blk + 1) * n_out)
+                fit = _fit_rowcol(Wf, f["W"][rows], tol)
+                if fit is not None:
+                    match[i] = (name, rows, *fit)
+                    break
+            if i in match:
+                break
+    new, shared = [], None
+    for i, o in enumerate(ops):
+        if i not in match:
+            new.append(o)
+            if T in _writes(o) | _reads(o) or Z in _writes(o) | _reads(o):
+                shared = None
+            continue
+        name, rows, rho, gam = match[i]
+        f = fx[name]
+        gg = f["g"] * gam
+        c = np.abs(gg).max()
+        key = (name, o["srcs"][0], tuple(np.round(gg / c, 9)))
+        if shared is None or shared[0] != key or any(o["srcs"][0] in _writes(p) for p in new[shared[1]:]):
+            tkey, vkey = f"lbg_{o['lin']}", f"{o['lin']}.lbV"
+            prog.tab[tkey] = gg / c
+            prog.lin[vkey] = (c * f["l"][:, None] * f["V"].T, np.zeros(f["V"].shape[1]))
+            prog.binary.add(vkey)
+            new.append(dict(op="SCALE", src=o["srcs"][0], dst=T, table=tkey))
+            new.append(dict(op="GEMV", lin=vkey, srcs=[T], dst=Z, mode="o8"))
+            shared = (key, len(new))
+        W2 = (rho * f["h"][rows])[:, None] * f["U"][rows]
+        prog.lin[o["lin"]] = (W2, prog.lin[o["lin"]][1])
+        prog.binary.add(o["lin"])
+        new.append(dict(o, srcs=[Z]))
+    prog.ops = new
+    prog.littlebit = {ops[i]["lin"]: match[i][0] for i in match}
+    return prog

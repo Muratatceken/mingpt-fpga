@@ -76,7 +76,7 @@ module lm_gen
   logic signed [15:0] l_data;
   logic [7:0]         dbg_op;
 
-  zoo_core #(.MEM_DIR(MEM_DIR)) u_core (
+  zoo_core #(.MEM_DIR(MEM_DIR), .SPECIALIZE(1'b1)) u_core (     // one model per bitstream: only its units
     .clk, .rst_n, .start(c_start), .tok_in(c_tok), .pos(c_pos), .busy(c_busy), .done(c_done),
     .l_addr, .l_data, .dbg_op, .ld_we(1'b0), .ld_sel(3'd0), .ld_addr(20'd0), .ld_data(256'd0));
 

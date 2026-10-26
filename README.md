@@ -13,7 +13,20 @@ tamsayı aritmetiğine (INT8/INT16) dönüştürülür ve SystemVerilog ile yaz�
 | RTL doğrulaması | 729 dizi × 11 decode adımı = 8019 adımın tamamı **bit-exact** |
 | Performans | 14 544 çevrim/token → 100 MHz'de 145 µs/token (GEMV verimi %98) |
 | Bellek | 83 KB INT8 ağırlık (BRAM), 3 KB KV önbelleği |
-| Hedef kart | **PYNQ-Z2** (Zynq-7020): yerleşik öz-test bitstream'i hazır, LED ile sonuç |
+| Hedef kart | **Nexys A7-100T** (Artix-7 xc7a100t): model kartta tek başına çalışır, sonuç VGA monitörde ([docs/05_nexys_a7.md](docs/05_nexys_a7.md)) |
+
+**Nexys A7-100T: model kartın üzerinde, bilgisayarsız.**
+
+- Weight'ler bitstream'le BRAM'e yüklenir.
+- Üretim döngüsü, sampling (sıcaklık + min-p, xorshift32) ve detokenization FPGA'de çalışır.
+- Hikâye ya da isimler VGA monitöre yazılır; token/s 7-segment göstergede okunur.
+- Mac'te bütün kart tasarımı Verilator'da simüle edildi. 15 modelin hepsi (9 names modeli,
+  stories260K, TinyStories'te eğittiğimiz 5 aile modeli) Python referansıyla token token ve ekran
+  karakteri karakterine aynı.
+- stories260K 50 MHz'de ~1 000 token/s üretiyor; kartta BRAM'in %72'sini kullanıyor.
+
+Ayrıntılar: [docs/05_nexys_a7.md](docs/05_nexys_a7.md). Kısa yol: `make nexys-sim MODEL=stories260k`,
+bitstream için `make nexys-bit MODEL=stories260k` (Vivado).
 
 **Karpathy model ailesi (Kısım IV):** dokuz mimari (Bigram, MLP, RNN, GRU, BoW, GPT-2, microgpt,
 Llama 2, nanochat) `names.txt` üzerinde ~50K parametreyle eğitildi, INT8'e çevrildi ve **tek bir
@@ -42,7 +55,8 @@ tamsayı referansla **bit-exact**; RTL, referansla token token aynı 200 tokenl�
    tamsayı LayerNorm/Softmax/GELU türetmeleri ve ispatlar (Samuelson sınırı, dışbükeylik, taşma sınırları).
 2. [docs/02_mimari.md](docs/02_mimari.md): Donanım mimarisi, GEMV dataflow'u, bellek haritası, çevrim analizi.
 3. [docs/03_dogrulama.md](docs/03_dogrulama.md): Doğrulama metodolojisi ve sonuçları.
-4. [docs/04_kart.md](docs/04_kart.md): Kart seçimi (PYNQ-Z2), yerleşik öz-test, kartta çalıştırma adımları.
+4. [docs/04_kart.md](docs/04_kart.md): Eski hedef PYNQ-Z2, yerleşik öz-test.
+5. [docs/05_nexys_a7.md](docs/05_nexys_a7.md): **Nexys A7-100T**: model kartta tek başına çalışır (VGA, sampling, kart üstü kontrol), Mac'te tam kart simülasyonu, Vivado/openFPGALoader ile programlama.
 
 ## Dizin yapısı
 
@@ -64,7 +78,8 @@ rtl/             SystemVerilog (sentezlenebilir)
   layernorm.sv     tamsayı LayerNorm
   attention.sv     KV önbellekli nedensel çok-başlı dikkat
   div_seq.sv, isqrt_seq.sv, rom.sv
-board/pynq_z2/    PYNQ-Z2 üst modülü (MMCM, buton, LED) ve pin kısıtları (XDC)
+board/nexys_a7/   Nexys A7-100T: lm_gen (üretim, sampling, detokenizer, terminal), vga_text, seg7, üst modül, XDC
+board/pynq_z2/    eski hedef PYNQ-Z2: üst modül ve pin kısıtları
 tb/              testbench'ler (xsim ve Verilator uyumlu)
 mem/             (üretilir) ROM içerikleri ve altın test vektörleri
 scripts/         Vivado Tcl scriptleri (simülasyon, sentez), dosya listesi

@@ -135,14 +135,14 @@
   "steps": 354,
   "bad_steps": 0,
   "errors": 0,
-  "cycles_avg": 6277,
-  "cycles_min": 6277,
-  "cycles_max": 6277,
+  "cycles_avg": 6278,
+  "cycles_min": 6278,
+  "cycles_max": 6278,
   "profile": {
    "EMB16": 130.0,
    "GEMV": 5928.0,
    "REQ": 134.0,
-   "BOW": 66.0,
+   "BOW": 67.0,
    "FETCH": 17.0
   },
   "spec_sim_ok": true,

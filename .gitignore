@@ -23,3 +23,6 @@ paper/*.out
 
 # low-bit study: materialised checkpoints (results are the .json files)
 model/zoo/lowbit/*/*.pt
+
+# Claude Code worktrees
+.claude/

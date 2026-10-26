@@ -8,6 +8,7 @@
  "TAB_W": 16,
  "PROG_DEPTH": 8,
  "W_DEPTH": 5888,
+ "WB_DEPTH": 2,
  "PRM_DEPTH": 448,
  "TAB_DEPTH": 2784,
  "LUT_DEPTH": 256,
