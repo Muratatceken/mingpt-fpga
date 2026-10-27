@@ -229,6 +229,21 @@ openFPGALoader -b nexys_a7_100 -f build/nexys/stories260k/vivado/nexys_stories26
 
 Flash'tan açılış için JP1 jumper'ı QSPI konumunda olmalıdır.
 
+**Vivado'suz, açık kaynak akış (Mac).** Yosys sentezi, nextpnr-himbaechel ile yerleşim/yönlendirme ve
+zamanlama, Project X-Ray ile bitstream. Araç zinciri bir kez derlenir (`~/tools/xc7`, yalnız xc7a100t):
+
+```bash
+make xc7-toolchain                       # scripts/xc7_toolchain.sh: nextpnr, xc7frames2bit, fasm2frames
+make nexys-pnr MODEL=stories260k         # Fmax + kaynaklar + bitstream -> build/nexys/stories260k/pnr/
+BIT=0 DSP=1 scripts/nexys_pnr.sh gpt2    # yalnız zamanlama, çarpıcılar DSP48E1'de
+openFPGALoader -b nexys_a7_100 build/nexys/stories260k/pnr/nexys_stories260k.bit
+```
+
+Varsayılan akış çarpıcıları LUT'a eşler (`-nodsp`): bu, `make nexys-netlist` ile bit-exact olduğu
+gösterilen netlist'tir. `DSP=1` daha gerçekçi bir Fmax verir, ama Yosys'in DSP hatası yüzünden
+(bölüm 6) o bitstream yanlış token üretir; yalnız zamanlama için kullanılır. Sonuç
+`build/nexys/<model>/pnr[_dsp]/result.json` dosyasındadır.
+
 ## 6. Bilinen sınırlar
 
 - **Yosys'in DSP eşlemesinde bir hata var.** Yosys 0.69 `synth_xilinx`, requant çarpımını DSP48E1'e
@@ -239,7 +254,7 @@ Flash'tan açılış için JP1 jumper'ı QSPI konumunda olmalıdır.
   ama kaynak tahminlerindeki DSP sayıları Yosys'in eşlemesidir.
 - **Fmax ölçülmedi.** Vivado olmadan zamanlama analizi yapılamıyor. Engine'deki geniş çarpıcı
   zincirleri (NORM çıkışı, attention'daki üs alma) 50 MHz'i zorlayabilir; betik bu durumda 25 MHz'e
-  iner. Gerçek Fmax ilk Vivado koşusunun `result.json` dosyasında görülecek.
+  iner. Gerçek Fmax ilk Vivado koşusunun ya da açık kaynak akışın (`make nexys-pnr`, bölüm 5; araç zinciri henüz derlenmedi) `result.json` dosyasında görülecek.
 - **Bir bitstream, bir model.** Modeller BRAM'de bitstream'le birlikte gelir. stories260k tek başına
   BRAM'in %72'sini kullanır (binary sürümü %41).
 - **TinyStories modellerinde context 256 token'la sınırlı.** Model 512 token'la eğitildi, ama

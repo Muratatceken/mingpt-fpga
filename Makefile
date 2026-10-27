@@ -9,7 +9,7 @@ RTL    = $(shell cat scripts/files.f)
 
 .PHONY: all model train quantize eval export sim test-arith selftest lint synth report clean \
         zoo-train zoo-quant zoo-sim zoo-synth zoo-pipeline zoo-fuzz zoo-arith zoo-dse paper \
-        nexys nexys-sim nexys-all nexys-fuzz nexys-icarus nexys-netlist nexys-synth nexys-bit nexys-prog lowbit
+        nexys nexys-sim nexys-all nexys-fuzz nexys-icarus nexys-netlist nexys-synth nexys-bit nexys-prog nexys-pnr xc7-toolchain lowbit
 
 all: test-arith sim selftest
 
@@ -106,6 +106,12 @@ nexys-synth: nexys # Yosys resource estimate of the board design (no timing)
 
 nexys-bit: nexys   # Vivado (Linux/Windows): bitstream -> build/nexys/$(MODEL)/vivado/nexys_$(MODEL).bit
 	vivado -mode batch -source scripts/vivado_nexys_a7.tcl -tclargs $(MODEL) $(MHZ)
+
+nexys-pnr: nexys   # open-source on the Mac (Yosys + nextpnr-himbaechel + Project X-Ray): Fmax + bitstream -> build/nexys/$(MODEL)/pnr/
+	scripts/nexys_pnr.sh $(MODEL) $(or $(MHZ),50)
+
+xc7-toolchain:     # build nextpnr-himbaechel (xc7a100t), xc7frames2bit and fasm2frames in ~/tools/xc7 (once)
+	scripts/xc7_toolchain.sh
 
 nexys-prog:        # program the board over USB-JTAG (Vivado); without Vivado: openFPGALoader -b nexys_a7_100 <bit>
 	vivado -mode batch -source scripts/vivado_program_nexys.tcl -tclargs $(MODEL)
