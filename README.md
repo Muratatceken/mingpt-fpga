@@ -78,6 +78,7 @@ tamsayı referansla **bit-exact**; RTL, referansla token token aynı 200 tokenl�
 5. [docs/05_nexys_a7.md](docs/05_nexys_a7.md): **Nexys A7-100T**: model kartta tek başına çalışır (VGA, sampling, kart üstü kontrol), Mac'te tam kart simülasyonu, Vivado/openFPGALoader ile programlama.
 6. [docs/06_dusuk_bit.md](docs/06_dusuk_bit.md): **Düşük bitli weight'ler**: Larq tarzı binary/ternary ve LittleBit QAT sonuçları, LittleBit'in küçük modellerde BPW sınırı, engine'deki 1-bit GEMV (GEMVB) ve SCALE, kartta ölçülen hız/bellek/kalite.
 7. [docs/07_yol_haritasi.pdf](docs/07_yol_haritasi.pdf): **Q1 dergi yol haritası**: hedef dergiler, literatür boşlukları, üç araştırma hattı, ölçüm ve zaman planı. Literatür taraması: [paper/related_work_2026.md](paper/related_work_2026.md).
+8. [docs/08_case_arastirmasi.pdf](docs/08_case_arastirmasi.pdf): **Case araştırması**: projenin çözdüğü problem (deterministik LM ile kayıpsız telemetri/log sıkıştırma; aynı modelle anomali tespiti), mevcut çözümler, farkımız, başarı kriterleri ve rota.
 
 **Tarihsel gelişim raporu (PDF):** [report/gelisim/gelisim_raporu.pdf](report/gelisim/gelisim_raporu.pdf): 12–27 Ekim arasında projenin evre evre gelişimi (kararlar, sayılar, hatalar, dersler). `make gelisim` ile yeniden üretilir.
 
