@@ -3,6 +3,7 @@
 konuşma metni üretir.
 
   python3 sunum/yerel_sunum.py sunum/uygulama          -> sunum.html, konusma_metni.md
+  python3 sunum/yerel_sunum.py --md docs/07_yol_haritasi.md -> docs/07_yol_haritasi.pdf (tek bir Markdown)
   python3 sunum/yerel_sunum.py sunum/uygulama --pdf    -> ayrıca sunum.pdf, konusma_metni.pdf (Chrome headless);
                                                           klasördeki terimler.md ve konusma_notlari.md de PDF olur
 
@@ -144,7 +145,25 @@ def chrome_pdf(src_html, out_pdf):
     os.replace(tmp, out_pdf)
 
 
+def render_md(path):
+    """a single Markdown file -> PDF next to it (same fonts and style as the notes)"""
+    import markdown
+    path = os.path.abspath(path)
+    body = markdown.markdown(open(path, encoding="utf-8").read(), extensions=["tables"])
+    nh = (f'<!doctype html><html lang="tr"><head><meta charset="utf-8"><style>{fonts_css()}</style>'
+          f"<style>{NOTES_CSS}</style></head><body>{body}</body></html>")
+    tmp_html = path[:-3] + ".tmp.html"
+    open(tmp_html, "w", encoding="utf-8").write(nh)
+    try:
+        chrome_pdf(tmp_html, path[:-3] + ".pdf")
+    finally:
+        os.remove(tmp_html)
+    print(path[:-3] + ".pdf")
+
+
 def main():
+    if sys.argv[1] == "--md":
+        return render_md(sys.argv[2])
     d = os.path.abspath(sys.argv[1])
     src = os.path.join(d, "kaynak")
     deck = json.load(open(os.path.join(src, "deck.json"), encoding="utf-8"))
