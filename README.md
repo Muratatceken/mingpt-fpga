@@ -20,13 +20,18 @@ tamsayı aritmetiğine (INT8/INT16) dönüştürülür ve SystemVerilog ile yaz�
 - Weight'ler bitstream'le BRAM'e yüklenir.
 - Üretim döngüsü, sampling (sıcaklık + min-p, xorshift32) ve detokenization FPGA'de çalışır.
 - Hikâye ya da isimler VGA monitöre yazılır; token/s 7-segment göstergede okunur.
-- Mac'te bütün kart tasarımı Verilator'da simüle edildi. 15 modelin hepsi (9 names modeli,
-  stories260K, TinyStories'te eğittiğimiz 5 aile modeli) Python referansıyla token token ve ekran
-  karakteri karakterine aynı.
-- stories260K 50 MHz'de ~1 000 token/s üretiyor; kartta BRAM'in %72'sini kullanıyor.
+- Mac'te bütün kart tasarımı Verilator'da simüle edildi. 18 modelin hepsi (9 names modeli,
+  stories260K, TinyStories'te eğittiğimiz 5 aile modeli, 3 düşük bitli model) Python referansıyla token
+  token, ekran karakteri karakterine ve VGA pikseli pikseline aynı.
+- **Açık kaynak yerleşim (Vivado'suz, Mac'te):** Yosys + nextpnr-himbaechel + Project X-Ray ile 16 model
+  çipe yerleşti ve çalıştığı clock'ta zamanlamayı tutuyor: bigram, mlp, rnn 50 MHz (66–71 MHz Fmax),
+  diğerleri 25 MHz (transformer'larda Fmax 26–31 MHz). ts_gpt2 ve ts_microgpt yerleşemedi (RAMB18
+  bölünmesi). Kritik yol engine'in tek cycle'lık "tampondan oku → çarp → yaz" yolu.
+- stories260K kartta 25 MHz'te 496 token/s üretiyor (256 token'lık hikâye yarım saniye); BRAM'in %72'si.
 
 Ayrıntılar: [docs/05_nexys_a7.md](docs/05_nexys_a7.md). Kısa yol: `make nexys-sim MODEL=stories260k`,
-bitstream için `make nexys-bit MODEL=stories260k` (Vivado).
+bitstream için `make nexys-pnr MODEL=stories260k` (açık kaynak, Mac; önce bir kez `make xc7-toolchain`)
+ya da `make nexys-bit MODEL=stories260k` (Vivado).
 
 **Düşük bitli weight'ler (Larq, LittleBit).** Hocamızın önerdiği iki yöntem Mac'te QAT ile denendi
 (`sw/zoo/lowbit.py`; FPGA yalnızca inference).
@@ -72,6 +77,16 @@ tamsayı referansla **bit-exact**; RTL, referansla token token aynı 200 tokenl�
 4. [docs/04_kart.md](docs/04_kart.md): Eski hedef PYNQ-Z2, yerleşik öz-test.
 5. [docs/05_nexys_a7.md](docs/05_nexys_a7.md): **Nexys A7-100T**: model kartta tek başına çalışır (VGA, sampling, kart üstü kontrol), Mac'te tam kart simülasyonu, Vivado/openFPGALoader ile programlama.
 6. [docs/06_dusuk_bit.md](docs/06_dusuk_bit.md): **Düşük bitli weight'ler**: Larq tarzı binary/ternary ve LittleBit QAT sonuçları, LittleBit'in küçük modellerde BPW sınırı, engine'deki 1-bit GEMV (GEMVB) ve SCALE, kartta ölçülen hız/bellek/kalite.
+7. [docs/07_yol_haritasi.pdf](docs/07_yol_haritasi.pdf): **Q1 dergi yol haritası**: hedef dergiler, literatür boşlukları, üç araştırma hattı, ölçüm ve zaman planı. Literatür taraması: [paper/related_work_2026.md](paper/related_work_2026.md).
+
+**Tarihsel gelişim raporu (PDF):** [report/gelisim/gelisim_raporu.pdf](report/gelisim/gelisim_raporu.pdf): 12–27 Ekim arasında projenin evre evre gelişimi (kararlar, sayılar, hatalar, dersler). `make gelisim` ile yeniden üretilir.
+
+**Sunumlar** (yerel, `sunum/`):
+- [sunum/sunum.pdf](sunum/sunum.pdf): Bölüm 1, minGPT adım adım, FPGA potansiyeli ve LittleBit (55 slayt).
+- [sunum/uygulama/sunum.pdf](sunum/uygulama/sunum.pdf): Bölüm 2, implementasyon (50 slayt); yanında
+  [terimler.pdf](sunum/uygulama/terimler.pdf) (teknik terimler sözlüğü),
+  [konusma_notlari.pdf](sunum/uygulama/konusma_notlari.pdf) (zaman planı, olası sorular) ve
+  [konusma_metni.pdf](sunum/uygulama/konusma_metni.pdf). `make sunum-yerel` ile yeniden üretilir.
 
 ## Dizin yapısı
 
@@ -99,6 +114,9 @@ tb/              testbench'ler (xsim ve Verilator uyumlu)
 mem/             (üretilir) ROM içerikleri ve altın test vektörleri
 scripts/         Vivado Tcl scriptleri (simülasyon, sentez), dosya listesi
                  zoo_sim.sh / zoo_synth.sh: model ailesi için Verilator / Yosys
+                 nexys_*.sh: kart simülasyonu, netlist, Yosys; nexys_pnr.sh + xc7_toolchain.sh: açık kaynak yerleşim
+sunum/           sunumlar: kaynak slaytlar (sunum/uygulama/kaynak), yerel HTML/PDF, sözlük ve notlar (yerel_sunum.py)
+report/gelisim/  tarihsel gelişim raporu (XeLaTeX; tablolar veri.py ile JSON'dan)
 data/            names.txt; stories260K/ (llama2.c checkpoint, tok512, 400 doğrulama hikâyesi)
 sw/zoo/          model ailesi akışı
   models.py        dokuz mimari (kaynak depoları izleyerek)
@@ -167,6 +185,11 @@ make zoo-synth    # simülasyon + Yosys sentezi (genel ve özelleşmiş motor)
 - [ ] PYNQ-Z2 bitstream: kaynak kullanımı, Fmax, güç raporu, kartta yeşil LED
 - [x] Karpathy ailesi: 9 mimari + stories260K, tek mikrokodlu RTL, hepsi bit-exact; Yosys kaynakları
 - [x] Tek geçişli LN, 8 şeritli paralel dikkat, sınırlı bölümlü bölücü (zoo motorunda)
-- [ ] Tasarım uzayı deneyleri: P ∈ {4, 8, 16, 32}
-- [ ] PS + AXI-Lite + PYNQ (Jupyter) arayüzü, ARM CPU ile hız karşılaştırması
-- [ ] (opsiyonel) Daha büyük görev: karakter seviyesi Shakespeare
+- [x] Tasarım uzayı deneyleri: P ∈ {8, 16, 32}, 6 model, 18 noktanın hepsi bit-exact
+- [x] Nexys A7-100T: model kartta bağımsız; 18 model tam kart simülasyonunda bit-exact
+- [x] Düşük bitli weight'ler: binary ve LittleBit, 1-bit GEMV birimi
+- [x] Açık kaynak yerleşim: 16 model, Fmax ve bitstream
+- [ ] Engine'e pipeline: 50 MHz (transformer'lar bugün 25 MHz)
+- [ ] Yerleştirilen netlist'in 18 modelde simülasyonu; ts_gpt2 / ts_microgpt bellek düzeni
+- [ ] minGPT gpt-nano sıralama demosu kart tasarımında (19. model)
+- [ ] Q1 makale hatları: [docs/07_yol_haritasi.pdf](docs/07_yol_haritasi.pdf)
