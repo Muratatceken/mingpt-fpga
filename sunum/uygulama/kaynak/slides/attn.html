@@ -1,24 +1,24 @@
 <section id="attn" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
 <div style="display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">5 · Engine</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Attention birimi: her geçmiş token, her head’de iki cycle ekler; bu yüzden maliyet context ile doğrusal büyür</h2>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Attention biriminde her geçmiş token, her head için iki cycle ekler; bu nedenle maliyet context uzunluğuyla doğrusal artar</h2>
 </div>
 <div style="display:flex;gap:12px;align-items:stretch">
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">SCORE</p><p style="font-size:24px;line-height:1.35">sⱼ = q · kⱼ, 8 çarpıcı, cycle başına bir key</p><p style="font-size:24px;color:#5A6474">t + 1 cycle</p></div>
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">EXP</p><p style="font-size:24px;line-height:1.35">eⱼ = LUT[f] ≫ n, E += eⱼ</p><p style="font-size:24px;color:#5A6474">score’larla örtüşür</p></div>
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#B4460F">DIV</p><p style="font-size:24px;line-height:1.35">R = ⌊2³² / E⌋, head başına bir kez</p><p style="font-size:24px;color:#5A6474">sabit</p></div>
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">AV</p><p style="font-size:24px;line-height:1.35">y = (Σ eⱼ vⱼ) · R ≫ 32, 8 hat</p><p style="font-size:24px;color:#5A6474">t + 1 cycle</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">SCORE</p><p style="font-size:24px;line-height:1.35">sᵢ = q · kᵢ, 8 çarpıcı, cycle başına bir key</p><p style="font-size:24px;color:#5A6474">t + 1 cycle</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">EXP</p><p style="font-size:24px;line-height:1.35">eᵢ = LUT[f] ≫ n, E += eᵢ</p><p style="font-size:24px;color:#5A6474">score hesabıyla örtüşür</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#B4460F">DIV</p><p style="font-size:24px;line-height:1.35">R = ⌊2³² / E⌋, head başına bir kez</p><p style="font-size:24px;color:#5A6474">sabit süre</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">AV</p><p style="font-size:24px;line-height:1.35">y = (Σ eᵢ vᵢ) · R ≫ 32, 8 hat</p><p style="font-size:24px;color:#5A6474">t + 1 cycle</p></div>
 </div>
 <div style="display:flex;gap:40px;align-items:start">
 <div style="flex:1;display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;color:#14213D">stories260K: token başına cycle, pozisyona göre</p>
+<p style="font-size:24px;font-weight:600;color:#14213D">Şekil. stories260K’da token başına cycle sayısının pozisyona göre değişimi</p>
 <div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px">t = 0 · 38 652</p><div style="width:420px;height:24px;background:#2A5C9A;border-radius:4px"></div></div>
 <div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px">t = 255 · ~59 000</p><div style="width:641px;height:24px;background:#2A5C9A;border-radius:4px"></div></div>
 <div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px">t = 511 · 79 532</p><div style="width:864px;height:24px;background:#B4460F;border-radius:4px"></div></div>
 </div>
 <div style="width:620px;display:flex;flex-direction:column;gap:8px;background:#F2EFE7;border-radius:12px;padding:20px 26px">
 <p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;color:#14213D">eğim = 5 layer × 8 head × 2 = 80 cycle / token</p>
-<p style="font-size:24px;line-height:1.4">(79 532 − 38 652) / 511 = 80,0. Ölçüm modelle birebir. Kartta context’i 256 ile sınırlamak KV cache’i 80 KB’ta tutuyor ve en uzun adımı ~59 000 cycle’da bırakıyor.</p>
+<p style="font-size:24px;line-height:1.4">(79 532 − 38 652) / 511 = 80,0; ölçüm modelle birebir örtüşür. Kartta context’in 256 ile sınırlanması, KV cache’i 80 KB’ta ve en uzun adımı ~59 000 cycle’da tutar.</p>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">23 · Karpathy modelleri FPGA’de · KV cache: layer, pozisyon ve head başına 8 baytlık kelimeler (DH = 8)</p>

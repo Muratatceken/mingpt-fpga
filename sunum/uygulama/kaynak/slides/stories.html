@@ -1,7 +1,7 @@
 <section id="stories" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">2 · Model ailesi</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">stories260K, Karpathy’nin TinyStories’te eğittiği gerçek bir Llama 2; diğer mimarileri de aynı boyda eğittik</h2>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">stories260K, Karpathy’nin TinyStories üzerinde eğittiği bir Llama 2 modelidir; diğer mimariler de aynı boyutta eğitildi</h2>
 </div>
 <div style="display:flex;gap:40px;align-items:start">
 <div style="width:700px;display:flex;flex-direction:column;gap:14px;background:#14213D;border-radius:12px;padding:26px 30px">
@@ -17,7 +17,7 @@
 </table>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:14px">
-<p style="font-size:24px;font-weight:600;color:#14213D">Aynı veride bizim eğittiğimiz sürümler (ts_*)</p>
+<p style="font-size:24px;font-weight:600;color:#14213D">Aynı veri üzerinde eğitilen sürümler (ts_*)</p>
 <table style="font-size:24px;color:#3B4456">
 <tr><th style="width:40%;text-align:left;color:#14213D">mimari</th><th style="width:30%;text-align:right;color:#14213D">parametre</th><th style="width:30%;text-align:right;color:#14213D">test loss</th></tr>
 <tr style="background:#F6E3D7"><td>ts_llama</td><td style="text-align:right">260 032</td><td style="text-align:right">1,346</td></tr>
@@ -26,9 +26,9 @@
 <tr><td>ts_gru</td><td style="text-align:right">257 920</td><td style="text-align:right">1,610</td></tr>
 <tr><td>ts_nanochat</td><td style="text-align:right">260 096</td><td style="text-align:right">1,637</td></tr>
 </table>
-<p style="font-size:24px;line-height:1.4;color:#5A6474">Float test loss (nat/token), kendi eğitim ve test düzenimizle. stories260K’nın loss’u 400 doğrulama hikâyesinde ölçüldü; iki sütun doğrudan karşılaştırılmamalı.</p>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Not.</b> Sağdaki değerler kendi eğitim ve test düzenimizle ölçülen float test loss’udur. stories260K’nın loss’u 400 doğrulama hikâyesinde ölçüldüğü için iki tablo doğrudan karşılaştırılmamalıdır.</p>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">9 · Karpathy modelleri FPGA’de</p>
-<aside>Ailenin en önemli üyesi stories260K, çünkü ailede başkasının eğittiği tek model. Karpathy bunu llama2.c deposunda TinyStories veri setinde eğitip yayımladı: küçük çocuk hikâyelerinden oluşan bir veri seti. Mimari tam bir Llama 2: 64 boyutlu embedding, 5 layer, 8 attention head ve 4 KV head, yani grouped-query attention, 512 token’lık bir vocabulary. Context 512 ama kartta KV cache BRAM’e sığsın diye 256 ile sınırlıyoruz. Karpathy’nin checkpoint dosyasını doğrudan okuyoruz ve float hâliyle INT8 hâli arasındaki fark 1,400’den 1,422’ye, yani 0,022 nat. Sağdaki tablo bizim TinyStories sürümlerimiz: aynı mimarileri aynı veride, stories260K ile aynı boyda, yaklaşık 260 bin parametreyle eğittik. Bu ölçekte Llama mimarisi en iyisi, GPT-2 ikinci; microgpt, gru ve nanochat geride. Burada bir uyarı: sağdaki loss’lar kendi test düzenimizle, stories260K’nınki ise 400 doğrulama hikâyesiyle ölçüldü; bu yüzden iki tablo arasında doğrudan karşılaştırma yapmıyorum.</aside>
+<aside>Ailenin en önemli üyesi stories260K, çünkü ailede başkasının eğittiği tek model. Karpathy bu modeli llama2.c deposunda, kısa çocuk hikâyelerinden oluşan TinyStories veri setinde eğitip yayımladı. Mimari eksiksiz bir Llama 2: 64 boyutlu embedding, 5 layer, 8 attention head ve 4 KV head, yani grouped-query attention, ve 512 token’lık bir vocabulary. Context 512 token, ancak KV cache BRAM’e sığsın diye kartta 256 ile sınırlıyoruz. Karpathy’nin checkpoint dosyasını doğrudan okuyoruz; float hâli ile INT8 hâli arasındaki fark 1,400’den 1,422’ye, yani 0,022 nat. Sağdaki tablo bizim TinyStories sürümlerimizi gösteriyor: aynı mimarileri aynı veride, stories260K ile aynı boyutta, yaklaşık 260 bin parametreyle eğittik. Bu ölçekte Llama mimarisi en iyi sonucu veriyor, GPT-2 ikinci sırada; microgpt, gru ve nanochat daha geride. Bir uyarı: sağdaki değerler kendi test düzenimizle, stories260K’nınki ise 400 doğrulama hikâyesiyle ölçüldü; bu yüzden iki tabloyu doğrudan karşılaştırmıyorum.</aside>
 </section>

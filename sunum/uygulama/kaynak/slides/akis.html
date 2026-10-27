@@ -1,21 +1,21 @@
 <section id="akis" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:30px">
 <div style="display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">4 · Derleyici</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Derleyici, bir PyTorch modelini altı adımda donanımın okuyacağı mikrokoda ve bellek imajlarına çevirir</h2>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Derleyici, eğitilmiş bir PyTorch modelini altı adımda donanımın okuyacağı mikrokoda ve bellek imajlarına dönüştürür</h2>
 </div>
 <div style="display:flex;gap:14px;align-items:center">
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:18px 20px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">1 · Model</p><p style="font-size:24px;line-height:1.35">eğitilmiş .pt ya da Karpathy’nin .bin’i</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:18px 20px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">1 · Model</p><p style="font-size:24px;line-height:1.35">Eğitilmiş .pt dosyası ya da Karpathy’nin .bin dosyası</p></div>
 <x-shape kind="arrow-right" style="width:40px;height:22px;background:#9AA3B2"></x-shape>
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:18px 20px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">2 · IR</p><p style="font-size:24px;line-height:1.35">op listesi; PyTorch ile fark &lt; 10⁻⁴</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:18px 20px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">2 · IR</p><p style="font-size:24px;line-height:1.35">Op listesi; PyTorch ile farkı 10⁻⁴’ün altında</p></div>
 <x-shape kind="arrow-right" style="width:40px;height:22px;background:#9AA3B2"></x-shape>
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:18px 20px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">3 · Katlama</p><p style="font-size:24px;line-height:1.35">γ, β, 1/√dₕ weight’lere</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:18px 20px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">3 · Katlama</p><p style="font-size:24px;line-height:1.35">γ, β ve 1/√dₕ weight’lere aktarılır</p></div>
 </div>
 <div style="display:flex;gap:14px;align-items:center">
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:18px 20px"><p style="font-size:24px;font-weight:600;color:#B4460F">4 · Kalibrasyon</p><p style="font-size:24px;line-height:1.35">activation scale’leri, %99,99</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:18px 20px"><p style="font-size:24px;font-weight:600;color:#B4460F">4 · Kalibrasyon</p><p style="font-size:24px;line-height:1.35">Activation scale’leri %99,99 yüzdeliğinden</p></div>
 <x-shape kind="arrow-right" style="width:40px;height:22px;background:#9AA3B2"></x-shape>
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#14213D;border-radius:12px;padding:18px 20px"><p style="font-size:24px;font-weight:600;color:#F2A65A">5 · Integer program</p><p style="font-size:24px;line-height:1.35;color:#E6EAF2">IntRunner: altın referans</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#14213D;border-radius:12px;padding:18px 20px"><p style="font-size:24px;font-weight:600;color:#F2A65A">5 · Integer program</p><p style="font-size:24px;line-height:1.35;color:#E6EAF2">IntRunner, donanımın altın referansı</p></div>
 <x-shape kind="arrow-right" style="width:40px;height:22px;background:#9AA3B2"></x-shape>
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:18px 20px"><p style="font-size:24px;font-weight:600;color:#B4460F">6 · Export</p><p style="font-size:24px;line-height:1.35">.mem dosyaları → BRAM</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:18px 20px"><p style="font-size:24px;font-weight:600;color:#B4460F">6 · Export</p><p style="font-size:24px;line-height:1.35">.mem dosyaları BRAM’e yüklenir</p></div>
 </div>
 <table style="font-size:24px;color:#3B4456">
 <tr><th style="width:24%;text-align:left;color:#14213D">dosya</th><th style="width:52%;text-align:left;color:#14213D">içerik</th><th style="width:24%;text-align:right;color:#14213D">gpt2’de</th></tr>

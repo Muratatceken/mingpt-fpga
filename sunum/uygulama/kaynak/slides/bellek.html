@@ -1,10 +1,10 @@
 <section id="bellek" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">4 · Derleyici</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">En büyük model stories260K bile BRAM’in yaklaşık %71’ini kullanıyor; en büyük pay weight’lerin</h2>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">En büyük model olan stories260K, BRAM’in yaklaşık %71’ini kullanır ve bunun en büyük kısmını weight’ler oluşturur</h2>
 </div>
 <div style="display:flex;flex-direction:column;gap:12px">
-<p style="font-size:24px;font-weight:600;color:#14213D">stories260K’nın çip içi belleği (607 KB = tüm çubuk)</p>
+<p style="font-size:24px;font-weight:600;color:#14213D">Şekil. stories260K’nın çip içi bellek kullanımı (çubuğun tamamı 607 KB)</p>
 <div style="display:flex;width:1664px;height:56px;border-radius:6px;overflow:hidden">
 <div style="width:701px;height:56px;background:#B4460F"></div>
 <div style="width:219px;height:56px;background:#2A5C9A"></div>
@@ -31,7 +31,7 @@
 <tr style="background:#F6E3D7"><td>stories260K</td><td style="text-align:right">97,5</td><td style="text-align:right">%72</td></tr>
 <tr><td>stories260K-bin (1 bit)</td><td style="text-align:right">56</td><td style="text-align:right">%41</td></tr>
 </table>
-<p style="flex:1;font-size:24px;line-height:1.4">Weight’ler bitstream’in parçası: <b>$readmemh</b> ile okunan .mem dosyaları BRAM’lerin başlangıç içeriği olur. KV cache ve vektör tamponları ise çalışırken yazılan RAM’ler. Sayılar Yosys sentezinin tahmini.</p>
+<p style="flex:1;font-size:24px;line-height:1.4">Weight’ler bitstream’in bir parçasıdır: <b>$readmemh</b> ile okunan .mem dosyaları BRAM’lerin başlangıç içeriğini oluşturur. KV cache ve vektör tamponları ise çalışma sırasında yazılan RAM’lerdir. Tablodaki değerler Yosys sentezinin tahminidir.</p>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">20 · Karpathy modelleri FPGA’de · mem/nexys/stories260k/zoo_pkg.sv; model/zoo/nexys.json</p>
 <aside>Modelin çipin içine sığması tasarımın temel varsayımıydı; bunu en büyük modelle kontrol edelim. Çubuk, stories260K’nın çip içi belleğini gösteriyor; çubuğun tamamı 607 kilobayt. En büyük pay weight’lerin: 256 kilobayt. Sonra KV cache, 256 pozisyonluk context için 80 kilobayt. Token embedding’leri ve exp tablosu gibi tablolar 68 kilobayt; her çıkış kanalının bias, m₀ ve sh değerleri 28 kilobayt; mikrokod ve activation tabloları birkaç kilobayt. Geriye 170 kilobayt kadar boş yer kalıyor. Yosys sentezi bunu 97,5 BRAM bloğu, yani kapasitenin yüzde 72’si olarak tahmin ediyor. Alttaki tablo karşılaştırma: names modelleri yüzde 1 ile 14 arasında; binary stories260K ise weight’ler 8 kat küçüldüğü için yüzde 41’e iniyor. Önemli bir ayrıntı: weight’ler bitstream’in bir parçası. Verilog’daki readmemh ile okunan .mem dosyaları BRAM’lerin başlangıç içeriği oluyor; kart açılırken FPGA yapılandırılırken weight’ler de yerine yazılmış oluyor. KV cache ve vektör tamponları ise çalışırken yazılan sıradan RAM’ler.</aside>

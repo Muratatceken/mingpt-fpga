@@ -1,35 +1,35 @@
 <section id="kritik" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
 <div style="display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">9 · Yerleşim ve hız</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Kritik yol: oku, çarp, yaz tek cycle’da; çarpmalar LUT’ta olunca bu 37 ns sürüyor</h2>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Kritik yol, tampondan okuma, çarpma ve geri yazmanın tek cycle’da yapılmasından kaynaklanır ve 37 ns sürer</h2>
 </div>
 <div style="display:flex;gap:10px;align-items:center">
 <p style="font-size:24px;font-weight:600;color:#14213D;background:#F2EFE7;border-radius:8px;padding:12px 14px">j, f_n0</p>
 <x-shape kind="arrow-right" style="width:30px;height:18px;background:#9AA3B2"></x-shape>
 <p style="font-size:24px;font-weight:600;color:#14213D;background:#E3EBF5;border-radius:8px;padding:12px 14px">va_a: tampon adresi</p>
 <x-shape kind="arrow-right" style="width:30px;height:18px;background:#9AA3B2"></x-shape>
-<p style="font-size:24px;font-weight:600;color:#14213D;background:#E3EBF5;border-radius:8px;padding:12px 14px">LUTRAM oku, qh</p>
+<p style="font-size:24px;font-weight:600;color:#14213D;background:#E3EBF5;border-radius:8px;padding:12px 14px">LUTRAM okuma, qh</p>
 <x-shape kind="arrow-right" style="width:30px;height:18px;background:#9AA3B2"></x-shape>
 <p style="font-size:24px;font-weight:600;color:#FBFBF8;background:#B4460F;border-radius:8px;padding:12px 14px">LUT çarpıcı, carry</p>
 <x-shape kind="arrow-right" style="width:30px;height:18px;background:#9AA3B2"></x-shape>
-<p style="font-size:24px;font-weight:600;color:#14213D;background:#E3EBF5;border-radius:8px;padding:12px 14px">vw_d: yaz</p>
+<p style="font-size:24px;font-weight:600;color:#14213D;background:#E3EBF5;border-radius:8px;padding:12px 14px">vw_d: yazma</p>
 </div>
 <div style="display:flex;gap:40px;align-items:start">
 <div style="flex:1;display:flex;flex-direction:column;gap:12px">
-<p style="font-size:24px;font-weight:600;color:#14213D">stories260K (1 000 px = 40 ns)</p>
+<p style="font-size:24px;font-weight:600;color:#14213D">Şekil. stories260K’nın kritik yolu ve clock periyotları (aynı ölçekte)</p>
 <div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px">en uzun yol · 36,7 ns, 54 adım</p><div style="display:flex;width:918px;height:30px;border-radius:4px;overflow:hidden"><div style="width:242px;background:#14213D"></div><div style="width:676px;background:#8FAACC"></div></div></div>
 <div style="display:flex;gap:28px"><p style="font-size:24px"><span style="color:#14213D">■</span> mantık 9,7 ns</p><p style="font-size:24px"><span style="color:#8FAACC">■</span> kablolama 26,9 ns (%73)</p></div>
-<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px">50 MHz periyodu · 20 ns: sığmaz</p><div style="width:500px;height:30px;background:#B4460F;border-radius:4px"></div></div>
-<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px">25 MHz periyodu · 40 ns: sığar, 3,3 ns pay</p><div style="width:1000px;height:30px;background:#2A5C9A;border-radius:4px"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px">50 MHz periyodu · 20 ns (yol sığmaz)</p><div style="width:500px;height:30px;background:#B4460F;border-radius:4px"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px">25 MHz periyodu · 40 ns (yol sığar, 3,3 ns pay)</p><div style="width:1000px;height:30px;background:#2A5C9A;border-radius:4px"></div></div>
 </div>
 <div style="width:500px;display:flex;flex-direction:column;gap:12px">
 <div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #B4460F;padding:6px 0px 6px 22px">
-<p style="font-size:24px;font-weight:600;color:#B4460F">Model değişir, kalıp aynı</p>
-<p style="font-size:24px;line-height:1.4">stories260K, llama, nanochat: attention’ın head dilimi (qh). gpt2-bin: NORM çıkışı, d · inv çarpımı ve değişken kaydırma.</p>
+<p style="font-size:24px;font-weight:600;color:#B4460F">Yol modele göre değişir, yapısı aynıdır</p>
+<p style="font-size:24px;line-height:1.4">stories260K, llama ve nanochat’te yol attention’ın head diliminden (qh), gpt2-bin’de NORM çıkışındaki d · inv çarpımından ve değişken kaydırmadan geçer.</p>
 </div>
 <div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px">
-<p style="font-size:24px;font-weight:600;color:#2A5C9A">Çare</p>
-<p style="font-size:24px;line-height:1.4">Okuma ile hesap arasına bir register: yol ikiye bölünür, op’lar bir cycle gecikir. Hedef 50 MHz.</p>
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Çözüm önerisi</p>
+<p style="font-size:24px;line-height:1.4">Okuma ile hesap arasına bir register eklenmesi yolu ikiye böler ve op’ları bir cycle geciktirir. Hedef 50 MHz’tir.</p>
 </div>
 </div>
 </div>

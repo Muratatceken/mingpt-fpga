@@ -27,6 +27,9 @@ section th,section td{padding:0.35em 0.6em;border-bottom:1px solid rgba(120,120,
 section th{font-weight:600}
 x-shape{display:block;flex:none}
 x-shape[kind=arrow-right]{clip-path:polygon(0 30%,60% 30%,60% 0,100% 50%,60% 100%,60% 70%,0 70%)}
+x-shape[kind=arrow-left]{clip-path:polygon(100% 30%,40% 30%,40% 0,0 50%,40% 100%,40% 70%,100% 70%)}
+x-shape[kind=arrow-down]{clip-path:polygon(30% 0,70% 0,70% 60%,100% 60%,50% 100%,0 60%,30% 60%)}
+x-shape[kind=arrow-up]{clip-path:polygon(30% 100%,70% 100%,70% 40%,100% 40%,50% 0,0 40%,30% 40%)}
 .deck{display:flex;flex-direction:column;align-items:center;gap:24px;padding:24px 0}
 .wrap{width:1920px;height:1080px;box-shadow:0 4px 24px rgba(0,0,0,.35)}
 .bar{position:fixed;top:12px;right:16px;z-index:10;font:14px -apple-system,Arial,sans-serif;color:#E6EAF2}

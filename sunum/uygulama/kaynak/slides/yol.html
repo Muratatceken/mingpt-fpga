@@ -1,46 +1,20 @@
-<section id="yol" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:36px">
+<section id="yol" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:32px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">Yol haritası</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Sunum, bir modelin PyTorch’tan çipe giden yolunu dokuz adımda izliyor</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">Sunumun planı</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Sunum, bir modelin PyTorch’tan çipe uzanan yolunu dokuz adımda izliyor</h2>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
-<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:36px;font-weight:600;color:#2A5C9A">1 · Hedef</p>
-<p style="font-size:24px;line-height:1.4">Bilgisayarsız çalışan kart ve kısıtları</p>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:34px;font-weight:600;color:#2A5C9A">1 · Hedef ve kısıtlar</p><p style="font-size:24px;line-height:1.4">Bilgisayarsız çalışan kart tasarımının gereklilikleri</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:34px;font-weight:600;color:#2A5C9A">2 · Model ailesi</p><p style="font-size:24px;line-height:1.4">Dokuz mimari, stories260K ve TinyStories sürümleri</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:34px;font-weight:600;color:#2A5C9A">3 · Tamsayı aritmetiği</p><p style="font-size:24px;line-height:1.4">Quantization, requant, softmax ve normalization</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:34px;font-weight:600;color:#2A5C9A">4 · Derleyici</p><p style="font-size:24px;line-height:1.4">PyTorch modelinden mikrokoda ve bellek imajlarına</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:34px;font-weight:600;color:#2A5C9A">5 · Engine</p><p style="font-size:24px;line-height:1.4">Bütün modelleri çalıştıran ortak hesap birimi</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:34px;font-weight:600;color:#2A5C9A">6 · Kart sistemi</p><p style="font-size:24px;line-height:1.4">Üretim döngüsü, sampling ve VGA ekranı</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:34px;font-weight:600;color:#B4460F">7 · Düşük bitli weight’ler</p><p style="font-size:24px;line-height:1.4">Larq, LittleBit ve 1 bitlik matris-vektör birimi</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:34px;font-weight:600;color:#B4460F">8 · Doğrulama</p><p style="font-size:24px;line-height:1.4">Sekiz aşamalı doğrulama zinciri ve bulunan hatalar</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:34px;font-weight:600;color:#B4460F">9 · Yerleşim ve hız</p><p style="font-size:24px;line-height:1.4">Fmax, kaynak kullanımı ve token/s</p></div>
 </div>
-<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:36px;font-weight:600;color:#2A5C9A">2 · Model ailesi</p>
-<p style="font-size:24px;line-height:1.4">9 mimari, stories260K, TinyStories</p>
-</div>
-<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:36px;font-weight:600;color:#2A5C9A">3 · Integer aritmetik</p>
-<p style="font-size:24px;line-height:1.4">quantization, requant, softmax, norm</p>
-</div>
-<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:36px;font-weight:600;color:#2A5C9A">4 · Derleyici</p>
-<p style="font-size:24px;line-height:1.4">PyTorch → mikrokod → bellek imajları</p>
-</div>
-<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:36px;font-weight:600;color:#2A5C9A">5 · Engine</p>
-<p style="font-size:24px;line-height:1.4">zoo_core: GEMV, attention, norm</p>
-</div>
-<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:36px;font-weight:600;color:#2A5C9A">6 · Kart sistemi</p>
-<p style="font-size:24px;line-height:1.4">üretim döngüsü, sampling, VGA</p>
-</div>
-<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:36px;font-weight:600;color:#B4460F">7 · Düşük bit</p>
-<p style="font-size:24px;line-height:1.4">Larq, LittleBit, 1-bit GEMV</p>
-</div>
-<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:36px;font-weight:600;color:#B4460F">8 · Doğrulama</p>
-<p style="font-size:24px;line-height:1.4">8 halkalı zincir, bulunan hatalar</p>
-</div>
-<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:36px;font-weight:600;color:#B4460F">9 · Yerleşim ve hız</p>
-<p style="font-size:24px;line-height:1.4">Fmax, kaynaklar, token/s</p>
-</div>
-</div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">Turuncu başlıklı üç bölüm, projenin bu aşamasında eklenen çalışmaları kapsıyor.</p>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">3 · Karpathy modelleri FPGA’de</p>
-<aside>Sunumun akışı, bir modelin PyTorch’tan çipe giden yolunu izliyor. Önce hedefimizi ve kartın bize koyduğu kısıtları anlatacağım. Sonra model ailesini tanıtacağım: dokuz mimari ne ortak, ne farklı. Üçüncü bölüm işin matematiği: floating point olmadan bir language model’i nasıl hesaplıyoruz. Dördüncü bölüm derleyici: bir PyTorch modelini donanımın okuyacağı mikrokoda ve bellek imajlarına nasıl çeviriyoruz. Beşinci bölüm bütün modelleri çalıştıran ortak engine, altıncı bölüm de engine’in etrafındaki kart sistemi: üretim döngüsü, sampling ve ekran. Turuncu olan son üç bölüm projenin bu aşamada eklenen kısımları: hocamın önerdiği LittleBit ve Larq ile düşük bitli weight’ler, her şeyi nasıl doğruladığımız ve devrenin çipe yerleştirilmesi, yani hangi hızda çalışabildiği.</aside>
+<aside>Sunumun akışı, bir modelin PyTorch’tan çipe uzanan yolunu izliyor. Önce hedefimizi ve kartın bize koyduğu kısıtları anlatacağım. Ardından model ailesini tanıtacağım: dokuz mimarinin ortak ve farklı yönleri. Üçüncü bölüm işin matematiği: floating point kullanmadan bir dil modelinin nasıl hesaplandığı. Dördüncü bölüm derleyici: bir PyTorch modelinin donanımın okuyacağı mikrokoda ve bellek imajlarına nasıl çevrildiği. Beşinci bölüm bütün modelleri çalıştıran ortak engine, altıncı bölüm de engine’in çevresindeki kart sistemi: üretim döngüsü, sampling ve ekran. Turuncu başlıklı son üç bölüm projenin bu aşamasında eklenen çalışmalar: hocamın önerdiği LittleBit ve Larq ile düşük bitli weight’ler, doğrulama yöntemimiz ve devrenin çipe yerleştirilmesiyle elde edilen hız.</aside>
 </section>

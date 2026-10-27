@@ -1,28 +1,28 @@
 <section id="sonraki" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">10 · Sonuç</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Sonraki adımlar: önce hız, sonra doğrulamanın son boşluğu, sonra kapsam</h2>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Sonraki adımlar öncelik sırasıyla hız, doğrulamanın tamamlanması ve kapsamın genişletilmesidir</h2>
 </div>
 <div style="display:flex;flex-direction:column;gap:14px">
 <div style="display:flex;gap:24px;align-items:center;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:18px 26px">
 <p style="width:60px;font-family:'Source Serif 4', Georgia, serif;font-size:44px;font-weight:600;color:#B4460F">1</p>
-<p style="flex:1;font-size:24px;line-height:1.4"><b>Engine’e pipeline:</b> tampon okuma ile hesap arasına register. Hedef 50 MHz, yani token/s’de 2 kat. 18 modelin simülasyonları yeniden geçmeli.</p>
+<p style="flex:1;font-size:24px;line-height:1.4"><b>Engine’e pipeline eklenmesi:</b> tampon okuma ile hesap arasına bir register konacak. Hedef 50 MHz, yani token/s’de iki kat; 18 modelin simülasyonları yeniden geçirilecek.</p>
 </div>
 <div style="display:flex;gap:24px;align-items:center;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:18px 26px">
 <p style="width:60px;font-family:'Source Serif 4', Georgia, serif;font-size:44px;font-weight:600;color:#B4460F">2</p>
-<p style="flex:1;font-size:24px;line-height:1.4"><b>Yerleştirilen netlist’in simülasyonu:</b> 18 modelin hepsinde, gerçek clock ayarı ve gerçek debounce süreleriyle.</p>
+<p style="flex:1;font-size:24px;line-height:1.4"><b>Yerleştirilen netlist’in simülasyonu:</b> 18 modelin tamamında, gerçek clock ayarı ve gerçek debounce süreleriyle yapılacak.</p>
 </div>
 <div style="display:flex;gap:24px;align-items:center;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:18px 26px">
 <p style="width:60px;font-family:'Source Serif 4', Georgia, serif;font-size:44px;font-weight:600;color:#2A5C9A">3</p>
-<p style="flex:1;font-size:24px;line-height:1.4"><b>DSP’ler ve bellek düzeni:</b> Yosys hatasını raporlamak, requant dışındaki çarpıcıları DSP’ye koymak; ts_gpt2 ve ts_microgpt’nin tablolarını RAMB36’ya sığacak şekilde bölmek.</p>
+<p style="flex:1;font-size:24px;line-height:1.4"><b>DSP’ler ve bellek düzeni:</b> Yosys hatası geliştiricilere raporlanacak, requant dışındaki çarpıcılar DSP’ye taşınacak; ts_gpt2 ve ts_microgpt’nin tabloları RAMB36’ya uygun biçimde bölünecek.</p>
 </div>
 <div style="display:flex;gap:24px;align-items:center;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:18px 26px">
 <p style="width:60px;font-family:'Source Serif 4', Georgia, serif;font-size:44px;font-weight:600;color:#2A5C9A">4</p>
-<p style="flex:1;font-size:24px;line-height:1.4"><b>19. model:</b> minGPT’nin gpt-nano sıralama demosu; ekranda girdi dizisi ve sıralanmış çıktı.</p>
+<p style="flex:1;font-size:24px;line-height:1.4"><b>19. model:</b> minGPT’nin gpt-nano sıralama demosu eklenecek; ekranda girdi dizisi ve sıralanmış çıktı gösterilecek.</p>
 </div>
 <div style="display:flex;gap:24px;align-items:center;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:18px 26px">
 <p style="width:60px;font-family:'Source Serif 4', Georgia, serif;font-size:44px;font-weight:600;color:#5A6474">5</p>
-<p style="flex:1;font-size:24px;line-height:1.4"><b>Düşük bit:</b> stories260K için daha uzun binary QAT; iki yollu LittleBit’in donanımda denenmesi.</p>
+<p style="flex:1;font-size:24px;line-height:1.4"><b>Düşük bitli weight’ler:</b> stories260K için daha uzun bir binary QAT yapılacak ve iki yollu LittleBit donanımda denenecek.</p>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">49 · Karpathy modelleri FPGA’de</p>

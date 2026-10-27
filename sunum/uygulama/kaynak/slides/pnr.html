@@ -1,25 +1,25 @@
 <section id="pnr" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
 <div style="display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">9 · Yerleşim ve hız</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Vivado olmadan, Mac’te açık kaynak bir akışla: sentez, yerleşim, yönlendirme, zamanlama ve bitstream</h2>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Sentez, yerleşim, yönlendirme, zamanlama analizi ve bitstream üretimi Vivado olmadan, Mac’te açık kaynak araçlarla yapıldı</h2>
 </div>
 <div style="display:flex;gap:12px;align-items:center">
-<div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:14px 16px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">Yosys</p><p style="font-size:24px;line-height:1.35">LUT, FF, BRAM netlist’i</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:14px 16px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">Yosys</p><p style="font-size:24px;line-height:1.35">LUT, FF ve BRAM netlist’i</p></div>
 <x-shape kind="arrow-right" style="width:34px;height:20px;background:#9AA3B2"></x-shape>
-<div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#14213D;border-radius:10px;padding:14px 16px"><p style="font-size:24px;font-weight:600;color:#F2A65A">nextpnr</p><p style="font-size:24px;line-height:1.35;color:#E6EAF2">yerleşim, kablo, Fmax</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#14213D;border-radius:10px;padding:14px 16px"><p style="font-size:24px;font-weight:600;color:#F2A65A">nextpnr</p><p style="font-size:24px;line-height:1.35;color:#E6EAF2">yerleşim, yönlendirme, Fmax</p></div>
 <x-shape kind="arrow-right" style="width:34px;height:20px;background:#9AA3B2"></x-shape>
-<div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:14px 16px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">FASM</p><p style="font-size:24px;line-height:1.35">açılacak özellikler</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:14px 16px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">FASM</p><p style="font-size:24px;line-height:1.35">yapılandırma listesi</p></div>
 <x-shape kind="arrow-right" style="width:34px;height:20px;background:#9AA3B2"></x-shape>
-<div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:14px 16px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">Project X-Ray</p><p style="font-size:24px;line-height:1.35">frame’ler → .bit</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:14px 16px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">Project X-Ray</p><p style="font-size:24px;line-height:1.35">frame’ler ve .bit dosyası</p></div>
 </div>
 <table style="font-size:24px;color:#3B4456">
 <tr><th style="width:34%;text-align:left;color:#14213D">sorun</th><th style="width:66%;text-align:left;color:#14213D">çözüm</th></tr>
-<tr><td>macOS SDK’sı Xcode linker’ıyla okunamıyor</td><td>derlemede Xcode’un kendi SDK’sı (SDKROOT)</td></tr>
-<tr><td>nextpnr pin adlarını boş görüyor</td><td>PACKAGE_PIN boşalmış bir referanstan kopyalanıyor; XDC’de doğrudan LOC</td></tr>
-<tr><td>50 MHz tutmayınca akış duruyor</td><td>zamanlama raporu her durumda yazılır; tutmazsa 25 MHz’te yeniden kurulur</td></tr>
-<tr><td>DSP eşlemesinde Yosys hatası</td><td>çarpıcılar LUT’ta (-nodsp): netlist simülasyonuyla bit-exact kanıtlı netlist</td></tr>
+<tr><td>macOS SDK’sı Xcode linker’ıyla okunamıyor</td><td>derlemede Xcode’un SDK’sı kullanıldı (SDKROOT)</td></tr>
+<tr><td>nextpnr pin adlarını boş okuyordu</td><td>PACKAGE_PIN boşalmış bir referanstan kopyalanıyordu; XDC’de doğrudan LOC yazıldı</td></tr>
+<tr><td>50 MHz tutmadığında akış duruyordu</td><td>zamanlama raporu her durumda yazılıyor; tutmazsa tasarım 25 MHz’te yeniden kuruluyor</td></tr>
+<tr><td>DSP eşlemesinde Yosys hatası</td><td>çarpıcılar LUT’larla kuruldu (-nodsp); bu netlist simülasyonla bit-exact olarak doğrulandı</td></tr>
 </table>
-<p style="font-size:24px;line-height:1.4;color:#5A6474">bigram uçtan uca 1 dakika (3,8 MB bitstream); stories260K, 50 MHz denemesi ve 25 MHz’e inişle ~13 dakika.</p>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">Akış bigram için uçtan uca 1 dakika sürer (3,8 MB bitstream); stories260K için 50 MHz denemesi ve 25 MHz’te yeniden kurulumla birlikte yaklaşık 13 dakikadır.</p>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">41 · Karpathy modelleri FPGA’de · scripts/xc7_toolchain.sh, scripts/nexys_pnr.sh; nextpnr-himbaechel (xilinx), prjxray</p>
 <aside>Zamanlamayı ölçmek için devrenin çipe gerçekten yerleştirilmesi gerekiyor. Xilinx’in aracı Vivado macOS’ta çalışmıyor; bu yüzden tamamen açık kaynak bir akış kurduk. Yosys RTL’i LUT, flip-flop ve BRAM’lerden oluşan bir netlist’e çeviriyor. nextpnr bu netlist’i çipin fiziksel kaynaklarına yerleştiriyor, aralarındaki kabloları yönlendiriyor ve çipin gecikme modeline göre her yolun gecikmesini hesaplıyor; Fmax bu aşamada çıkıyor. Sonra açılacak bütün özellikler FASM adlı bir metin dosyasına yazılıyor ve Project X-Ray araçları bunu çipin yapılandırma belleğinin satırlarına, sonra da .bit dosyasına çeviriyor. Yolda dört sorun çıktı. Mac’in yeni SDK’sını Xcode’un linker’ı okuyamıyordu; Xcode’un kendi SDK’sını kullanarak çözdük. nextpnr’da pin atamasını boş gösteren bir hata bulduk: PACKAGE_PIN değerini boşalmış bir bellek referansından kopyalıyor; kısıt dosyasında doğrudan LOC yazarak aştık. nextpnr 50 megahertz tutmadığında hiçbir rapor yazmadan duruyordu; artık her durumda raporu yazdırıyoruz ve tutmazsa Vivado betiğimizdeki gibi 25 megahertz’te yeniden kuruyoruz. Dördüncüsü daha önce bahsettiğim Yosys DSP hatası: bitstream’de çarpıcılar LUT’larda, yani netlist simülasyonunda bit-exact olduğunu gösterdiğimiz netlist. bigram için bütün akış bir dakika sürüyor.</aside>
 </section>

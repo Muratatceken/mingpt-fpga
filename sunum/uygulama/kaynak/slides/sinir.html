@@ -1,24 +1,24 @@
 <section id="sinir" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">10 · Sonuç</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Sınırlar: neyi kanıtladık, neyi henüz kanıtlamadık</h2>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Çalışmanın sınırları: kanıtlanan ve henüz kanıtlanmayan noktalar</h2>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
 <div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #B4460F;border-radius:12px;padding:20px 26px">
-<h3 style="font-size:30px;font-weight:600;color:#14213D">Fiziksel kart yok</h3>
-<p style="font-size:24px;line-height:1.4">Kanıt simülasyon ve zamanlama analizi. Yerleşimden sonraki son devre simüle edilemiyor; nextpnr onu Verilog olarak yazamıyor.</p>
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Fiziksel kart testi yapılmadı</h3>
+<p style="font-size:24px;line-height:1.4">Kanıt, simülasyona ve zamanlama analizine dayanır. Yerleşimden sonraki son devre simüle edilemedi; nextpnr bu devreyi Verilog olarak yazamıyor.</p>
 </div>
 <div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #B4460F;border-radius:12px;padding:20px 26px">
-<h3 style="font-size:30px;font-weight:600;color:#14213D">Fmax yaklaşık</h3>
-<p style="font-size:24px;line-height:1.4">nextpnr’ın gecikme modeli topluluk tarafından çıkarıldı; Vivado’nun sonucu farklı olabilir. Çarpıcılar LUT’ta, yani Vivado’nun DSP’li devresinden yavaş ve büyük.</p>
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Fmax değerleri yaklaşıktır</h3>
+<p style="font-size:24px;line-height:1.4">nextpnr’ın gecikme modeli topluluk tarafından çıkarılmıştır ve Vivado’nun sonucu farklı olabilir. Çarpıcılar LUT’larla kurulduğu için devre, Vivado’nun DSP’li devresinden daha yavaş ve daha büyüktür.</p>
 </div>
 <div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #2A5C9A;border-radius:12px;padding:20px 26px">
-<h3 style="font-size:30px;font-weight:600;color:#14213D">Kapasite</h3>
-<p style="font-size:24px;line-height:1.4">607 KB BRAM, ~300 bin parametreye kadar yetiyor. nanoGPT’nin ve llm.c’nin hazır checkpoint’leri (10 M+) için DDR2 ve farklı bir mimari gerekir.</p>
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Kapasite sınırı</h3>
+<p style="font-size:24px;line-height:1.4">607 KB BRAM yaklaşık 300 bin parametreye kadar yeterlidir. nanoGPT ve llm.c’nin hazır checkpoint’leri (10 milyon ve üzeri) için DDR2’den weight okuyan farklı bir mimari gerekir.</p>
 </div>
 <div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #2A5C9A;border-radius:12px;padding:20px 26px">
-<h3 style="font-size:30px;font-weight:600;color:#14213D">Eksik parçalar</h3>
-<p style="font-size:24px;line-height:1.4">ts_gpt2 ve ts_microgpt yerleşemedi. gpt-nano sıralama demosu bu kart tasarımında yok. Larq paketiyle sayısal karşılaştırma ve iki yollu LittleBit donanımı yapılmadı.</p>
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Tamamlanmayan parçalar</h3>
+<p style="font-size:24px;line-height:1.4">ts_gpt2 ve ts_microgpt çipe yerleştirilemedi. gpt-nano sıralama demosu bu kart tasarımında bulunmuyor. Larq paketiyle sayısal karşılaştırma ve iki yollu LittleBit donanımı henüz yapılmadı.</p>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">48 · Karpathy modelleri FPGA’de</p>

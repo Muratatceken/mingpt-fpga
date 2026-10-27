@@ -1,7 +1,7 @@
 <section id="lbyontem" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">7 · Düşük bit</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Beş yöntemi aynı eğitim düzeniyle denedik: Larq’ın quantizer’larını ve LittleBit’i PyTorch’ta yeniden yazarak</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">7 · Düşük bitli weight’ler</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Beş yöntem aynı eğitim düzeniyle karşılaştırıldı; Larq’ın quantizer’ları ve LittleBit PyTorch’ta yeniden yazıldı</h2>
 </div>
 <table style="font-size:24px;color:#3B4456">
 <tr><th style="width:14%;text-align:left;color:#14213D">yöntem</th><th style="width:30%;text-align:left;color:#14213D">weight</th><th style="width:30%;text-align:left;color:#14213D">kaynağı</th><th style="width:26%;text-align:left;color:#14213D">eğitim ayrıntısı</th></tr>
@@ -18,11 +18,11 @@
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#F2EFE7;border-radius:12px;padding:20px 26px">
 <p style="font-size:24px;font-weight:600;color:#14213D">Knowledge distillation</p>
-<p style="font-size:24px;line-height:1.4">Float model öğretmen; düşük bitli öğrenci, sonraki token dağılımına KL divergence ile yaklaşır. Adam, cosine öğrenme oranı.</p>
+<p style="font-size:24px;line-height:1.4">Float model öğretmen olarak kullanılır; düşük bitli öğrenci model, sonraki token dağılımına KL divergence ile yaklaştırılır. Optimizer olarak Adam ve cosine öğrenme oranı kullanılır.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;border-left:6px solid #B4460F;padding:6px 0px 6px 24px">
-<p style="font-size:24px;font-weight:600;color:#B4460F">Neden TensorFlow değil</p>
-<p style="font-size:24px;line-height:1.4">Larq’ın quantizer’ları birkaç satırlık fonksiyonlar; PyTorch’ta yazınca modeller ve integer akış aynı kaldı.</p>
+<p style="font-size:24px;font-weight:600;color:#B4460F">PyTorch tercihi</p>
+<p style="font-size:24px;line-height:1.4">Larq’ın quantizer’ları birkaç satırlık fonksiyonlardır; PyTorch’ta yeniden yazıldıklarında modeller ve tamsayı akışı değişmeden kaldı.</p>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">32 · Karpathy modelleri FPGA’de · sw/zoo/lowbit.py</p>

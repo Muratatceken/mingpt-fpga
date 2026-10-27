@@ -1,17 +1,23 @@
 <section id="softmax" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · Integer aritmetik</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Integer softmax: üstel fonksiyon bir kaydırma ile 256 satırlık bir tabloya bölünür, bölme bir kez yapılır</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · Tamsayı aritmetiği</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Tamsayı softmax, üstel fonksiyonu bir kaydırma ve 256 satırlık bir tabloya ayırır ve head başına yalnızca bir bölme yapar</h2>
+</div>
+<div style="display:flex;gap:10px;align-items:center">
+<div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:14px 18px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">1 · En büyüğü çıkar</p><p style="font-size:24px;line-height:1.35">uᵢ = (m − sᵢ) · C ≥ 0</p></div>
+<x-shape kind="arrow-right" style="width:34px;height:20px;background:#9AA3B2"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:10px;padding:14px 18px"><p style="font-size:24px;font-weight:600;color:#B4460F">2 · Üssü ayır</p><p style="font-size:24px;line-height:1.35">eᵢ = LUT[fᵢ] ≫ nᵢ</p></div>
+<x-shape kind="arrow-right" style="width:34px;height:20px;background:#9AA3B2"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:14px 18px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">3 · Biriktir</p><p style="font-size:24px;line-height:1.35">E = Σ eᵢ, A = Σ eᵢ vᵢ</p></div>
+<x-shape kind="arrow-right" style="width:34px;height:20px;background:#9AA3B2"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:14px 18px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">4 · Bir kez böl</p><p style="font-size:24px;line-height:1.35">y = A · ⌊2³²/E⌋ ≫ 32</p></div>
 </div>
 <div style="display:flex;gap:40px;align-items:start">
-<div style="width:760px;display:flex;flex-direction:column;gap:12px">
-<div style="display:flex;flex-direction:column;gap:6px;background:#F2EFE7;border-radius:12px;padding:18px 26px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:28px;line-height:1.55;color:#14213D">1 · <i>m</i> = max <i>sⱼ</i>,  <i>uⱼ</i> = (<i>m</i> − <i>sⱼ</i>) · <i>C</i><br>2 · <i>uⱼ</i> = 256 <i>nⱼ</i> + <i>fⱼ</i>,  <i>eⱼ</i> = LUT[<i>fⱼ</i>] ≫ <i>nⱼ</i>,  LUT[<i>f</i>] = 2¹⁵ · 2^(−<i>f</i>/256)<br>3 · <i>E</i> = Σ <i>eⱼ</i>,  <i>R</i> = ⌊2³² / <i>E</i>⌋,  <i>y</i> = (Σ <i>eⱼ vⱼ</i>) · <i>R</i> ≫ 32</p>
+<div style="width:700px;display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;line-height:1.4"><b>Yöntemin dayanağı.</b> eˣ = 2^(x · log₂e) eşitliğinden, uᵢ = 256 nᵢ + fᵢ yazılır. 2’nin tam kuvveti bir kaydırmadır; kesirli kısım LUT[f] = 2¹⁵ · 2^(−f/256) tablosundan okunur. En büyük değer çıkarıldığı için her üs sıfır ya da negatiftir ve taşma oluşmaz.</p>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">Kesirli kısmın 8 bite kesilmesi, %0,27’den küçük bir bağıl hata getirir.</p>
 </div>
-<p style="font-size:24px;line-height:1.4"><b>Neden işe yarıyor:</b> eˣ = 2^(x · log₂e). 2’nin tam kuvveti bir kaydırma; kesirli kısım tablodan. Max çıkarıldığı için her üs ≤ 0, taşma yok. Normalizasyon en sona ertelenir: head başına tek bölme.</p>
-<p style="font-size:24px;line-height:1.4;color:#5A6474">Hata: kesirli kısmın 8 bite kesilmesi %0,27’den az bağıl hata getirir.</p>
-</div>
-<div style="flex:1;display:flex;flex-direction:column;gap:12px">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;color:#14213D">Örnek: üç score, C = 92</p>
 <table style="font-size:24px;color:#3B4456">
 <tr><th style="width:16%;text-align:right;color:#14213D">s</th><th style="width:16%;text-align:right;color:#14213D">u</th><th style="width:20%;text-align:right;color:#14213D">n, f</th><th style="width:16%;text-align:right;color:#14213D">e</th><th style="width:16%;text-align:right;color:#14213D">e / E</th><th style="width:16%;text-align:right;color:#14213D">float</th></tr>
@@ -19,9 +25,9 @@
 <tr><td style="text-align:right">6</td><td style="text-align:right">276</td><td style="text-align:right">1, 20</td><td style="text-align:right">15 520</td><td style="text-align:right">0,287</td><td style="text-align:right">0,287</td></tr>
 <tr><td style="text-align:right">2</td><td style="text-align:right">644</td><td style="text-align:right">2, 132</td><td style="text-align:right">5 730</td><td style="text-align:right">0,106</td><td style="text-align:right">0,106</td></tr>
 </table>
-<p style="font-size:24px;line-height:1.4">E = 54 018, R = ⌊2³² / 54 018⌋ = 79 509. Üç olasılık, float softmax ile üç basamakta aynı.</p>
+<p style="font-size:24px;line-height:1.4">E = 54 018 ve R = ⌊2³² / 54 018⌋ = 79 509’dur; üç olasılık float softmax ile üç basamakta örtüşür.</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">14 · Karpathy modelleri FPGA’de · Aynı tablo kartın sampler’ında da kullanılıyor</p>
-<aside>Attention’ın kalbindeki softmax’ı integer’da nasıl hesaplıyoruz? Üç adım var. Birincisi: en büyük score’u bulup her score’dan çıkarıyoruz. Softmax bundan etkilenmiyor ama artık bütün üsler sıfır ya da negatif, yani hiçbir değer taşmıyor. Fark, scale’leri ve log₂e’yi içeren bir sabit C ile çarpılıyor. İkincisi: e üzeri x’i 2 üzeri x çarpı log₂e olarak yazıyoruz. Bu üssün tam kısmı n, 2 üzeri eksi n ile çarpmak demek, bu da basit bir sağa kaydırma. Kesirli kısım f ise 256 satırlık bir tablodan okunuyor. Üçüncüsü: olasılıkları tek tek bölmüyoruz; önce bütün eᵢ’leri ve value’larla ağırlıklı toplamı biriktiriyoruz, en sonda bir kez 2 üzeri 32 bölü E’yi hesaplayıp çarpıyoruz. Yani her head için tek bir bölme. Sağdaki örnek: score’lar 9, 6 ve 2; C 92. Fark çarpı C sırasıyla 0, 276 ve 644. 276, 256 çarpı 1 artı 20 olarak ayrışıyor: tablonun 20. satırını okuyup bir bit kaydırıyoruz ve 15 520 buluyoruz. Toplam 54 018; bölünce olasılıklar 0,607, 0,287 ve 0,106. Float softmax da üç basamakta aynı sonucu veriyor. Aynı tablo, kartta bir sonraki token’ı seçen sampler’da da kullanılıyor.</aside>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">14 · Karpathy modelleri FPGA’de · Aynı tablo kartın sampler’ında da kullanılır</p>
+<aside>Attention’ın merkezindeki softmax’ı tamsayıyla dört adımda hesaplıyoruz; üstteki akış bunu gösteriyor. Birinci adımda en büyük score bulunup her score’dan çıkarılıyor. Softmax bundan etkilenmiyor ama bütün üsler sıfır ya da negatif hâle geliyor, yani hiçbir değer taşmıyor. Fark, scale’leri ve log₂e’yi içeren bir sabit C ile çarpılıyor. İkinci adımda e üzeri x, 2 üzeri x çarpı log₂e olarak yazılıyor. Bu üssün tam kısmı n, 2 üzeri eksi n ile çarpmak demek, bu da bir sağa kaydırma; kesirli kısım f ise 256 satırlık bir tablodan okunuyor. Üçüncü adımda bütün e’ler ve value’larla ağırlıklı toplam biriktiriliyor. Dördüncü adımda olasılıklar tek tek bölünmüyor; en sonda bir kez 2 üzeri 32 bölü E hesaplanıp çarpılıyor, yani her head için tek bir bölme yapılıyor. Sağdaki örnekte score’lar 9, 6 ve 2, C ise 92. Fark çarpı C sırasıyla 0, 276 ve 644. 276, 256 çarpı 1 artı 20 olarak ayrışıyor: tablonun 20. satırı okunup bir bit kaydırılıyor ve 15 520 elde ediliyor. Toplam 54 018; bölündüğünde olasılıklar 0,607, 0,287 ve 0,106 çıkıyor ve float softmax ile üç basamakta örtüşüyor. Aynı tablo kartta bir sonraki token’ı seçen sampler’da da kullanılıyor.</aside>
 </section>

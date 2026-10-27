@@ -1,29 +1,29 @@
 <section id="gemvb" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">7 · Düşük bit</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Donanım kararı: engine’e 64 hatlı, çarpıcısız bir 1-bit GEMV birimi; binary ve LittleBit aynı birimde çalışıyor</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">7 · Düşük bitli weight’ler</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Engine’e 64 hatlı ve çarpıcısız bir 1 bitlik GEMV birimi eklendi; binary ve LittleBit modelleri aynı birimde çalışır</h2>
 </div>
 <div style="display:flex;gap:28px">
 <div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:22px 26px">
 <h3 style="font-size:30px;font-weight:600;color:#14213D">GEMVB (opcode 18)</h3>
-<p style="font-size:24px;line-height:1.4">wbin.mem’deki 64 bitlik bir kelime, bir girişin 64 çıkış için işaretleri (1 = +1, 0 = −1).</p>
-<p style="font-size:24px;line-height:1.4">64 toplama-çıkarma hattı, DSP yok. 20 bitlik akümülatörler: |acc| ≤ 128 · n_in &lt; 2¹⁹.</p>
-<p style="font-size:24px;line-height:1.4">Seri requant ve issue mantığı INT8 GEMV ile ortak. Kanal scale’i a, m₀ · 2⁻ˢʰ çarpanına katlanır.</p>
+<p style="font-size:24px;line-height:1.4">wbin.mem’deki 64 bitlik bir kelime, bir girişin 64 çıkış için işaretlerini taşır (1 = +1, 0 = −1).</p>
+<p style="font-size:24px;line-height:1.4">64 toplama-çıkarma hattı bulunur ve DSP kullanılmaz. Akümülatörler 20 bittir, çünkü |acc| ≤ 128 · n_in &lt; 2¹⁹.</p>
+<p style="font-size:24px;line-height:1.4">Seri requant ve kontrol mantığı INT8 GEMV ile ortaktır. Kanal scale’i a, requant çarpanı m₀ · 2⁻ˢʰ içine katlanır.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:22px 26px">
 <h3 style="font-size:30px;font-weight:600;color:#14213D">SCALE (opcode 17)</h3>
-<p style="font-size:24px;line-height:1.4">Norm’un γ’sı normalde weight’e katlanır: W·diag(γ). Bu binary weight’i bozar.</p>
+<p style="font-size:24px;line-height:1.4">Norm’un γ’sı normalde weight’e katlanır (W·diag(γ)); bu işlem binary weight’i bozar.</p>
 <p style="font-family:'Source Serif 4', Georgia, serif;font-size:28px;line-height:1.4;color:#14213D">W·diag(γ) = diag(a) · S · diag(g),  S ∈ {±1}</p>
-<p style="font-size:24px;line-height:1.4">diag(a) requant’a gider; g, q, k, v için tek bir SCALE op’u olur: yᵢ = requant(xᵢ · gᵢ).</p>
+<p style="font-size:24px;line-height:1.4">diag(a) requant’a aktarılır; g ise q, k ve v için ortak tek bir SCALE op’una dönüşür: yᵢ = requant(xᵢ · gᵢ).</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:22px 26px">
 <h3 style="font-size:30px;font-weight:600;color:#14213D">LittleBit tek yol</h3>
-<p style="font-size:24px;line-height:1.4">Aynı birimle üç op:</p>
+<p style="font-size:24px;line-height:1.4">Aynı birimle üç op yeterlidir:</p>
 <p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#14213D">SCALE  g·γ<br>GEMVB  sign(V)ᵀ, ℓ<br>GEMVB  sign(U), h</p>
-<p style="font-size:24px;line-height:1.4">ℓ ve h ilgili requant’lara katlanır.</p>
+<p style="font-size:24px;line-height:1.4">ℓ ve h ilgili requant çarpanlarına katlanır.</p>
 </div>
 </div>
-<p style="font-size:24px;line-height:1.4;color:#5A6474">Birim yalnız modelde GEMVB varsa sentezlenir (SPECIALIZE). İlk sürüm 14 709 LUT tutuyordu; ayrı 20 bitlik bir banka ile 11 153’e indi (gpt2-bin, tüm kart).</p>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">Birim yalnızca modelde GEMVB op’u varsa sentezlenir (SPECIALIZE). İlk sürüm 14 709 LUT kullanıyordu; akümülatörler ayrı bir 20 bitlik bankaya alındığında bu değer 11 153’e indi (gpt2-bin, tüm kart).</p>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">35 · Karpathy modelleri FPGA’de · rtl/zoo/zoo_core.sv; sw/zoo/ir.py: factor_binary, factor_littlebit</p>
 <aside>Sonuçlara göre donanım kararı şu oldu: engine’e 1 bitlik weight’lerle çalışan bir matris-vektör birimi ekledik, adı GEMVB. 64 bitlik bir weight kelimesi, bir girişin 64 farklı çıkış için işaretlerini taşıyor; 64 hat aynı anda girişi ya ekliyor ya çıkarıyor. Çarpıcı yok, DSP kullanılmıyor. Akümülatörler 20 bit yetiyor, çünkü her terim en fazla 128. Requant ve kontrol mantığı INT8 GEMV ile ortak; kanal başına scale de requant çarpanına katlanıyor. İkinci sorun normalization’ın gain’iydi. Derleyici normalde γ’yı arkadaki weight’e katlıyor; ama binary bir matris çarpı diag γ artık binary değil. Bu yüzden katlanmış matrisi satır scale’i, işaret matrisi ve sütun scale’i olarak ayırıyoruz. Satır scale’i requant’a gidiyor; sütun scale’i ise yeni bir SCALE op’u oluyor ve aynı girişi okuyan q, k ve v için tek seferde uygulanıyor. Üçüncü kutu: tek yollu LittleBit de aynı birimle çalışıyor; bir SCALE ve iki GEMVB op’u, ara scale’ler requant’lara katlanıyor. Birim yalnız modelde GEMVB op’u varsa sentezleniyor. İlk sürüm çok LUT tutuyordu, 14 709; akümülatörleri INT8 bankasından ayırıp 20 bite indirince 11 153’e düştü.</aside>
 </section>

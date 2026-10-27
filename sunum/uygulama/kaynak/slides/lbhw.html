@@ -1,7 +1,7 @@
 <section id="lbhw" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">7 · Düşük bit</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Kartta: düşük bitli modeller 1,7–3,6 kat hızlı ve BRAM’in yarısından azını kullanıyor; bedeli loss</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">7 · Düşük bitli weight’ler</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Kartta düşük bitli modeller 1,7–3,6 kat hızlıdır ve daha az BRAM kullanır; bunun karşılığında loss artar</h2>
 </div>
 <table style="font-size:24px;color:#3B4456">
 <tr><th style="width:22%;text-align:left;color:#14213D">model</th><th style="width:20%;text-align:right;color:#14213D">cycle / token</th><th style="width:10%;text-align:right;color:#14213D">hız</th><th style="width:16%;text-align:right;color:#14213D">BRAM36</th><th style="width:14%;text-align:right;color:#14213D">LUT</th><th style="width:18%;text-align:right;color:#14213D">test loss</th></tr>
@@ -15,15 +15,15 @@
 <div style="display:flex;gap:24px">
 <div style="flex:1;display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px">
 <p style="font-size:24px;font-weight:600;color:#2A5C9A">Hız</p>
-<p style="font-size:24px;line-height:1.4">64 hat 8 hattan 8 kat geniş; kalan op’lar (norm, attention) değişmediği için toplam kazanç 1,7–3,6 kat.</p>
+<p style="font-size:24px;line-height:1.4">64 hat, 8 hattan sekiz kat geniştir; norm ve attention gibi diğer op’lar değişmediği için toplam kazanç 1,7–3,6 kattır.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px">
 <p style="font-size:24px;font-weight:600;color:#2A5C9A">Bellek ve LUT</p>
-<p style="font-size:24px;line-height:1.4">BRAM %43–64 azalır; toplama hatları LUT’la kurulduğu için LUT %35–60 artar.</p>
+<p style="font-size:24px;line-height:1.4">BRAM kullanımı %43–64 azalır; toplama hatları LUT’larla kurulduğu için LUT kullanımı %35–60 artar.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:6px;border-left:6px solid #B4460F;padding:6px 0px 6px 22px">
 <p style="font-size:24px;font-weight:600;color:#B4460F">Kalite</p>
-<p style="font-size:24px;line-height:1.4">names’te +0,03 (binary), +0,16 (LittleBit). stories260K’da +0,64: 260 bin parametre bu görevin sınırında.</p>
+<p style="font-size:24px;line-height:1.4">Loss, names’te binary ile 0,03, LittleBit ile 0,16 nat artar. stories260K’da artış 0,64 nattır; 260 bin parametre bu görev için zaten sınırdadır.</p>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">36 · Karpathy modelleri FPGA’de · model/zoo/nexys.json; LUT, BRAM: Yosys; loss: kartın integer programı</p>
