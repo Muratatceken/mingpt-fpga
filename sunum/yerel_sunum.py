@@ -3,7 +3,8 @@
 konuşma metni üretir.
 
   python3 sunum/yerel_sunum.py sunum/uygulama          -> sunum.html, konusma_metni.md
-  python3 sunum/yerel_sunum.py sunum/uygulama --pdf    -> ayrıca sunum.pdf, konusma_metni.pdf (Chrome headless)
+  python3 sunum/yerel_sunum.py sunum/uygulama --pdf    -> ayrıca sunum.pdf, konusma_metni.pdf (Chrome headless);
+                                                          klasördeki terimler.md ve konusma_notlari.md de PDF olur
 
 - Fontlar sunum/sunum.html'deki gömülü @font-face bloğundan alınır (Source Serif 4, IBM Plex Sans, IBM Plex Mono).
 - /_blob/<id> görselleri kaynak/assets/assets.json eşlemesiyle data URI olarak gömülür.
@@ -98,7 +99,13 @@ body{font-family:'IBM Plex Sans',Arial,sans-serif;font-size:10.5pt;line-height:1
 h1{font-family:'Source Serif 4',Georgia,serif;font-size:20pt;color:#14213D;margin:0 0 10pt}
 h2{font-family:'Source Serif 4',Georgia,serif;font-size:12.5pt;color:#14213D;margin:16pt 0 4pt;break-after:avoid}
 p{margin:0 0 6pt}
-hr{border:none;border-top:1px solid #C9C4B8;margin:12pt 0}"""
+hr{border:none;border-top:1px solid #C9C4B8;margin:12pt 0}
+h3{font-size:11pt;color:#B4460F;margin:12pt 0 3pt;break-after:avoid}
+table{border-collapse:collapse;margin:4pt 0 10pt}
+th,td{border-bottom:1px solid #D8D3C8;padding:3pt 8pt;text-align:left}
+th{color:#14213D}"""
+
+EXTRA_MD = ["terimler.md", "konusma_notlari.md"]   # hand-written notes rendered next to the deck
 
 
 def fonts_css():
@@ -179,16 +186,20 @@ def main():
     if "--pdf" in sys.argv:
         chrome_pdf(out_html, os.path.join(d, "sunum.pdf"))
         import markdown
-        body = markdown.markdown("\n".join(md))
-        nh = (f'<!doctype html><html lang="tr"><head><meta charset="utf-8"><style>{fonts_css()}</style>'
-              f"<style>{NOTES_CSS}</style></head><body>{body}</body></html>")
-        tmp_html = os.path.join(d, ".konusma_metni.tmp.html")
-        open(tmp_html, "w", encoding="utf-8").write(nh)
-        try:
-            chrome_pdf(tmp_html, os.path.join(d, "konusma_metni.pdf"))
-        finally:
-            os.remove(tmp_html)
-        print(f"{d}/sunum.pdf, {d}/konusma_metni.pdf")
+        docs = [("konusma_metni", "\n".join(md))]
+        docs += [(fn[:-3], open(os.path.join(d, fn), encoding="utf-8").read())
+                 for fn in EXTRA_MD if os.path.exists(os.path.join(d, fn))]
+        for name, text in docs:
+            body = markdown.markdown(text, extensions=["tables"])
+            nh = (f'<!doctype html><html lang="tr"><head><meta charset="utf-8"><style>{fonts_css()}</style>'
+                  f"<style>{NOTES_CSS}</style></head><body>{body}</body></html>")
+            tmp_html = os.path.join(d, f".{name}.tmp.html")
+            open(tmp_html, "w", encoding="utf-8").write(nh)
+            try:
+                chrome_pdf(tmp_html, os.path.join(d, name + ".pdf"))
+            finally:
+                os.remove(tmp_html)
+        print(f"{d}/sunum.pdf; " + ", ".join(f"{d}/{n}.pdf" for n, _ in docs))
 
 
 if __name__ == "__main__":
