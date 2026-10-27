@@ -8,7 +8,7 @@
 
 | Bölüm | Slaytlar | Süre |
 |---|---|---|
-| Input, özet, yol haritası | 1–3 | 2 dk |
+| Giriş, özet, yol haritası | 1–3 | 2 dk |
 | 1 · Hedef ve kart | 4–6 | 3 dk |
 | 2 · Model ailesi | 7–10 | 4 dk |
 | 3 · Integer arithmetic | 11–17 | 7 dk |
@@ -18,17 +18,17 @@
 | 7 · Low-bit weight’ler (LittleBit, Larq) | 31–36 | 5 dk |
 | 8 · Verification | 37–40 | 4 dk |
 | 9 · Place and route ve hız | 41–45 | 4 dk |
-| 10 · Sonuç, katkılar | 46–50 | 4 dk |
+| 10 · Sonuç, katkılar | 46–51 | 5 dk |
 
-**20 dakikalık kısa sürüm:** 1, 2, 4, 5, 7, 10, 12, 13, 14, 17, 21, 22, 26, 28, 31, 33, 34, 36, 37, 38, 42, 43, 45, 47, 50. Atlanan slaytlarda bir cümleyle geç.
+**20 dakikalık kısa sürüm:** 1, 2, 4, 5, 7, 10, 12, 13, 14, 17, 21, 22, 26, 28, 31, 33, 34, 36, 37, 38, 42, 43, 45, 46, 48, 51. Atlanan slaytlarda bir cümleyle geç.
 
 ---
 
 ## Slayt slayt ana mesajlar
 
-### Input
+### Giriş
 **1 · Kapak** — Bölüm 2: implementasyon. Terimler İngilizce.
-**2 · Özet** — 9 mimari → 18 model, 1 RTL, 18/18 bit-exact, 0 floating point. stories260K: 256 token, 50 397 cycle/token.
+**2 · Özet** — Dört soru, dört cevap: FPGA hesabı bozmuyor (18/18 bit-exact, 0 fark); integer’a geçişin bedeli ≤ %1,6 loss (names ≤ %0,3); 16/18 model chip’e sığıyor ve timing’i karşılıyor; stories260K 496 token/s. CPU (M1, run.c, -Ofast; -O3 ile 6 718): 14 397 token/s, ~222 273 cycle/token; FPGA 50 397 cycle/token → clock başına 4,4× (mutlak hızda CPU 29× önde).
 **3 · Yol haritası** — PyTorch’tan chip’e dokuz adım; son üçü (turuncu) bu aşamanın yenileri.
 
 ### 1 · Hedef
@@ -58,7 +58,7 @@
 
 ### 5 · Engine
 **21 · zoo_core** — Fetch, decode, unit’ler, 11 buffer; 16 op türü.
-**22 · GEMV** — 8 hat, input broadcast edilir, 64 bitlik kelime 8 weight. cycle ≈ ⌈n_out/8⌉ · n_in (gpt2 fc 512, stories w1 1 408).
+**22 · GEMV** — 8 lane, input broadcast edilir, 64 bitlik word 8 weight. cycle ≈ ⌈n_out/8⌉ · n_in (gpt2 fc 512, stories w1 1 408).
 **23 · Attention** — Her geçmiş token head başına 2 cycle: 5 × 8 × 2 = 80 cycle/token eğim; ölçüm 80,0.
 **24 · Profil** — makemore’da GEMV %94–96; nanochat’te NORM %33; stories260K’da ATTN %37.
 **25 · SPECIALIZE** — Kullanılmayan unit silinir: bigram 5 855 → 1 529 LUT.
@@ -67,7 +67,7 @@
 **26 · Sistem** — Döngü, sampler, detokenizer, terminal, VGA; ekran yazımı sonraki adımla örtüşür.
 **27 · Generation loop** — G_STEP … G_PICK; sampler ≈ 3V cycle (stories’te ~1 500, %3).
 **28 · Sampling** — Bölmesiz: thr = (r · Σe) ≫ 32. Örnek: 0,7775 / 0,2225, float ile binde bir.
-**29 · Ekran** — Detokenizer iki ROM; kelime shift; 640 × 480, 8 × 16 font.
+**29 · Ekran** — Detokenizer iki ROM; word wrap; 640 × 480, 8 × 16 font.
 **30 · Kullanım** — Switch’ler, button’lar; hash h ← 31h + tok; LED16 yeşil = Python ile aynı.
 
 ### 7 · Low-bit weight’ler
@@ -75,7 +75,7 @@
 **32 · Yöntemler** — int8, int4, tern, bin, LittleBit; STE ve KD. Larq PyTorch’ta yeniden yazıldı.
 **33 · Sonuç** — gpt2’de binary (1,38 BPW, 2,029) en iyi; mlp’de LittleBit (1,18 BPW, 2,075) binary’yi (2,160) geçiyor. INT4 her yerde float kadar iyi.
 **34 · Neden** — BPW formülü; 32 × 32’de yalnız scale’ler 1,00 BPW. 0,1 BPW ancak 4096²’de. **Hocanın 1. araştırma sorusunun cevabı.**
-**35 · GEMVB** — 64 hat, DSP yok, 20 bit accumulator; SCALE ile W·diag(γ) = diag(a)·S·diag(g).
+**35 · GEMVB** — 64 lane, DSP yok, 20 bit accumulator; SCALE ile W·diag(γ) = diag(a)·S·diag(g).
 **36 · Kartta** — gpt2-bin 1,7×, mlp-lb 3,6×, stories-bin 1,8× hız; BRAM %43–64 az; loss bedeli +0,03 / +0,16 / +0,64.
 
 ### 8 · Verification
@@ -92,11 +92,12 @@
 **45 · Hız** — stories260K 496 token/s (256 token yarım saniye); bigram 318 bin; mlp-lb 13 bin.
 
 ### 10 · Sonuç
-**46 · Karşılaştırma** — names’te en iyi loss gru, en iyi denge rnn/mlp (50 MHz); LittleBit hızı loss ile ödüyor.
-**47 · Katkılar** — Beş katkı; literatürden alınanları açıkça söyle. “Biz icat ettik” değil, “birleştirdik ve ölçtük”.
-**48 · Sınırlar** — Kart yok, Fmax yaklaşık, kapasite ~300 bin parametre, eksik parçalar.
-**49 · Sonraki adımlar** — Pipeline → 50 MHz; netlist simülasyonu; DSP ve memory layout; gpt-nano; düşük bit.
-**50 · Özet** — Dört cümle, teşekkür.
+**46 · Cevap** — Kaybın tek kaynağı quantization (1,400 → 1,422); FPGA bit-exact, 0 kayıp ekliyor. CPU (M1, run.c, -Ofast; -O3 ile 6 718): 14 397 token/s, ~222 273 cycle/token; FPGA 50 397 cycle/token → clock başına 4,4× (mutlak hızda CPU 29× önde). Enerji ölçülmedi, bunu açıkça söyle.
+**47 · Karşılaştırma** — names’te en iyi loss gru, en iyi denge rnn/mlp (50 MHz); LittleBit hızı loss ile ödüyor.
+**48 · Katkılar** — Beş katkı; literatürden alınanları açıkça söyle. “Biz icat ettik” değil, “birleştirdik ve ölçtük”.
+**49 · Sınırlar** — Kart yok, Fmax yaklaşık, kapasite ~300 bin parametre, eksik parçalar.
+**50 · Sonraki adımlar** — Pipeline → 50 MHz; netlist simülasyonu; DSP ve memory layout; gpt-nano; düşük bit.
+**51 · Özet** — Dört cümle, teşekkür.
 
 ---
 
@@ -105,6 +106,8 @@
 **Kart olmadan çalıştığından nasıl eminsiniz?** Tasarım tek clock’lu ve synchronous. Netlist’in functional doğruluğunu simülasyonla (gerçek üst modül, her pin, her cycle), her path’in bir periyoda sığdığını timing analysisyle gösterdik. Endüstride de üretimden önceki kanıt bu ikisi. Tek boşluk: placement’tan sonraki circuit’in simülasyonu; nextpnr onu Verilog olarak yazamıyor.
 
 **Neden Vivado kullanmadınız? Sonuçlar Vivado’da farklı olur mu?** Vivado macOS’ta çalışmıyor; akış tamamen open-source. nextpnr’ın delay modeli Project X-Ray’den, Vivado’nunki farklı olabilir. Vivado DSP’leri doğru eşlediği için orada Fmax’ın daha yüksek, LUT’un daha düşük çıkmasını bekleriz. Vivado betiği hazır (`make nexys-bit`).
+
+**Dizüstü CPU 29 kat hızlıysa FPGA’nin anlamı ne?** Mutlak hızda M1 önde (14 397 ve 496 token/s), çünkü clock’u 128 kat yüksek ve çekirdeği çok daha büyük bir silikon. Token başına cycle’da FPGA 4,4 kat verimli (50 397 ve ~222 bin). Amacımız laptop’ı geçmek değil: CPU’suz, OS’suz, deterministik ve bit-exact bir sistem. Pipeline ve DSP ile clock 50 MHz ve üstüne çıkar; enerji ölçülmediği için token/J iddiası yok.
 
 **Neden 25 MHz? 50’ye nasıl çıkar?** Engine buffer’dan okuma, çarpma ve geri yazmayı tek cycle’da yapıyor; çarpmalar LUT’ta olunca yol 26–37 ns. Okuma ile hesap arasına bir register koyarsak yol ikiye bölünür; hedef 50 MHz, token/s iki kat.
 
@@ -126,7 +129,7 @@
 
 **ts_gpt2 ve ts_microgpt neden yerleşemedi?** Yosys bu iki modelin tablolarını çok sayıda küçük RAMB18 bloğuna bölüyor; BRAM yerlerinin ~%85’i doluyor ve nextpnr’ın placer’ı iki farklı seed ile 40 dakikada ilerlemedi. Çözüm tabloların memory layout’unu değiştirmek. İkisi de simülasyonda bit-exact.
 
-**Projenin özgün katkısı ne?** Slayt 47: eşit bütçe karşılaştırması (en savunulabilir), tek engine’de 10 bit-exact model, bağımsız integer kart, ispatlı sınırlar ve dört tool bug’ı, LittleBit’in küçük ölçekteki sınırı. Requant, integer softmax, binary weight’ler gibi teknikler literatürden.
+**Projenin özgün katkısı ne?** Slayt 48: eşit bütçe karşılaştırması (en savunulabilir), tek engine’de 10 bit-exact model, bağımsız integer kart, ispatlı sınırlar ve dört tool bug’ı, LittleBit’in küçük ölçekteki sınırı. Requant, integer softmax, binary weight’ler gibi teknikler literatürden.
 
 **Sampling nasıl integer yapılıyor? min-p ne?** Softmax’la aynı 2^(−k/256) tablosu; probability normalize edilmiyor, random number toplamla çarpılıp 32 bit shift ediliyor. min-p, en olası token’ın belli bir oranından (1/32) az olasılıklı token’ları atıyor.
 

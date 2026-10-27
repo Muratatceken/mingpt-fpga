@@ -18,7 +18,7 @@
 
 **context** (bağlam) — Modelin bir token’ı tahmin ederken görebildiği geçmiş token sayısı. names modellerinde 16, kartta stories modellerinde 256. s. 9, 23
 
-**cross-entropy loss, test loss** (çapraz entropi kaybı) — Modelin doğru token’a verdiği olasılığın eksi logaritmasının ortalaması; küçük olan iyidir. Birimi nat/token. Hiçbir şey bilmeyen bir model 27 harflik alfabede ln 27 ≈ 3,30 alır; gpt2’nin INT8 hâli 2,002. s. 17, 33, 36, 46
+**cross-entropy loss, test loss** (çapraz entropi kaybı) — Modelin doğru token’a verdiği olasılığın eksi logaritmasının ortalaması; küçük olan iyidir. Birimi nat/token. Hiçbir şey bilmeyen bir model 27 harflik alfabede ln 27 ≈ 3,30 alır; gpt2’nin INT8 hâli 2,002. s. 17, 33, 36, 47
 
 **float, floating point, float32** (kayan noktalı sayı) — Bilgisayarda gerçel sayıların üs ve mantis ile tutulması. Eğitim float32 ile yapılır; FPGA tarafında hiç kullanılmaz. s. 11
 
@@ -74,7 +74,7 @@
 
 **GQA (grouped-query attention)** — Birkaç query head’inin aynı key/value head’ini paylaşması; KV cache küçülür. llama ve stories260K’da 8 query head’e 4 KV head (stories260K). s. 7, 19
 
-**GRU (gated recurrent unit)** — Kapılarla (gate) neyi hatırlayıp neyi unutacağını seçen recurrent model. names’te en iyi loss (1,956). s. 7, 46
+**GRU (gated recurrent unit)** — Kapılarla (gate) neyi hatırlayıp neyi unutacağını seçen recurrent model. names’te en iyi loss (1,956). s. 7, 47
 
 **head** — Attention’ın paralel çalışan alt birimlerinden biri; her biri farklı bir ilişkiye bakabilir. Bizde head boyutu 8. s. 19, 23
 
@@ -212,7 +212,7 @@
 
 **Nexys A7-100T** — Digilent’in, Artix-7 XC7A100T çipli eğitim kartı; işlemcisi yok. Hedef kartımız. s. 5
 
-**pipeline** (boru hattı) — Uzun bir işi register’larla aşamalara bölmek; her aşama bir cycle’a sığar. Engine’e pipeline eklemek 50 MHz’in yolu. s. 43, 49
+**pipeline** (boru hattı) — Uzun bir işi register’larla aşamalara bölmek; her aşama bir cycle’a sığar. Engine’e pipeline eklemek 50 MHz’in yolu. s. 43, 50
 
 **QSPI flash** — Kart açılınca bitstream’i kendiliğinden yükleyen flash bellek. s. 5
 
@@ -344,7 +344,7 @@
 
 **Verilator, Icarus Verilog** — Açık kaynak simülatörler: Verilator hızlı, 2-state; Icarus yavaş, 4-state. s. 38–39
 
-**Vivado** — AMD/Xilinx’in resmî FPGA aracı; macOS’ta çalışmadığı için kullanılmadı. s. 41, 48
+**Vivado** — AMD/Xilinx’in resmî FPGA aracı; macOS’ta çalışmadığı için kullanılmadı. s. 41, 49
 
 **XDC, PACKAGE_PIN, LOC** — Pin atamalarını ve clock kısıtlarını içeren kısıt dosyası; nextpnr’daki hata yüzünden pinleri LOC ile yazdık. s. 41
 
@@ -358,13 +358,13 @@
 
 **llama2.c** — Karpathy’nin Llama 2’yi tek bir C dosyasında çalıştıran deposu; stories260K buradan. s. 7, 9
 
-**llm.c** — Karpathy’nin GPT-2’yi C/CUDA ile eğiten deposu; hazır modelleri (124M) BRAM’e sığmaz. s. 48
+**llm.c** — Karpathy’nin GPT-2’yi C/CUDA ile eğiten deposu; hazır modelleri (124M) BRAM’e sığmaz. s. 49
 
 **makemore** — Karpathy’nin karakter seviyesinde isim üreten modeller deposu: bigram, mlp, rnn, gru, bow, transformer. s. 7
 
 **microgpt** — Karpathy’nin 2026’da yayımladığı ~200 satırlık, bağımlılıksız GPT gist’i; parametresiz RMSNorm, ReLU, bias yok. s. 7
 
-**minGPT, nanoGPT** — Karpathy’nin GPT-2’yi sade PyTorch ile yazdığı depolar; ailedeki gpt2 ikisinin ortak block’u. nanoGPT’nin hazır checkpoint’leri BRAM’e sığmaz. s. 7, 48
+**minGPT, nanoGPT** — Karpathy’nin GPT-2’yi sade PyTorch ile yazdığı depolar; ailedeki gpt2 ikisinin ortak block’u. nanoGPT’nin hazır checkpoint’leri BRAM’e sığmaz. s. 7, 49
 
 **nanochat** — Karpathy’nin en yeni, uçtan uca sohbet modeli deposu; çekirdek mimarisi (RoPE, QK-norm, ReLU², GQA) ailede. s. 7
 
@@ -376,4 +376,4 @@
 
 **ts_*** — Aynı mimarilerin bizim TinyStories’te ~260 bin parametreyle eğittiğimiz sürümleri (ts_gpt2, ts_gru, ts_llama, ts_microgpt, ts_nanochat). s. 9
 
-**gpt-nano** — minGPT’nin en küçük yapılandırması (3 layer, 3 head, C = 48); ilk sunumdaki sıralama demosu. Bu kart tasarımında yok. s. 48–49
+**gpt-nano** — minGPT’nin en küçük yapılandırması (3 layer, 3 head, C = 48); ilk sunumdaki sıralama demosu. Bu kart tasarımında yok. s. 49–50

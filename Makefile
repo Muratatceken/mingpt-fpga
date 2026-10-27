@@ -9,7 +9,7 @@ RTL    = $(shell cat scripts/files.f)
 
 .PHONY: all model train quantize eval export sim test-arith selftest lint synth report gelisim clean \
         zoo-train zoo-quant zoo-sim zoo-synth zoo-pipeline zoo-fuzz zoo-arith zoo-dse paper \
-        nexys nexys-sim nexys-all nexys-fuzz nexys-icarus nexys-netlist nexys-synth nexys-bit nexys-prog nexys-pnr xc7-toolchain lowbit sunum-yerel
+        nexys nexys-sim nexys-all nexys-fuzz nexys-icarus nexys-netlist nexys-synth nexys-bit nexys-prog nexys-pnr xc7-toolchain lowbit sunum-yerel cpu-baseline
 
 all: test-arith sim selftest
 
@@ -115,6 +115,9 @@ xc7-toolchain:     # build nextpnr-himbaechel (xc7a100t), xc7frames2bit and fasm
 
 nexys-prog:        # program the board over USB-JTAG (Vivado); without Vivado: openFPGALoader -b nexys_a7_100 <bit>
 	vivado -mode batch -source scripts/vivado_program_nexys.tcl -tclargs $(MODEL)
+
+cpu-baseline:      # Karpathy's llama2.c (run.c) on this CPU: stories260K, 256 token, greedy, 1 thread -> model/zoo/cpu_baseline.json
+	bash scripts/cpu_baseline.sh
 
 lowbit:            # low-bit weights study (Larq-style binary/ternary, LittleBit): QAT on the Mac
 	cd sw/zoo && $(PYTHON) lowbit.py sweep gpt2 llama nanochat gru mlp && $(PYTHON) lowbit.py table

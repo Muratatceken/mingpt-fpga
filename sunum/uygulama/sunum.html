@@ -263,37 +263,37 @@ body.present .wrap.on{display:block}
 <p style="font-size:24px;color:#C9D2E3">Nexys A7-100T · Artix-7 XC7A100T · Ekim 2026</p>
 </div>
 </section></div>
-<div class="wrap"><section id="ozet" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:30px">
+<div class="wrap"><section id="ozet" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
 <div style="display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;color:#B4460F">ELDE EDİLEN SONUÇLAR</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Dokuz mimari ve hazır eğitilmiş bir model, tek bir FPGA tasarımında bilgisayarsız ve yalnızca integer ile çalıştırıldı</h2>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Modeller FPGA’de doğru çalışıyor; kalite kaybı yalnızca INT8’e geçişten gelir ve çok küçüktür</h2>
 </div>
-<div style="display:flex;gap:22px">
-<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:22px 24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">18 / 18</p>
-<p style="font-size:24px;font-weight:600;color:#B4460F">doğruluk</p>
-<p style="font-size:24px;line-height:1.4">Modelin tamamı, kartın tam simülasyonunda Python referansıyla bit-exact sonuç üretti.</p>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:28px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:8px solid #B4460F;border-radius:12px;padding:16px 28px">
+<p style="width:400px;flex:none;font-size:28px;font-weight:600;line-height:1.25;color:#14213D">FPGA hesabı bozuyor mu?</p>
+<p style="width:250px;flex:none;font-family:'Source Serif 4', Georgia, serif;font-size:50px;font-weight:600;line-height:1.1;color:#B4460F">0 fark</p>
+<p style="flex:1;font-size:24px;line-height:1.4">Hayır. 18 modelin 18’i kartın tam simülasyonunda integer referansla bit-exact: 11 241 token’ın hepsi, hash, ekran ve VGA frame’i birebir aynı.</p>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:22px 24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">16</p>
-<p style="font-size:24px;font-weight:600;color:#2A5C9A">placement</p>
-<p style="font-size:24px;line-height:1.4">Model chip’e place edildi; üçü 50 MHz’te, on üçü 25 MHz’te timing constraint’lerini karşılıyor.</p>
+<div style="display:flex;align-items:center;gap:28px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:8px solid #B4460F;border-radius:12px;padding:16px 28px">
+<p style="width:400px;flex:none;font-size:28px;font-weight:600;line-height:1.25;color:#14213D">Integer’a geçiş kaliteyi düşürüyor mu?</p>
+<p style="width:250px;flex:none;font-family:'Source Serif 4', Georgia, serif;font-size:50px;font-weight:600;line-height:1.1;color:#B4460F">≤ %1,6</p>
+<p style="flex:1;font-size:24px;line-height:1.4">Çok az. Loss names modellerinde en fazla %0,3, stories260K’da %1,6 artıyor (1,400 → 1,422 nat). Hiçbir adımda floating point yok.</p>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:22px 24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">496</p>
-<p style="font-size:24px;font-weight:600;color:#2A5C9A">token/s</p>
-<p style="font-size:24px;line-height:1.4">Karpathy’nin stories260K modeli, 256 token’lık bir hikâyeyi yarım saniyede üretiyor.</p>
+<div style="display:flex;align-items:center;gap:28px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:8px solid #2A5C9A;border-radius:12px;padding:16px 28px">
+<p style="width:400px;flex:none;font-size:28px;font-weight:600;line-height:1.25;color:#14213D">Modeller chip’e gerçekten sığıyor mu?</p>
+<p style="width:250px;flex:none;font-family:'Source Serif 4', Georgia, serif;font-size:50px;font-weight:600;line-height:1.1;color:#2A5C9A">16 / 18</p>
+<p style="flex:1;font-size:24px;line-height:1.4">16 model place and route’tan geçti ve timing’i karşılıyor; en büyüğü LUT’ların %31’ini kullanıyor. İki TinyStories modeli placement’ta takıldı.</p>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:22px 24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">3,6×</p>
-<p style="font-size:24px;font-weight:600;color:#B4460F">hızlanma</p>
-<p style="font-size:24px;line-height:1.4">1-bit weight’ler, INT8’e göre token başına hesap süresini 3,6 kata kadar kısalttı.</p>
+<div style="display:flex;align-items:center;gap:28px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:8px solid #2A5C9A;border-radius:12px;padding:16px 28px">
+<p style="width:400px;flex:none;font-size:28px;font-weight:600;line-height:1.25;color:#14213D">Ne kadar hızlı?</p>
+<p style="width:250px;flex:none;font-family:'Source Serif 4', Georgia, serif;font-size:50px;font-weight:600;line-height:1.1;color:#2A5C9A">496 tok/s</p>
+<p style="flex:1;font-size:24px;line-height:1.4">Saniyede 496 token (25 MHz). Aynı model Apple M1 CPU’da 14 397 token/s: CPU mutlak hızda önde, ama token başına FPGA 4,4 kat daha az cycle harcıyor.</p>
 </div>
 </div>
-<div style="display:flex;flex-direction:column;gap:8px;background:#14213D;border-radius:12px;padding:22px 30px">
-<p style="font-size:28px;line-height:1.4;color:#FBFBF8">Hesabın hiçbir adımında floating point kullanılmadı. Softmax, normalization ve bir sonraki token’ın seçimi dahil bütün işlemler integer ile yapıldı ve her işlemin range’i matematiksel olarak sınırlandırıldı.</p>
+<div style="background:#14213D;border-radius:12px;padding:20px 30px">
+<p style="font-size:28px;line-height:1.4;color:#FBFBF8"><b style="color:#F2A65A">Kısaca:</b> modeller FPGA’ye özel olarak, doğru ve bilgisayarsız çalışacak şekilde implemente edildi. Kalitenin tek bedeli INT8 quantization’dır; FPGA bu bedele hiçbir şey eklemez.</p>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">2 · Karpathy modelleri FPGA’de</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">2 · Karpathy modelleri FPGA’de · ayrıntılar: s. 17 (kalite), 38 (bit-exact), 42–45 (placement, hız), 46 (kayıp ve hız karşılaştırması)</p>
 </section></div>
 <div class="wrap"><section id="yol" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:32px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -1553,6 +1553,59 @@ body.present .wrap.on{display:block}
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">45 · Karpathy modelleri FPGA’de · cycle/token: tam kart simülasyonu; MHz: placement’ta tutan clock</p>
 </section></div>
+<div class="wrap"><section id="cevap" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;color:#B4460F">10 · SONUÇ</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Kalite kaybının tek kaynağı INT8 quantization’dır; FPGA bu kayba hiçbir şey eklemez</h2>
+</div>
+<div style="display:flex;align-items:center;gap:18px">
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #9AA3B2;border-radius:12px;padding:18px 24px">
+<p style="font-size:26px;font-weight:600;color:#14213D">Float model</p>
+<p style="font-size:24px;color:#5A6474">PyTorch, float32</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">loss 1,400</p>
+</div>
+<div style="width:250px;flex:none;display:flex;flex-direction:column;align-items:center;gap:8px">
+<p style="font-size:24px;font-weight:600;color:#B4460F;text-align:center">quantization</p>
+<x-shape kind="arrow-right" style="width:200px;height:34px;background:#B4460F"></x-shape>
+<p style="font-size:24px;line-height:1.3;color:#B4460F;text-align:center">+0,022 nat<br>tek kayıp noktası</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:18px 24px">
+<p style="font-size:26px;font-weight:600;color:#14213D">Integer program</p>
+<p style="font-size:24px;color:#5A6474">IntRunner, golden reference</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">loss 1,422</p>
+</div>
+<div style="width:250px;flex:none;display:flex;flex-direction:column;align-items:center;gap:8px">
+<p style="font-size:24px;font-weight:600;color:#2A5C9A;text-align:center">RTL ve netlist</p>
+<x-shape kind="arrow-right" style="width:200px;height:34px;background:#2A5C9A"></x-shape>
+<p style="font-size:24px;line-height:1.3;color:#2A5C9A;text-align:center">bit-exact<br>0 fark, 18 / 18</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#14213D;border-radius:12px;padding:18px 24px">
+<p style="font-size:26px;font-weight:600;color:#F2A65A">FPGA</p>
+<p style="font-size:24px;color:#C9D1DE">XC7A100T, 25 MHz</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#FBFBF8">loss 1,422</p>
+</div>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil.</b> stories260K için loss’un aşamalara göre değişimi. Names modellerinde quantization’ın bedeli en fazla 0,0055 nat’tır (s. 17).</p>
+<div style="display:flex;gap:24px">
+<div style="flex:1.45;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:20px 26px">
+<p style="font-size:26px;font-weight:600;color:#14213D">Hız: aynı model, CPU ve FPGA</p>
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:46%;text-align:left;color:#14213D">platform</th><th style="width:16%;text-align:right;color:#14213D">clock</th><th style="width:19%;text-align:right;color:#14213D">token/s</th><th style="width:19%;text-align:right;color:#14213D">cycle/token</th></tr>
+<tr><td>M1 CPU · run.c, float32, 1 thread</td><td style="text-align:right">3,2 GHz</td><td style="text-align:right">14 397</td><td style="text-align:right">222 273</td></tr>
+<tr style="background:#F6E3D7"><td>FPGA · INT8 engine</td><td style="text-align:right">25 MHz</td><td style="text-align:right">496</td><td style="text-align:right">50 397</td></tr>
+<tr><td>FPGA · pipeline hedefi</td><td style="text-align:right">50 MHz</td><td style="text-align:right">~990</td><td style="text-align:right">50 397</td></tr>
+</table>
+<p style="font-size:24px;line-height:1.4">Mutlak hızda dizüstü CPU 29 kat önde, çünkü clock’u 128 kat yüksek. Token başına harcanan cycle’da ise FPGA 4,4 kat daha verimli.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#F2EFE7;border-radius:12px;padding:20px 26px">
+<p style="font-size:26px;font-weight:600;color:#14213D">Henüz iddia etmediklerimiz</p>
+<p style="font-size:24px;line-height:1.4">Enerji ölçülmedi; kart ve Vivado güç raporu olmadan token/J verilemez.</p>
+<p style="font-size:24px;line-height:1.4">Fmax, Project X-Ray’in timing modeline dayanır; Vivado ile doğrulanmadı.</p>
+<p style="font-size:24px;line-height:1.4">Multiplier’lar DSP yerine LUT’larda kuruldu; hızdaki en büyük pay pipeline’da.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">46 · Karpathy modelleri FPGA’de · model/zoo/int_metrics.json, model/zoo/cpu_baseline.json (make cpu-baseline)</p>
+</section></div>
 <div class="wrap"><section id="karsi" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:20px">
 <div style="display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;color:#B4460F">10 · SONUÇ</p>
@@ -1604,7 +1657,7 @@ body.present .wrap.on{display:block}
 <p style="position:absolute;left:980px;top:0px;width:180px;font-size:24px;color:#5A6474;text-align:right">20 000 token/s</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">46 · Karpathy modelleri FPGA’de · dikey: test loss, yukarı iyi · yatay: token/s (log) · bigram dışarıda</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">47 · Karpathy modelleri FPGA’de · dikey: test loss, yukarı iyi · yatay: token/s (log) · bigram dışarıda</p>
 </section></div>
 <div class="wrap"><section id="katki" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:24px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -1631,7 +1684,7 @@ body.present .wrap.on{display:block}
 </div>
 </div>
 <p style="font-size:24px;line-height:1.4;color:#5A6474"><b>En yakın çalışmalar.</b> HLSTransform llama2.c’nin 110M modelini çalıştırır, ancak weight’ler external memory’de, sampling host’tadır. TALOS-V2 tek bir microGPT modelini JTAG üzerinden sürer. COBRA’nın 1-bit unit metin üretmez. Değerlendirme Ekim 2026 literatür taramasına dayanır.</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">47 · Karpathy modelleri FPGA’de · report/bolumler/zoo_ilgili.tex, paper/related_work.md</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">48 · Karpathy modelleri FPGA’de · report/bolumler/zoo_ilgili.tex, paper/related_work.md</p>
 </section></div>
 <div class="wrap"><section id="sinir" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -1656,7 +1709,7 @@ body.present .wrap.on{display:block}
 <p style="font-size:24px;line-height:1.4">ts_gpt2 ve ts_microgpt chip’e place edilemedi. gpt-nano sıralama demosu bu kart tasarımında bulunmuyor. Larq paketiyle sayısal karşılaştırma ve iki path’li LittleBit hardware’i henüz yapılmadı.</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">48 · Karpathy modelleri FPGA’de</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">49 · Karpathy modelleri FPGA’de</p>
 </section></div>
 <div class="wrap"><section id="sonraki" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -1685,7 +1738,7 @@ body.present .wrap.on{display:block}
 <p style="flex:1;font-size:24px;line-height:1.4"><b>Low-bit weight’ler:</b> stories260K için daha uzun bir binary QAT yapılacak ve iki path’li LittleBit hardware’de denenecek.</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">49 · Karpathy modelleri FPGA’de</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">50 · Karpathy modelleri FPGA’de</p>
 </section></div>
 <div class="wrap"><section id="son" data-transition="fade" style="background:#14213D;color:#FBFBF8;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:36px">
 <p style="font-size:24px;font-weight:600;letter-spacing:3px;color:#F2A65A">ÖZET</p>

@@ -1,0 +1,23 @@
+{
+ "model": "stories260k",
+ "code": "karpathy/llama2.c run.c (master, sha256 9c4f2d5c6ae01b71...)",
+ "cpu": "Apple M1",
+ "os": "macOS-27.0.1-arm64-arm-64bit",
+ "threads": 1,
+ "context": 256,
+ "decoding": "greedy",
+ "O3": {
+  "T": 256,
+  "reps": 200,
+  "tok_s_mean": 6718.2,
+  "tok_s_best": 6828.9,
+  "us_per_token": 148.849
+ },
+ "Ofast_native": {
+  "T": 256,
+  "reps": 200,
+  "tok_s_mean": 14396.7,
+  "tok_s_best": 14738.1,
+  "us_per_token": 69.46
+ }
+}

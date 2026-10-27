@@ -83,7 +83,7 @@ tamsayı referansla **bit-exact**; RTL, referansla token token aynı 200 tokenl�
 
 **Sunumlar** (yerel, `sunum/`):
 - [sunum/sunum.pdf](sunum/sunum.pdf): Bölüm 1, minGPT adım adım, FPGA potansiyeli ve LittleBit (55 slayt).
-- [sunum/uygulama/sunum.pdf](sunum/uygulama/sunum.pdf): Bölüm 2, implementasyon (50 slayt); yanında
+- [sunum/uygulama/sunum.pdf](sunum/uygulama/sunum.pdf): Bölüm 2, implementasyon (51 slayt); yanında
   [terimler.pdf](sunum/uygulama/terimler.pdf) (teknik terimler sözlüğü),
   [konusma_notlari.pdf](sunum/uygulama/konusma_notlari.pdf) (zaman planı, olası sorular) ve
   [konusma_metni.pdf](sunum/uygulama/konusma_metni.pdf). `make sunum-yerel` ile yeniden üretilir.
