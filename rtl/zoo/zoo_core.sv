@@ -383,15 +383,19 @@ module zoo_core
 
   // ---- ATTN ----
   logic signed [23:0] sc;
+  logic [8*DH-1:0]    qh;
   logic [24:0]        e_diff;
   logic [63:0]        e_u, e_n, e_kk;
   logic [15:0]        e_val;
   logic [5:0]         e_f;
   logic signed [63:0] att_y;
   always_comb begin
-    sc = '0;                                              // q: head h is a DH-byte slice of a P-byte word
+    // q: head h is a DH-byte slice of a P-byte word; select the slice first, then constant lanes (a dynamic
+    // byte select inside the sum is mis-optimised by Yosys' peepopt after wreduce)
+    qh = va_d[8 * DH * (h % (P / DH)) +: 8 * DH];
+    sc = '0;
     for (int d = 0; d < DH; d++)
-      sc += $signed(va_d[8 * (((h << LDH) + d) % P) +: 8]) * $signed(k_rd[8*d +: 8]);
+      sc += $signed(qh[8*d +: 8]) * $signed(k_rd[8*d +: 8]);
     e_f    = f_k[5:0];
     e_diff = 25'(a_m - sbuf[POS_W'(j)]);
     e_u    = 64'(e_diff) * 64'(f_b1[15:0]);

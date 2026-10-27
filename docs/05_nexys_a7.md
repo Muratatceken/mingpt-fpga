@@ -152,8 +152,8 @@ $T = 256$ ile sınırlanmıştır, böylece KV cache BRAM'e sığar.
 |---|---|---|---|
 | Rastgele (fuzz) | `make nexys-fuzz` | bigram, gru, nanochat, llama: 40'ar durum; stories260k: 6 | 655 koşu, ~121 000 token, sampling ayarlarının 30–32/32'si; hepsi aynı |
 | Köşe durumları | `board_fuzz.py --directed` | 15 durum (aşağıda) | hepsi geçti |
-| 4-state, X kontrolü | `make nexys-icarus` | gru, koşu ortasında reset dahil 2,7 M çevrim | pinlerde ve metin RAM yazma portunda 0 X |
-| Sentez sonrası netlist | `make nexys-netlist` | gru: gerçek üst modülün Yosys netlist'i (MMCM, BUFG, BRAM) | her pinde RTL ile çevrimi çevrimine aynı; VGA karesi aynı |
+| 4-state, X kontrolü | `make nexys-icarus` | gru (koşu ortasında reset dahil 2,7 M çevrim), gpt2-bin | pinlerde ve metin RAM yazma portunda 0 X; token'lar aynı |
+| Sentez sonrası netlist | `make nexys-netlist` | gerçek üst modülün Yosys netlist'i (MMCM, BUFG, BRAM): gru, gpt2-bin, mlp-lb25p1 | her pinde RTL ile çevrimi çevrimine aynı; VGA karesi aynı |
 | CI | `scripts/nexys_ci.sh` | gru, nanochat, gpt2-bin, mlp-lb25p1 | kart üstü kontrol OK |
 
 Köşe durumları:
@@ -176,6 +176,18 @@ SystemVerilog'u önce sv2v (0.0.13) ile Verilog'a çeviriyor.
 - **Etkilenmeyenler:** Verilator ve Vivado SystemVerilog'u doğrudan okuduğu için doğruydu.
 - **Düzeltme:** ifade açıkça `$signed(...)` ile yazıldı. Artık Icarus'ta gpt2, llama, nanochat, microgpt,
   bow ve gpt2-bin de bit-exact; Verilator'daki pin imzaları değişmedi.
+
+**Yosys netlist'inde attention skorları yanlıştı (RTL yeniden yazıldı).**
+
+- **Hata:** Yosys 0.69'un `wreduce` ve ardından gelen `peepopt` adımları, q·k toplamının içindeki dinamik
+  bayt seçimini (`va_d[8*(((h<<3)+d) % P) +: 8]`) yanlış optimize ediyordu. Bu adımlar tek başına
+  doğru; hata ikisi art arda çalışınca ortaya çıkıyor.
+- **Belirtisi:** t = 0'da attention çıkışı skordan bağımsız olduğu için ilk pozisyonlar doğru, sonrakiler
+  yanlıştı. Bu, attention kullanan bütün modellerin netlist'ini etkiliyordu.
+- **Çözüm:** RTL artık önce head'in 8 baytlık dilimini seçiyor, sonra sabit indeksler kullanıyor.
+  Anlam değişmedi; Verilator pin imzaları aynı.
+- **Sonuç:** engine'in tam Xilinx sentezli netlist'i (`-nodsp`) gpt2, llama, nanochat ve gpt2-bin için
+  bit-exact.
 
 **Kaynaklar** (Yosys `synth_xilinx`; zamanlama yok, Vivado'nun sayıları farklı olabilir). Her bitstream tek
 bir model taşıdığı için engine yalnızca o modelin kullandığı birimlerle sentezlenir (`SPECIALIZE=1`):
