@@ -7,6 +7,10 @@
 #   scripts/xc7_toolchain.sh            ($XC7_DIR, default ~/tools/xc7; about 30-60 min, mostly the xc7a100t chipdb)
 set -euo pipefail
 export PATH="/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+# macOS: if xcrun picks a Command Line Tools SDK newer than the selected Xcode's linker, use Xcode's SDK
+XSDK="$(xcode-select -p 2>/dev/null)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+if [ "$(uname)" = Darwin ] && [ -z "${SDKROOT:-}" ] && [ -d "$XSDK" ] && \
+   ! xcrun --show-sdk-path 2>/dev/null | grep -q "^$(xcode-select -p)"; then export SDKROOT="$XSDK"; fi
 X="${XC7_DIR:-$HOME/tools/xc7}"
 J="$(sysctl -n hw.ncpu)"
 mkdir -p "$X" && cd "$X"
@@ -30,12 +34,14 @@ if [ ! -d fasm ]; then                                              # patched: p
 fi
 
 echo "== nextpnr-himbaechel (xilinx, xc7a100t)"
+[ -f nextpnr/build/build.ninja ] || rm -rf nextpnr/build
 cmake -S nextpnr -B nextpnr/build -G Ninja -DCMAKE_BUILD_TYPE=Release -Wno-author \
   -DARCH=himbaechel -DHIMBAECHEL_UARCH=xilinx -DHIMBAECHEL_XILINX_DEVICES=xc7a100t \
   -DHIMBAECHEL_PRJXRAY_DB="$X/prjxray/database" -DUSE_OPENMP=OFF -DBUILD_GUI=OFF -DBUILD_PYTHON=OFF
 cmake --build nextpnr/build -j "$J"
 
 echo "== Project X-Ray tools (xc7frames2bit)"
+[ -f prjxray/build/build.ninja ] || rm -rf prjxray/build
 cmake -S prjxray -B prjxray/build -G Ninja -DCMAKE_BUILD_TYPE=Release -Wno-author
 cmake --build prjxray/build -j "$J"
 
