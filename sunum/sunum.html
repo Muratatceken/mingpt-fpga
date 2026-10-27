@@ -1608,31 +1608,31 @@ body.present .wrap.on{display:block}
 </div>
 <div style="display:flex;gap:24px">
 <div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">53 200</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">63 400</p>
 <p style="font-size:24px;font-weight:600;color:#B4460F">LUT</p>
 <p style="font-size:24px;line-height:1.4">6 girişli küçük doğruluk tablosu. Her mantık fonksiyonu bunlarla kurulur.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">106 400</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">126 800</p>
 <p style="font-size:24px;font-weight:600;color:#B4460F">FF (flip-flop)</p>
 <p style="font-size:24px;line-height:1.4">Tek bitlik register. Ara sonuçları ve pipeline aşamalarını tutar.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">140</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">135</p>
 <p style="font-size:24px;font-weight:600;color:#B4460F">BRAM (36 Kb)</p>
-<p style="font-size:24px;line-height:1.4">Çip içi bellek blokları, toplam ~630 KB. Weight’ler burada durabilir.</p>
+<p style="font-size:24px;line-height:1.4">Çip içi bellek blokları, toplam ~607 KB. Weight’ler burada durabilir.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:24px">
-<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">220</p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:40px;font-weight:600;color:#14213D">240</p>
 <p style="font-size:24px;font-weight:600;color:#B4460F">DSP48</p>
 <p style="font-size:24px;line-height:1.4">Hazır 25×18 bit çarpıcı ve toplayıcı: her clock cycle’da bir MAC.</p>
 </div>
 </div>
-<p style="font-size:24px;line-height:1.4;color:#5A6474">Sayılar, bu projede kullandığımız PYNQ-Z2 kartındaki Zynq XC7Z020 çipine ait.</p>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">Sayılar, bu projede kullandığımız Nexys A7-100T kartındaki Artix-7 XC7A100T çipine ait.</p>
 <div style="display:flex;gap:24px">
 <div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#F2EFE7;border-radius:12px;padding:24px 28px">
-<h3 style="font-size:30px;font-weight:600;color:#14213D">PYNQ-Z2: işlemci ve FPGA aynı çipte</h3>
-<p style="font-size:24px;line-height:1.4">Zynq XC7Z020’de çift çekirdekli bir ARM Cortex-A9 işlemci ile programlanabilir mantık yan yana. İşlemci modeli yükler ve sonucu okur; hesap programlanabilir mantıkta yapılır.</p>
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Nexys A7-100T: kart tek başına çalışır</h3>
+<p style="font-size:24px;line-height:1.4">Kartta ayrı bir işlemci yok. Model bitstream ile birlikte çipin belleğine yüklenir; VGA çıkışı, 7-segment gösterge, anahtarlar ve düğmeler sonucu göstermeye ve kontrol etmeye yeter.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#F2EFE7;border-radius:12px;padding:24px 28px">
 <h3 style="font-size:30px;font-weight:600;color:#14213D">GPU’dan farkı</h3>
@@ -1661,10 +1661,10 @@ body.present .wrap.on{display:block}
 </div>
 <div style="width:600px;display:flex;flex-direction:column;gap:14px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:28px">
 <p style="font-size:24px;font-weight:600;color:#5A6474">Bellek: 85,7 bin parametre nereye sığar?</p>
-<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;color:#14213D">BRAM kapasitesi · ~630 KB</p><div style="width:540px;height:26px;background:#9AA3B2;border-radius:4px"></div></div>
-<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;color:#14213D">weight’ler, 32 bit floating point · ~343 KB</p><div style="width:294px;height:26px;background:#2A5C9A;border-radius:4px"></div></div>
-<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;color:#14213D">weight’ler, 8 bit · ~84 KB</p><div style="width:72px;height:26px;background:#B4460F;border-radius:4px"></div></div>
-<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> weight’ler 32 bit hâliyle bile çipin BRAM’ine sığıyor; 8 bit ile kapasitenin yalnızca %13’ünü kullanıyor.</p>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;color:#14213D">BRAM kapasitesi · ~607 KB</p><div style="width:540px;height:26px;background:#9AA3B2;border-radius:4px"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;color:#14213D">weight’ler, 32 bit floating point · ~343 KB</p><div style="width:305px;height:26px;background:#2A5C9A;border-radius:4px"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;color:#14213D">weight’ler, 8 bit · ~84 KB</p><div style="width:75px;height:26px;background:#B4460F;border-radius:4px"></div></div>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> weight’ler 32 bit hâliyle bile çipin BRAM’ine sığıyor; 8 bit ile kapasitenin yalnızca %14’ünü kullanıyor.</p>
 </div>
 </div>
 <div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #B4460F;padding:6px 0px 6px 24px">
@@ -1797,7 +1797,7 @@ body.present .wrap.on{display:block}
 <div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;color:#14213D">LittleBit 0,1 BPW · <b>0,84 GB (31,0×)</b></p><div style="width:17px;height:28px;background:#B4460F;border-radius:4px"></div></div>
 <p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil:</b> sıkıştırma oranı 16/0,1 = 160× değil 31×; çünkü embedding ve lm_head FP16 bırakılıyor.</p>
 <div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 20px">
-<p style="font-size:24px;line-height:1.4"><b>Bizim için:</b> çipteki ~630 KB BRAM, 0,1 BPW’de kabaca 50 milyon weight demek.</p>
+<p style="font-size:24px;line-height:1.4"><b>Bizim için:</b> çipteki ~607 KB BRAM, 0,1 BPW’de kabaca 50 milyon weight demek.</p>
 </div>
 </div>
 </div>
@@ -2297,7 +2297,7 @@ body.present .wrap.on{display:block}
 <li>±1 ile çarpma toplama ya da çıkarmadır: ağır iş DSP yerine LUT’larla yapılır.</li>
 <li>İşaretler 1 bit: BRAM’e INT8’e göre 8 kat yoğun paketlenir.</li>
 <li>Hesap yine matris-vektör çarpımı: tek-token generation akışıyla uyumlu.</li>
-<li>~630 KB BRAM, 0,1 BPW’de ~50 M weight’e yer açar (teorik).</li>
+<li>~607 KB BRAM, 0,1 BPW’de ~50 M weight’e yer açar (teorik).</li>
 </ul>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:20px 26px">
