@@ -1,0 +1,47 @@
+\evre{15 Ekim 11:01 – 16 Ekim 14:21 \enspace·\enspace 6 commit, \code{08523c8} … \code{81b3641}}{Evre 4: Hoca için sunum}{sec:e4}
+
+\neden
+İlk hafta kod ve ölçümle geçti; sıra bunları bir hocaya anlatmaya geldi. Kullanıcının isteği yalnızca bir sonuç sunumu değildi, aynı zamanda bir sınavdı:
+
+\soz{15 Ekim, 11:05}{şu ana kadar neler yaptık, teorik zeminimiz ne, en önemlisi mingpt'nin matematiksel olarak adım adım anlatılması ne nedir, bunu kod blokları ile de bu bunu yapıyor gibisinden göstermek. […] hem bir şu ana kadar neler yaptık hem de yaptığımız şeyi gerçekten anladık mı anlamadık mı diye onları da hocaya sanki o bilmiyormuş gibi anlatmamız gerekiyor.}
+
+\neyapildi
+\paragraph{İlk taslak: 46 slayt.} Bütün projeyi kapsayan bir taslak hazırlandı: teorik zemin, minGPT adım adım (her adımda formül ve onu yapan minGPT kodu yan yana), integer aritmetik, ilk donanım, model ailesi ve engine, doğrulama, ve “gerçekten anladık mı?” başlıklı beş soru ($\sqrt{d_h}$'ye neden bölüyoruz, LN neden taşmaz, softmax hileleri neden doğru, bit-exact ne demek, isimlerde GRU neden önde). Hazırlık sırasında iki bulgu da çıktı: eşit bütçede bütün modellerin matris çarpımı cycle'ı aşağı yukarı aynı (5\,900–6\,700); transformer'lardaki fazlalık normalizasyon ve attention'dan geliyor. $P=32$'de stories260K'nın yalnızca 1,65 kat hızlanması da Amdahl yasasıyla tam tutuyor.
+
+\paragraph{Daraltma ve iki kural.} Kullanıcı sunumun dilini ve kapsamını iki cümleyle belirledi. Bu iki kural o günden beri her slaytta geçerli:
+
+\soz{15 Ekim, 12:05}{biz bu tarz kavramları teknik terimleri olduğu gibi bırakalım çevirmeylim sunumda hiç bir şekilde. birde biz attentionı falanda çok temelden anlatalım nedir ne yapar gibisinden.}
+\soz{15 Ekim, 12:13}{sunumun şu anlık sadece mingpt kısmını hazırla. bunun fpga'de uygulama potasiyellerinden bahset geri kalan kısımdan bahsetme. onu sonra yapıcaz.}
+
+Sunum 28 slaytlık bir minGPT bölümüne indi (\code{08523c8}); konuşma metni slayt slayt yazıldı ve PDF'e çevrildi; 46 slaytlık taslak \code{sunum/v1\_tam\_taslak} altında saklandı.
+
+\paragraph{Hocanın geri bildirimi (16 Ekim).} Hoca iki şey istedi:
+
+\soz{16 Ekim, 13:05}{hoca sunumda embedding kısmını matematiksel olarak daha detaylı teknik olarak tam nasıl işlediğini anlatmamızı istedi bir de araştırma konusu olarak LittleBit: Ultra Low-Bit Quantization via Latent Factorization konusunu verdi […] işin matematiğinin nasıl işlediği hoca için çok önemli}
+
+İlk sürüm 41 slayta çıktı (\code{686116f}): one-hot çarpımının satır seçimine inmesi, sparse gradient, learned/sinusoidal/RoPE position embedding ve LittleBit'in (Lee vd., NeurIPS 2025) low-rank factorization, binarization, multi-scale scale'ler, Dual-SVID ve residual compensation adımları. Kullanıcının tepkisi açıktı:
+
+\soz{16 Ekim, 13:30}{littlebit daha iyi açıklanmalı en salak insan bile anlamalı. ben ilk bakışta anlamıyorum. daha iyi anlatmamız şart. matematiksel olarak koru ama tam olarak ne yaptığını trickini düzgünce ltieral olarak anlatalım}
+
+LittleBit bölümü sezgiden matematiğe gidecek şekilde baştan kuruldu (52 slayt, \code{53caa4d}). Yöntemin hilesi tek cümleye indi: \emph{matrisi sayı sayı saklamak yerine birkaç ± desen ve birkaç scale ile tarif etmek}. Matematik ise şu:
+
+\begin{ozet}[LittleBit tek formülde.]
+Bir weight matrisi $W\in\mathbb{R}^{d_o\times d_i}$ şu şekilde yaklaşılır:
+\[ \hat W = \mathrm{diag}(h)\;\mathrm{sign}(U)\;\mathrm{diag}(\ell)\;\mathrm{sign}(V)^{\!\top}\;\mathrm{diag}(g), \qquad U\in\mathbb{R}^{d_o\times r},\; V\in\mathbb{R}^{d_i\times r}. \]
+$\mathrm{sign}(U)$ ve $\mathrm{sign}(V)$ yalnız $\pm1$ içerir (1 bit), $h, \ell, g$ ise satır, latent ve sütun scale'leridir. Hesap $\hat W x$, iki adımda çarpıcısız yapılır: önce $x$, $g$ ile ölçeklenir; sonra $\pm1$'lerle toplanır ve çıkarılır. Saklanan bit, weight başına
+\[ \text{BPW} = \frac{r(d_o+d_i) + 16\,(d_o+d_i+r)}{d_o\,d_i} \]
+kadardır (16 bitlik scale'lerle, tek yol). Bu formül, üç gün sonra küçük modellerdeki asıl bulgumuzu (§\ref{sec:e6}) önceden haber veriyordu.
+\end{ozet}
+
+Bir $4\times4$ elle örnek, residual yolun neden işe yaradığını tek bakışta gösterdi: göreli hata SVD'de (sıkıştırmasız) \%0,4; tek yollu LittleBit başlangıcında \%17,7; scale'ler ve işaretler eğitilince \%14,5; residual yolla \%0,4.
+
+\paragraph{Kavramlar.} Kullanıcı sunumu kendisi anlatacağı için kavramları tek tek sordu: SVD, low-rank factorization, LoRA, quantization, residual, BPW, sign, scale. Cevaplar slayt oldu (55 slayt, \code{81b3641}): sekiz terimin tek cümlelik haritası; quantization'ın INT8, INT4 ve binary için sayı doğrusu ve hesaplanmış örnekleri (hata \%0,15 / \%2,7 / \%32, en iyi $\alpha = \text{ort}|w|$); LoRA ile karşılaştırma (W'ye bir düzeltme eklemek ile W'nin yerine geçmek); “residual” kelimesinin residual connection ile karıştırılmaması uyarısı. Benzetme olarak kullanılan “ses düğmesi”, kullanıcının isteğiyle teknik terim olan \emph{scale}'e bırakıldı (\code{f9b9055}).
+
+\sorunlar
+\begin{itemize}
+  \item \textbf{Hesap değişti:} 16 Ekim'de kullanıcının hesabı değişti; eski hesaptaki sunum yeni hesaptan açılmadığı için deck yeniden oluşturuldu.
+  \item \textbf{Acrobat'ta beyaz ekran:} PDF, Acrobat'ta açıkken üzerine yazılınca bozuk görünüyordu. O günden beri PDF'ler önce geçici bir dosyaya yazılıp sonra taşınıyor (bu rapor da öyle).
+  \item \textbf{Kapsam:} donanım ve sonuç bölümleri bilinçli olarak sunumun dışında bırakıldı (“onu sonra yapıcaz”).
+\end{itemize}
+
+\ders{Bir şeyi anlatmaya çalışmak, onu gerçekten anlayıp anlamadığımızı gösterir. LittleBit'in ilk anlatımı doğruydu ama anlaşılmıyordu; sezgiden başlayıp gerçek bir sayısal örnekle matematiğe gitmek, hem anlatımı hem de bizim kavrayışımızı düzeltti. Bu düzen (önce sezgi ve gerçek sayılar, sonra matematik; terimler İngilizce) bu raporda da kullanıldı.}

@@ -1,0 +1,68 @@
+\section{Bugünkü durum}\label{sec:bugun}
+\noindent{\sffamily\small\color{muted}27 Ekim 2026, bu raporun yazıldığı an}\par\smallskip
+
+\subsection{Kart tasarımındaki modeller}
+
+Tablo~\ref{tab:kart}, kart tasarımına giren \gBoardModels{} modelin bugünkü durumunu tek yerde toplar. “Saat” sütunu, açık kaynak akışın zamanlamayı tutturduğu çekirdek clock'tur; token/s bu saatten hesaplanır. Henüz yerleştirilmemiş modeller “sürüyor” olarak görünür; tablo \code{veri.py} yeniden çalıştırılınca güncellenir.
+
+\begin{table}[htb]
+\centering\small
+\setlength{\tabcolsep}{4.5pt}
+\caption{\gBoardModels{} model, Nexys A7-100T kart tasarımında. cycle/token kart simülasyonundan (otomatik ilk koşunun ortalaması); “Sim.” tam kart simülasyonunun Python referansıyla karşılaştırması.}\label{tab:kart}
+\begin{tabular}{@{}lllrrlrl@{}}
+\toprule
+\thead{Model} & \thead{Veri} & \thead{Weight} & \thead{cycle/token} & \thead{token/s, 50 MHz} & \thead{Saat} & \thead{token/s, saatte} & \thead{Sim.} \\
+\midrule
+\tabinput{data/kart.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htb]
+\centering
+\input{data/cyc_plot}
+\caption{Token başına cycle (logaritmik eksen). names modelleri birkaç bin, TinyStories modelleri 30–50 bin cycle; düşük bitli modeller INT8 karşılıklarının altında.}
+\label{fig:cyc}
+\end{figure}
+
+\subsection{Ne bitti, ne kaldı?}
+
+\begin{table}[htb]
+\centering\small
+\caption{Projenin durumu.}\label{tab:durum}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{2.2cm}L@{}}
+\toprule
+\thead{İş} & \thead{Durum} & \thead{Not} \\
+\midrule
+Integer aritmetik, ispatlı sınırlar & \textcolor{good}{bitti} & LN, RMSNorm, RoPE, QK-norm, GRU durumları \\
+9 mimari + stories260K, tek engine & \textcolor{good}{bitti} & PYNQ dönemi engine'i, $P=8/16/32$ \\
+Kart tasarımı (Nexys A7-100T) & \textcolor{good}{bitti} & sampling, detokenizer, VGA, kart üstü kontrol \\
+Düşük bitli weight'ler & \textcolor{good}{bitti} & GEMVB + SCALE; 3 model kartta \\
+Tam kart simülasyonu & \textcolor{good}{\gBoardPass{}/\gBoardModels{}} & token, hash, ekran \\
+Rastgele / köşe / 4-state & \textcolor{good}{bitti} & \gFuzzRuns{} koşu, \gDirectedCases{} durum \\
+Sentez sonrası netlist simülasyonu & \textcolor{warm}{kısmi} & gru, gpt2-bin, mlp-lb25p1 kart düzeyinde; 4 model engine düzeyinde \\
+Yerleşim, yönlendirme, Fmax & \textcolor{warm}{\gPnrDone{}/\gPnrTotal{}} & büyük modeller 25 MHz'te \\
+Fiziksel kart & — & kullanıcının kararıyla yapılmayacak \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Sonraki adımlar}
+\begin{enumerate}
+  \item \textbf{Engine'i pipeline'a bölmek, 50 MHz:} NORM çıkışı gibi tek cycle'lık eleman bazlı yollara bir register eklemek (§\ref{sec:e8}). Bedeli birkaç cycle; kazancı büyük modellerde yaklaşık iki kat token/s. Bütün testlerin yeniden geçmesi gerekir.
+  \item \textbf{Yerleştirilen netlist'in simülasyonu, 18 model:} akışın yerleştirdiği netlist'i Verilog olarak kaydedip gerçek clock ayarı ve gerçek debounce süreleriyle tam kart simülasyonundan geçirmek (§\ref{sec:e9}).
+  \item \textbf{minGPT'nin sıralama modeli, 19. model:} projenin başladığı \code{gpt-nano} sıralama görevi bugün kart tasarımında yok; o model eski PYNQ hızlandırıcısında çalışıyordu. Zoo'daki \code{gpt2} aynı GPT-2 bloğu ama names'te eğitildi. Ekrana girdi dizisini ve sıralanmış çıktıyı yazan bir görünümle eklenebilir. Sunumun konusu olduğu için önemli.
+  \item \textbf{Daha uzun binary QAT (stories260K)} ve \textbf{iki yollu LittleBit'in donanımda toplanması}.
+  \item \textbf{Yosys DSP hatasının} küçük örnekle (\code{requant\_netlist\_check.sh}) Yosys geliştiricilerine bildirilmesi; düzelirse DSP'li ve bit-exact bir açık kaynak bitstream.
+  \item \textbf{Sunumun geri kalanı:} 16 Ekim'deki sunum yalnız minGPT kısmını kapsıyordu; implementasyonu anlatan yeni bir sunum, bu raporla birlikte hazırlanıyor.
+\end{enumerate}
+
+\subsection{Geriye bakış}
+
+On beş günde projenin üç kez yön değiştirdiği görülüyor: tek modelden aileye, PYNQ'dan Nexys'e, bilgisayarın sürdüğü hızlandırıcıdan kartta kendi başına çalışan modele. Her yön değişikliği kullanıcıdan geldi ve her biri iddiayı daha dürüst hâle getirdi. Değişmeyen şey bit-exact kuralıydı; bu kural sayesinde her yeni katman (sampling, ekran, düşük bit, yeni araçlar) bir öncekinin doğruluğunu bozmadan eklenebildi. Üç genel ders:
+
+\begin{itemize}
+  \item \textbf{Spesifikasyon çalıştırılabilir olmalı.} Python'daki integer model hem bir referans hem de bir test kâhinidir; RTL'deki her hata ve araçlardaki üç hata ona karşı bulundu.
+  \item \textbf{Araçlar da hata yapar.} Aynı tasarımı birbirinden bağımsız zincirlerden geçirmek, tek bir zincirin göremeyeceğini gösterir.
+  \item \textbf{Ölçülmeyen sayı tasarımın zayıf yanını saklar.} Fmax ölçülünce tek cycle'lık yolların bedeli görüldü; sıradaki iş tam olarak bu.
+\end{itemize}

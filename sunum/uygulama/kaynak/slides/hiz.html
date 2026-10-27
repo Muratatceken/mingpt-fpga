@@ -1,0 +1,35 @@
+<section id="hiz" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">9 · Yerleşim ve hız</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Gerçek hız = clock / (cycle / token): stories260K kartta saniyede 496 token yazıyor, 256 token’lık hikâye yarım saniye</h2>
+</div>
+<div style="display:flex;gap:28px;align-items:start">
+<table style="flex:1;font-size:24px;color:#3B4456">
+<tr><th style="width:34%;text-align:left;color:#14213D">model</th><th style="width:16%;text-align:right;color:#14213D">MHz</th><th style="width:24%;text-align:right;color:#14213D">cycle/token</th><th style="width:26%;text-align:right;color:#14213D">token/s</th></tr>
+<tr><td>bigram</td><td style="text-align:right">50</td><td style="text-align:right">157</td><td style="text-align:right">318 066</td></tr>
+<tr><td>mlp</td><td style="text-align:right">50</td><td style="text-align:right">6 722</td><td style="text-align:right">7 438</td></tr>
+<tr><td>rnn</td><td style="text-align:right">50</td><td style="text-align:right">6 464</td><td style="text-align:right">7 735</td></tr>
+<tr><td>gru</td><td style="text-align:right">25</td><td style="text-align:right">6 605</td><td style="text-align:right">3 785</td></tr>
+<tr><td>bow</td><td style="text-align:right">25</td><td style="text-align:right">6 368</td><td style="text-align:right">3 926</td></tr>
+<tr><td>gpt2</td><td style="text-align:right">25</td><td style="text-align:right">8 713</td><td style="text-align:right">2 869</td></tr>
+<tr><td>microgpt</td><td style="text-align:right">25</td><td style="text-align:right">8 746</td><td style="text-align:right">2 858</td></tr>
+<tr><td>llama</td><td style="text-align:right">25</td><td style="text-align:right">9 491</td><td style="text-align:right">2 634</td></tr>
+</table>
+<table style="flex:1;font-size:24px;color:#3B4456">
+<tr><th style="width:34%;text-align:left;color:#14213D">model</th><th style="width:16%;text-align:right;color:#14213D">MHz</th><th style="width:24%;text-align:right;color:#14213D">cycle/token</th><th style="width:26%;text-align:right;color:#14213D">token/s</th></tr>
+<tr><td>nanochat</td><td style="text-align:right">25</td><td style="text-align:right">10 813</td><td style="text-align:right">2 312</td></tr>
+<tr style="background:#F6E3D7"><td>stories260K</td><td style="text-align:right">25</td><td style="text-align:right">50 397</td><td style="text-align:right">496</td></tr>
+<tr><td>ts_gru</td><td style="text-align:right">25</td><td style="text-align:right">30 407</td><td style="text-align:right">822</td></tr>
+<tr><td>ts_llama</td><td style="text-align:right">25</td><td style="text-align:right">50 397</td><td style="text-align:right">496</td></tr>
+<tr><td>ts_nanochat</td><td style="text-align:right">25</td><td style="text-align:right">50 680</td><td style="text-align:right">493</td></tr>
+<tr><td>gpt2-bin</td><td style="text-align:right">25</td><td style="text-align:right">4 983</td><td style="text-align:right">5 017</td></tr>
+<tr><td>mlp-lb25p1</td><td style="text-align:right">25</td><td style="text-align:right">1 874</td><td style="text-align:right">13 340</td></tr>
+<tr><td>stories-bin</td><td style="text-align:right">25</td><td style="text-align:right">27 992</td><td style="text-align:right">893</td></tr>
+</table>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #B4460F;padding:6px 0px 6px 24px">
+<p style="font-size:24px;line-height:1.4"><b>Ölçek için:</b> bir insan saniyede birkaç token okur; kart en yavaş modelde bile okumaktan yüz kat hızlı yazıyor. Bu yüzden kartta bir de saniyede ~25 token’lık daktilo modu var. Pipeline ile 50 MHz’e çıkılırsa bütün 25 MHz sayıları iki katına çıkar.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">45 · Karpathy modelleri FPGA’de · cycle/token: tam kart simülasyonu; MHz: yerleşimde tutan clock</p>
+<aside>Şimdi iki ölçümü birleştirebiliriz. Gerçek hız, clock frekansının token başına cycle sayısına bölümü. Token başına cycle tam kart simülasyonundan geliyor ve sampler ile ekran beklemesini de içeriyor; clock ise yerleşimde zamanlamanın tuttuğu frekans. En hızlısı bigram: saniyede 318 bin token, çünkü bir token için yalnızca bir tablo okuyor. makemore’un 50 megahertzde çalışan mlp ve rnn modelleri saniyede 7 500 token civarında. Transformer’lar 25 megahertzde saniyede 2 300 ile 2 900 token arasında. Karpathy’nin stories260K modeli saniyede 496 token yazıyor; 256 token’lık bir hikâye yarım saniyede bitiyor. Düşük bitli modeller belirgin şekilde hızlı: binary gpt2 saniyede 5 bin, LittleBit’li mlp 13 bin, binary stories260K 893 token. Ölçek vermek için: bir insan saniyede birkaç token okuyabiliyor; kart en yavaş modelde bile okuma hızımızın yüz katından hızlı yazıyor. Bu yüzden karta, üretimi gözle izleyebilmek için saniyede yaklaşık 25 token’lık bir daktilo modu da koyduk. Pipeline ile 50 megahertze çıkabilirsek 25 megahertzdeki bütün sayılar iki katına çıkar.</aside>
+</section>

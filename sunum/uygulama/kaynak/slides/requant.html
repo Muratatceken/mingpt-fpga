@@ -1,0 +1,21 @@
+<section id="requant" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · Integer aritmetik</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Requant: gerçel çarpan M, bir tamsayı çarpan ve bir kaydırma olur; float’a hiç dönülmez</h2>
+</div>
+<div style="display:flex;gap:44px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;flex-direction:column;gap:8px;background:#F2EFE7;border-radius:12px;padding:22px 28px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.55;color:#14213D"><i>y</i> ≈ <i>S_x S_w</i> · acc,  acc = Σ <i>q_w q_x</i> + <i>q_b</i><br><i>q_y</i> = round(<i>M</i> · acc),  <i>M</i> = <i>S_x S_w</i> / <i>S_y</i><br><i>M</i> ≈ <i>m</i>₀ · 2⁻ˢʰ,  <i>m</i>₀ ∈ [2¹⁵, 2¹⁶)</p>
+</div>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><i>q_y</i> = sat₈( (acc · <i>m</i>₀ + 2ˢʰ⁻¹) ≫ sh )</p>
+<p style="font-size:24px;line-height:1.4">Bağıl hata ≤ 2⁻¹⁶. <i>m</i>₀ ve sh her çıkış kanalı için parametre ROM’unda durur; donanımda bir çarpma, bir toplama ve bir kaydırma.</p>
+</div>
+<div style="width:700px;display:flex;flex-direction:column;gap:10px;background:#14213D;border-radius:12px;padding:24px 30px">
+<p style="font-size:24px;color:#9FB0CC">Sayısal örnek</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.6;color:#E6EAF2;white-space:nowrap">S_x = 0,05  S_w = 0,00211  S_y = 0,077<br>M  = 0,05 · 0,00211 / 0,077<br>   = 0,0013703<br>sh = 25,  m0 = round(M · 2²⁵) = 45 979<br><br>acc        = 5 321<br>acc · m0   = 244 654 259<br>+ 2²⁴      = 261 431 475<br>≫ 25       = <span style="color:#F2A65A">7</span><br><span style="color:#9FB0CC">float: 5 321 · M = 7,29 → 7</span></p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">13 · Karpathy modelleri FPGA’de · Jacob vd., 2018; rtl/requant.sv</p>
+<aside>Asıl numara requant. Bir Linear katmanın çıkışını düşünelim. Weight’ler S_w, girişler S_x scale’inde tamsayılar. Tamsayıları çarpıp topladığımızda bir akümülatör elde ediyoruz ve gerçek çıkış yaklaşık olarak S_x çarpı S_w çarpı bu akümülatör. Ama bir sonraki katman bu çıkışı kendi scale’i S_y’de INT8 olarak bekliyor. Yani akümülatörü M ile çarpıp yuvarlamamız gerekiyor; M de S_x çarpı S_w bölü S_y, bir gerçel sayı. Float kullanmadan bunu nasıl yaparız? M’yi bir tamsayı m₀ ile 2 üzeri eksi sh’nin çarpımı olarak yazıyoruz; m₀’ı 2 üzeri 15 ile 2 üzeri 16 arasında seçince bağıl hata 2 üzeri eksi 16’dan küçük kalıyor. Donanımda bu bir çarpma, yarımın eklenmesi ve bir sağa kaydırma: yuvarlamayı kaydırmadan önce 2 üzeri sh eksi 1 ekleyerek yapıyoruz. Sağda sayısal bir örnek var: scale’ler 0,05, 0,00211 ve 0,077 olsun. M, 0,0013703 çıkıyor; sh 25 seçilince m₀ 45 979 oluyor. Akümülatör 5 321 ise çarpım 244 654 259, yarımı ekleyince 261 431 475, 25 bit kaydırınca 7. Float ile hesaplasaydık 5 321 çarpı M, 7,29 ve yuvarlayınca yine 7. Bu yöntem Google’ın 2018’deki integer-only inference makalesinden; bizim tasarımda her çıkış kanalının m₀ ve sh değerleri parametre ROM’unda duruyor.</aside>
+</section>

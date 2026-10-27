@@ -1,0 +1,28 @@
+<section id="zincir" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">8 · Doğrulama</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Doğrulama bir zincir: her halka bir öncekinin çıktısını referans alır, kart yerine Mac’te biter</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px">
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #9AA3B2;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">1 · Float ↔ Karpathy</p><p style="font-size:24px;line-height:1.35">fark &lt; 10⁻⁴</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #9AA3B2;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">2 · Integer ↔ float</p><p style="font-size:24px;line-height:1.35">loss farkı ≤ 0,022</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">3 · RTL ↔ integer</p><p style="font-size:24px;line-height:1.35">tam kart, 18/18 bit-exact</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">4 · Rastgele testler</p><p style="font-size:24px;line-height:1.35">655 koşu, ~121 bin token</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">5 · 4-state</p><p style="font-size:24px;line-height:1.35">Icarus, X değer yok</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">6 · Netlist ↔ RTL</p><p style="font-size:24px;line-height:1.35">kapı seviyesi, 3 araç hatası</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">7 · Zamanlama</p><p style="font-size:24px;line-height:1.35">nextpnr, statik analiz</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#F2EFE7;border:1px dashed #9AA3B2;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#5A6474">8 · Kartta</p><p style="font-size:24px;line-height:1.35;color:#5A6474">yapılmayacak</p></div>
+</div>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;border-left:6px solid #B4460F;padding:6px 0px 6px 22px">
+<p style="font-size:24px;font-weight:600;color:#B4460F">Neden bit-exact şart</p>
+<p style="font-size:24px;line-height:1.4">Donanım da referans da aynı integer işlemleri yapıyor. “Yaklaşık aynı” bir hata saklayabilir; tek bir farklı token hatayı gösterir.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px">
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Kart olmadan neden yeterli</p>
+<p style="font-size:24px;line-height:1.4">Tek clock, senkron tasarım: netlist mantıksal olarak doğru ve her yol bir periyoda sığıyorsa çipteki devre simülasyon gibi davranır.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">37 · Karpathy modelleri FPGA’de · scripts/nexys_ci.sh, sw/zoo/board_sim.py, board_fuzz.py</p>
+<aside>Doğrulamayı sekiz halkalı bir zincir olarak kurduk; her halka bir öncekinin çıktısını referans alıyor. Gri ilk iki halka yazılımda: bizim float modelimizin Karpathy’nin koduyla aynı sonucu verdiğini, 10 üzeri eksi 4 toleransla, ve integer modelin kalitesinin korunduğunu, loss farkıyla ölçüyoruz. Turuncu halkalar donanımın tasarımını doğruluyor: kartın tamamının RTL simülasyonu, rastgele düğme ve anahtar testleri ve bilinmeyen değerleri yakalayan 4-state simülasyon. Mavi halkalar araçları doğruluyor: sentez aracının ürettiği kapı listesinin simülasyonu ve yerleşimden sonra zamanlama analizi. Sekizinci halka kartın kendisi olurdu; kararımız gereği bunu yapmıyoruz. Neden bit-exact şart? Çünkü donanım da referans da aynı tamsayı işlemlerini yapıyor; çıktılar yaklaşık değil tam olarak aynı olmak zorunda. Yaklaşık bir karşılaştırma bir hatayı saklayabilir; bit-exact karşılaştırmada tek bir farklı token hatayı ortaya koyuyor. Kart olmadan bu neden yeterli? Tasarımda tek clock var ve her şey senkron. Netlist mantıksal olarak doğruysa ve zamanlama analizi her yolun bir clock periyoduna sığdığını gösteriyorsa, çipteki devre simülasyondaki gibi davranır. Endüstride de bir çip üretime gitmeden önce bu iki kanıta dayanılır.</aside>
+</section>

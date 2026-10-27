@@ -1,0 +1,17 @@
+Bu rapor, bitirme projesinin ilk istekten bugüne nasıl geliştiğini zaman sırasıyla anlatır. Teknik raporun (\code{report/rapor.pdf}) aksine burada asıl konu sonuçların kendisi değil, onlara giden yoldur: hangi kararın neden verildiği, hangi sayının hangi gün ölçüldüğü, nerede yanıldığımız ve hatayı nasıl bulduğumuz.
+
+Proje 12 Ekim akşamı tek bir cümleyle başladı: Karpathy'nin minGPT modelini FPGA'ye uyarlamak, SystemVerilog'da yazmak ve simüle etmek. İlk gece, minGPT'nin sıralama görevindeki \code{gpt-nano} modeli (85\,728 parametre) yalnızca integer aritmetiğiyle çalışan bir donanıma dönüştü. Donanım, Python'daki integer referansla 729 girdinin tamamında, 8\,019 decode adımının her birinde bit bit aynıydı. Ertesi gün hedef büyüdü: Karpathy'nin bigram'dan nanochat'e uzanan dokuz dil modeli mimarisi eşit bütçeyle eğitildi ve hepsi tek bir mikrokodlu engine'de çalıştırıldı. Buna Karpathy'nin kendi eğittiği stories260K hikâye modeli de eklendi.
+
+İki hafta sonra hedef kart Nexys A7-100T oldu ve önemli bir karar verildi: model, bilgisayarın sürdüğü bir hızlandırıcı olarak değil, kartın üzerinde kendi başına çalışacaktı. Üretim döngüsü, integer sampling, token'ların metne çevrilmesi ve VGA ekranı FPGA'ye girdi. Hocanın önerdiği LittleBit ve Larq yöntemleri Mac'te QAT ile denendi; donanıma 1 bitlik weight'lerle çalışan, çarpıcısız bir matris-vektör birimi eklendi. Doğrulama rastgele testler, 4-state simülasyon ve sentez sonrası netlist simülasyonuyla sertleştirildi; bu testler iki RTL hatası ve üç ayrı araç hatası buldu. Son olarak Vivado olmadan, Mac'te açık kaynak araçlarla yerleşim, yönlendirme, zamanlama analizi ve bitstream üretimi yapıldı. Fiziksel kart kullanılmayacağı için son doğrulama Mac'teki simülasyon ve zamanlama analizine dayanır.
+
+\medskip
+\begin{ozet}[Bugünkü durum]
+\begin{itemize}[leftmargin=12pt]
+  \item \textbf{Modeller:} \gBoardModels{} model Nexys A7-100T kart tasarımının tamamında, Python'daki integer referansla token token, hash ve ekran karakteri olarak aynı (\gBoardPass{}/\gBoardModels{}).
+  \item \textbf{Doğrulama:} RTL simülasyonu, \gFuzzRuns{} rastgele koşu (\gFuzzTokens{} token), \gDirectedCases{} yönlendirilmiş köşe durumu, X kontrollü 4-state simülasyon ve gerçek üst modülün sentez sonrası netlist simülasyonu.
+  \item \textbf{Zamanlama:} açık kaynak akışla \gPnrDone{}/\gPnrTotal{} model yerleştirildi; ölçülen Fmax \gPnrFmaxMin{}–\gPnrFmaxMax{} MHz. Büyük modeller 50 MHz'i tutmuyor, 25 MHz'te tutuyor.
+  \item \textbf{Açık işler:} engine'in tek cycle'lık eleman bazlı yolunu pipeline'a bölerek 50 MHz; 18 modelin netlist simülasyonunu yerleştirilen netlist'le tekrarlamak; minGPT'nin sıralama modelini 19. model olarak kart tasarımına eklemek.
+\end{itemize}
+\end{ozet}
+
+Her evre aynı düzende anlatılır: \emph{neden} (karar ve motivasyon), \emph{ne yapıldı}, \emph{sorunlar ve çözümleri}, \emph{çıkan ders}. Tablolardaki sayılar \code{report/gelisim/veri.py} ile depodaki sonuç dosyalarından üretilir; metindeki tarihli sayılar o günün commit mesajlarından ve belgelerinden alınmıştır.

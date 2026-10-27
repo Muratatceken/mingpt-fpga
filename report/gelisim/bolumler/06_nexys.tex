@@ -1,0 +1,65 @@
+\evre{26 Ekim 22:51 – 23:35 \enspace·\enspace commit \code{d76121c}}{Evre 5: Nexys A7-100T, model kartta tek başına}{sec:e5}
+
+\neden
+On günlük aradan sonra proje yeni bir hedefle yeniden başladı:
+
+\soz{26 Ekim, 22:51}{şimdi fpga olarak nexys A7 100t olarak ayarla bundan sonar bunun üzerinde çalışcaz bir de tam implementasyonları yap macde bir test edelim bakalım çalışıyor mu bu implemenetasyonlar sadece karpathy modellerini deniycez ama başka bir şeyi değil. biz fpgade train etmeyeceğiz fpga sadece bir inference aracı. hocamız bize yardımcı olması için littlebit makalesinden ve larq pythondan bahsetti […] performansa göre sen karar ver}
+
+Nexys A7-100T'de PYNQ-Z2'deki gibi bir ARM işlemci yok. İlk refleks, PYNQ dönemindeki düzeni korumaktı: modeli bilgisayarın bir seri port (UART) üzerinden sürdüğü bir hızlandırıcı. Bu katmanın yazılmasına başlanmışken kullanıcı durdurdu:
+
+\soz{26 Ekim, 22:58}{uart yapma, ben modelin fpga üzerinde çalışmasını istiyorum}
+
+Gerekçe haklıydı: bilgisayarın her adımda komut gönderip sonucu okuduğu bir düzende model “bilgisayarda çalışıyor, FPGA yalnızca çarpma yapıyor” gibi görünür. Bu karar projenin en önemli mimari dönüşümlerinden biri oldu: \emph{üretim döngüsünün tamamı FPGA'ye girdi}.
+
+\begin{table}[htb]
+\centering\small
+\caption{Eski ve yeni hedef kart.}\label{tab:kartlar}
+\begin{tabular}{@{}lll@{}}
+\toprule
+ & \thead{Nexys A7-100T (xc7a100t)} & \thead{PYNQ-Z2 (xc7z020)} \\
+\midrule
+LUT & 63\,400 & 53\,200 \\
+Flip-flop & 126\,800 & 106\,400 \\
+BRAM (36 Kb) & 135 ($\approx$ 607 KB) & 140 ($\approx$ 630 KB) \\
+DSP48E1 & 240 & 220 \\
+İşlemci & yok & çift çekirdek ARM \\
+Kullanılan G/Ç & VGA, 8 haneli 7-segment, 16 anahtar, 4 düğme + reset, LED'ler & — \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\neyapildi
+Kart tasarımı (\code{board/nexys\_a7/}) dört modülden oluşur:
+\begin{itemize}
+  \item \code{nexys\_a7\_top}: 100 MHz osilatörden MMCM ile çekirdek clock'u (50 MHz; 25 ya da 100 seçilebilir), düğme debounce, anahtar senkronizasyonu, LED'ler.
+  \item \code{lm\_gen}: üretim döngüsü, sampler, detokenizer, 80 sütunluk terminal (kelime kaydırma, scroll), durum satırı ve kart üstü kontrol.
+  \item \code{vga\_text}: 640 × 480 @ 60 Hz metin ekranı, 80 × 30 karakter, 8 × 16 font.
+  \item \code{seg7}, \code{bin2bcd}: 7-segment sürücü ve sıralı ikili→BCD dönüştürücü.
+\end{itemize}
+Weight'ler, tablolar ve mikrokod bitstream ile birlikte BRAM'e yüklenir; kart açıldığında ilk koşu kendiliğinden başlar.
+
+\paragraph{Integer sampling.} PYNQ döneminde token seçimi argmax'tı (greedy). Bir hikâye modelinde greedy seçim aynı cümleleri tekrarlar; gerçek üretim için olasılığa göre örnekleme gerekir. Bunun FPGA'de, kayan nokta olmadan ve Python'la bit bit aynı yapılması gerekiyordu.
+
+\begin{ozet}[Sezgi ve sayısal örnek: sampling.]
+Softmax'ın olasılıkları $p_k \propto e^{l_k/\tau}$'dir. Üs almayı 2 tabanına çevirip en büyük logit $m$'yi çıkarırsak $e_k = 2^{-(m-l_k)\,c}$ olur; $c = s_\text{logit}\log_2 e/\tau$ sabit noktada saklanır ve üs alma attention'ın kullandığı $2^{-k/256}$ tablosuyla yapılır. Örnek: üç token'ın logit'leri $l = (120, 100, 40)$ ve $c = 0{,}05$ olsun. Üsler $(m-l)\,c = (0, 1, 4)$, ağırlıklar $e = (1;\ 0{,}5;\ 0{,}0625)$, toplam $1{,}5625$.
+\begin{itemize}
+  \item \textbf{min-p:} $e_k < e_\text{max}\cdot 2^{-\text{NCUT}}$ olan token'lar atılır. NCUT = 5 için eşik $1/32 = 0{,}031$; üçüncü token ($0{,}0625$) kalır.
+  \item \textbf{Seçim:} xorshift32 üretecinden gelen $r$ ile eşik $\text{thr} = (r\cdot\sum e)\gg 32$ hesaplanır. $r/2^{32} = 0{,}8$ ise $\text{thr} = 1{,}25$; birikimli toplam $1 < 1{,}25 \le 1{,}5$ olduğu için ikinci token seçilir.
+\end{itemize}
+Gerçekte bütün değerler integer'dır; aynı algoritma \code{sw/zoo/board.py:pick} içinde birebir yazılıdır. Ek maliyet yaklaşık $3V$ cycle'dır: stories modellerinde yaklaşık 1\,500, names modellerinde 80.
+\end{ozet}
+
+\paragraph{Kart üstü kontrol.} Kart, ürettiği token'lardan bir hash hesaplar ($h \leftarrow 31h + \text{tok}$) ve bunu, Python'un dışa aktarma sırasında hesaplayıp bitstream'e gömdüğü değerle karşılaştırır. LED16 yeşil yanarsa kart, Python'daki integer modelle token token aynı sonucu üretmiştir. Bu, ilk günün çip üzeri öz-testinin (§\ref{sec:e1}) üretici bir modele uyarlanmış hâlidir.
+
+\paragraph{Mac'te test.} Vivado macOS'ta çalışmadığı için kartın \emph{bütün üst modülü} Verilator'da simüle edildi: düğmeye basılıyor, anahtarlar çevriliyor; üretilen her token, hash, kontrol LED'i ve 80 × 28'lik metin alanı karakter karakter Python referansıyla (\code{board.py}) karşılaştırılıyor. Commit anında 15 modelin hepsi (9 names modeli, stories260K ve TinyStories'te eğitilen 5 aile modeli) aynıydı. stories260K 50 MHz'de yaklaşık 1\,000 token/s üretiyor ve BRAM'in \%72'sini kullanıyordu.
+
+\sorunlar
+\begin{itemize}
+  \item \textbf{Ekranda bir token kayması:} metin, üretilen token'ın bir öncekini gösteriyordu. Sebep, token tablosunun adresinin bir cycle geç (register'dan) gelmesiydi → ROM adresleri kombinasyonel yapıldı.
+  \item \textbf{Kelimenin ortasından satır kırma:} 80. sütuna gelen kelime ikiye bölünüyordu → kelime satır sonuna sığmazsa bir sonraki satıra taşınıyor (RTL'de ayrı durumlar, Python'daki \code{Terminal} modelinde aynısı).
+  \item \textbf{Sabit kodlanmış durum satırı sütunları} → şablondan bir düzenli ifadeyle türetildi; model başlığı kısaltıldı ve gerçek parametre sayısını gösterdi.
+  \item \textbf{macOS'ta link hataları:} önce conda'nın \code{ld}'si seçiliyordu; sonra Xcode'un linker'ı Command Line Tools SDK'sını okuyamadı → PATH sırası ve \code{SDKROOT}, Xcode'un SDK'sına ayarlandı. Aynı sorun 27 Ekim'de araç zinciri derlenirken tekrar çıktı (§\ref{sec:e8}).
+  \item \textbf{BRAM sınırı:} TinyStories modelleri 512 token'la eğitildi, ama KV cache'in sığması için context 256 token'la sınırlandı.
+\end{itemize}
+
+\ders{Kullanıcının “uart yapma” itirazı, teknik bir tercihten çok projenin ne iddia ettiğiyle ilgiliydi. “FPGA'de çalışıyor” cümlesinin dürüst olması, sampling'i ve ekranı da donanıma almayı gerektiriyordu. Bu da Python referansının kapsamını büyüttü: artık yalnızca logit'ler değil, ekrandaki her karakter de spesifikasyonun parçası.}

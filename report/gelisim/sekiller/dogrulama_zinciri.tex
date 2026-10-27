@@ -1,0 +1,21 @@
+% Doğrulama zinciri: her halka bir öncekine karşı; sağda kapsadığı soru ve durum
+\begin{tikzpicture}[every node/.style={font=\sffamily\scriptsize}]
+  \def\w{4.6cm}
+  \newcommand{\halka}[6]{% #1 y, #2 stil, #3 ad, #4 karşılaştırma, #5 yakaladığı, #6 durum
+    \node[#2, minimum width=\w, text width=\w-10pt, align=left, anchor=west, minimum height=8mm] (h#1) at (0,-#1*1.02-0.5) {\textbf{#3}\\ #4};
+    \node[anchor=west, text width=6.2cm, text=ink] at (5.0,-#1*1.02-0.5) {#5};
+    \node[anchor=west, text width=2.6cm, text=muted] at (11.4,-#1*1.02-0.5) {#6};}
+  \node[hdr, anchor=west] at (0,0.3) {halka};
+  \node[hdr, anchor=west] at (5.0,0.3) {yakaladığı};
+  \node[hdr, anchor=west] at (11.4,0.3) {durum};
+  \halka{0}{membox}{0 · Karpathy'nin kodu}{float, orijinal checkpoint}{—}{referans}
+  \halka{1}{box}{1 · bizim float modelimiz}{↔ orijinal: fark $< 10^{-4}$}{mimariyi yanlış kurmak}{minGPT, stories260K}
+  \halka{2}{box}{2 · integer referans}{↔ float: test kaybı}{quantization'ın kalite bedeli}{her model}
+  \halka{3}{accbox}{3 · RTL, tam kart}{↔ integer: bit-exact, pinlerden}{donanım tasarım hataları}{\gBoardPass{}/\gBoardModels{}}
+  \halka{4}{accbox}{4 · rastgele + köşe durumları}{↔ \code{Board} modeli}{nadir durumlar, kontrol mantığı}{\gFuzzRuns{} koşu}
+  \halka{5}{accbox}{5 · 4-state (X)}{X yok mu?}{ilk değeri olmayan register'lar}{gru, gpt2-bin}
+  \halka{6}{accbox}{6 · sentez sonrası netlist}{↔ RTL: her pin, her cycle}{sentez aracının hataları}{kart: 3, engine: 4 model}
+  \halka{7}{goodbox}{7 · zamanlama analizi}{en uzun yol ↔ periyot}{devre o hızda çalışır mı}{\gPnrDone{}/\gPnrTotal{}}
+  \halka{8}{warmbox}{8 · fiziksel kart}{kart üstü hash, LED16}{gerçek donanımın her şeyi}{yapılmayacak}
+  \foreach \a/\b in {0/1,1/2,2/3,3/4,4/5,5/6,6/7,7/8} { \draw[flow] ([xshift=-1.6cm]h\a.south) -- ([xshift=-1.6cm]h\b.north); }
+\end{tikzpicture}

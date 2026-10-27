@@ -1,0 +1,31 @@
+<section id="netlist" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">8 · Doğrulama</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Netlist simülasyonu: RTL doğru olsa bile araçlar hata yapabilir; üç araç hatası bulduk</h2>
+</div>
+<div style="display:flex;gap:22px">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:20px 24px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">sv2v 0.0.13</h3>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#14213D">64'(att_a[j]) &gt;&gt;&gt; 32</p>
+<p style="font-size:24px;line-height:1.4">Signed bir eleman için boyut cast’ini işaretsiz çeviriyor; aritmetik kaydırma mantıksala dönüyor, negatifler +127’ye doyuyordu.</p>
+<p style="font-size:24px;line-height:1.4;color:#2A5C9A"><b>Çözüm:</b> açık $signed(...).</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:20px 24px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Yosys 0.69: wreduce + peepopt</h3>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#14213D">va_d[8*(((h&lt;&lt;3)+d) % P) +: 8]</p>
+<p style="font-size:24px;line-height:1.4">İki optimizasyon art arda çalışınca q·k toplamındaki dinamik bayt seçimi bozuluyordu; t = 0’dan sonra attention yanlış.</p>
+<p style="font-size:24px;line-height:1.4;color:#2A5C9A"><b>Çözüm:</b> önce head dilimi, sonra sabit indeks.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:20px 24px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Yosys 0.69: DSP48E1</h3>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#14213D">prod_r &lt;= sum * m0_s;</p>
+<p style="font-size:24px;line-height:1.4">Registerlı girişli requant çarpımını DSP’ye eşlerken işaret uzatmasını düşürüyor; negatif akümülatörler +max’a doyuyor.</p>
+<p style="font-size:24px;line-height:1.4;color:#2A5C9A"><b>Çözüm:</b> netlist ve açık kaynak bitstream’de çarpıcılar LUT’ta (-nodsp).</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#F2EFE7;border-radius:12px;padding:18px 28px">
+<p style="font-size:24px;line-height:1.4"><b>Sonuç:</b> gerçek üst modülün Yosys netlist’i (MMCM, BUFG, BRAM) gru, gpt2-bin ve mlp-lb25p1’de her pinde, her cycle RTL ile aynı. gpt2-bin: 4 200 047 cycle, VGA karesi aynı. Verilator ve Vivado SystemVerilog’u doğrudan okuduğu için ilk iki hatadan etkilenmiyordu.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">40 · Karpathy modelleri FPGA’de · scripts/nexys_netlist_sim.sh, scripts/requant_netlist_check.sh</p>
+<aside>RTL’in doğru olması, çipe giden devrenin doğru olduğu anlamına gelmiyor; arada RTL’i kapılara çeviren araçlar var ve onlar da hata yapabiliyor. Bu yüzden sentez aracının ürettiği kapı listesini, yani netlist’i de simüle edip RTL ile pin pin karşılaştırdık. Üç gerçek araç hatası bulduk. Birincisi sv2v’de: SystemVerilog’u Verilog’a çeviren bu araç, signed bir dizi elemanına uygulanan boyut cast’ini işaretsiz bir ifadeye çeviriyordu. Sonuç olarak attention çıkışındaki aritmetik kaydırma mantıksal kaydırmaya dönüşüyor ve negatif değerler 127’ye doyuyordu; açık bir signed ile çözdük. İkincisi Yosys’te: iki optimizasyon adımı tek başına doğru, ama art arda çalışınca attention skorundaki dinamik bayt seçimini bozuyordu; RTL’i, önce head’in dilimini seçip sonra sabit indeks kullanacak şekilde yeniden yazdık. Üçüncüsü yine Yosys’te: requant çarpımını DSP bloğuna eşlerken işaret uzatmasını düşürüyor. Bunu tek başına gösteren küçük bir test yazdık; çözüm olarak Yosys akışında çarpıcıları LUT’lara koyuyoruz. Sonuçta gerçek üst modülün netlist’i, MMCM ve BRAM’ler dahil, üç modelde her pinde ve her cycle’da RTL ile aynı. Verilator ve Vivado SystemVerilog’u doğrudan okuduğu için ilk iki hatadan etkilenmiyordu; yani bunlar yalnızca açık kaynak akışın hatalarıydı.</aside>
+</section>

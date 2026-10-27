@@ -1,0 +1,104 @@
+% ---------------------------------------------------------------------------
+% minGPT -> FPGA : tarihsel gelişim raporu
+% Derleme: make gelisim   (veya: cd report/gelisim && python3 veri.py && latexmk -xelatex -outdir=build gelisim_raporu.tex)
+% Sayılar ve tablolar data/ altında, veri.py ile model/zoo/*.json ve git log'dan üretilir.
+% ---------------------------------------------------------------------------
+\documentclass[a4paper,11pt,oneside,parskip=half-]{scrartcl}
+
+\input{../stil}
+\usepackage{longtable}
+\input{data/sayilar}
+
+\ihead{\sffamily\footnotesize\color{muted}minGPT → FPGA\enskip·\enskip Tarihsel Gelişim Raporu}
+\hypersetup{pdftitle={minGPT'den Karpathy Ailesine: Projenin Tarihsel Gelişimi},
+  pdfauthor={Murat Atceken},pdfsubject={Bitirme projesi gelişim raporu}}
+
+% evre başlıkları: tarih + başlık
+\newcommand{\evre}[3]{\section[#2]{#2}\label{#3}\noindent{\sffamily\small\color{muted}#1}\par\smallskip}
+% tekrar eden alt başlıklar
+\newcommand{\neden}{\subsection*{Neden?}}
+\newcommand{\neyapildi}{\subsection*{Ne yapıldı?}}
+\newcommand{\sorunlar}{\subsection*{Sorunlar ve çözümleri}}
+\newcommand{\ders}[1]{\begin{ozet}[Çıkan ders.]#1\end{ozet}}
+\newcommand{\soz}[2]{\begin{tcolorbox}[enhanced,colback=white,colframe=rule,boxrule=0.5pt,arc=2pt,
+  left=8pt,right=8pt,top=4pt,bottom=4pt,fontupper=\small\itshape]“#2”\hfill{\upshape\sffamily\scriptsize\color{muted}#1}\end{tcolorbox}}
+
+% ===========================================================================
+\begin{document}
+
+% ------------------------------ kapak ---------------------------------------
+\begin{titlepage}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[accent] (current page.north west) rectangle ([yshift=-12.2cm]current page.north east);
+  % dekoratif: zaman ekseni ve evreler
+  \begin{scope}[shift={([xshift=-6.0cm,yshift=-2.9cm]current page.north east)}]
+    \draw[white, line width=1.4pt, ->] (0,0) -- (0,-7.6);
+    \foreach \y/\w/\t in {0/1.6/12.10, -1.3/3.6/13.10, -2.6/1.5/15.10, -3.9/1.9/16.10, -5.2/2.4/26.10, -6.5/3.8/27.10} {
+      \fill[white] (0,\y) circle (2.6pt);
+      \fill[white!25!accent] (0.35,\y-0.22) rectangle (0.35+\w,\y+0.22);
+      \node[anchor=east, text=white!80!accent, font=\sffamily\scriptsize] at (-0.15,\y) {\t};
+    }
+  \end{scope}
+  \node[anchor=north west, text=white, font=\sffamily\bfseries\fontsize{12}{14}\selectfont]
+    at ([xshift=2.6cm,yshift=-2.6cm]current page.north west) {BİTİRME PROJESİ \enspace·\enspace GELİŞİM RAPORU};
+  \node[anchor=north west, text=white, align=left, font=\sffamily\bfseries\fontsize{28}{34}\selectfont]
+    at ([xshift=2.6cm,yshift=-3.6cm]current page.north west)
+    {minGPT'den\\Karpathy Ailesine:\\Projenin Gelişimi};
+  \node[anchor=north west, text=white!88!accent, text width=9.6cm, align=left, font=\sffamily\fontsize{13}{17}\selectfont\nohyph]
+    at ([xshift=2.6cm,yshift=-8.6cm]current page.north west)
+    {Bir sıralama modelinden, FPGA kartında kendi başına hikâye yazan bir model ailesine: kararlar, sayılar, hatalar ve dersler};
+\end{tikzpicture}
+
+\vspace*{11.4cm}
+
+\begin{minipage}{\textwidth}
+\sffamily
+{\large\bfseries\color{ink} Murat Atceken}\par\medskip
+{\color{muted} 12 – 27 Ekim 2026}\par\vspace{1.4cm}
+
+\begin{tabularx}{\textwidth}{@{}p{3.8cm}L@{}}
+\textcolor{muted}{Kapsam} & ilk istekten (12 Ekim 23:34) bu raporun yazıldığı güne; \gCommits{} commit, \gCommitDays{} çalışma günü \\
+\textcolor{muted}{Başlangıç} & minGPT \code{gpt-nano}, sıralama görevi, tek modellik hızlandırıcı, PYNQ-Z2 \\
+\textcolor{muted}{Bugün} & \gBoardModels{} model (9 mimari, Karpathy'nin stories260K'sı, 5 TinyStories ve 3 düşük bitli model) tek mikrokodlu engine'de, Nexys A7-100T kart tasarımının tamamında \gBoardPass{}/\gBoardModels{} bit-exact \\
+\textcolor{muted}{Doğrulama} & RTL, rastgele (\gFuzzRuns{} koşu, \gFuzzTokens{} token), 4-state, sentez sonrası netlist, zamanlama analizi \\
+\textcolor{muted}{Uygulama} & açık kaynak akışla yerleşim/yönlendirme: \gPnrDone{}/\gPnrTotal{} model bitti (rapor anında) \\
+\textcolor{muted}{Kaynak kod} & \gh \\
+\end{tabularx}
+\end{minipage}
+\end{titlepage}
+
+% ------------------------------ özet + içindekiler --------------------------
+\pagenumbering{roman}
+\section*{Özet}
+\addcontentsline{toc}{section}{Özet}
+\input{bolumler/00_ozet}
+
+\clearpage
+{\hypersetup{linkcolor=ink}\tableofcontents}
+\clearpage
+\pagenumbering{arabic}
+
+\input{bolumler/01_giris}
+
+\kisim{I}{Tek Model, Tek Kart: minGPT ve PYNQ-Z2 (12–13 Ekim)}
+\input{bolumler/02_baslangic}
+\input{bolumler/03_rapor_sentez}
+\input{bolumler/04_aile}
+
+\kisim{II}{Anlatmak ve Anlamak: Hoca İçin Sunum (15–16 Ekim)}
+\input{bolumler/05_sunum}
+
+\kisim{III}{Kartta Kendi Başına: Nexys A7-100T Dönemi (26–27 Ekim)}
+\input{bolumler/06_nexys}
+\input{bolumler/07_dusukbit}
+\input{bolumler/08_dogrulama}
+\input{bolumler/09_uygulama}
+\input{bolumler/10_karar}
+
+\kisim{IV}{Bugün ve Sonrası}
+\input{bolumler/11_bugun}
+
+\appendix
+\input{bolumler/ekler}
+
+\end{document}

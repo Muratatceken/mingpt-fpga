@@ -1,0 +1,35 @@
+<section id="quant" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · Integer aritmetik</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Quantization: her gerçel sayı, bir scale ile çarpılmış bir tamsayı olarak yazılır</h2>
+</div>
+<div style="display:flex;gap:44px;align-items:start">
+<div style="width:780px;display:flex;flex-direction:column;gap:14px">
+<p style="font-size:24px;font-weight:600;color:#14213D">Gerçek bir weight satırı: max |w| = 0,268</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#14213D">S = 0,268 / 127 = 0,00211</p>
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:22%;text-align:right;color:#14213D">w</th><th style="width:20%;text-align:right;color:#14213D">w / S</th><th style="width:14%;text-align:right;color:#14213D">q</th><th style="width:22%;text-align:right;color:#14213D">S · q</th><th style="width:22%;text-align:right;color:#14213D">hata</th></tr>
+<tr><td style="text-align:right">0,0372</td><td style="text-align:right">17,63</td><td style="text-align:right"><b>18</b></td><td style="text-align:right">0,0380</td><td style="text-align:right">+0,0008</td></tr>
+<tr><td style="text-align:right">−0,1153</td><td style="text-align:right">−54,64</td><td style="text-align:right"><b>−55</b></td><td style="text-align:right">−0,1161</td><td style="text-align:right">−0,0008</td></tr>
+<tr><td style="text-align:right">0,2680</td><td style="text-align:right">127,00</td><td style="text-align:right"><b>127</b></td><td style="text-align:right">0,2680</td><td style="text-align:right">0</td></tr>
+<tr style="background:#F6E3D7"><td style="text-align:right">0,0009</td><td style="text-align:right">0,43</td><td style="text-align:right"><b>0</b></td><td style="text-align:right">0</td><td style="text-align:right">−0,0009</td></tr>
+</table>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">Hata hiçbir zaman S/2 = 0,00106’yı geçmez. Çok küçük weight’ler sıfıra yuvarlanır.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:8px;background:#F2EFE7;border-radius:12px;padding:22px 28px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D"><i>q</i> = clip(round(<i>r</i> / <i>S</i>), −127, 127)<br><i>r̂</i> = <i>S</i> · <i>q</i>,  |<i>r</i> − <i>r̂</i>| ≤ <i>S</i>/2</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px">
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Weight’ler: çıkış kanalı başına S</p>
+<p style="font-size:24px;line-height:1.4">Her satırın kendi max |w|’si; büyük satır küçük satırı ezmez.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #B4460F;padding:6px 0px 6px 22px">
+<p style="font-size:24px;font-weight:600;color:#B4460F">Activation’lar: tensör başına sabit S</p>
+<p style="font-size:24px;line-height:1.4">Kalibrasyon verisinde |x|’in %99,99 yüzdeliğinden. Uç değerler kırpılır, kalan değerler daha ince çözünürlük kazanır.</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">12 · Karpathy modelleri FPGA’de</p>
+<aside>Quantization’ın fikri çok basit: her gerçel sayıyı bir scale ile çarpılmış bir tamsayı olarak yazıyoruz. Soldaki örneğe bakalım. Bir weight satırında mutlak değeri en büyük eleman 0,268 olsun. INT8’in pozitif tarafı 127’ye kadar gidiyor, o yüzden scale S, 0,268 bölü 127, yani 0,00211. Şimdi her weight’i S’ye bölüp yuvarlıyoruz. 0,0372, 17,63 ediyor ve 18’e yuvarlanıyor; geri çevirdiğimizde 0,0380 elde ediyoruz, hata 0,0008. Eksi 0,1153, eksi 55 oluyor. En büyük eleman tam 127’ye denk geliyor ve hatası sıfır. Çok küçük 0,0009 ise 0,43 ediyor ve sıfıra yuvarlanıyor. Hata hiçbir zaman S’nin yarısını, yani 0,00106’yı geçmiyor. Sağdaki formül bunun genel hâli. Önemli iki tasarım kararı var. Weight’ler için her çıkış kanalının, yani her satırın kendi scale’i var; böylece büyük değerli bir satır küçük değerli bir satırın çözünürlüğünü bozmuyor. Activation’lar için ise tensör başına sabit bir scale kullanıyoruz ve bunu kalibrasyon verisinden, mutlak değerin yüzde 99,99’luk yüzdeliğinden seçiyoruz. Maksimum yerine yüzdelik seçmek, nadir uç değerleri kırpıp geri kalan değerlere daha ince bir çözünürlük kazandırıyor; bunu model ailesi üzerinde ölçerek seçtik.</aside>
+</section>

@@ -1,0 +1,23 @@
+% Projenin zaman çizelgesi: dikey eksen, evre başına bir satır (tarih · evre · anahtar sonuç)
+\begin{tikzpicture}[x=1cm,y=1cm, every node/.style={font=\sffamily\small}]
+  \def\dy{1.05}
+  \newcommand{\satir}[6]{% #1 satır no, #2 tarih, #3 renk, #4 başlık, #5 sonuç, #6 dolgu
+    \node[anchor=east, text=muted, font=\sffamily\scriptsize, align=right] at (2.55,-#1*\dy) {#2};
+    \fill[#6, draw=#3, line width=0.9pt] (3,-#1*\dy) circle (4.2pt);
+    \node[anchor=west, text=ink, font=\sffamily\small\bfseries] at (3.35,-#1*\dy+0.17) {#4};
+    \node[anchor=west, text=muted, font=\sffamily\scriptsize] at (3.35,-#1*\dy-0.2) {#5};}
+  \draw[rule, line width=1.6pt] (3,-0.6) -- (3,-4.45*\dy);
+  \draw[rule, line width=1.6pt, dash pattern=on 2pt off 3pt] (3,-4.45*\dy) -- (3,-5.05*\dy);
+  \draw[rule, line width=1.6pt] (3,-5.05*\dy) -- (3,-10.4*\dy);
+  \satir{1}{12 Ekim 23:34 – 13 Ekim 00:35}{accent}{Evre 1 · minGPT'den bit-exact RTL'e}{729/729 girdi, 8\,019 decode adımı bit-exact; PYNQ-Z2 çip üzeri öz-testi}{accentsoft}
+  \satir{2}{13 Ekim 00:46 – 11:06}{accent}{Evre 2 · LaTeX rapor ve açık kaynak sentez}{38 → 48 sayfalık rapor; Yosys ile ilk ölçüm: 3\,955 LUT, 31 DSP}{accentsoft}
+  \satir{3}{13 Ekim 11:15 – 16:55}{accent}{Evre 3 · Karpathy ailesi ve mikrokodlu engine}{9 mimari + stories260K tek RTL'de bit-exact; AXI sistemi, C simülatörü, $P$ taraması}{accentsoft}
+  \satir{4}{15 – 16 Ekim}{warm}{Evre 4 · hoca için sunum}{28 → 55 slayt; embedding'in matematiği, araştırma konusu LittleBit}{warmsoft}
+  \node[anchor=west, text=muted, font=\sffamily\scriptsize\itshape] at (3.35,-4.75*\dy) {17–25 Ekim: ara};
+  \satir{5.5}{26 Ekim 22:51 – 23:35}{good}{Evre 5 · Nexys A7-100T: model kartta tek başına}{sampling, detokenizer, VGA FPGA'de; 15 model bit-exact}{goodsoft}
+  \satir{6.5}{26 Ekim 23:34 – 27 Ekim 01:26}{good}{Evre 6 · düşük bitli weight'ler (Larq, LittleBit)}{1-bit GEMV birimi; binary GPT-2 1,75 kat hızlı, LittleBit MLP 0,59 BPW}{goodsoft}
+  \satir{7.5}{27 Ekim 02:03 – 04:00}{good}{Evre 7 · doğrulamanın sertleştirilmesi}{fuzz, 4-state, netlist; 2 RTL hatası ve 3 araç hatası}{goodsoft}
+  \satir{8.5}{27 Ekim 05:55 – 10:54}{good}{Evre 8 · Mac'te açık kaynak yerleşim/yönlendirme}{nextpnr ile Fmax ve bitstream; büyük modeller 25 MHz'te}{goodsoft}
+  \satir{9.5}{27 Ekim 11:49}{good}{Evre 9 · karar: kart yok, Mac'te simülasyon}{RTL + netlist simülasyonu + zamanlama analizi}{goodsoft}
+  \satir{10.4}{27 Ekim}{ink}{bugün}{yeni sunum ve bu rapor}{white}
+\end{tikzpicture}

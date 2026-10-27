@@ -1,0 +1,41 @@
+<section id="amac" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:32px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">1 · Hedef</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Amaç: eğitilmiş bir language model’i FPGA’nin içinde, bilgisayara bağlı olmadan çalıştırmak</h2>
+</div>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#F2EFE7;border-radius:12px;padding:24px 28px">
+<h3 style="font-size:30px;font-weight:600;color:#5A6474">Host sürücülü düzen (seçilmedi)</h3>
+<div style="display:flex;align-items:center;gap:14px">
+<p style="font-size:24px;font-weight:600;color:#14213D;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:8px;padding:14px 18px">PC: döngü, sampling, metin</p>
+<p style="font-size:24px;color:#5A6474">⇄ UART ⇄</p>
+<p style="font-size:24px;font-weight:600;color:#14213D;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:8px;padding:14px 18px">FPGA: tek adım</p>
+</div>
+<p style="font-size:24px;line-height:1.4">PC her token için komut gönderir, logit’leri okur, bir sonraki token’ı kendisi seçer. FPGA yalnızca bir hesaplayıcıdır; model “PC’de çalışıyor” gibi görünür.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:24px 28px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Bağımsız düzen (bizim tasarımımız)</h3>
+<div style="display:flex;align-items:center;gap:14px">
+<p style="font-size:24px;font-weight:600;color:#FBFBF8;background:#14213D;border-radius:8px;padding:14px 18px">FPGA: weight’ler + döngü + sampling + metin</p>
+<p style="font-size:24px;color:#B4460F">→ VGA</p>
+</div>
+<p style="font-size:24px;line-height:1.4">Weight’ler bitstream ile BRAM’e gömülür. Üretim döngüsü, sampling, token’ı metne çevirme ve ekrana yazma çipin içindeki mantıkta çalışır.</p>
+</div>
+</div>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px">
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Yalnız inference</p>
+<p style="font-size:24px;line-height:1.4">Eğitim ve QAT Mac’te yapılır; FPGA’de eğitim yok.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px">
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Yalnız Karpathy modelleri</p>
+<p style="font-size:24px;line-height:1.4">makemore, minGPT, microgpt, llama2.c, nanochat.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px">
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Doğrulama Mac’te</p>
+<p style="font-size:24px;line-height:1.4">Kartın tamamı simüle edilir; fiziksel kart testi yok.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">4 · Karpathy modelleri FPGA’de</p>
+<aside>Hedefimizi iki düzeni karşılaştırarak anlatmak istiyorum. FPGA hızlandırıcılarında yaygın olan düzen soldaki: bir bilgisayar seri port üzerinden FPGA’ye “şu token’ı işle” der, FPGA bir adım hesaplar, bilgisayar logit’leri okur, bir sonraki token’ı kendisi seçer ve metni kendisi ekrana yazar. Bu düzende FPGA yalnızca bir hesap makinesi; dışarıdan bakıldığında model bilgisayarda çalışıyor gibi görünüyor. Biz bunu bilerek seçmedik. Bizim tasarımımızda modelin weight’leri bitstream ile birlikte çipin BRAM’ine gömülüyor; üretim döngüsü, bir sonraki token’ı seçen sampling, token’ı karakterlere çevirme ve ekrana yazma hepsi çipin içinde. Kart açıldığında model kendiliğinden yazmaya başlıyor ve sonucu doğrudan VGA monitöre veriyor. Üç kural da koyduk: FPGA yalnız inference yapıyor, eğitim Mac’te; yalnız Karpathy’nin modellerini kullanıyoruz; ve doğrulamayı fiziksel kart yerine Mac’te, kartın tamamını simüle ederek yapıyoruz.</aside>
+</section>

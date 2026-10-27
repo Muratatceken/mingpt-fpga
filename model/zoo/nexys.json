@@ -15,7 +15,31 @@
   "cycles_per_token": 157.2,
   "tokens_per_s_50mhz": 318098.1,
   "V": 27,
-  "T": 16
+  "T": 16,
+  "pnr": {
+   "clock_mhz": 50,
+   "met": true,
+   "fmax_mhz": 71.34,
+   "tried_fmax_mhz": {
+    "50": 71.34
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "242/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "2/270",
+    "RAMB36E1_RAMB36E1": "1/135",
+    "SELMUX2_1": "20/48750",
+    "SLICE_FFX": "1334/126800",
+    "SLICE_LUTX": "6362/126800"
+   },
+   "bit": true
+  }
  },
  "bow": {
   "sim_pass": true,
@@ -24,7 +48,61 @@
   "cycles_per_token": 6368.0,
   "tokens_per_s_50mhz": 7851.8,
   "V": 27,
-  "T": 16
+  "T": 16,
+  "pnr": {
+   "clock_mhz": 25,
+   "met": true,
+   "fmax_mhz": 44.05,
+   "tried_fmax_mhz": {
+    "50": 47.74,
+    "25": 44.05
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "458/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "4/270",
+    "RAMB36E1_RAMB36E1": "13/135",
+    "SELMUX2_1": "49/48750",
+    "SLICE_FFX": "2222/126800",
+    "SLICE_LUTX": "15234/126800"
+   },
+   "bit": true,
+   "seed": 2
+  },
+  "pnr_other_seeds": [
+   {
+    "clock_mhz": 25,
+    "met": true,
+    "fmax_mhz": 50.08,
+    "tried_fmax_mhz": {
+     "50": 48.2,
+     "25": 50.08
+    },
+    "utilization": {
+     "BUFGCTRL": "1/32",
+     "CARRY4": "458/15850",
+     "IOB33_INBUF_EN": "21/300",
+     "IOB33_OUTBUF": "52/300",
+     "MMCME2_ADV_MMCME2_ADV": "1/6",
+     "PAD": "73/630",
+     "PSEUDO_GND": "1/1",
+     "PSEUDO_VCC": "1/1",
+     "RAMB18E1_RAMB18E1": "4/270",
+     "RAMB36E1_RAMB36E1": "13/135",
+     "SELMUX2_1": "49/48750",
+     "SLICE_FFX": "2222/126800",
+     "SLICE_LUTX": "15234/126800"
+    },
+    "bit": true,
+    "seed": 1
+   }
+  ]
  },
  "gpt2": {
   "sim_pass": true,
@@ -44,7 +122,32 @@
    "carry": 524
   },
   "int_nll": 2.001598479898846,
-  "tokens": 7166
+  "tokens": 7166,
+  "pnr": {
+   "clock_mhz": 25,
+   "met": true,
+   "fmax_mhz": 28.83,
+   "tried_fmax_mhz": {
+    "50": 30.4,
+    "25": 28.83
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "773/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "31/270",
+    "RAMB36E1_RAMB36E1": "4/135",
+    "SELMUX2_1": "114/48750",
+    "SLICE_FFX": "3265/126800",
+    "SLICE_LUTX": "29435/126800"
+   },
+   "bit": true
+  }
  },
  "gpt2-bin": {
   "sim_pass": true,
@@ -62,7 +165,32 @@
    "carry": 849
   },
   "int_nll": 2.0280697796874505,
-  "tokens": 7166
+  "tokens": 7166,
+  "pnr": {
+   "clock_mhz": 25,
+   "met": true,
+   "fmax_mhz": 26.55,
+   "tried_fmax_mhz": {
+    "50": 29.7,
+    "25": 26.55
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "1106/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "6/270",
+    "RAMB36E1_RAMB36E1": "7/135",
+    "SELMUX2_1": "67/48750",
+    "SLICE_FFX": "5958/126800",
+    "SLICE_LUTX": "35041/126800"
+   },
+   "bit": true
+  }
  },
  "gru": {
   "sim_pass": true,
@@ -80,6 +208,31 @@
    "bram": 16.0,
    "dsp": 25,
    "carry": 337
+  },
+  "pnr": {
+   "clock_mhz": 25,
+   "met": true,
+   "fmax_mhz": 36.3,
+   "tried_fmax_mhz": {
+    "50": 35.31,
+    "25": 36.3
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "479/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "26/270",
+    "RAMB36E1_RAMB36E1": "3/135",
+    "SELMUX2_1": "39/48750",
+    "SLICE_FFX": "2255/126800",
+    "SLICE_LUTX": "15506/126800"
+   },
+   "bit": true
   }
  },
  "llama": {
@@ -89,7 +242,32 @@
   "cycles_per_token": 9490.5,
   "tokens_per_s_50mhz": 5268.4,
   "V": 27,
-  "T": 16
+  "T": 16,
+  "pnr": {
+   "clock_mhz": 25,
+   "met": true,
+   "fmax_mhz": 29.53,
+   "tried_fmax_mhz": {
+    "50": 28.36,
+    "25": 29.53
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "852/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "27/270",
+    "RAMB36E1_RAMB36E1": "4/135",
+    "SELMUX2_1": "227/48750",
+    "SLICE_FFX": "3439/126800",
+    "SLICE_LUTX": "33274/126800"
+   },
+   "bit": true
+  }
  },
  "microgpt": {
   "sim_pass": true,
@@ -98,7 +276,32 @@
   "cycles_per_token": 8746.2,
   "tokens_per_s_50mhz": 5716.8,
   "V": 27,
-  "T": 16
+  "T": 16,
+  "pnr": {
+   "clock_mhz": 25,
+   "met": true,
+   "fmax_mhz": 30.5,
+   "tried_fmax_mhz": {
+    "50": 31.16,
+    "25": 30.5
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "774/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "26/270",
+    "RAMB36E1_RAMB36E1": "5/135",
+    "SELMUX2_1": "50/48750",
+    "SLICE_FFX": "3277/126800",
+    "SLICE_LUTX": "29977/126800"
+   },
+   "bit": true
+  }
  },
  "mlp": {
   "sim_pass": true,
@@ -118,7 +321,31 @@
    "carry": 295
   },
   "int_nll": 1.9873579699307948,
-  "tokens": 7166
+  "tokens": 7166,
+  "pnr": {
+   "clock_mhz": 50,
+   "met": true,
+   "fmax_mhz": 65.96,
+   "tried_fmax_mhz": {
+    "50": 65.96
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "415/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "26/270",
+    "RAMB36E1_RAMB36E1": "1/135",
+    "SELMUX2_1": "21/48750",
+    "SLICE_FFX": "2228/126800",
+    "SLICE_LUTX": "13631/126800"
+   },
+   "bit": true
+  }
  },
  "mlp-lb25p1": {
   "sim_pass": true,
@@ -136,7 +363,61 @@
    "carry": 633
   },
   "int_nll": 2.1419155022111234,
-  "tokens": 7166
+  "tokens": 7166,
+  "pnr": {
+   "clock_mhz": 25,
+   "met": true,
+   "fmax_mhz": 51.46,
+   "tried_fmax_mhz": {
+    "50": 49.92,
+    "25": 51.46
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "764/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "2/270",
+    "RAMB36E1_RAMB36E1": "4/135",
+    "SELMUX2_1": "73/48750",
+    "SLICE_FFX": "4822/126800",
+    "SLICE_LUTX": "18925/126800"
+   },
+   "bit": true,
+   "seed": 2
+  },
+  "pnr_other_seeds": [
+   {
+    "clock_mhz": 25,
+    "met": true,
+    "fmax_mhz": 52.81,
+    "tried_fmax_mhz": {
+     "50": 49.39,
+     "25": 52.81
+    },
+    "utilization": {
+     "BUFGCTRL": "1/32",
+     "CARRY4": "764/15850",
+     "IOB33_INBUF_EN": "21/300",
+     "IOB33_OUTBUF": "52/300",
+     "MMCME2_ADV_MMCME2_ADV": "1/6",
+     "PAD": "73/630",
+     "PSEUDO_GND": "1/1",
+     "PSEUDO_VCC": "1/1",
+     "RAMB18E1_RAMB18E1": "2/270",
+     "RAMB36E1_RAMB36E1": "4/135",
+     "SELMUX2_1": "73/48750",
+     "SLICE_FFX": "4822/126800",
+     "SLICE_LUTX": "18925/126800"
+    },
+    "bit": true,
+    "seed": 1
+   }
+  ]
  },
  "nanochat": {
   "sim_pass": true,
@@ -154,6 +435,31 @@
    "bram": 16.0,
    "dsp": 65,
    "carry": 571
+  },
+  "pnr": {
+   "clock_mhz": 25,
+   "met": true,
+   "fmax_mhz": 28.76,
+   "tried_fmax_mhz": {
+    "50": 29.23,
+    "25": 28.76
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "840/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "2/270",
+    "RAMB36E1_RAMB36E1": "15/135",
+    "SELMUX2_1": "238/48750",
+    "SLICE_FFX": "3416/126800",
+    "SLICE_LUTX": "32288/126800"
+   },
+   "bit": true
   }
  },
  "rnn": {
@@ -163,7 +469,31 @@
   "cycles_per_token": 6463.9,
   "tokens_per_s_50mhz": 7735.3,
   "V": 27,
-  "T": 16
+  "T": 16,
+  "pnr": {
+   "clock_mhz": 50,
+   "met": true,
+   "fmax_mhz": 66.89,
+   "tried_fmax_mhz": {
+    "50": 66.89
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "412/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "1/270",
+    "RAMB36E1_RAMB36E1": "13/135",
+    "SELMUX2_1": "18/48750",
+    "SLICE_FFX": "2194/126800",
+    "SLICE_LUTX": "12705/126800"
+   },
+   "bit": true
+  }
  },
  "stories260k": {
   "sim_pass": true,
@@ -183,7 +513,32 @@
    "carry": 586
   },
   "int_nll": 1.2910762873123252,
-  "tokens": 4096
+  "tokens": 4096,
+  "pnr": {
+   "clock_mhz": 25,
+   "met": true,
+   "fmax_mhz": 27.24,
+   "tried_fmax_mhz": {
+    "50": 26.23,
+    "25": 27.24
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "862/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "35/270",
+    "RAMB36E1_RAMB36E1": "80/135",
+    "SELMUX2_1": "251/48750",
+    "SLICE_FFX": "3513/126800",
+    "SLICE_LUTX": "34643/126800"
+   },
+   "bit": true
+  }
  },
  "stories260k-bin": {
   "sim_pass": true,
@@ -201,6 +556,31 @@
    "bram": 56.0,
    "dsp": 68,
    "carry": 915
+  },
+  "pnr": {
+   "clock_mhz": 25,
+   "met": true,
+   "fmax_mhz": 27.87,
+   "tried_fmax_mhz": {
+    "50": 23.76,
+    "25": 27.87
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "1198/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "34/270",
+    "RAMB36E1_RAMB36E1": "39/135",
+    "SELMUX2_1": "261/48750",
+    "SLICE_FFX": "6120/126800",
+    "SLICE_LUTX": "39334/126800"
+   },
+   "bit": true
   }
  },
  "ts_gpt2": {
@@ -210,7 +590,14 @@
   "cycles_per_token": 41781.0,
   "tokens_per_s_50mhz": 1196.7,
   "V": 512,
-  "T": 256
+  "T": 256,
+  "pnr_note": {
+   "status": "placement_stalled",
+   "ramb18": 149,
+   "ramb36": 41,
+   "bram_sites": 115.5,
+   "detail": "nextpnr-himbaechel HeAP placer made no progress for 40+ min (2 seeds for ts_gpt2); Yosys maps the tables into many RAMB18"
+  }
  },
  "ts_gru": {
   "yosys": {
@@ -228,7 +615,32 @@
   "cycles_per_token": 30406.7,
   "tokens_per_s_50mhz": 1644.4,
   "V": 512,
-  "T": 256
+  "T": 256,
+  "pnr": {
+   "clock_mhz": 25,
+   "met": true,
+   "fmax_mhz": 36.42,
+   "tried_fmax_mhz": {
+    "50": 37.48,
+    "25": 36.42
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "475/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "7/270",
+    "RAMB36E1_RAMB36E1": "66/135",
+    "SELMUX2_1": "35/48750",
+    "SLICE_FFX": "2289/126800",
+    "SLICE_LUTX": "15826/126800"
+   },
+   "bit": true
+  }
  },
  "ts_llama": {
   "sim_pass": true,
@@ -237,7 +649,32 @@
   "cycles_per_token": 50397.0,
   "tokens_per_s_50mhz": 992.1,
   "V": 512,
-  "T": 256
+  "T": 256,
+  "pnr": {
+   "clock_mhz": 25,
+   "met": true,
+   "fmax_mhz": 26.18,
+   "tried_fmax_mhz": {
+    "50": 27.15,
+    "25": 26.18
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "860/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "35/270",
+    "RAMB36E1_RAMB36E1": "80/135",
+    "SELMUX2_1": "255/48750",
+    "SLICE_FFX": "3504/126800",
+    "SLICE_LUTX": "34612/126800"
+   },
+   "bit": true
+  }
  },
  "ts_microgpt": {
   "sim_pass": true,
@@ -246,7 +683,14 @@
   "cycles_per_token": 40570.0,
   "tokens_per_s_50mhz": 1232.4,
   "V": 512,
-  "T": 256
+  "T": 256,
+  "pnr_note": {
+   "status": "placement_stalled",
+   "ramb18": 140,
+   "ramb36": 43,
+   "bram_sites": 113.0,
+   "detail": "nextpnr-himbaechel HeAP placer made no progress for 40+ min (2 seeds for ts_gpt2); Yosys maps the tables into many RAMB18"
+  }
  },
  "ts_nanochat": {
   "sim_pass": true,
@@ -255,6 +699,31 @@
   "cycles_per_token": 50680.0,
   "tokens_per_s_50mhz": 986.6,
   "V": 512,
-  "T": 256
+  "T": 256,
+  "pnr": {
+   "clock_mhz": 25,
+   "met": true,
+   "fmax_mhz": 25.8,
+   "tried_fmax_mhz": {
+    "50": 27.47,
+    "25": 25.8
+   },
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "865/15850",
+    "IOB33_INBUF_EN": "21/300",
+    "IOB33_OUTBUF": "52/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "73/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "35/270",
+    "RAMB36E1_RAMB36E1": "73/135",
+    "SELMUX2_1": "271/48750",
+    "SLICE_FFX": "3470/126800",
+    "SLICE_LUTX": "34550/126800"
+   },
+   "bit": true
+  }
  }
 }

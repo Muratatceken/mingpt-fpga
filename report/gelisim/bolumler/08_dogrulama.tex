@@ -1,0 +1,49 @@
+\evre{27 Ekim 02:03 – 04:00 \enspace·\enspace commit'ler \code{9f8ee72}, \code{543c443}, \code{85ce47d}, \code{4e0782a}}{Evre 7: Doğrulamanın sertleştirilmesi}{sec:e7}
+
+\neden
+“Bütün modeller bit-exact” cümlesi, testin neyi denediği kadar güçlüdür. O ana kadarki kart testi her modelde aynı birkaç senaryoyu çalıştırıyordu: otomatik ilk koşu, BTNC, greedy ve temizleme. Üç soru açıktaydı:
+\begin{itemize}
+  \item Bir kullanıcı koşu \emph{sırasında} düğmeye basarsa ya da reset verirse ne olur?
+  \item Simülatörün başlattığı bütün değerler 0'dır; gerçek çipte ilk değeri verilmemiş bir register ne yapar?
+  \item RTL doğru olsa bile, onu kapılara çeviren sentez aracı doğru mu?
+\end{itemize}
+Bu iş, düşük bit çalışmasıyla eş zamanlı olarak ayrı bir dalda bir ajan tarafından yapıldı ve sonra ana dala birleştirildi.
+
+\neyapildi
+\begin{itemize}
+  \item \textbf{Testbench yeniden yazıldı:} koşu sırasında tuşlar ve reset; girişler düşen kenarda sürülüyor, çıkışlar düşen kenarda örnekleniyor; her cycle'da bütün pinlerin bir imzası; 7-segment okunuyor; VGA karesi pinlerden alınıp senkron sinyalleri kontrol ediliyor.
+  \item \textbf{Rastgele testler} (\code{board\_fuzz.py}): rastgele anahtar ayarları ve tuş dizileri; \gFuzzModels{} modelde toplam \gFuzzRuns{} koşu, \gFuzzTokens{} token. Her koşuda Python'daki \code{Board} modeli, aynı tuş dizisinin \emph{ne yapması gerektiğini} hesaplıyor (kuyruğa alınan koşular, reset, temizleme).
+  \item \textbf{Yönlendirilmiş köşe durumları:} \gDirectedCases{} durum. Örnekler: koşu sırasında iki kez BTNC (tek bir kuyruklu koşu olmalı), son token'dan hemen önce reset, daktilo modunun token'ları ve sayılan cycle'ları değiştirmemesi.
+  \item \textbf{4-state simülasyon} (sv2v + Icarus): 0 ve 1'in yanında X (bilinmeyen) değerini de taşıyan simülasyon. gru'da, koşu ortasında reset dahil 2,7 milyon cycle; pinlerde ve metin RAM'inin yazma portunda hiç X yok.
+  \item \textbf{Sentez sonrası netlist simülasyonu:} gerçek üst modülün (MMCM, BUFG, BRAM dahil) Yosys netlist'i Verilator'da çalıştırılıp RTL ile \emph{her pinde, her cycle'da} karşılaştırıldı. gru'da \gNetlistGruCycles{} cycle boyunca aynı. Bunun için iki model yazıldı: Yosys'in hücre kütüphanesindeki BRAM modellerinin davranışı yok (\code{tb/sim\_ramb.v}), MMCM için de bir geçiş modeli (\code{tb/sim\_mmcme2\_base.v}). 13 Ekim'de sonuçsuz kalan netlist simülasyonu (§\ref{sec:e3}) böylece çalıştı.
+\end{itemize}
+
+\subsection*{Bulunan hatalar}
+Testler altı sorun buldu (Tablo~\ref{tab:hatalar}). Üçü bizim kodumuzdaydı, üçü kullandığımız araçlarda.
+
+\begin{table}[htb]
+\centering\small
+\caption{Doğrulamanın sertleştirilmesiyle bulunan sorunlar.}\label{tab:hatalar}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}p{1.5cm}L@{}}
+\toprule
+\thead{Sorun} & \thead{Nerede} & \thead{Belirti ve çözüm} \\
+\midrule
+BTNU kayboluyordu & RTL (\code{lm\_gen}) & Kuyruktaki bir koşunun başladığı cycle'a denk gelen BTNU basışı ne yeniden tohumluyor ne de ek koşu başlatıyordu. Artık bir sonraki koşu olarak kuyruğa alınıyor; bir yarış testiyle doğrulandı. \\
+Heartbeat reset'siz & RTL (top) & 4-state simülasyonda LED0 ve LED16\_B sürekli X'ti. Sayaç \code{rst\_n} ile sıfırlanıyor. \\
+İyimser token/s & RTL (\code{lm\_gen}) & Bigram'da ekranı bekleme cycle'ları sayılmıyordu: 126 değil 157 cycle/token. Diğer modellerde fark yok. \\
+sv2v işaret kaybı & sv2v 0.0.13 & Signed bir dizi elemanının boyut cast'i (\code{64'(att\_a[j])}) işaretsiz çevriliyordu; IEEE 1800 §6.24.1'e göre cast işareti korur. Attention çıkışındaki \code{>>> 32} mantıksal kaydırmaya dönüşüp negatif değerleri +127'ye doyuruyordu. Açık \code{\$signed} yazıldı. \\
+Yosys optimizasyon hatası & Yosys 0.69 & \code{wreduce} ve ardından \code{peepopt}, q·k toplamındaki dinamik bayt seçimini yanlış optimize ediyordu (iki adım tek başına doğru). RTL önce head dilimini seçip sabit indeks kullanacak şekilde yeniden yazıldı. \\
+Yosys DSP eşlemesi & Yosys 0.69 & Requant çarpımı DSP48E1'e eşlenince (girişler register'dan geliyorsa) işaret uzatması düşüyor, negatif akümülatörler +max'a doyuyor. RTL doğru; netlist akışı çarpıcıları LUT'a eşliyor (\code{-nodsp}); \code{requant\_netlist\_check.sh} hatayı tek başına gösteriyor. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{İki araç hatasının hikâyesi.} sv2v ve Yosys hataları ilginçti, çünkü \emph{eski RTL'de de vardı} ve 13 Ekim'den beri fark edilmemişti. Verilator ve Vivado SystemVerilog'u doğrudan okuduğu için doğru sonuç veriyordu; yalnız sv2v'den geçen akışlar (Icarus ve Yosys netlist'i) bozuktu. Yosys hatasının belirtisi yanıltıcıydı: $t=0$'da attention çıkışı skordan bağımsız olduğu için ilk pozisyonlar doğru, sonrakiler yanlıştı. İlk hipotez (çıkarmalı bir kaydırma) yanlış çıktı ve geri alındı; hata, Yosys'in adımları tek tek açılıp kapatılarak iki adımın birleşimine kadar daraltıldı. Düzeltmelerden sonra:
+\begin{itemize}
+  \item Icarus 4-state'te gpt2, llama, nanochat, microgpt, bow ve gpt2-bin bit-exact;
+  \item engine'in tam Xilinx sentezli netlist'i gpt2, llama, nanochat ve gpt2-bin'de bit-exact;
+  \item gpt2-bin'in kart netlist'i 4\,200\,047 cycle boyunca her pinde RTL ile aynı (pin imzası \code{3adc10ab}); VGA karesinde 0 piksel fark.
+\end{itemize}
+Verilator'daki pin imzaları düzeltmelerden sonra değişmedi; yani RTL'in anlamı aynı kaldı, yalnız araçların onu yanlış anlamasının yolu kapandı.
+
+\ders{Simülatör ve sentez aracı da yazılımdır ve hata yapar. Aynı RTL'i birbirinden bağımsız araç zincirlerinden (Verilator; sv2v + Icarus; sv2v + Yosys) geçirmek, tek bir zincirin göremeyeceği hataları ortaya çıkardı. İkinci ders: testin kendisi bir modeldir; Python'daki \code{Board} modeli, düğmelerin \emph{ne yapması gerektiğini} yazılı hâle getirdiği için iki gerçek RTL hatasını yakalayabildi.}

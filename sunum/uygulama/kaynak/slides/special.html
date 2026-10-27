@@ -1,0 +1,28 @@
+<section id="special" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">5 · Engine</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">SPECIALIZE: modelin kullanmadığı birimler sentezde atılır; makemore modellerinde engine dörtte birine iner</h2>
+</div>
+<div style="display:flex;gap:40px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;gap:16px"><p style="width:170px;font-size:24px;font-weight:600;color:#14213D">model</p><p style="flex:1;font-size:24px;font-weight:600;color:#14213D">LUT: bütün birimler (gri) → kullanılanlar (turuncu)</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="width:170px;font-size:24px">bigram</p><div style="width:640px;display:flex;flex-direction:column;gap:3px"><div style="width:420px;height:14px;background:#C9C4B8;border-radius:3px"></div><div style="width:110px;height:14px;background:#B4460F;border-radius:3px"></div></div><p style="font-size:24px">5 855 → 1 529</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="width:170px;font-size:24px">mlp</p><div style="width:640px;display:flex;flex-direction:column;gap:3px"><div style="width:581px;height:14px;background:#C9C4B8;border-radius:3px"></div><div style="width:180px;height:14px;background:#B4460F;border-radius:3px"></div></div><p style="font-size:24px">8 094 → 2 502</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="width:170px;font-size:24px">gru</p><div style="width:640px;display:flex;flex-direction:column;gap:3px"><div style="width:514px;height:14px;background:#C9C4B8;border-radius:3px"></div><div style="width:233px;height:14px;background:#B4460F;border-radius:3px"></div></div><p style="font-size:24px">7 164 → 3 239</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="width:170px;font-size:24px">bow</p><div style="width:640px;display:flex;flex-direction:column;gap:3px"><div style="width:640px;height:14px;background:#C9C4B8;border-radius:3px"></div><div style="width:305px;height:14px;background:#B4460F;border-radius:3px"></div></div><p style="font-size:24px">8 917 → 4 247</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="width:170px;font-size:24px">gpt2</p><div style="width:640px;display:flex;flex-direction:column;gap:3px"><div style="width:517px;height:14px;background:#C9C4B8;border-radius:3px"></div><div style="width:420px;height:14px;background:#B4460F;border-radius:3px"></div></div><p style="font-size:24px">7 206 → 5 850</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="width:170px;font-size:24px">llama</p><div style="width:640px;display:flex;flex-direction:column;gap:3px"><div style="width:522px;height:14px;background:#C9C4B8;border-radius:3px"></div><div style="width:475px;height:14px;background:#B4460F;border-radius:3px"></div></div><p style="font-size:24px">7 278 → 6 622</p></div>
+<div style="display:flex;gap:16px;align-items:center"><p style="width:170px;font-size:24px">stories260K</p><div style="width:640px;display:flex;flex-direction:column;gap:3px"><div style="width:568px;height:14px;background:#C9C4B8;border-radius:3px"></div><div style="width:516px;height:14px;background:#B4460F;border-radius:3px"></div></div><p style="font-size:24px">7 918 → 7 194</p></div>
+</div>
+<div style="width:560px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;flex-direction:column;gap:8px;background:#14213D;border-radius:12px;padding:20px 26px">
+<p style="font-size:24px;color:#9FB0CC">Mekanizma (zoo_core.sv)</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2">EN = SPECIALIZE ? OPS_USED<br>               : 32'hFFFF_FFFF;<br>OP_NORM: if (EN[6]) ...</p>
+</div>
+<p style="font-size:24px;line-height:1.4">Derleyici her model için hangi op’ların kullanıldığını bir bit maskesine yazar. Maskede sıfır olan birimin mantığı sabit olarak kapalıdır ve sentez aracı onu tamamen siler.</p>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">Yalnız engine, Yosys tahmini. Bütün birimli tek bitstream’lik sürüm: 9 444 LUT.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">25 · Karpathy modelleri FPGA’de · model/zoo/hw_metrics.json</p>
+<aside>Engine bütün op’ları desteklese de her model hepsini kullanmıyor; bigram yalnızca bir tablo okuyor. Bu yüzden bir SPECIALIZE parametresi ekledik. Derleyici, her model için hangi op’ların kullanıldığını bir bit maskesine yazıyor; sağdaki kod parçasındaki OPS_USED bu. SPECIALIZE açıkken her birimin mantığı bu maskenin ilgili bitiyle koşullanıyor; bit sıfırsa o mantık sabit olarak kapalı oluyor ve sentez aracı onu tamamen siliyor. Soldaki çubuklar bunun etkisi: gri, bütün birimlerle; turuncu, yalnızca kullanılan birimlerle LUT sayısı. bigram 5 855’ten 1 529’a, mlp 8 094’ten 2 502’ye iniyor; makemore modellerinde engine yaklaşık dörtte birine küçülüyor. Transformer’lar zaten çoğu birimi kullandığı için kazanç az: stories260K’da yüzde 9. Kart tasarımında her model kendi uzmanlaşmış engine’iyle sentezleniyor. Karşılaştırma için bütün birimleri içeren ve modeli sonradan yükleyebilen tek bitstream’lik sürüm 9 444 LUT.</aside>
+</section>

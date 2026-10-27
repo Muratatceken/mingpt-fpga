@@ -1,0 +1,35 @@
+<section id="fuzz" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">8 · Doğrulama</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Rastgele ve köşe durumu testleri, normal kullanımda görünmeyen iki gerçek RTL hatası buldu</h2>
+</div>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:20px 24px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;color:#14213D">655</p>
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">rastgele koşu</p>
+<p style="font-size:24px;line-height:1.4">~121 bin token; koşu ortasında düğme, CPU_RESET; 32 sampling ayarının 30–32’si.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:20px 24px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;color:#14213D">16</p>
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">köşe durumu</p>
+<p style="font-size:24px;line-height:1.4">koşu sırasında basılan düğme kuyruğa girer; reset sonrası token’lar referansın öneki.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:20px 24px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;color:#14213D">0 X</p>
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">4-state simülasyon</p>
+<p style="font-size:24px;line-height:1.4">Icarus, gru 2,7 M cycle: pinlerde ve metin RAM’inde bilinmeyen değer yok.</p>
+</div>
+</div>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;border-left:6px solid #B4460F;padding:6px 0px 6px 24px">
+<p style="font-size:24px;font-weight:600;color:#B4460F">Hata 1: kaybolan düğme</p>
+<p style="font-size:24px;line-height:1.4">Kuyruktaki bir koşunun başladığı cycle’a denk gelen BTNU basışı kayboluyordu. Kuyruğa alma mantığı düzeltildi.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;border-left:6px solid #B4460F;padding:6px 0px 6px 24px">
+<p style="font-size:24px;font-weight:600;color:#B4460F">Hata 2: reset’siz sayaç</p>
+<p style="font-size:24px;line-height:1.4">Heartbeat sayacının reset’i yoktu: 2-state Verilator’da görünmüyordu, 4-state simülasyon LED0’da X gösterdi. CPU_RESET onu sıfırlamıyordu.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">39 · Karpathy modelleri FPGA’de · sw/zoo/board_fuzz.py, scripts/nexys_icarus.sh</p>
+<aside>Normal kullanımla yapılan testler, kullanıcının makul davrandığını varsayar. Gerçek kullanıcılar ise düğmelere koşu ortasında basar, reset’e yanlış anda basar. Bunun için iki tür test yazdık. Rastgele testlerde anahtar ayarları ve düğme dizileri rastgele seçiliyor, basışlar koşunun ortasına da denk geliyor, CPU reset de dahil: toplam 655 koşu ve yaklaşık 121 bin token; 32 farklı sampling ayarının 30 ile 32’si kapsandı ve hepsi referansla aynı. Ayrıca 16 köşe durumu elle yazıldı; mesela koşu sırasında basılan düğme kuyruğa girmeli, reset sonrasında yarım kalan koşunun token’ları referansın başlangıcıyla aynı olmalı. Üçüncü test 4-state simülasyon: Verilator her biti 0 ya da 1 kabul ediyor; Icarus ise bilinmeyen değeri, X’i, temsil ediyor ve reset’i unutulmuş register’ları yakalıyor. Bu testler iki gerçek hata buldu. Birincisi, kuyruktaki bir koşunun başladığı cycle’a denk gelen bir düğme basışı kayboluyordu. İkincisi, LED’i yakıp söndüren sayacın reset’i yoktu; Verilator her biti 0 ya da 1 saydığı için görünmüyordu, 4-state simülasyonda ise LED X kaldı ve reset düğmesi bu sayacı sıfırlamıyordu. İkisi de düzeltildi ve bütün testler yeniden geçti.</aside>
+</section>

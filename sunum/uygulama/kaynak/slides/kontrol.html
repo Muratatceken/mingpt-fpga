@@ -1,0 +1,33 @@
+<section id="kontrol" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Kart sistemi</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Kullanım: anahtarlar üretimi ayarlar, düğmeler koşu başlatır; LED16 kartın Python ile aynı sonucu bulduğunu söyler</h2>
+</div>
+<div style="display:flex;gap:40px;align-items:start">
+<table style="width:960px;font-size:24px;color:#3B4456">
+<tr><th style="width:22%;text-align:left;color:#14213D">giriş</th><th style="width:78%;text-align:left;color:#14213D">işlev</th></tr>
+<tr><td>güç, CPU_RESET</td><td>ilk koşu kendiliğinden başlar</td></tr>
+<tr><td>BTNC</td><td>yeni koşu; rastgele durum sürer</td></tr>
+<tr><td>BTNU</td><td>üreteci SW[15:8]’den tohumla ve koş</td></tr>
+<tr><td>BTND</td><td>metin alanını temizle</td></tr>
+<tr><td>SW0</td><td>greedy ya da sampling</td></tr>
+<tr><td>SW[3:1]</td><td>τ: 0,8 · 1,0 · 0,9 · 0,7 · 0,6 · 0,5 · 1,2 · 1,5</td></tr>
+<tr><td>SW[5:4]</td><td>min-p: 1/32 · kapalı · 1/128 · 1/16</td></tr>
+<tr><td>SW6, SW7</td><td>daktilo modu (~25 token/s); 7-segment: token/s ya da cycle/token</td></tr>
+</table>
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;flex-direction:column;gap:8px;background:#14213D;border-radius:12px;padding:22px 26px">
+<p style="font-size:24px;font-weight:600;color:#F2A65A">Kart üstü kontrol</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#E6EAF2">h ← 31 · h + tok</p>
+<p style="font-size:24px;line-height:1.4;color:#E6EAF2">Python, export sırasında greedy koşunun ve ilk sampling koşusunun hash’ini hesaplayıp bitstream’e gömer. Kart kendi hash’ini bununla karşılaştırır.</p>
+</div>
+<div style="display:flex;gap:12px">
+<p style="flex:1;font-size:24px;font-weight:600;color:#FBFBF8;background:#2A5C9A;border-radius:8px;padding:12px 14px">mavi: üretiyor</p>
+<p style="flex:1;font-size:24px;font-weight:600;color:#14213D;background:#BFE0C8;border-radius:8px;padding:12px 14px">yeşil: OK</p>
+<p style="flex:1;font-size:24px;font-weight:600;color:#FBFBF8;background:#B4460F;border-radius:8px;padding:12px 14px">kırmızı: FAIL</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">30 · Karpathy modelleri FPGA’de · board/nexys_a7/nexys_a7_top.sv</p>
+<aside>Kart bir bilgisayara bağlı olmadığı için bütün kontrol anahtar ve düğmelerden. Güç verildiğinde ya da reset’e basıldığında ilk koşu kendiliğinden başlıyor: stories260K bir hikâye, names modelleri 27 isim yazıyor. Orta düğme yeni bir koşu başlatıyor; rastgele sayı üretecinin durumu kaldığı yerden sürdüğü için her basışta farklı bir hikâye geliyor. Üst düğme üreteci anahtarlardan okunan seed ile yeniden tohumluyor, alt düğme ekranı temizliyor. Anahtarlarla greedy ya da sampling seçiliyor, sekiz temperature ve dört min-p değeri arasından seçim yapılıyor; daktilo modu üretimi gözle izlenebilecek bir hıza indiriyor; 7-segment gösterge token/s ya da token başına cycle gösteriyor. Sağdaki kutu kart üstü kontrol: kart ürettiği her token ile basit bir hash güncelliyor. Python, modeli dışa aktarırken aynı koşuların hash’ini hesaplayıp bitstream’e gömüyor; kart koşu bitince ikisini karşılaştırıyor. RGB LED üretim sırasında mavi, sonuç aynıysa yeşil, farklıysa kırmızı yanıyor. Yani kart, Python ile token token aynı sonucu bulduğunu kendisi söylüyor; simülasyonda 18 modelin hepsinde yeşil.</aside>
+</section>

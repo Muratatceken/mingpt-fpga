@@ -1,0 +1,56 @@
+\evre{13 Ekim 00:46 – 11:06 \enspace·\enspace commit'ler \code{9fc2dc5}, \code{768ff4e}, \code{2b50611}}{Evre 2: Anlatmak ve ölçmek}{sec:e2}
+
+\neden
+Çalışan bir donanım tek başına bir tez değildir; ne yapıldığının ve neden doğru olduğunun anlatılması gerekir. Kullanıcının isteği iki adımdı:
+
+\soz{13 Ekim, 00:46}{biz şimdi buraya çok detaylı bir min gpt nedir nasıl çalışır detaylı bir teknik ve algoritmik matematiksel anlatımı gerekiyor devamında da bunun fpga implementasyonunu çok teknik ve detaylı bir şekilde anlatmamız gerekiyor}
+\soz{13 Ekim, 02:35}{raporu pdf olarak hazırla şemalarını çiz çok güzel gözüksün}
+
+İkinci bir eksik de ölçümdü. O ana kadar kaynak kullanımı yalnızca tahmindi, çünkü Vivado macOS'ta çalışmıyor.
+
+\neyapildi
+\paragraph{LaTeX teknik rapor (\code{9fc2dc5}, 09:59).} 38 sayfalık, XeLaTeX ile yazılmış bir rapor: minGPT'nin matematiği, KV cache, ispatlarıyla quantization teorisi, donanım mimarisi, performans modeli, doğrulama ve kart entegrasyonu. 16 TikZ/pgfplots şeklindeki grafikler gerçek model verisinden üretildi (\code{sw/report\_data.py}). Bu raporun kullandığı stil dosyası da o gün yazıldı.
+
+\paragraph{Yön tartışması (10:38).} Kullanıcı “şimdi sırada ne var?” diye sordu. O günkü değerlendirme, bir jürinin soracağı üç soruya dayanıyordu:
+\begin{enumerate}
+  \item \emph{Kartta çalıştı mı?} Her şey yalnızca simülasyondaydı.
+  \item \emph{Neye göre hızlı?} 145 µs/token tek başına bir anlam taşımıyordu.
+  \item \emph{Sıralama görevi bir oyuncak değil mi?} \%100 doğruluk, quantization'ın zorlandığı bir durumu göstermiyordu.
+\end{enumerate}
+Önerilen yol kartta çalıştırma, ARM ile karşılaştırma ve metin üreten bir model idi. Kullanıcı ise daha geniş bir hedef koydu (§\ref{sec:e3}):
+
+\soz{13 Ekim, 10:43}{karpathynin diğer bu tarz modelleri de var nanogpt gibi. onların hepsine bakıp yine hepsini implemente edip hepsini karşılaştırdığım bir hale çevirmek istiyorum işi. rapordaki matematiksel anlatımı beğendim. bir de görsel olarak sağlam bir anlatım ekleyelim.}
+
+\paragraph{Raporun II. kısmı (\code{768ff4e}, 10:57).} Karpathy'nin depoları tek tek indirilip mimariler doğrudan koddan incelendi. Rapor 48 sayfaya çıktı. Eklenen dört ispatlı sınır, sonraki evrede donanımın bit genişliklerini belirledi:
+\begin{itemize}
+  \item RNN/GRU gizli durumu $|h|\le 1$: kalibrasyonsuz Q0.7 yeterli;
+  \item RMSNorm çıkışı $\le\sqrt N$;
+  \item RoPE'de skor yalnız göreli konuma bağlı;
+  \item QK-norm'da skor $\le c^2\sqrt{d_h}$: softmax ölçeği analitik olarak sabitlenebilir.
+\end{itemize}
+Görsel anlatım için eğitilmiş modelin 9 head'inin gerçek attention haritaları çizildi. Bir gözlem de çıktı: ilk katman, çıktı adımlarında attention'ın \%84–92'sini girdi rakamlarına veriyor; düzgün dağılımda bu oran \%77,5 olurdu. Bu, modelin rakamları sayarak sıraladığı hipotezine uyuyor; raporda kanıt olarak değil hipotez olarak geçti.
+
+\paragraph{Mac'te açık kaynak sentez (\code{2b50611}, 11:06).} Kullanıcı “vivadoyu veya benzer bir simülatörü buraya kuramaz mıyız?” diye sordu. Vivado'nun macOS'ta doğrudan çalışmadığı, Docker + Rosetta ile çalıştırma yolunun ise dört engeli olduğu görüldü: macOS sürümü (yöntem macOS 15'te denenmişti, bu Mac 27'de), yaklaşık 20 GB'lık kurulum için yetersiz disk (57 GB boş), AMD hesabıyla giriş ve sınırlı JTAG desteği. Onun yerine sv2v + Yosys kuruldu. Yosys \code{synth\_xilinx}, Xilinx 7-serisi için gerçek bir sentez yapar ve 26 saniyede çalıştı:
+
+\begin{table}[htb]
+\centering\small
+\caption{\code{gpt\_top}'un ilk ölçülen kaynakları (Yosys, xc7z020'ye göre).}\label{tab:e2}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\thead{Kaynak} & \thead{Kullanılan} & \thead{Pay} \\
+\midrule
+LUT & 3\,955 & \%7,4 \\
+FF & 1\,567 & \%1,5 \\
+BRAM (RAMB36 eşdeğeri) & 23 & \%16,4 \\
+DSP48E1 & 31 & \%14,1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Raporun “tahmin” yazan yerleri bu ölçümlerle değiştirildi. Ölçülemeyen tek şey zamanlamaydı (Fmax); Yosys bunu yapmıyor. Bu boşluk 14 gün sonra, §\ref{sec:e8}'de kapandı.
+
+\soz{13 Ekim, 11:15}{her şeyi bu bilgisayarda yap en uygun neyse onla çalış işleri bitir eğitimi yap testleri yap}
+
+Bu cümle projenin çalışma biçimini belirledi: eğitim, simülasyon, sentez ve belgeler Mac'te; yalnızca Mac'te yapılamayanlar kullanıcıya not olarak bırakılacaktı.
+
+\ders{Ölçülmemiş bir sayı tahmindir ve öyle yazılmalıdır. Tahminler ölçümle değiştikçe (ör. DSP için 16–30 tahmini yerine ölçülen 31) raporun güvenilirliği arttı. Bir aracın eksik olduğu yerde (Vivado) durmak yerine o aracın yaptığı işin ölçülebilen kısmını başka bir araçla yapmak, ilerlemeyi sürdürdü.}

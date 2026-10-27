@@ -1,0 +1,80 @@
+\evre{13 Ekim 11:15 – 16:55 \enspace·\enspace 14 commit, \code{adf3075} … \code{6bb4ae9}}{Evre 3: Karpathy ailesi ve mikrokodlu engine}{sec:e3}
+
+\neden
+Kullanıcının hedefi tek modelden bir aileye çıktı: Karpathy'nin modellerinin hepsini implemente etmek ve karşılaştırmak. Survey, dil modeli mimarisinin 2003'ten 2026'ya evrimini izleyen dokuz mimari çıkardı:
+\begin{itemize}
+  \item \textbf{attention öncesi (makemore):} Bigram, MLP (Bengio 2003), RNN, GRU, BoW;
+  \item \textbf{GPT-2:} minGPT ve nanoGPT inference'ta aynı işlemleri yaptığı için tek mimari;
+  \item \textbf{microgpt} (Şubat 2026): RMSNorm (parametresiz), ReLU, bias yok;
+  \item \textbf{Llama 2} (llama2.c): RMSNorm, RoPE, SwiGLU, GQA;
+  \item \textbf{nanochat} (çekirdek mimari): RoPE, QK-norm, ReLU², GQA.
+\end{itemize}
+llm.c (nanoGPT ile aynı mimari), char-rnn (makemore'un RNN/GRU'su kapsıyor) ve micrograd (dil modeli değil) dışarıda kaldı.
+
+Asıl tasarım kararı şuydu: \emph{dokuz ayrı hızlandırıcı yazmak yerine tek bir engine}. Sabit durum makinesinin yerini, Python derleyicisinin her model için ürettiği küçük bir komut dizisi (mikrokod) aldı. Modele özgü olan her şey (program, weight'ler, requant parametreleri, tablolar) bellek içeriği oldu; RTL bütün modellerde aynı kaldı. Bu, karşılaştırmayı adil kılar: farklı modellerin cycle sayısı farkı, tasarımcının bir modele daha çok emek vermesinden değil mimarinin kendisinden gelir.
+
+\neyapildi
+\paragraph{Dokuz model, tek RTL (\code{adf3075}, 12:05).} Dokuz model \code{names.txt} üzerinde yaklaşık 50 bin parametrelik eşit bir bütçeyle eğitildi. Bir IR derleyicisi her modeli ortak işlemlere indirdi; quantization ve bit-exact bir integer yorumlayıcı (\code{IntRunner}) eklendi; \code{rtl/zoo/zoo\_core.sv} mikrokodlu engine olarak yazıldı. Dokuz modelin hepsi Verilator'da bit-exact çıktı (354 adım × 27 logit). Tablo~\ref{tab:aile} o günün sonuçlarını gösterir.
+
+\begin{table}[htb]
+\centering\small
+\caption{Karpathy ailesi, PYNQ dönemi engine'inde. Kayıplar names test kümesinde nat/token; cycle/token tek bitstream'lik genel engine'de, $P=8$. stories260K için ilk ve son pozisyonun cycle'ı verilmiştir.}\label{tab:aile}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\thead{Model} & \thead{Parametre} & \thead{Float kayıp} & \thead{INT8 kayıp} & \thead{$\Delta$} & \thead{cycle/token} \\
+\midrule
+\tabinput{data/aile.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Hazır eğitilmiş bir hikâye modeli (\code{2aef51f}, 13:01).} Karpathy'nin llama2.c deposundaki stories260K modeli (TinyStories, 260 bin parametre) aynı akıştan geçirildi: \code{.bin} yükleyici, llama2.c'nin \code{run.c} tokenizer'ı ve INT8. RTL 1\,024 adımda bit-exact çıktı ve referansla token token aynı 200 tokenlık bir hikâye üretti. Bu, projede \emph{Karpathy'nin kendi eğittiği weight'lerle} çalışan tek modeldir.
+
+\paragraph{Quantization incelemesi.} stories260K'da INT8 kaybı ilk denemede 0,052 nat/token'dı. Hata kaynağını bulmak için \emph{fake quantization} ile tek tek ablasyon yapıldı: weight'leri, activation'ları, normları ve residual'ı ayrı ayrı quantize etmek. Kaybın weight'lerden değil activation'lardan geldiği görüldü. Aktivasyon scale'leri en büyük değer yerine \%99,99 yüzdelik değerle seçilince ve NORM çıkış ölçeği kalibre edilince fark 0,052'den 0,022'ye indi.
+
+\paragraph{RTL iyileştirmeleri.} Sınırlı bölümlü bir bölücü (\code{zdiv}) NORM'u 64'ten 41 cycle'a, softmax'ı 34'ten 18 cycle'a indirdi. İki sentez parametresi eklendi:
+\begin{itemize}
+  \item \code{SPECIALIZE}: modelin kullanmadığı birimler sentezlenmez.
+  \item \code{LOADABLE}: bellekler işlemciden yüklenebilir yapılır. Yosys, içeriği sabit ROM'ları sentez sırasında mantığa katlayıp yanıltıcı derecede küçük sonuçlar veriyordu; yüklenebilir bellekte bunu yapamaz.
+\end{itemize}
+
+\paragraph{“Paper kalitesinde” plan (13:30).} Kullanıcı “ben profesyonle paper kalitesinde bir iş istiyorum” dedi. Plan, çalışmanın iddiasını tek cümleye indirdi: ailenin her mimari yeniliğinin (attention, RMSNorm, RoPE, SwiGLU, GQA, QK-norm) donanım maliyetini ve kaliteye katkısını aynı engine'de, kontrollü olarak ölçmek. Dört araştırma sorusu ve altı iş paketi tanımlandı: çok tohumlu eğitim ve öğrenme oranı taraması, GPT-2'den Llama'ya tek tek özellik değiştiren bir \emph{özellik merdiveni}, ölçek taraması ve TinyStories'te ikinci bir deney hattı (Hat B). Kullanıcının bir sonraki cümlesi işin bölüşümünü belirledi:
+
+\soz{13 Ekim, 13:39}{sen bu bilgisayarda yapılacak her şeyi yap geri kalanı bana bırak neyapmam gerektiğini detaylı bir not olarak bırak}
+
+Bu not \code{docs/SENIN\_YAPACAKLARIN.md} oldu: Vivado, kart, güç ölçümü ve makale başvurusu için adım adım talimatlar.
+
+\paragraph{Altyapı (14:26 – 15:47).} Aynı öğleden sonra eklenenler:
+\begin{itemize}
+  \item \textbf{C ISA simülatörü} (\code{sw/c/zoo\_run.c}): mikrokodu C'de yorumlar, 10 modelde bit-exact; CPU'da temel çizgi.
+  \item \textbf{Rastgele model testi} (\code{fuzz.py}): rastgele mimari, boyut ve weight'lerle RTL–referans karşılaştırması; 60 vaka, 1,26 milyon logit, 0 hata.
+  \item \textbf{Aritmetik birimlerin testi:} \code{zdiv} $W=12$'de bütün girdilerle (tam tarama), ayrıca 36,4 milyon rastgele vaka; karekök için rastgele ve sınır vakaları.
+  \item \textbf{Tek bitstream engine'i:} on modelin en büyük boyutlarıyla ($V=512$, $T=256$, 5 katman) tek bir engine; her model çalışma anında yüklenir. Yosys'e göre BRAM önce 132 idi (çipin \%94'ü); BoW tablosu 16 bitlik iki kelimeye bölününce 114 oldu (xc7z020'nin \%81'i).
+  \item \textbf{AXI4-Lite sistemi ve PYNQ sürücüsü:} adım, yükleme, logit penceresi, donanım argmax'ı ve cycle sayacı için yazmaç haritası; testbench kart sürücüsünün yaptığını yapar, 10 model ve 200 tokenlık hikâye bit-exact.
+  \item \textbf{Kapalı biçimli cycle modeli} (\code{perf\_model.py}): mikrokoddan her pozisyonun cycle sayısını hesaplar; RTL ile cycle'ı cycle'ına aynı.
+  \item \textbf{CI:} her push'ta GitHub Actions'ta Verilator regresyonu; Dockerfile; IEEE makale iskeleti.
+\end{itemize}
+
+\paragraph{Tasarım uzayı: $P$ taraması (\code{6bb4ae9}, 16:55).} Attention'ın head genişliği ($d_h = 8$) GEMV hat sayısından ($P$) ayrıldı; böylece $P = 8, 16, 32$ denenebildi. 6 model × 3 $P$ = 18 noktanın hepsi bit-exact çıktı ve cycle modeli her noktada ölçümle birebir tuttu (Tablo~\ref{tab:dse}).
+
+\begin{table}[htb]
+\centering\small
+\caption{GEMV hat sayısı $P$'nin etkisi (cycle/token). GEMV'deki hızlanma ile toplam hızlanma arasındaki fark Amdahl yasasıdır: stories260K'da zamanın büyük kısmı attention'da geçtiği için GEMV'yi hızlandırmak toplamı daha az etkiler.}\label{tab:dse}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\thead{Model} & \thead{$P=8$} & \thead{$P=16$} & \thead{$P=32$} & \thead{GEMV, 8→32} & \thead{Toplam, 8→32} \\
+\midrule
+\tabinput{data/dse.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\sorunlar
+\begin{itemize}
+  \item \textbf{Yosys'in ROM katlaması:} sabit içerikli bellekler mantığa katlanınca kaynaklar olduğundan küçük görünüyordu → \code{LOADABLE=1} ile sentez.
+  \item \textbf{Tek bitstream engine'i çipi neredeyse dolduruyordu} (132 BRAM, \%94) → BoW tablosunun 16 bitlik kelimelere bölünmesiyle 114.
+  \item \textbf{AXI testbench'inde yarış durumu:} el sıkışmaları Verilator sürümüne göre farklı cycle'da görülüyordu → sinyaller düşen kenarda sürülüp örneklendi.
+  \item \textbf{Netlist simülasyonu sonuçsuz kaldı:} Yosys'in hücre modellerinde X değerleri yayılıyordu. Bu sorun 14 gün sonra, kendi BRAM modelimiz yazılarak çözüldü (§\ref{sec:e7}).
+\end{itemize}
+
+\ders{Genellik, adil karşılaştırmanın ön koşuludur. Tek bir engine, “bu model neden daha yavaş?” sorusunu tasarımcıya değil mimariye sorar. İkinci ders: bir hızlandırıcının hızlandırmadığı kısım sonunda darboğaz olur ($P=32$'de stories260K).}

@@ -1,0 +1,28 @@
+\evre{27 Ekim 10:40 – 11:49}{Evre 9: Karar, fiziksel kart yok}{sec:e9}
+
+\neden
+Toplu yerleşim koşusu sürerken kullanıcı, projenin ne yaptığını ve nasıl ölçtüğünü adım adım sordu: kaç model implemente ediliyor, nasıl bir ölçüm yapılıyor, modelin doğru implemente edildiği nasıl test ediliyor, bitstream nedir. Bu soruların sonunda proje için belirleyici bir karar geldi:
+
+\soz{27 Ekim, 11:49}{karta yükleme yapmıycaz simüle edicez macte}
+
+Böylece doğrulama zincirinin son halkası, yani fiziksel kartta LED16'nın yeşil yanması, kapsam dışına çıktı. Soru şuna dönüştü: \emph{kart olmadan, devrenin çipte doğru çalışacağını nasıl gösteririz?}
+
+\neyapildi
+\paragraph{Kart yoksa ne yeterli?} Kart üretilmeden önce endüstride yapılan doğrulama iki ayağa dayanır: devrenin mantıksal olarak doğru olduğunu gösteren simülasyon ve her sinyalin zamanında yerine oturduğunu gösteren statik zamanlama analizi. Bizim tasarımımızda bu ikisinin birlikte yeterli olmasının sebebi, tasarımın tek bir clock domain'inde çalışan senkron bir devre olmasıdır: girişler (düğmeler ve anahtarlar) senkronlanıp debounce edilir, çıkışlar ise insan gözüyle okunan LED'ler ve VGA'dır. Şekil~\ref{fig:zincir}, zincirin her halkasını ve neyi yakaladığını gösterir.
+
+\begin{figure}[htb]
+\centering
+\sekil{dogrulama_zinciri}
+\caption{Doğrulama zinciri. Her halka bir öncekine karşı kontrol edilir. 0–2 kalite ve mimari, 3–6 mantıksal doğruluk, 7 zamanlama; 8. halka (kart) kullanıcının kararıyla yapılmayacak.}
+\label{fig:zincir}
+\end{figure}
+
+\paragraph{Örnek: stories260K.} RTL simülasyonu, kartın ürettiği her token'ın ve ekrandaki her karakterin Python referansıyla aynı olduğunu gösteriyor. Zamanlama analizi, 25 MHz'te en uzun yolun 40 ns'lik periyoda sığdığını söylüyor. İkisi birlikte: çip 25 MHz'te çalıştırılırsa, simülasyonda gördüğümüz hikâyenin aynısını, token başına 50\,397 cycle ile, yani $25\cdot10^6/50\,397 \approx 496$ token/s hızla yazar.
+
+\paragraph{Açık kalan iki boşluk.}
+\begin{itemize}
+  \item \textbf{Simüle edilen netlist, zamanlaması ölçülen netlist değil.} Netlist simülasyonu (§\ref{sec:e7}) kısa debounce süreleriyle ve 50 MHz ayarıyla sentezlenmiş bir netlist'te yapıldı; yerleştirilen netlist ise 25 MHz ayarlı ve gerçek sürelerle sentezleniyor. Mantık aynı, sabitler farklı. Boşluğu kapatmak için akışın yerleştirdiği netlist'i Verilog olarak da kaydetmesi ve o netlist'in 18 modelde simüle edilmesi planlandı.
+  \item \textbf{Yönlendirilmiş devre simüle edilmiyor.} nextpnr'ın bu sürümü, yerleşimden sonraki devreyi simüle edilebilir Verilog olarak yazamıyor. Bu son adımda zamanlama analizine güveniliyor. nextpnr'ın gecikme modeli topluluk tarafından çıkarılmıştır (Project X-Ray); Vivado'nun sonucu biraz farklı olabilir.
+\end{itemize}
+
+\ders{Kullanıcının soruları (“nasıl test ediyoruz?”, “bitstream nedir?”) aslında bir gözden geçirmeydi: her cevap, zincirin hangi halkasının neyi garanti ettiğini açıkça yazmayı gerektirdi. Kart kararı bir eksiklik değil, bir netleşmedir: iddia artık “kartta çalıştı” değil, “simülasyon ve zamanlama analiziyle çalışacağı gösterildi”dir ve bu iddianın sınırları bellidir.}

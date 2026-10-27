@@ -1,0 +1,62 @@
+\evre{12 Ekim 23:34 – 13 Ekim 00:35 \enspace·\enspace commit'ler \code{088c227}, \code{4e77f63}}{Evre 1: minGPT'den bit-exact bir donanıma}{sec:e1}
+
+\neden
+İlk istek açıktı: minGPT'yi FPGA'ye taşımak ve bunu \emph{teorik olarak sağlam} biçimde yapmak. minGPT'nin depo içindeki en küçük örneği, \code{gpt-nano} yapılandırmasıyla bir sıralama görevidir: 0, 1 ve 2 rakamlarından oluşan 6 uzunluğunda bir diziyi sıralamak. Bu görev bir başlangıç için idealdi:
+\begin{itemize}
+  \item \textbf{Bütün girdiler sayılabilir:} $3^6 = 729$ olası dizi var. Donanımı rastgele bir alt kümede değil, girdilerin \emph{tamamında} test etmek mümkün.
+  \item \textbf{Doğruluk tartışmasız ölçülür:} çıktı ya sıralıdır ya değildir.
+  \item \textbf{Model küçük:} 3 katman, 3 attention head, $C = 48$, toplam 85\,728 parametre. INT8 weight'ler yaklaşık 83 KB tutar ve çipin içine rahatça sığar.
+\end{itemize}
+
+\neyapildi
+İş üç katmana bölündü ve her katman bir öncekine karşı doğrulandı.
+
+\paragraph{1. Matematiksel olarak eşdeğer dönüşümler.} Donanımın işini azaltmak için float model önce \emph{aynı sonucu veren} daha basit bir forma getirildi. LayerNorm'un $\gamma$ ve $\beta$ parametreleri sonraki Linear katmana katlandı: $W(\gamma\odot\hat z+\beta)+b = (W\,\mathrm{diag}(\gamma))\,\hat z + (W\beta+b)$. Attention'daki $1/\sqrt{d_h} = 1/4$ çarpanı da $W_q$'ya katlandı. Katlanmış float64 model, orijinal minGPT ile 729 dizinin tamamında $10^{-4}$ toleransla aynı logit'leri üretti.
+
+\paragraph{2. Yalnızca integer bir referans model.} Weight'ler ve activation'lar INT8'e, residual akış INT16'ya indirildi. Bunun kalbi \emph{requantization}: bir matris-vektör çarpımının INT32 toplamını yeniden INT8'e indiren işlem.
+
+\begin{ozet}[Sezgi ve sayısal örnek: requant.]
+Gerçek dünyada çıkış $y = M\cdot acc$ olmalı; burada $acc$ integer toplam, $M = S_w S_x / S_y$ ise üç scale'in oranı, yani ondalıklı bir sayı. FPGA'de ondalıklı sayıyla çarpmak pahalı olduğu için $M$ bir integer çarpan ve bir kaydırma olarak yazılır: $M \approx m_0\cdot 2^{-sh}$, $m_0 \in [2^{15}, 2^{16})$.
+
+Örnek: $M = 0{,}0123$ olsun. $0{,}0123\cdot 2^{22} = 51\,589{,}9$ olduğundan $m_0 = 51\,590$, $sh = 22$ seçilir. $acc = 4\,321$ için
+\[ q_y = (4\,321\cdot 51\,590 + 2^{21}) \gg 22 = 225\,017\,542 \gg 22 = 53, \]
+gerçek değer ise $4\,321\cdot 0{,}0123 = 53{,}148$; yuvarlanmış hâli de 53. Yalnızca bir çarpma, bir toplama ve bir kaydırma ile ondalıklı çarpmanın sonucu elde edildi. $m_0$'ın 16 bit olması, bağıl hatayı $2^{-16}$'nın altında tutar.
+\end{ozet}
+
+LayerNorm, softmax ve GELU için de yalnız toplama, çarpma, kaydırma, taban bölme ve taban karekök kullanan algoritmalar türetildi. Her biri için taşmanın olmayacağı ispatlandı. En sevdiğimiz örnek LayerNorm çıkışıdır: Samuelson eşitsizliğine göre $N$ elemanlı her vektörde $|x_i-\mu|\le\sigma\sqrt{N-1}$ olduğundan normalleştirilmiş değer $\sqrt{47}\approx 6{,}86$'yı geçemez. Çıkış formatı Q3.4'ün tavanı 7,94 olduğu için LN çıkışı \emph{hiçbir girdide} doymaz. Bu, veriden bağımsız bir garantidir; kalibrasyon gerektirmez.
+
+\paragraph{3. RTL.} SystemVerilog'da yazılan ilk donanım (\code{gpt\_top}) minGPT'nin \code{forward()} fonksiyonunu satır satır izleyen bir durum makinesiydi: embedding → LN → q, k, v → attention → projection → LN → MLP → \dots → lm\_head. Birimler:
+\begin{itemize}
+  \item 8 hatlı, output-stationary bir GEMV ve kanal başına requant;
+  \item integer LayerNorm (32 cycle'lık sıralı karekök ve 48 cycle'lık sıralı bölücü);
+  \item KV cache'li causal attention ve tablo tabanlı softmax;
+  \item GELU tablosu ve akış hâlinde argmax.
+\end{itemize}
+
+\subsection*{Sonuçlar}
+\begin{table}[htb]
+\centering\small
+\caption{İlk donanımın sonuçları (13 Ekim, Verilator 5.052).}\label{tab:e1}
+\begin{tabularx}{0.86\textwidth}{@{}lL@{}}
+\toprule
+\thead{Ölçü} & \thead{Değer} \\
+\midrule
+Görev doğruluğu & float, integer ve RTL: 729/729 \\
+Bit-exact & 729 dizi × 11 decode adımı = 8\,019 adımın her birinde token, logit'ler ve 48 residual değeri aynı \\
+Sayısal sadakat & integer modelin logit SQNR değeri 41,5 dB; float modelle token uyumu \%100 \\
+Hız & 14\,544 cycle/token; 100 MHz'de 145 µs; GEMV verimi \%98,3 \\
+Bellek & 83 KB INT8 weight, 3 KB KV cache; dış bellek yok \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Kart: PYNQ-Z2.} Hemen ardından gelen istek “buna uygun bir kart seç sen git de kur” oldu. PYNQ-Z2 (Zynq-7020) seçildi: tasarım BRAM'in yaklaşık \%17'sini kullanıyordu, Vivado'nun ücretsiz sürümü çipi destekliyordu ve kartın ARM işlemcisi ileride hız karşılaştırması için kullanılabilirdi. Karta bir \emph{çip üzeri öz-test} eklendi: tasarım 729 sıralama problemini kendi içinde üretiyor, çözüyor ve sonucu kontrol ediyor; LED yeşilse 729/729 doğru. Bir anahtar çıktıları bilerek bozuyor; o durumda LED kırmızı olmalı. Simülasyonda normal modda 729/729 geçti, hata enjeksiyonunda 729/729 kaldı.
+
+\sorunlar
+\begin{itemize}
+  \item \textbf{Testbench'in kendisi doğru mu?} “hep PASS veren” bir testbench'ten korunmak için referans dosyasına bilerek iki hata eklendi (bir residual değer +1, bir token değişik). Testbench ikisini de yakaladı. Bu \emph{negatif test} sonraki her evrede tekrarlandı.
+  \item \textbf{Bir SystemVerilog tuzağı:} \code{initial} bloğundaki bir döngüde ilk değerle tanımlanan değişkenler varsayılan olarak \emph{static}'tir; ilk değer yalnız bir kez atanır. Rastgele birim testleri bu yüzden 2\,000 kez aynı girdiyi deniyordu. Değişkenler \code{automatic} yapıldı.
+  \item \textbf{Resmî pin dosyasına ulaşılamadı:} PYNQ-Z2'nin resmî XDC bağlantısı 404 verdi; pinler iki bağımsız kaynakla karşılaştırıldı.
+\end{itemize}
+
+\ders{Donanımın spesifikasyonu, Python'daki integer modelin kendisidir. Python'un integer'ları sınırsız hassasiyetli olduğu için RTL'deki her taşma ya da yanlış bit genişliği bir uyumsuzluk olarak ortaya çıkar; karşılaştırmada tolerans yoktur. Bu fikir, projenin geri kalanının omurgası oldu.}

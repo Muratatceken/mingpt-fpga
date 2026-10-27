@@ -1,0 +1,68 @@
+\evre{27 Ekim 05:55 – 10:54 \enspace·\enspace commit'ler \code{196d9fc}, \code{502e744}, \code{f2c5ff8}, \code{0883450}, \code{bb001a0}}{Evre 8: Mac'te açık kaynak yerleşim, yönlendirme ve zamanlama}{sec:e8}
+
+\neden
+13 Ekim'den beri bir soru cevapsızdı: devre çipte \emph{kaç MHz'te} çalışır? Sentez, devreyi LUT, flip-flop, BRAM ve DSP'lerden oluşan bir listeye çevirir ama bu parçaların çipte nereye konacağını ve aralarındaki kabloların ne kadar gecikme getireceğini söylemez. Bunu yerleşim ve yönlendirme (place and route, P\&R) ve ardından statik zamanlama analizi (STA) söyler. Vivado bu işi yapar ama Mac'te çalışmaz. İki yol vardı: Vivado'lu bir bilgisayar ya da Mac'te açık kaynak araç zinciri (nextpnr-himbaechel ve Project X-Ray). Bu sırada sunumdaki FPGA slaytları da Nexys A7-100T'nin sayılarına göre güncellendi (\code{196d9fc}).
+
+\neyapildi
+\paragraph{Araç zinciri ve izin denetimi.} Açık kaynak tarif (\code{xc7-toolchain}), nextpnr'ı ve Project X-Ray'i kaynak koddan derlemeyi gerektiriyor. Bağımlılıklar Homebrew'den kuruldu, kaynaklar ve 420 MB'lık çip veritabanı \code{\textasciitilde/tools/xc7} altına indirildi. Ama derleme adımı, oturumun otomatik izin denetiminde “dışarıdan gelen kodu çalıştırmak” sayılarak iki kez reddedildi; ikincisi kullanıcının “devam et” demesinden sonraydı. Denetim dolanılmadı. Bunun yerine derleme ve akış betikleri yazıldı (\code{scripts/xc7\_toolchain.sh}, \code{scripts/nexys\_pnr.sh}, \code{502e744}) ve derlemeyi kullanıcı kendisi başlattı:
+
+\soz{27 Ekim, 10:29}{! make xc7-toolchain}
+
+\paragraph{İlk deneme: macOS SDK.} Derleme, araç zincirinin koduna gelmeden durdu: \code{xcrun} en yeni Command Line Tools SDK'sını (MacOSX27.0) seçiyordu, Xcode'un linker'ı ise bu SDK'daki yeni mimari adını tanımıyordu (\code{unknown architecture arm64e.x1}). Bu, 26 Ekim'de simülasyon betiklerinde çözülen sorunun aynısıydı; aynı \code{SDKROOT} düzeltmesi betiğe eklendi (\code{f2c5ff8}). İkinci denemede derleme birkaç dakikada bitti: \code{nextpnr-himbaechel}, 39 MB'lık xc7a100t çip veritabanı, \code{xc7frames2bit} ve \code{fasm2frames}.
+
+\paragraph{İkinci engel: nextpnr'da bir hata.} İlk yerleşim denemesi \code{Unable to constrain IO 'LED16\_G', device does not have a pin named ''} hatasıyla durdu. XDC dosyasında pin açıkça yazılıydı (M16). Hata nextpnr'ın kendisindeydi: \code{attrs[LOC] = attrs.at(PACKAGE\_PIN)} satırında, sağdaki referans alınır, soldaki \code{operator[]} yeni bir eleman ekleyip tabloyu yeniden ayırır ve kopyalama boşalmış bir referanstan yapılır; pin adı boş çıkar. Akış, pinleri doğrudan \code{LOC} ile yazarak bu yolu atladı (\code{0883450}).
+
+\paragraph{İlk sonuç.} bigram uçtan uca geçti: sentez 18 s, yerleşim/yönlendirme 21 s, bitstream 19 s. Fmax 71,3 MHz, yani 50 MHz hedefini rahat tutuyordu; bitstream 3\,825\,962 bayt.
+
+\begin{ozet}[Sezgi ve sayısal örnek: Fmax.]
+Senkron bir devrede her clock kenarında flip-flop'lar yeni değerlerini alır. Bir flip-flop'tan çıkan sinyal, aradaki mantıktan ve kablolardan geçip bir sonraki flip-flop'a \emph{bir sonraki kenardan önce} ulaşmalıdır:
+\[ T_\text{clk} \;\ge\; t_\text{clk→q} + \sum_\text{yol}\,(t_\text{mantık} + t_\text{kablo}) + t_\text{setup}, \qquad f_\text{max} = \frac{1}{\max_\text{yol}\,(\dots)}. \]
+50 MHz'in periyodu 20 ns'dir. gpt2-bin'in en uzun yolu 33,67 ns sürüyor; $1/33{,}67\text{ ns} \approx 29{,}7$ MHz. Bu yol 20 ns'ye sığmaz ama 25 MHz'in 40 ns'lik periyoduna sığar (Şekil~\ref{fig:kritik}).
+\end{ozet}
+
+\paragraph{Toplu koşu ve 25 MHz'e düşüş.} 18 modelin ilk toplu koşusunda bow (48,2 MHz), gru (35,3 MHz) ve gpt2-bin (29,7 MHz) 50 MHz'i tutmadı. nextpnr zamanlama tutmayınca hata koduyla çıktığı için bunlar ilk anda “hata” gibi göründü. Akış, Vivado betiğiyle aynı kurala getirildi: 50 MHz tutmazsa model 25 MHz için yeniden kurulur; bitstream yalnız zamanlama tutunca yazılır (\code{bb001a0}). Çekirdek clock 100 MHz'lik osilatörden MMCM ile üretildiği ve VGA'nın piksel clock'u bundan bölündüğü için seçilebilen değerler 25, 50 ve 100 MHz'dir. Tablo~\ref{tab:pnr} ve Şekil~\ref{fig:fmax} sonuçları gösterir.
+
+\begin{table}[htb]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\caption{Açık kaynak akışla yerleşim/yönlendirme sonuçları (nextpnr-himbaechel, xc7a100tcsg324-1, çarpıcılar LUT'ta). “Pay”, son saatte Fmax'ın hedefi ne kadar aştığıdır. LUT sütunu nextpnr'ın LUT bel sayısıdır; çipte 126\,800 bel vardır (her fiziksel LUT6 iki bel). BRAM, RAMB36 eşdeğeri.}\label{tab:pnr}
+\begin{tabular}{@{}lrrrrlrrr@{}}
+\toprule
+\thead{Model} & \thead{50 MHz'de Fmax} & \thead{Saat} & \thead{Fmax} & \thead{Pay} & \thead{Zamanlama} & \thead{LUT bel} & \thead{FF} & \thead{BRAM} \\
+\midrule
+\tabinput{data/pnr.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htb]
+\centering
+\input{data/fmax_plot}
+\caption{Fmax, model başına. Gri: 50 MHz hedefiyle yapılan ilk deneme; mavi: son saat hedefiyle. Model büyüdükçe Fmax 25–30 MHz bandına iniyor.}
+\label{fig:fmax}
+\end{figure}
+
+\paragraph{Neden bu kadar yavaş? Kritik yol.} nextpnr'ın raporundaki en uzun yol, gpt2-bin'de döngü indisi \code{j}'den başlıyor, vektör register dosyasının okuma adresinden (\code{va\_a}) geçiyor ve aynı dosyanın yazma verisinde (\code{vw\_d}) bitiyor. RTL'de bu uç noktaların karşılığı NORM biriminin çıkış aşamasıdır: okunan eleman $x$'ten $d = Nx - s$, sonra $d\cdot inv$, yuvarlama, değişken bir kaydırma ve 8 bite doyma, hepsi \emph{tek bir cycle'da}. Transformer'larda (stories260K, llama, nanochat) yol aynı kalıpta ama attention'ın head dilimi \code{qh}'den geçiyor: stories260K'da 36,7 ns, bunun 9,7 ns'si mantık, 26,9 ns'si (\%73) kablolama. Yolun yeri modele göre değişse de kalıp aynı: tampondan oku, çarp, tampona yaz. İki etken bu yolu uzatıyor:
+\begin{itemize}
+  \item \textbf{Tek cycle'lık eleman bazlı yol:} engine, okuma–hesap–yazma işini aynı cycle'da yapacak şekilde tasarlandı. Simülasyonda bunun bir bedeli yoktu, zamanlamada var.
+  \item \textbf{Çarpıcılar LUT'ta:} Yosys'in DSP hatası (§\ref{sec:e7}) yüzünden bit-exact olduğu kanıtlanan netlist çarpıcıları LUT'larla kuruyor. Bir DSP48E1 çarpması birkaç ns sürer; LUT'larla kurulmuş geniş bir çarpma çok daha uzun bir carry zinciridir. Bunun kaynak bedeli de büyük: stories260K'da Yosys'in DSP'li tahmini \gStoriesYosysLut{} LUT ve \gStoriesYosysDsp{} DSP iken LUT'a eşlenmiş netlist \gStoriesLutx{} LUT bel'i tutuyor.
+\end{itemize}
+
+\begin{figure}[htb]
+\centering
+\sekil{kritik_yol}
+\caption{gpt2-bin'in kritik yolu, birikimli gecikmeyle (nextpnr, 50 MHz hedefi). Yol 20 ns'lik periyoda sığmıyor, 40 ns'lik periyoda sığıyor.}
+\label{fig:kritik}
+\end{figure}
+
+\paragraph{Önerilen çözüm (henüz yapılmadı).} Yolun ortasına bir register koymak (pipeline): okuma ve $d$ bir cycle'da, çarpma–kaydırma–doyma bir sonraki cycle'da. Her iki yarı da 20 ns'nin altına inerse model 50 MHz'te çalışır; bedeli, bu işlemlerin bir cycle geç bitmesidir. Bu bir RTL değişikliği olduğu için 18 modelin bütün testlerinin yeniden geçmesi gerekir.
+
+\sorunlar
+\begin{itemize}
+  \item \textbf{Üçüncü taraf kodu derleme izni} → betikler hazırlandı, derlemeyi kullanıcı başlattı.
+  \item \textbf{macOS SDK / linker uyumsuzluğu} → \code{SDKROOT}, Xcode'un SDK'sına.
+  \item \textbf{nextpnr'da boşalmış referans} → pinler \code{LOC} ile.
+  \item \textbf{Zamanlama tutmayınca nextpnr'ın hata vermesi} → \code{--timing-allow-fail} ile rapor her zaman yazılıyor, karar betikte veriliyor.
+\end{itemize}
+
+\ders{Bir sayının “ölçülmedi” olarak kalması, tasarımın bir zayıflığını gizleyebilir. Fmax ölçülünce engine'in tek cycle'lık yapısının bedeli ortaya çıktı: büyük modellerde 25 MHz. Bu, cycle/token'ın tek başına hız ölçüsü olmadığını hatırlattı: hız = clock / (cycle/token).}

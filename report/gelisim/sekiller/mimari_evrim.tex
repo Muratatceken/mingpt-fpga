@@ -1,0 +1,32 @@
+% Donanımın üç hâli: sabit FSM (PYNQ) -> mikrokodlu engine + AXI (PYNQ) -> kartta kendi başına (Nexys)
+\begin{tikzpicture}[node distance=4mm and 5mm, every node/.style={font=\sffamily\scriptsize}]
+  % ---------------- (a)
+  \node[hdr, anchor=west] (ta) at (0,0) {(a) gpt\_top · 13 Ekim gecesi · PYNQ-Z2};
+  \node[accbox, below=3mm of ta.south west, anchor=north west, minimum width=2.3cm] (fsm) {kontrol FSM\\ \code{model.py} sırası};
+  \node[box, right=of fsm, minimum width=1.9cm] (gemv) {GEMV\\ $P = 8$ MAC};
+  \node[box, right=of gemv, minimum width=1.7cm] (ln) {LayerNorm\\ isqrt + bölücü};
+  \node[box, right=of ln, minimum width=1.7cm] (att) {attention\\ KV cache};
+  \node[box, right=of att, minimum width=1.5cm] (gelu) {GELU\\ LUT};
+  \node[membox, right=of gelu, minimum width=1.6cm] (rom) {ROM: INT8\\ weight'ler};
+  \node[warmbox, right=of rom, minimum width=1.9cm] (st) {öz-test:\\ 729 girdi, LED};
+  \draw[flow] (fsm) -- (gemv); \draw[wire] (gemv) -- (ln) -- (att) -- (gelu); \draw[wire] (gelu) -- (rom); \draw[flow] (st) -- (rom);
+  % ---------------- (b)
+  \node[hdr, anchor=west] (tb) at (0,-2.3) {(b) zoo\_core + AXI · 13 Ekim · PYNQ-Z2};
+  \node[membox, below=3mm of tb.south west, anchor=north west, minimum width=2.3cm] (prog) {mikrokod\\ (model başına)};
+  \node[accbox, right=of prog, minimum width=2.4cm] (dec) {issue / decode};
+  \node[box, right=of dec, text width=5.6cm, align=center] (units) {GEMV + aktivasyon tablosu · NORM (LN / RMS)\\ ATTN · ROPE · KVSTORE\\ MUL · GRUUPD · BOW · EMB};
+  \node[box, right=of units, minimum width=1.6cm] (axi) {AXI4-Lite};
+  \node[warmbox, right=of axi, minimum width=1.6cm] (arm) {ARM\\ (PYNQ)};
+  \draw[flow] (prog) -- (dec); \draw[flow] (dec) -- (units); \draw[wire] (units) -- (axi); \draw[<->, draw=muted, line width=0.75pt] (axi) -- (arm);
+  % ---------------- (c)
+  \node[hdr, anchor=west] (tc) at (0,-4.6) {(c) kart tasarımı · 26–27 Ekim · Nexys A7-100T};
+  \node[membox, below=9mm of tc.south west, anchor=north west, minimum width=2.3cm] (bram) {BRAM: mikrokod,\\ INT8 / 1-bit weight};
+  \node[accbox, right=of bram, minimum width=2.4cm] (core) {zoo\_core\\ + GEMVB, SCALE};
+  \node[goodbox, right=10mm of core, text width=3.1cm, align=center] (gen) {lm\_gen: sampler\\ (sıcaklık, min-p, xorshift),\\ detokenizer, terminal};
+  \node[box, right=of gen, minimum width=1.7cm] (vga) {vga\_text\\ 80 × 30};
+  \node[box, right=of vga, minimum width=1.4cm] (mon) {VGA\\ monitör};
+  \node[box, below=3mm of gen, minimum width=3.1cm] (io) {7-segment · LED · anahtar · düğme};
+  \draw[flow] (bram) -- (core); \draw[flow] (core) -- node[bw, above] {logit} (gen); \draw[flow] (gen) -- (vga); \draw[flow] (vga) -- (mon);
+  \draw[flow] (gen.north) -- ++(0,0.4) -| node[bw, pos=0.25, above] {token} (core.north);
+  \draw[<->, draw=muted, line width=0.75pt] (gen) -- (io);
+\end{tikzpicture}

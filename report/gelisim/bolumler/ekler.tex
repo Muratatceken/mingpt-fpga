@@ -1,0 +1,59 @@
+\section{Commit geçmişi}\label{sec:commitler}
+
+Deponun bütün commit'leri, eskiden yeniye (\code{git log}'dan üretildi; saatler yerel saat).
+
+{\small
+\begin{longtable}{@{}p{1.9cm}p{1.4cm}>{\raggedright\arraybackslash}p{12.2cm}@{}}
+\toprule
+\thead{Tarih} & \thead{Commit} & \thead{Başlık} \\
+\midrule
+\endhead
+\tabinput{data/commitler.tex}
+\bottomrule
+\end{longtable}
+}
+
+\section{Araçlar ve sürümler}\label{sec:araclar}
+
+\begin{center}\small
+\captionof{table}{Bu raporun sonuçlarını üreten araçlar (macOS 27.0.1, Apple Silicon).}\label{tab:araclar}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\thead{Araç} & \thead{Sürüm / görev} \\
+\midrule
+Verilator & 5.052: RTL ve netlist simülasyonu (birincil) \\
+Icarus Verilog & 13.0: 4-state (X) simülasyon \\
+sv2v & 0.0.13: SystemVerilog → Verilog (Icarus ve Yosys için) \\
+Yosys & 0.69+post: \code{synth\_xilinx}, kaynak tahmini ve netlist \\
+nextpnr-himbaechel & \code{3e53a0bf} (xilinx, yalnız xc7a100t): yerleşim, yönlendirme, zamanlama \\
+Project X-Ray & \code{c9f02d85}: çip veritabanı, \code{fasm2frames}, \code{xc7frames2bit} \\
+openFPGALoader & 1.2.0: kart programlama (kullanılmayacak) \\
+PyTorch & eğitim ve QAT (CPU ve MPS) \\
+XeLaTeX & bu rapor ve teknik rapor \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Nerede ne var?}\label{sec:harita}
+
+\begin{center}\small
+\captionof{table}{Raporun anlattığı işlerin depodaki yerleri.}\label{tab:harita}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{5.6cm}L@{}}
+\toprule
+\thead{Yol} & \thead{İçerik} \\
+\midrule
+\code{sw/}, \code{rtl/gpt\_top.sv} & Evre 1: gpt-nano, integer referans, ilk RTL \\
+\code{report/rapor.pdf} & Evre 2–3: teknik rapor (matematik, ispatlar, aile) \\
+\code{sw/zoo/}, \code{rtl/zoo/zoo\_core.sv} & Evre 3, 6: aile, IR derleyicisi, quantization, engine, GEMVB/SCALE \\
+\code{sw/c/zoo\_run.c} & C ISA simülatörü \\
+\code{board/pynq\_z2/} & PYNQ dönemi: AXI, sürücü, demo defteri \\
+\code{sunum/} & Evre 4: sunum, konuşma metni \\
+\code{board/nexys\_a7/}, \code{sw/zoo/board.py} & Evre 5: kart tasarımı ve referansı \\
+\code{sw/zoo/lowbit.py}, \code{docs/06\_dusuk\_bit.md} & Evre 6: Larq ve LittleBit QAT \\
+\code{tb/tb\_nexys.sv}, \code{sw/zoo/board\_sim.py}, \code{board\_fuzz.py} & Evre 7: kart doğrulaması \\
+\code{scripts/xc7\_toolchain.sh}, \code{scripts/nexys\_pnr.sh} & Evre 8: açık kaynak uygulama akışı \\
+\code{model/zoo/*.json} & bütün sonuç sayıları (bu raporun tabloları) \\
+\code{docs/SENIN\_YAPACAKLARIN.md} & Mac'te yapılamayanlar için notlar \\
+\bottomrule
+\end{tabularx}
+\end{center}

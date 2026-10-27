@@ -252,9 +252,18 @@ gösterilen netlist'tir. `DSP=1` daha gerçekçi bir Fmax verir, ama Yosys'in DS
   Netlist simülasyonu bu yüzden çarpıcıları LUT'a eşler (`-nodsp`). Aynı sebeple ve BRAM modelleri boş
   olduğu için eski `scripts/zoo_netlist_sim.sh` bu Yosys sürümüyle geçmez. Vivado bu hatadan etkilenmez,
   ama kaynak tahminlerindeki DSP sayıları Yosys'in eşlemesidir.
-- **Fmax ölçülmedi.** Vivado olmadan zamanlama analizi yapılamıyor. Engine'deki geniş çarpıcı
-  zincirleri (NORM çıkışı, attention'daki üs alma) 50 MHz'i zorlayabilir; betik bu durumda 25 MHz'e
-  iner. Gerçek Fmax ilk Vivado koşusunun ya da açık kaynak akışın (`make nexys-pnr`, bölüm 5; araç zinciri henüz derlenmedi) `result.json` dosyasında görülecek.
+- **Fmax: büyük modeller 25 MHz'te.** Açık kaynak akışla (`make nexys-pnr`, nextpnr-himbaechel) 18 modelin
+  16'sı yerleşti ve hepsi çalıştığı clock'ta zamanlamayı tutuyor (`model/zoo/nexys.json`, `pnr`):
+  - bigram 71,3, mlp 66,0, rnn 66,9 MHz: 50 MHz'te çalışır;
+  - transformer'lar 50 MHz denemesinde 26–31 MHz, düşük bitliler 24–50 MHz: 25 MHz'te çalışır.
+  - Kritik yol, engine'in tek cycle'lık "tampondan oku → çarp → tampona yaz" yolu: transformer'larda
+    attention'ın head dilimi (`qh`), gpt2-bin'de NORM çıkışı (`d·inv`). stories260K: 36,7 ns, %73'ü
+    kablolama. Çarpıcılar LUT'ta (`-nodsp`, Yosys DSP hatası); çare okuma ile hesap arasına bir register.
+  - Fmax yerleşim tohumuna göre oynuyor (bow: 48,2 / 47,7 MHz, 50 MHz denemeleri).
+  - **ts_gpt2 ve ts_microgpt yerleşemedi:** Yosys tablolarını çok sayıda RAMB18'e bölüyor
+    (149 RAMB18 + 41 RAMB36 ≈ 115/135 BRAM yeri); nextpnr'ın yerleştiricisi iki tohumla da 40 dakikada
+    ilerlemedi.
+  - nextpnr'ın gecikme modeli Project X-Ray'den; Vivado'nun sonucu farklı olabilir.
 - **Bir bitstream, bir model.** Modeller BRAM'de bitstream'le birlikte gelir. stories260k tek başına
   BRAM'in %72'sini kullanır (binary sürümü %41).
 - **TinyStories modellerinde context 256 token'la sınırlı.** Model 512 token'la eğitildi, ama

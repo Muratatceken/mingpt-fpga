@@ -1,0 +1,38 @@
+<section id="kritik" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">9 · Yerleşim ve hız</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Kritik yol: oku, çarp, yaz tek cycle’da; çarpmalar LUT’ta olunca bu 37 ns sürüyor</h2>
+</div>
+<div style="display:flex;gap:10px;align-items:center">
+<p style="font-size:24px;font-weight:600;color:#14213D;background:#F2EFE7;border-radius:8px;padding:12px 14px">j, f_n0</p>
+<x-shape kind="arrow-right" style="width:30px;height:18px;background:#9AA3B2"></x-shape>
+<p style="font-size:24px;font-weight:600;color:#14213D;background:#E3EBF5;border-radius:8px;padding:12px 14px">va_a: tampon adresi</p>
+<x-shape kind="arrow-right" style="width:30px;height:18px;background:#9AA3B2"></x-shape>
+<p style="font-size:24px;font-weight:600;color:#14213D;background:#E3EBF5;border-radius:8px;padding:12px 14px">LUTRAM oku, qh</p>
+<x-shape kind="arrow-right" style="width:30px;height:18px;background:#9AA3B2"></x-shape>
+<p style="font-size:24px;font-weight:600;color:#FBFBF8;background:#B4460F;border-radius:8px;padding:12px 14px">LUT çarpıcı, carry</p>
+<x-shape kind="arrow-right" style="width:30px;height:18px;background:#9AA3B2"></x-shape>
+<p style="font-size:24px;font-weight:600;color:#14213D;background:#E3EBF5;border-radius:8px;padding:12px 14px">vw_d: yaz</p>
+</div>
+<div style="display:flex;gap:40px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;color:#14213D">stories260K (1 000 px = 40 ns)</p>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px">en uzun yol · 36,7 ns, 54 adım</p><div style="display:flex;width:918px;height:30px;border-radius:4px;overflow:hidden"><div style="width:242px;background:#14213D"></div><div style="width:676px;background:#8FAACC"></div></div></div>
+<div style="display:flex;gap:28px"><p style="font-size:24px"><span style="color:#14213D">■</span> mantık 9,7 ns</p><p style="font-size:24px"><span style="color:#8FAACC">■</span> kablolama 26,9 ns (%73)</p></div>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px">50 MHz periyodu · 20 ns: sığmaz</p><div style="width:500px;height:30px;background:#B4460F;border-radius:4px"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px">25 MHz periyodu · 40 ns: sığar, 3,3 ns pay</p><div style="width:1000px;height:30px;background:#2A5C9A;border-radius:4px"></div></div>
+</div>
+<div style="width:500px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #B4460F;padding:6px 0px 6px 22px">
+<p style="font-size:24px;font-weight:600;color:#B4460F">Model değişir, kalıp aynı</p>
+<p style="font-size:24px;line-height:1.4">stories260K, llama, nanochat: attention’ın head dilimi (qh). gpt2-bin: NORM çıkışı, d · inv çarpımı ve değişken kaydırma.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px">
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Çare</p>
+<p style="font-size:24px;line-height:1.4">Okuma ile hesap arasına bir register: yol ikiye bölünür, op’lar bir cycle gecikir. Hedef 50 MHz.</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">43 · Karpathy modelleri FPGA’de · build/nexys/&lt;model&gt;/pnr/pnr.log, nextpnr kritik yol raporu</p>
+<aside>Neden 50 megahertz tutmuyor? nextpnr’ın kritik yol raporu bunu açıkça gösteriyor. Engine bir op’u yürütürken her cycle’da şunu yapıyor: bir sayaçtan vektör tamponunun adresini hesaplıyor, tamponu okuyor, okunan değerlerle çarpma ve toplama yapıyor, sonucu doyurup tampona geri yazıyor; hepsi tek bir cycle’da. Tamponlar LUT’lardan yapılmış küçük RAM’ler ve okuması asenkron, yani okuma da aynı yolun parçası. Çarpmalar da Yosys’in DSP hatası yüzünden DSP bloklarında değil LUT’larda ve uzun carry zincirleri oluşturuyor. stories260K’da en uzun yol 36,7 nanosaniye ve 54 adım: bunun yalnızca 9,7 nanosaniyesi mantık, 26,9’u kablolama, yani sinyallerin çipin bir ucundan diğerine gitmesi. 50 megahertzin periyodu 20 nanosaniye; yol buna sığmıyor. 25 megahertzin 40 nanosaniyelik periyoduna ise 3,3 nanosaniye payla sığıyor. Yolun tam yeri modele göre değişiyor: transformer’larda attention’ın head dilimi, binary gpt2’de norm’un çıkış çarpımı; ama kalıp hep aynı: oku, çarp, yaz, tek cycle’da. Çaresi de belli: okuma ile hesabın arasına bir register koymak. Yol ikiye bölünür, op’lar bir cycle gecikir; hedefimiz 50 megahertz.</aside>
+</section>

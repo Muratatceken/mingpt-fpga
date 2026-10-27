@@ -1,0 +1,62 @@
+\section{Projeye bakış}\label{sec:bakis}
+
+\subsection{Tek cümleden bir model ailesine}
+
+Projenin ilk isteği, 12 Ekim akşamı yazılan şu cümleydi:
+
+\soz{12 Ekim, 23:34}{şimdi ben bitirme projesi olarak https://github.com/karpathy/minGPT.git ile bunu fpga'ye uyarlamak istiyorum. bunun üzerine teorik sağlam bir şekilde çalışıp system verilogda yazıp vivadoda simüle etmek istiyorum}
+
+On beş gün sonra aynı depo, Karpathy'nin dokuz dil modeli mimarisini ve hazır eğitilmiş bir hikâye modelini tek bir donanımda çalıştırıyor. Bu donanım bir FPGA kartında, bilgisayara bağlı olmadan hikâye yazıyor. Aradaki yol düz bir çizgi değildi: hedef kart değişti, mimari iki kez baştan kuruldu, bir öneri kullanıcı tarafından reddedildi ve doğrulama sırasında kullandığımız araçların kendisinde hatalar bulundu. Şekil~\ref{fig:zaman} bu yolu gün gün gösterir.
+
+\begin{figure}[htb]
+\centering
+\sekil{zaman}
+\caption{Projenin zaman çizelgesi. \gCommits{} commit \gCommitDays{} farklı güne yayılıyor; 13 Ekim tek başına en yoğun gün. 17–25 Ekim arasında çalışma yapılmadı. Saatler yerel saattir (UTC+3).}
+\label{fig:zaman}
+\end{figure}
+
+\subsection{Evreler}
+
+Tablo~\ref{tab:evreler}, raporun geri kalanının haritasıdır. Her satır bir evre ve o evrenin cevapladığı soru.
+
+\begin{table}[htb]
+\centering\small
+\caption{Projenin evreleri.}\label{tab:evreler}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.5cm}>{\raggedright\arraybackslash}p{2.4cm}>{\raggedright\arraybackslash}p{4.4cm}L@{}}
+\toprule
+\thead{\#} & \thead{Tarih} & \thead{Evre} & \thead{Cevaplanan soru} \\
+\midrule
+1 & 12–13 Ekim gece & minGPT'den RTL'e (§\ref{sec:e1}) & Bir transformer yalnız integer aritmetikle, bit bit doğru olarak donanıma dönüşebilir mi? \\
+2 & 13 Ekim sabah & Rapor ve açık kaynak sentez (§\ref{sec:e2}) & Yaptığımızı anlatabiliyor ve Vivado olmadan ölçebiliyor muyuz? \\
+3 & 13 Ekim gün & Karpathy ailesi ve mikrokodlu engine (§\ref{sec:e3}) & Dokuz farklı mimari tek bir donanımda çalışabilir mi; aralarındaki fark neye mal olur? \\
+4 & 15–16 Ekim & Sunum, embedding ve LittleBit (§\ref{sec:e4}) & Yaptığımızı gerçekten anladık mı ve bir başkasına anlatabiliyor muyuz? \\
+5 & 26 Ekim & Nexys A7-100T: kart tek başına (§\ref{sec:e5}) & Model, bilgisayarsız, kartın kendisinde çalışabilir mi? \\
+6 & 26–27 Ekim gece & Düşük bitli weight'ler (§\ref{sec:e6}) & LittleBit ve Larq bu ölçekte işe yarar mı; donanıma ne girmeli? \\
+7 & 27 Ekim gece & Doğrulamanın sertleştirilmesi (§\ref{sec:e7}) & Testlerimiz gerçekten her hatayı yakalıyor mu? \\
+8 & 27 Ekim sabah & Mac'te açık kaynak uygulama (§\ref{sec:e8}) & Devre çipte kaç MHz'te çalışır? \\
+9 & 27 Ekim & Karar: kart yok, simülasyon (§\ref{sec:e9}) & Fiziksel kart olmadan doğrulama nasıl tamamlanır? \\
+10 & bugün & Durum ve sonraki adımlar (§\ref{sec:bugun}) & Ne bitti, ne kaldı? \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Mimarinin evrimi}
+
+Donanım üç kez şekil değiştirdi (Şekil~\ref{fig:evrim}). İlk tasarım minGPT'nin \code{forward()} fonksiyonunu adım adım izleyen sabit bir durum makinesiydi. İkincisi, modele özgü her şeyi bir mikrokod programına ve bellek içeriklerine taşıyan genel bir engine oldu; bir ARM işlemci onu AXI üzerinden sürecekti. Üçüncüsünde işlemci tamamen çıktı: üretim döngüsü, sampling ve ekran FPGA'nin içine girdi.
+
+\begin{figure}[htb]
+\centering
+\sekil{mimari_evrim}
+\caption{Donanımın üç hâli. (a) 13 Ekim gecesi: tek modele özel sabit FSM. (b) 13 Ekim: mikrokodlu ortak engine ve ARM'den AXI4-Lite ile sürülen sistem. (c) 26 Ekim'den bu yana: model kartta kendi başına; engine'e 1 bitlik weight birimi (GEMVB) ve SCALE eklendi.}
+\label{fig:evrim}
+\end{figure}
+
+\subsection{Değişmeyen tek kural: bit-exact}
+
+Bütün evreler boyunca bir kural hiç değişmedi: donanımın her çıktısı, Python'da yazılmış integer referans modelin çıktısıyla \emph{aynı} olmalı. Yaklaşık değil, aynı. Bunun sebebi basit. Donanımın yaptığı hesap tamamen integer'dır ve Python'daki referans da aynı integer hesabı yapar. İki tarafın aynı girdiden farklı bir sonuç üretmesinin tek açıklaması bir hatadır. Bu kural testleri çok güçlü kılar: tek bir token'ın, tek bir logit'in ya da ekrandaki tek bir karakterin farklı çıkması alarm demektir. Raporun ilerleyen bölümlerinde bulunan her hata bu kural sayesinde bulundu.
+
+Float model ile integer model arasında ise bit-exact bir eşitlik beklenemez; oradaki fark \emph{kalite} olarak, test kaybıyla (nat/token) ölçülür. Bu iki ayrı soruyu karıştırmamak raporun her yerinde önemlidir:
+\begin{itemize}
+  \item \textbf{Doğru mu?} Donanım ↔ integer referans: bit-exact, \code{==} ile karşılaştırılır.
+  \item \textbf{İyi mi?} Integer model ↔ float model: test kaybındaki artış, örneğin gpt2'de 2,000'den 2,002'ye.
+\end{itemize}

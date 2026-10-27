@@ -1,0 +1,26 @@
+<section id="attn" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">5 · Engine</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Attention birimi: her geçmiş token, her head’de iki cycle ekler; bu yüzden maliyet context ile doğrusal büyür</h2>
+</div>
+<div style="display:flex;gap:12px;align-items:stretch">
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">SCORE</p><p style="font-size:24px;line-height:1.35">sⱼ = q · kⱼ, 8 çarpıcı, cycle başına bir key</p><p style="font-size:24px;color:#5A6474">t + 1 cycle</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">EXP</p><p style="font-size:24px;line-height:1.35">eⱼ = LUT[f] ≫ n, E += eⱼ</p><p style="font-size:24px;color:#5A6474">score’larla örtüşür</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#B4460F">DIV</p><p style="font-size:24px;line-height:1.35">R = ⌊2³² / E⌋, head başına bir kez</p><p style="font-size:24px;color:#5A6474">sabit</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">AV</p><p style="font-size:24px;line-height:1.35">y = (Σ eⱼ vⱼ) · R ≫ 32, 8 hat</p><p style="font-size:24px;color:#5A6474">t + 1 cycle</p></div>
+</div>
+<div style="display:flex;gap:40px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;color:#14213D">stories260K: token başına cycle, pozisyona göre</p>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px">t = 0 · 38 652</p><div style="width:420px;height:24px;background:#2A5C9A;border-radius:4px"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px">t = 255 · ~59 000</p><div style="width:641px;height:24px;background:#2A5C9A;border-radius:4px"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px">t = 511 · 79 532</p><div style="width:864px;height:24px;background:#B4460F;border-radius:4px"></div></div>
+</div>
+<div style="width:620px;display:flex;flex-direction:column;gap:8px;background:#F2EFE7;border-radius:12px;padding:20px 26px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;color:#14213D">eğim = 5 layer × 8 head × 2 = 80 cycle / token</p>
+<p style="font-size:24px;line-height:1.4">(79 532 − 38 652) / 511 = 80,0. Ölçüm modelle birebir. Kartta context’i 256 ile sınırlamak KV cache’i 80 KB’ta tutuyor ve en uzun adımı ~59 000 cycle’da bırakıyor.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">23 · Karpathy modelleri FPGA’de · KV cache: layer, pozisyon ve head başına 8 baytlık kelimeler (DH = 8)</p>
+<aside>Attention birimi dört aşamalı. SCORE aşamasında query, KV cache’teki her key ile çarpılıyor; head boyutu 8 olduğu için 8 çarpıcı bir key’in dot product’ını tek cycle’da bitiriyor. Score’lar gelirken EXP aşaması onları softmax için 2’nin kuvvetine çeviriyor ve topluyor; bu ikisi örtüşüyor. DIV aşamasında head başına tek bir bölme yapılıyor. AV aşamasında value’lar ağırlıklarıyla toplanıyor, yine 8 hatla. Sonuç: her geçmiş token, her head’de score için bir, value için bir, yani iki cycle ekliyor. Bunu ölçümle doğrulayabiliriz. stories260K’da ilk pozisyonda token başına 38 652 cycle, son pozisyon 511’de 79 532 cycle. Aradaki fark bölü 511, tam 80,0 ediyor; model de 5 layer çarpı 8 head çarpı 2, yani 80 diyor. Ölçüm ile model birebir aynı. Bu doğrusal büyüme, kartta context’i neden 256 ile sınırladığımızın ikinci sebebi: hem KV cache 80 kilobaytta kalıyor hem de en uzun adım yaklaşık 59 bin cycle’da kalıyor.</aside>
+</section>

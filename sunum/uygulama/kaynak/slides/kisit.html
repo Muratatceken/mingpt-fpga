@@ -1,0 +1,30 @@
+<section id="kisit" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:30px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">1 · Hedef</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Tasarımı dört kısıt şekillendirdi: işlemci yok, floating point yok, dış bellek yok, tek clock</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+<div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #2A5C9A;border-radius:12px;padding:20px 26px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">İşlemci yok</h3>
+<p style="font-size:24px;line-height:1.4">Üretim döngüsü, sampling, detokenizer ve ekran sürücüsü birer donanım FSM’i olarak yazıldı.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #2A5C9A;border-radius:12px;padding:20px 26px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Floating point yok</h3>
+<p style="font-size:24px;line-height:1.4">DSP48 bir integer çarpıcı. Bütün hesap INT8 ve INT16; exp, karekök ve bölme de integer.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #B4460F;border-radius:12px;padding:20px 26px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Dış bellek yok: model BRAM’e sığmalı</h3>
+<p style="font-size:24px;line-height:1.4">stories260K: 260 bin weight × 1 bayt ≈ 254 KB, KV cache 5 × 256 × 32 × 2 bayt = 80 KB. Toplam 607 KB’ın altında. GPT-2 124M ise 124 MB isterdi.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #B4460F;border-radius:12px;padding:20px 26px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Tek clock</h3>
+<p style="font-size:24px;line-height:1.4">100 MHz → MMCM → çekirdek clock’u 50 ya da 25 MHz. VGA’nın 25 MHz piksel hızı aynı clock’tan bir enable ile türetilir.</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#F2EFE7;border-radius:12px;padding:20px 28px">
+<p style="font-size:24px;font-weight:600;color:#14213D">Bu kısıtların sonucu</p>
+<p style="font-size:24px;line-height:1.4">Modeller küçük (50 bin – 260 bin parametre) ama tasarım eksiksiz: bir bilgisayarın yaptığı her işi çip kendisi yapıyor. Dış bellek olmadığı için bellek gecikmesi de yok; her cycle önceden bilinir.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">6 · Karpathy modelleri FPGA’de</p>
+<aside>Tasarımı dört kısıt şekillendirdi. Birincisi işlemci olmaması: bir bilgisayarda birkaç satır Python olan üretim döngüsü, sampling, token’ı karakterlere çevirme ve ekrana yazma, burada her biri bir donanım durum makinesi olarak yazıldı. İkincisi floating point olmaması: çipteki DSP blokları integer çarpıcılar; floating point toplama ve çarpma LUT’larla kurulabilir ama çok pahalı. Bu yüzden bütün hesabı INT8 ve INT16 ile yaptık; üstel fonksiyon, karekök ve bölme de dahil. Üçüncüsü dış bellek kullanmamak. Bu bir tercih: model çip içine sığdığı sürece bellek gecikmesi olmuyor ve her cycle önceden bilinebiliyor. Sayıyla bakalım: stories260K’nın 260 bin weight’i birer bayt olarak yaklaşık 254 kilobayt; 256 token’lık context için KV cache 5 layer çarpı 256 pozisyon çarpı 32 boyut çarpı key ve value için 2, yani 80 kilobayt. Toplam 607 kilobaytın rahatça altında. Karşılaştırma için GPT-2’nin 124 milyon parametreli hâli 124 megabayt isterdi; o ancak DDR ile olur. Dördüncüsü tek clock: 100 megahertzlik osilatörden bir MMCM ile çekirdek clock’unu üretiyoruz; VGA’nın 25 megahertzlik piksel hızını da ayrı bir clock yerine aynı clock’tan bir enable sinyaliyle türetiyoruz. Böylece clock domain geçişi problemi hiç yok.</aside>
+</section>

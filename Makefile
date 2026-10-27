@@ -7,9 +7,9 @@ VFLAGS = --binary --timing --timescale 1ns/1ps -j 0 -Wall -Wno-fatal \
          -Wno-WIDTHEXPAND -Wno-WIDTHTRUNC -Wno-UNUSEDSIGNAL -Wno-UNUSEDPARAM
 RTL    = $(shell cat scripts/files.f)
 
-.PHONY: all model train quantize eval export sim test-arith selftest lint synth report clean \
+.PHONY: all model train quantize eval export sim test-arith selftest lint synth report gelisim clean \
         zoo-train zoo-quant zoo-sim zoo-synth zoo-pipeline zoo-fuzz zoo-arith zoo-dse paper \
-        nexys nexys-sim nexys-all nexys-fuzz nexys-icarus nexys-netlist nexys-synth nexys-bit nexys-prog nexys-pnr xc7-toolchain lowbit
+        nexys nexys-sim nexys-all nexys-fuzz nexys-icarus nexys-netlist nexys-synth nexys-bit nexys-prog nexys-pnr xc7-toolchain lowbit sunum-yerel
 
 all: test-arith sim selftest
 
@@ -130,8 +130,15 @@ report:
 	cd sw/zoo && $(PYTHON) report_zoo.py
 	cd report && latexmk -xelatex -interaction=nonstopmode -outdir=build rapor.tex && cp build/rapor.pdf rapor.pdf
 
+gelisim:           # tarihsel gelişim raporu -> report/gelisim/gelisim_raporu.pdf (tablolar model/zoo/*.json ve git log'dan)
+	cd report/gelisim && $(PYTHON) veri.py && latexmk -xelatex -interaction=nonstopmode -outdir=build gelisim_raporu.tex \
+	  && cp build/gelisim_raporu.pdf gelisim_raporu.tmp.pdf && mv gelisim_raporu.tmp.pdf gelisim_raporu.pdf
+
 lint:
 	$(VERILATOR) --lint-only -Wall -Wno-fatal -Wno-WIDTHEXPAND -Wno-UNUSEDSIGNAL $(RTL) --top-module gpt_top
 
 clean:
 	rm -rf build/obj_* build/xsim build/vivado* report/build
+
+sunum-yerel:       # implementasyon sunumu yerelde: sunum/uygulama/{sunum.html, sunum.pdf, konusma_metni.md, .pdf}
+	python3 sunum/yerel_sunum.py sunum/uygulama --pdf

@@ -1,0 +1,43 @@
+<section id="engine" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">5 · Engine</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">zoo_core: mikrokodu op op okuyan, her op’u kendi birimine gönderen tek bir engine</h2>
+</div>
+<div style="display:flex;gap:16px;align-items:center;background:#14213D;border-radius:10px;padding:14px 24px">
+<p style="font-size:24px;font-weight:600;color:#F2A65A">prog.mem</p>
+<x-shape kind="arrow-right" style="width:40px;height:20px;background:#9FB0CC"></x-shape>
+<p style="font-size:24px;color:#E6EAF2">fetch, decode: op, tamponlar, boyut, adres</p>
+<x-shape kind="arrow-right" style="width:40px;height:20px;background:#9FB0CC"></x-shape>
+<p style="font-size:24px;color:#E6EAF2">op bitince sıradaki; END’de token hazır</p>
+</div>
+<div style="display:flex;gap:20px;align-items:stretch">
+<div style="width:380px;display:flex;flex-direction:column;gap:10px;background:#F2EFE7;border-radius:12px;padding:18px 22px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">BRAM</h3>
+<p style="font-size:24px;line-height:1.35">weights · 8 × INT8 / kelime</p>
+<p style="font-size:24px;line-height:1.35">wbin · 64 × 1 bit / kelime</p>
+<p style="font-size:24px;line-height:1.35">params · bias, m₀, sh</p>
+<p style="font-size:24px;line-height:1.35">tables, luts</p>
+<p style="font-size:24px;line-height:1.35">KV cache (yazılır)</p>
+</div>
+<div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+<div style="display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:10px;padding:14px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">GEMV</p><p style="font-size:24px;color:#5A6474">8 MAC hattı, DSP</p></div>
+<div style="display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:10px;padding:14px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">GEMVB</p><p style="font-size:24px;color:#5A6474">64 ± hattı, 1 bit</p></div>
+<div style="display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:10px;padding:14px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">requant</p><p style="font-size:24px;color:#5A6474">seri, + LUT</p></div>
+<div style="display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:14px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">NORM</p><p style="font-size:24px;color:#5A6474">LN, RMS, √, ÷</p></div>
+<div style="display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:14px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">ATTN, KVSTORE</p><p style="font-size:24px;color:#5A6474">8 hat, exp tablosu</p></div>
+<div style="display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:10px;padding:14px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">ROPE</p><p style="font-size:24px;color:#5A6474">sin/cos tablosu</p></div>
+<div style="display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:14px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">EMB, TABLOGIT</p><p style="font-size:24px;color:#5A6474">tablo okuma</p></div>
+<div style="display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:14px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">MUL, REQ, SCALE</p><p style="font-size:24px;color:#5A6474">eleman bazlı</p></div>
+<div style="display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:14px 18px"><p style="font-size:24px;font-weight:600;color:#14213D">COPY, GRUUPD, BOW</p><p style="font-size:24px;color:#5A6474">state, ortalama</p></div>
+</div>
+<div style="width:300px;display:flex;flex-direction:column;gap:10px;background:#F2EFE7;border-radius:12px;padding:18px 22px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Tamponlar</h3>
+<p style="font-size:24px;line-height:1.35">11 vektör tamponu</p>
+<p style="font-size:24px;line-height:1.35">residual: INT16</p>
+<p style="font-size:24px;line-height:1.35">diğerleri: INT8</p>
+<p style="font-size:24px;line-height:1.35">logit’ler: INT16 → lm_gen</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">21 · Karpathy modelleri FPGA’de · rtl/zoo/zoo_core.sv: 16 op türü, P = 8</p>
+<aside>Bütün modelleri çalıştıran engine’in adı zoo_core. Çalışma şekli bir işlemciye benziyor ama çok daha basit. Üstteki şerit kontrol akışı: engine program belleğinden bir op kelimesi okuyor; bu kelimede op türü, kaynak ve hedef tamponlar, vektör boyutları ve weight adresleri var. Op’u ilgili birime gönderiyor, birim bitince bir sonraki kelimeye geçiyor; END op’una gelince bir token’ın hesabı bitmiş oluyor ve logit’ler üretim döngüsüne gidiyor. Soldaki sütun modele ait bellekler: INT8 weight’ler, 1 bitlik weight’ler, requant parametreleri, tablolar ve çalışırken yazılan KV cache. Ortada hesap birimleri. Turuncu olanlar matris-vektör çarpımı: 8 hatlı INT8 GEMV, 64 hatlı 1-bit GEMVB ve ikisinin ortak kullandığı seri requant ve activation tablosu. Mavi olanlar transformer’a özgü birimler: norm, attention ile KV cache yazımı ve RoPE. Alttakiler küçük yardımcı op’lar: embedding okuma, eleman bazlı çarpma ve recurrent modellerin state işlemleri. Sağda 11 vektör tamponu var; residual akış INT16, diğerleri INT8. Hepsi tek bir modülde; bir model hangi op’ları kullanmıyorsa o birimler sentezde atılabiliyor, bunu birkaç slayt sonra göstereceğim.</aside>
+</section>

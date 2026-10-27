@@ -1,0 +1,96 @@
+\evre{26 Ekim 23:34 – 27 Ekim 01:26 \enspace·\enspace commit'ler \code{8db3890}, \code{fc6d07a}, \code{7059b2e}, \code{76fbd65}}{Evre 6: Düşük bitli weight'ler, Larq ve LittleBit}{sec:e6}
+
+\neden
+Hoca iki kaynak önermişti: LittleBit makalesi ve Larq (TensorFlow/Keras için bir binary neural network kütüphanesi). Kullanıcının sorusu bunların projede nasıl kullanılacağıydı:
+
+\soz{26 Ekim, 23:34}{biz burada littlebit veya larq python gibi şeyleri nasıll kullanmalıyız sence bu projede, birde bu projeyi daha da geliştirip daha sağlam hale getirebiliriz bu tarz şeylerle paralel de bunu da yapalım}
+
+Kural değişmedi: \emph{FPGA'de eğitim yok}. Düşük bitli bir modeli elde etmek için gereken eğitim (QAT, quantization-aware training) Mac'te yapılır; FPGA yalnızca sonucu çalıştırır. Soru iki parçaya ayrıldı: (1) bu yöntemler 50 bin ve 260 bin parametrelik modellerde kaliteyi ne kadar korur, (2) donanıma hangisi girmeli? Aynı anda, kullanıcının “daha sağlam hâle getirelim” isteği için doğrulamayı sertleştirme işi paralel bir dalda başladı (§\ref{sec:e7}).
+
+\neyapildi
+\paragraph{Larq'ı TensorFlow'a geçmeden kullanmak.} Larq'ın quantizer'ları birkaç satırlık fonksiyonlardır: ileri yönde $\mathrm{sign}(w)$, geri yönde kırpılmış özdeşlik (straight-through estimator). Bunlar Larq'ın belgelenen tanımlarına göre PyTorch'ta yeniden yazıldı (\code{sw/zoo/lowbit.py}): \code{SteSign}, \code{MagnitudeAwareSign} (Bi-Real Net), \code{SteTern} (ternary weight networks) ve weight clip. Böylece modeller, eğitim düzeni ve integer akış değişmedi. Gerçek \code{larq} paketiyle sayısal bir karşılaştırma yapılmadı; bunun için TensorFlow kurulumu gerekiyor.
+
+\paragraph{LittleBit.} Dual-SVID başlangıcı (SVD'den işaret ve büyüklükleri ayırarak $U, V, h, g, \ell$'yi kurmak), isteğe bağlı residual yol ve faktörlerin kaydedilmesi. Eğitim: float model öğretmen, sonraki token dağılımlarına KL divergence ile knowledge distillation; Adam, cosine öğrenme oranı. Token embedding ve output head, makaledeki ve binary ağ literatüründeki gibi INT8 kaldı.
+
+\paragraph{Sonuçlar: names.} Sekiz names modeli × sekiz yöntem (Tablo~\ref{tab:lowbit}, Şekil~\ref{fig:lowbit}).
+
+\begin{table}[htb]
+\centering\scriptsize
+\setlength{\tabcolsep}{3.2pt}
+\caption{QAT sonrası test kaybı (nat/token); parantez içinde BPW. \code{int8} eğitimsiz, diğerleri 3\,000 adım QAT. \code{lb<r>p<k>}: rank = min$(d)$'nin \%$r$'si, $k$ yol.}\label{tab:lowbit}
+\begin{tabular}{@{}lrrrrrrrrr@{}}
+\toprule
+\thead{Model} & \thead{float} & \thead{int8} & \thead{int4} & \thead{tern} & \thead{bin} & \thead{lb50p2} & \thead{lb25p2} & \thead{lb25p1} & \thead{lb12p2} \\
+\midrule
+\tabinput{data/lowbit_names.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htb]
+\centering
+\input{data/lowbit_plot}
+\caption{Kalite–bit dengesi iki model için. GPT-2'de (dar katmanlar, $C=32$) binary, LittleBit'ten aynı bitte daha iyi. makemore MLP'de (ilk katmanın girişi 256) LittleBit, binary'den daha az bitle daha iyi.}
+\label{fig:lowbit}
+\end{figure}
+
+\begin{itemize}
+  \item \textbf{INT4} her modelde float'la aynı; KD sayesinde bazen biraz daha iyi.
+  \item \textbf{Ternary} binary'den fazla bit harcıyor, sonucu binary'den iyi değil.
+  \item \textbf{Binary} transformer'larda +0,03…0,09 nat: en iyi 1 bitlik seçenek.
+  \item \textbf{LittleBit} dar katmanlarda binary'nin gerisinde, girişi geniş katmanlarda önde. Dual-SVID başlangıcı tek başına yetmiyor (eğitimsiz kayıp 3–12 nat); QAT şart.
+\end{itemize}
+
+\paragraph{Neden? Scale'lerin bedeli.} §\ref{sec:e4}'teki BPW formülünün ikinci terimi ($16(d_o+d_i+r)/(d_od_i)$) scale vektörlerinin bedelidir. Binary bir katmanın bedeli ise $1 + 16/d_i$'dir. Sayısal örnek: $32\times32$'lik bir katmanda yalnız scale'ler ($r=0$) weight başına $16\cdot64/1024 = 1$ bit tutar; bu, binary katmanın toplam bedelinin (1,5) üçte ikisi. $4096\times4096$'lık bir Llama 2 katmanında aynı terim 0,008'e iner. LittleBit'in 0,1 BPW sonucu bu ikinci dünyaya aittir; 32 genişliğindeki bir modelde 0,1 BPW matematiksel olarak mümkün değil.
+
+\paragraph{Sonuçlar: stories260K.} Karpathy'nin hazır modeli (float \gStoriesFloat{}) çok daha zor bir sınav oldu (Tablo~\ref{tab:lowbit_st}).
+
+\begin{table}[htb]
+\centering\small
+\caption{stories260K, 100 test penceresi × 256 token.}\label{tab:lowbit_st}
+\begin{tabular}{@{}lrrl@{}}
+\toprule
+\thead{Yöntem} & \thead{BPW} & \thead{Eğitimsiz} & \thead{QAT} \\
+\midrule
+\tabinput{data/lowbit_stories.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Karar: donanıma 1 bitlik weight.} INT4'ün bu ölçekteki tek kazancı belleği yarıya indirmek ve modellerimiz BRAM'e zaten INT8'le sığıyor. Ternary binary'den iyi değil. Binary ise weight'i 8 kat küçültür \emph{ve} matris-vektör çarpımını çarpıcısız toplama-çıkarmaya çevirir. LittleBit'in faktörleri de binary matrisler olduğu için aynı birimi kullanabilir. Engine'e bu yüzden iki şey eklendi:
+\begin{itemize}
+  \item \textbf{GEMVB:} \code{wbin.mem}'deki 64 bitlik bir kelime, bir girişin 64 çıkış için işaretlerini taşır (1 = +1, 0 = −1). 64 toplama/çıkarma hattı vardır, DSP kullanılmaz. Çıkış başına scale, requant'ın $m_0$ çarpanına katlanır. Akümülatör 20 bittir, çünkü $|acc| \le 128\,n_\text{in} < 2^{19}$.
+  \item \textbf{SCALE:} girişe kanal başına INT16 bir gain uygular. Derleyici normalde norm gain'lerini $\gamma$ sonraki weight'e katlar ($W\mathrm{diag}(\gamma)$) ve bu binary weight'i bozar. \code{ir.factor\_binary} katlanmış matrisi $\mathrm{diag}(a)\,S\,\mathrm{diag}(g)$ olarak ayırır: $a$ requant'a, $g$ SCALE'e gider, $S\in\{\pm1\}$ GEMVB'ye.
+\end{itemize}
+Tek yollu LittleBit için yeni donanım gerekmedi: \code{ir.factor\_littlebit} her katmanı SCALE($g\cdot\gamma$) → GEMVB($\mathrm{sign}(V)^\top$) → GEMVB($\mathrm{sign}(U)$) dizisine çevirir; faktörlere ayrılmış program, yoğun weight'li modelle aynı logit'leri verir (fark $\le 2\cdot10^{-6}$).
+
+\begin{table}[htb]
+\centering\small
+\caption{Düşük bitli modeller kart tasarımında (Yosys kaynakları, kart simülasyonundan cycle, kartın bit-exact çalıştırdığı integer modelin test kaybı).}\label{tab:lowbit_kart}
+\begin{tabular}{@{}llrrrrrr@{}}
+\toprule
+\thead{Model} & \thead{Weight} & \thead{Kayıp} & \thead{cycle/token} & \thead{LUT} & \thead{FF} & \thead{BRAM36} & \thead{DSP} \\
+\midrule
+\tabinput{data/lowbit_kart.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+Tablo~\ref{tab:lowbit_kart}'e göre binary GPT-2 1,75 kat hızlı ve +0,03 nat; LittleBit MLP 0,59 BPW'de 3,6 kat hızlı ve +0,16 nat; binary stories260K 1,8 kat hızlı, BRAM \%72'den \%41'e iniyor, ama +0,64 nat kaybediyor.
+
+\sorunlar
+\begin{itemize}
+  \item \textbf{GEMVB çok LUT tutuyordu:} ilk sürüm 14\,709 LUT'tu. 64 hattın akümülatörleri INT8 GEMV'nin geniş bankasına eklenince her şey büyüyordu → ayrı, 20 bitlik bir akümülatör/shadow bankası; INT8 akümülatör genişliği eski hâline döndü: 11\,153 LUT. Banka yalnızca modelde GEMVB varsa sentezlenir.
+  \item \textbf{Gereksiz dolgu:} binary katmanların çıkış parametreleri 64'e dolduruluyordu → GEMVB yalnız gerçek çıkışları boşaltıyor.
+  \item \textbf{Eğitilmiş bir modelde öğrenme oranı:} stories260K'da INT4 QAT 5e-4 ile modeli bozuyordu; 1e-4 ile iyileştirdi (1,311). Binary 3\,000 adımda lr 1,5e-3 ile 1,933'e indi; kayıp son adımlarda hâlâ düşüyordu (2,10 → 1,93).
+  \item \textbf{İki yollu LittleBit:} iki yolun çıkışlarını bir activation'dan önce toplamak gerekiyor; şimdilik yalnız tek yollu LittleBit karta gidiyor.
+\end{itemize}
+
+\paragraph{Sunumdaki üç araştırma sorusunun cevabı.} 16 Ekim'deki sunumun son slaytı üç soru soruyordu; bu evre üçünü de cevapladı:
+\begin{enumerate}
+  \item \emph{Küçük modellerde LittleBit'in anlamlı BPW alt sınırı nedir?} Scale'lerin tabanı 32 genişliğinde 1 BPW, 64'te 0,5 BPW. Ölçülen en düşük anlamlı nokta MLP'de 0,59 BPW, +0,16 nat.
+  \item \emph{Binary matris-vektör birimi kaç LUT tüketir, token başına kaç cycle sürer?} SCALE dahil yaklaşık +4\,000 LUT ve +2\,700 FF, DSP yok; GPT-2'de 8\,713 → 4\,983 cycle/token.
+  \item \emph{FP16 scale'ler integer'a indirilip bit-exact bir donanım kurulabilir mi?} Evet: çıkış başına scale'ler requant'ın 16 bitlik $m_0$'ına, giriş başına gain'ler INT16 SCALE'e gider; üç düşük bitli modelin üçü de kart tasarımında bit-exact.
+\end{enumerate}
+
+\ders{Bir makalenin başlık sonucu (0,1 BPW) her ölçeğe taşınmaz; formül, nerede taşındığını söyler. Ölçümler formülle örtüştü: dar katmanlarda binary, geniş katmanlarda LittleBit önde. Donanım tarafında doğru soyutlama (1 bitlik GEMV + SCALE) iki yöntemi de ek birim olmadan çalıştırdı.}

@@ -1,0 +1,37 @@
+<section id="bitexact" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">8 · Doğrulama</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Tam kart simülasyonu: testbench bir kullanıcı gibi düğmelere basar ve yalnız pinlerden okunabileni karşılaştırır</h2>
+</div>
+<div style="display:flex;gap:36px;align-items:start">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px">
+<table style="font-size:24px;color:#3B4456">
+<tr><th style="width:36%;text-align:left;color:#14213D">karşılaştırılan</th><th style="width:64%;text-align:left;color:#14213D">nasıl</th></tr>
+<tr><td>her token</td><td>GENTOK satırları ↔ board.py:generate</td></tr>
+<tr><td>hash, LED16</td><td>kart üstü kontrolün sonucu</td></tr>
+<tr><td>ekran metni</td><td>80 × 30 karakter, her boşta kalışta</td></tr>
+<tr><td>VGA karesi</td><td>R, G, B ve senkron pinlerinden</td></tr>
+<tr><td>7-segment, LED</td><td>token sayacı, hız göstergesi</td></tr>
+<tr><td>pin imzası</td><td>her cycle’da bütün pinler</td></tr>
+</table>
+<p style="font-size:24px;line-height:1.4">Model başına 4 koşu: otomatik sampling, BTNC, SW0 açıkken BTNU (greedy), BTND (temizle). Girişler düşen kenarda sürülür, çıkışlar düşen kenarda örneklenir.</p>
+</div>
+<div style="width:760px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;flex-direction:column;gap:8px;background:#14213D;border-radius:12px;padding:20px 24px">
+<p style="font-size:24px;color:#9FB0CC">stories260K, gerçek çıktı</p>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#E6EAF2">run 0: 256 tokens (identical)<br>hash 44fe319f = 44fe319f<br>screen, status, check, LEDs,<br>7-segment OK<br>VGA frame: 0 sync errors,<br><span style="color:#F2A65A">0 pixels differ</span></p>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+<p style="font-size:24px;color:#14213D;background:#E3EBF5;border-radius:6px;padding:2px 10px">bigram</p><p style="font-size:24px;color:#14213D;background:#E3EBF5;border-radius:6px;padding:2px 10px">mlp</p><p style="font-size:24px;color:#14213D;background:#E3EBF5;border-radius:6px;padding:2px 10px">rnn</p>
+<p style="font-size:24px;color:#14213D;background:#E3EBF5;border-radius:6px;padding:2px 10px">gru</p><p style="font-size:24px;color:#14213D;background:#E3EBF5;border-radius:6px;padding:2px 10px">bow</p><p style="font-size:24px;color:#14213D;background:#E3EBF5;border-radius:6px;padding:2px 10px">gpt2</p>
+<p style="font-size:24px;color:#14213D;background:#E3EBF5;border-radius:6px;padding:2px 10px">microgpt</p><p style="font-size:24px;color:#14213D;background:#E3EBF5;border-radius:6px;padding:2px 10px">llama</p><p style="font-size:24px;color:#14213D;background:#E3EBF5;border-radius:6px;padding:2px 10px">nanochat</p>
+<p style="font-size:24px;color:#14213D;background:#F6E3D7;border-radius:6px;padding:2px 10px">stories260k</p><p style="font-size:24px;color:#14213D;background:#E3EBF5;border-radius:6px;padding:2px 10px">ts_gpt2</p><p style="font-size:24px;color:#14213D;background:#E3EBF5;border-radius:6px;padding:2px 10px">ts_gru</p>
+<p style="font-size:24px;color:#14213D;background:#E3EBF5;border-radius:6px;padding:2px 10px">ts_llama</p><p style="font-size:24px;color:#14213D;background:#E3EBF5;border-radius:6px;padding:2px 10px">ts_microgpt</p><p style="font-size:24px;color:#14213D;background:#E3EBF5;border-radius:6px;padding:2px 10px">ts_nanochat</p>
+<p style="font-size:24px;color:#14213D;background:#F2EFE7;border-radius:6px;padding:2px 10px">gpt2-bin</p><p style="font-size:24px;color:#14213D;background:#F2EFE7;border-radius:6px;padding:2px 10px">mlp-lb25p1</p><p style="font-size:24px;color:#14213D;background:#F2EFE7;border-radius:6px;padding:2px 10px">stories-bin</p>
+</div>
+<p style="font-size:24px;line-height:1.4"><b>18 / 18 geçti</b>, toplam 11 241 token.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">38 · Karpathy modelleri FPGA’de · tb/tb_nexys.sv, sw/zoo/board_sim.py (Verilator)</p>
+<aside>Doğrulamanın merkezindeki test, kartın tamamının simülasyonu. Burada önemli bir tasarım kararı var: testbench tasarımın içine bakmıyor, gerçek bir kullanıcı gibi davranıyor. Reset’i bırakıyor, ilk koşunun bitmesini bekliyor, sonra düğmelere basıyor ve yalnızca kartın pinlerinden okunabilecek şeyleri karşılaştırıyor. Soldaki tablo karşılaştırılanları gösteriyor: üretilen her token, kart üstü kontrolün sonucu, ekrandaki metnin tamamı, VGA pinlerinden yakalanan bir kare, 7-segment gösterge ve LED’ler; ayrıca her cycle’da bütün pinlerin bir imzası tutuluyor, bu sonraki netlist karşılaştırmasında işe yarıyor. Her model için dört koşu yapılıyor: otomatik sampling koşusu, orta düğmeyle ikinci bir koşu, greedy modda yeniden tohumlanmış bir koşu ve ekran temizleme. Sağda stories260K için gerçek çıktı: 256 token aynı, hash aynı, ekran, durum satırı, LED’ler ve 7-segment doğru, VGA karesinde sıfır piksel fark. 18 modelin hepsi geçiyor; toplamda 11 241 token.</aside>
+</section>

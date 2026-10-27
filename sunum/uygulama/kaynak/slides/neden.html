@@ -1,0 +1,35 @@
+<section id="neden" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:30px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · Integer aritmetik</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Neden integer: aynı çarpma-toplamayı bir DSP tek cycle’da yapıyor ve model dört kat küçülüyor</h2>
+</div>
+<div style="display:flex;gap:28px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#F2EFE7;border-radius:12px;padding:22px 28px">
+<h3 style="font-size:30px;font-weight:600;color:#5A6474">float32: a·b + c</h3>
+<ol style="font-size:24px;line-height:1.5">
+<li>üsleri topla, mantisleri çarp</li>
+<li>c ile üsleri hizala (kaydır)</li>
+<li>topla, sonucu normalize et</li>
+<li>yuvarla, özel durumları ele al</li>
+</ol>
+<p style="font-size:24px;line-height:1.4">Çipte hazır bir float birimi yok; bunlar LUT’larla kurulur, pahalı ve yavaştır.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:22px 28px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">INT8: a·b + c</h3>
+<p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;line-height:1.5;color:#14213D">x = [12, −7, 30]<br>w = [18, −55, 127]<br>Σ wᵢxᵢ = 216 + 385 + 3 810 = 4 411</p>
+<p style="font-size:24px;line-height:1.4">Her terim bir DSP48’de tek cycle: 8 × 8 bit çarp, 32 bitlik akümülatöre ekle.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:22px 28px">
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Bellek: stories260K</h3>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;color:#14213D">BRAM · 607 KB</p><div style="width:270px;height:24px;background:#9AA3B2;border-radius:4px"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;color:#14213D">float32 · 1 040 KB (sığmaz)</p><div style="width:463px;height:24px;background:#2A5C9A;border-radius:4px"></div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;color:#14213D">INT8 · 254 KB</p><div style="width:113px;height:24px;background:#B4460F;border-radius:4px"></div></div>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #B4460F;padding:6px 0px 6px 24px">
+<p style="font-size:24px;font-weight:600;color:#B4460F">Bedeli</p>
+<p style="font-size:24px;line-height:1.4">Her sayı artık “scale × tamsayı”. Soru şu: scale’leri nasıl seçeriz ve tamsayılar arasındaki işlemleri float’a hiç dönmeden nasıl yaparız? Sonraki beş slayt bunun cevabı.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">11 · Karpathy modelleri FPGA’de</p>
+<aside>Neden integer? İki sebep var. Birincisi hesap. Bir float32 çarpma-toplama dört adım istiyor: üsleri toplayıp mantisleri çarpmak, toplanacak sayıyla üsleri hizalamak için kaydırmak, toplayıp sonucu normalize etmek ve yuvarlamak. FPGA’de hazır bir floating point birimi yok; bunların hepsi LUT’larla kurulmalı ve hem pahalı hem yavaş. INT8’de ise ortadaki örnekteki gibi: x ve w vektörlerinin dot product’ı 12 çarpı 18, eksi 7 çarpı eksi 55 ve 30 çarpı 127; toplam 4 411. Her terim bir DSP48 bloğunda tek cycle’da yapılıyor: 8 bitlik iki sayıyı çarp, 32 bitlik bir akümülatöre ekle. İkinci sebep bellek. stories260K’nın weight’leri float32 olarak bir megabaytın üzerinde ve çipin 607 kilobaytlık BRAM’ine sığmıyor bile. INT8’de 254 kilobayt; rahatça sığıyor. Bunun bir bedeli var: her sayı artık bir scale ile çarpılmış bir tamsayı. Asıl soru, bu scale’leri nasıl seçtiğimiz ve tamsayılar arasındaki işlemleri hiç float’a dönmeden nasıl yaptığımız. Sonraki beş slayt bunun cevabı.</aside>
+</section>
