@@ -6,7 +6,9 @@
 #          bit-exact. With DSP48E1, Yosys 0.69 drops the sign extension of the requantiser product (docs/05, sec. 6),
 #          so a DSP=1 bitstream computes wrong tokens; use it for timing/resources only.
 #   BIT=0  stop after routing (Fmax and utilisation only).
-# Output: build/nexys/<model>/pnr[_dsp]/{pnr.log, report.json, result.json, nexys_<model>.bit}
+#   As scripts/vivado_nexys_a7.tcl: if timing fails at 50 MHz the design is rebuilt at 25 MHz (FALLBACK=0: no
+#   retry); the bitstream is written only when timing is met.
+# Output: build/nexys/<model>/pnr[_dsp]/{pnr.log, report.json, result.json, nexys_<model>.bit}; model/zoo/nexys.json
 # Program: openFPGALoader -b nexys_a7_100 build/nexys/<model>/pnr/nexys_<model>.bit
 set -euo pipefail
 export PATH="/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
@@ -22,13 +24,9 @@ DB="$X/prjxray/database/artix7"
 [ -d "$MEM" ] || { echo "$MEM missing: make nexys MODEL=$M" >&2; exit 1; }
 mkdir -p "$OUT" && cd "$ROOT"                      # $readmemh paths (mem/nexys/...) relative to the repo root
 
-T0=$(date +%s)
 sv2v -DSYNTHESIS "$MEM/zoo_pkg.sv" "$MEM/board_pkg.sv" rtl/zoo/zrom.sv rtl/zoo/zdiv.sv rtl/requant.sv \
   rtl/isqrt_seq.sv rtl/zoo/zoo_core.sv board/nexys_a7/bin2bcd.sv board/nexys_a7/vga_text.sv \
   board/nexys_a7/seg7.sv board/nexys_a7/lm_gen.sv board/nexys_a7/nexys_a7_top.sv -w "$OUT/rtl.v"
-yosys -q -l "$OUT/synth.log" -p "read_verilog -defer $OUT/rtl.v; chparam -set CLK_MHZ $MHZ nexys_a7_top; \
-  synth_xilinx -family xc7 -top nexys_a7_top -flatten $SYNOPT; tee -q -o $OUT/stat.txt stat; write_json $OUT/nexys.json"
-T1=$(date +%s)
 
 # nextpnr's XDC reader: one port per set_property, no braces around port names, no trailing ';', LOC for the pin.
 # set_false_path / [current_design] lines are dropped (nextpnr ignores them; the I/O paths are asynchronous anyway).
@@ -50,12 +48,33 @@ open(sys.argv[2], "w").write("\n".join(out) + "\n")
 print(f"{len(out)} XDC constraints")
 EOF
 
-"$NEXTPNR" --device "$PART" --chipdb "$CHIPDB" --json "$OUT/nexys.json" --top nexys_a7_top \
-  --vopt xdc="$OUT/nexys.xdc" --vopt fasm="$OUT/nexys.fasm" --report "$OUT/report.json" \
-  --seed "${SEED:-1}" --log "$OUT/pnr.log" -q || { tail -30 "$OUT/pnr.log"; exit 1; }
-T2=$(date +%s)
+SYN_S=0; PNR_S=0; TRIED=""
+implement() {     # $1 = core clock in MHz: synthesis, place and route; sets FMAX and MET (worst clock)
+  local t0 t1 t2
+  t0=$(date +%s)
+  yosys -q -l "$OUT/synth.log" -p "read_verilog -defer $OUT/rtl.v; chparam -set CLK_MHZ $1 nexys_a7_top; \
+    synth_xilinx -family xc7 -top nexys_a7_top -flatten $SYNOPT; tee -q -o $OUT/stat.txt stat; write_json $OUT/nexys.json"
+  t1=$(date +%s)
+  "$NEXTPNR" --device "$PART" --chipdb "$CHIPDB" --json "$OUT/nexys.json" --top nexys_a7_top \
+    --vopt xdc="$OUT/nexys.xdc" --vopt fasm="$OUT/nexys.fasm" --report "$OUT/report.json" --timing-allow-fail \
+    --seed "${SEED:-1}" --log "$OUT/pnr.log" -q || { tail -30 "$OUT/pnr.log"; exit 1; }
+  t2=$(date +%s)
+  SYN_S=$((SYN_S + t1 - t0)); PNR_S=$((PNR_S + t2 - t1))
+  read -r FMAX MET < <(python3 -c "import json; f = json.load(open('$OUT/report.json'))['fmax'].values(); \
+    print(f'{min(v[\"achieved\"] for v in f):.2f}', int(all(v['achieved'] >= v['constraint'] - 1e-6 for v in f)))")
+  TRIED="$TRIED $1:$FMAX"
+}
+F="$MHZ"
+implement "$F"
+if [ "$MET" = 0 ] && [ "${FALLBACK:-1}" = 1 ] && [ "$F" -gt 25 ]; then
+  echo "$M: Fmax $FMAX MHz < $F MHz -> rebuilding at 25 MHz"
+  mv "$OUT/report.json" "$OUT/report_${F}mhz.json"; mv "$OUT/pnr.log" "$OUT/pnr_${F}mhz.log"
+  F=25; implement "$F"
+fi
 
-if [ "${BIT:-1}" = 1 ]; then
+T2=$(date +%s)
+rm -f "$OUT/nexys_$M.bit"
+if [ "${BIT:-1}" = 1 ] && [ "$MET" = 1 ]; then
   "$X/prjxray/env/bin/python" "$X/prjxray/utils/fasm2frames.py" --part "$PART" --db-root "$DB" \
     "$OUT/nexys.fasm" "$OUT/nexys.frames"
   "$X/prjxray/build/tools/xc7frames2bit" --part_file "$DB/$PART/part.yaml" --part_name "$PART" \
@@ -63,21 +82,30 @@ if [ "${BIT:-1}" = 1 ]; then
 fi
 T3=$(date +%s)
 
-python3 - "$OUT" "$M" "$MHZ" "$TAG" "$((T1 - T0))" "$((T2 - T1))" "$((T3 - T2))" <<'EOF'
-import json, os, sys
+python3 - "$OUT" "$M" "$F" "$TAG" "$SYN_S" "$PNR_S" "$((T3 - T2))" "$TRIED" <<'EOF'
+import fcntl, json, os, sys
 out, m, mhz, tag = sys.argv[1:5]
 t_syn, t_pnr, t_bit = map(int, sys.argv[5:8])
+tried = {int(a): float(b) for a, b in (x.split(":") for x in sys.argv[8].split())}
 rep = json.load(open(os.path.join(out, "report.json")))
-fmax = {k: v for k, v in rep.get("fmax", {}).items()}
+fmax = rep.get("fmax", {})
 util = {k: v for k, v in rep.get("utilization", {}).items() if v.get("used", 0)}
-res = dict(model=m, target_mhz=int(mhz), flow=tag, fmax=fmax,
-           utilization={k: f"{v['used']}/{v['available']}" for k, v in util.items()},
+met = all(v["achieved"] >= v["constraint"] - 1e-6 for v in fmax.values())
+res = dict(model=m, clock_mhz=int(mhz), met=met, fmax_mhz=round(min(v["achieved"] for v in fmax.values()), 2),
+           tried_fmax_mhz=tried, flow=tag, utilization={k: f"{v['used']}/{v['available']}" for k, v in util.items()},
            seconds=dict(synth=t_syn, pnr=t_pnr, bitstream=t_bit),
            bit=os.path.exists(os.path.join(out, f"nexys_{m}.bit")))
 json.dump(res, open(os.path.join(out, "result.json"), "w"), indent=1)
-for clk, v in fmax.items():
-    ok = "OK" if v["achieved"] >= v["constraint"] - 1e-6 else "FAIL"
-    print(f"{m} {tag}: {clk}: Fmax {v['achieved']:.1f} MHz (target {v['constraint']:.1f}) {ok}")
+path = os.path.join(out, "..", "..", "..", "..", "model", "zoo", "nexys.json")
+with open(path + ".lock", "w") as lock:                      # parallel runs of this script
+    fcntl.flock(lock, fcntl.LOCK_EX)
+    allr = json.load(open(path)) if os.path.exists(path) else {}
+    allr.setdefault(m, {})[tag] = {k: v for k, v in res.items() if k not in ("model", "flow", "seconds")}
+    json.dump(dict(sorted(allr.items())), open(path, "w"), indent=1)
+os.remove(path + ".lock")
+tries = ", ".join(f"{a} MHz: {b:.1f}" for a, b in tried.items())
+print(f"{m} {tag}: clock {mhz} MHz, Fmax {res['fmax_mhz']:.1f} MHz {'OK' if met else 'FAIL'} (tried {tries}); "
+      f"bitstream {'yes' if res['bit'] else 'no'}")
 for k, v in util.items():
     print(f"  {k}: {v['used']}/{v['available']}")
 print(f"  synth {t_syn} s, pnr {t_pnr} s, bitstream {t_bit} s")
