@@ -30,7 +30,7 @@ yosys -q -l "$OUT/synth.log" -p "read_verilog -defer $OUT/rtl.v; chparam -set CL
   synth_xilinx -family xc7 -top nexys_a7_top -flatten $SYNOPT; tee -q -o $OUT/stat.txt stat; write_json $OUT/nexys.json"
 T1=$(date +%s)
 
-# nextpnr's XDC reader: one port per set_property, no braces around port names, no trailing ';'.
+# nextpnr's XDC reader: one port per set_property, no braces around port names, no trailing ';', LOC for the pin.
 # set_false_path / [current_design] lines are dropped (nextpnr ignores them; the I/O paths are asynchronous anyway).
 python3 - board/nexys_a7/nexys_a7.xdc "$OUT/nexys.xdc" <<'EOF'
 import re, sys
@@ -40,7 +40,10 @@ for line in open(sys.argv[1]):
     port = re.search(r"\[get_ports \{?\s*([^ {}]+)\s*\}?\]$", line)
     props = re.search(r"-dict \{(.*?)\}", line)
     if props and port:
-        out.append(f"set_property -dict {{{props[1].strip()}}} [get_ports {port[1]}]")
+        # LOC, not PACKAGE_PIN: nextpnr copies PACKAGE_PIN with attrs[LOC] = attrs.at(PACKAGE_PIN), a dangling
+        # reference once the insert reallocates (empty pin name on macOS/libc++)
+        out.append(f"set_property -dict {{{' '.join(props[1].replace('PACKAGE_PIN', 'LOC').split())}}} "
+                   f"[get_ports {port[1]}]")
     elif line.startswith("create_clock") and port:
         out.append(f"create_clock -period {re.search(r'-period ([0-9.]+)', line)[1]} [get_ports {port[1]}]")
 open(sys.argv[2], "w").write("\n".join(out) + "\n")
