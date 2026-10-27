@@ -112,7 +112,7 @@
 
 **transformer** — Attention ve MLP block’larından oluşan mimari. Ailede gpt2, microgpt, llama, nanochat ve stories260K. s. 7
 
-## 3. Quantization ve integer aritmetik
+## 3. Quantization ve integer arithmetic
 
 **accumulator (akümülatör)** — Çarpım-toplamların biriktiği geniş register. INT8 GEMV’de 32 bit; binary GEMVB’de 20 bit yeter (|acc| ≤ 128 · n_in). s. 13, 22, 35
 
@@ -158,7 +158,7 @@
 
 **xorshift32** — Kaydırma ve XOR’la çalışan basit bir sözde rastgele sayı üreteci; sampling’in rastgele sayısı. s. 28
 
-## 4. Düşük bitli weight’ler: Larq ve LittleBit
+## 4. Low-bit weight’ler: Larq ve LittleBit
 
 **Bi-Real Net, MagnitudeAwareSign** — Binary ağlar için bir yöntem; weight’i işaretine indirip kanal başına ortalama mutlak değeri scale yapar. Larq’ta MagnitudeAwareSign olarak var; bizim bin yöntemimiz. s. 32
 
@@ -232,7 +232,7 @@
 
 **enable** — Bir devrenin her cycle değil, belli cycle’larda çalışmasını sağlayan sinyal; VGA piksel hızı ana clock’tan böyle türetilir. s. 6
 
-## 6. Engine, derleyici ve bizim tasarımımız
+## 6. Engine, compiler ve bizim tasarımımız
 
 **board_pkg, zoo_pkg** — Her model için üretilen SystemVerilog paketleri: boyutlar, bellek derinlikleri, beklenen hash’ler, OPS_USED. s. 25
 
@@ -242,7 +242,7 @@
 
 **detokenizer** — Token numarasını karakterlere çeviren devre (iki ROM tablosu). s. 26, 29
 
-**engine, zoo_core** — Bütün modelleri çalıştıran mikrokodlu ortak hesap birimi (rtl/zoo/zoo_core.sv). s. 21
+**engine, zoo_core** — Bu projede sıfırdan tasarlanan, microcode ile programlanan inference accelerator core’u; bütün modelleri aynı devreyle çalıştırır (rtl/zoo/zoo_core.sv). “Engine” genel bir donanım terimidir (inference engine, compute engine); bizim engine’imizin adı zoo_core’dur. s. 21
 
 **fetch, decode** — Program belleğinden bir op kelimesini okuyup alanlarına ayırmak. s. 21
 
@@ -284,7 +284,7 @@
 
 **daktilo modu (typewriter)** — Üretimi saniyede ~25 token’a yavaşlatan mod (SW6); gözle izlemek için. s. 30, 45
 
-## 7. Doğrulama ve test
+## 7. Verification ve test
 
 **2-state, 4-state simulation** — 2-state simülasyon her biti 0 ya da 1 sayar (Verilator); 4-state simülasyon bilinmeyen (X) ve yüksek empedans (Z) değerleri de temsil eder (Icarus). X, reset’i unutulmuş register’ları yakalar. s. 39
 
@@ -306,7 +306,7 @@
 
 **X değeri** — 4-state simülasyonda bilinmeyen değer; reset’siz register’ların belirtisi. s. 39
 
-## 8. Sentez, yerleşim ve zamanlama araçları
+## 8. Synthesis, place and route ve timing araçları
 
 **bitstream** — FPGA’nin bütün yapılandırma bitlerini içeren dosya (.bit, XC7A100T’de 3,8 MB): LUT tabloları, kablo anahtarları, BRAM içerikleri. Model weight’leri de bitstream’in içinde. s. 20, 41
 

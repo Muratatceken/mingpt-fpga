@@ -1,7 +1,7 @@
 <section id="ekran" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Kart sistemi</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Token’lar karakterlere çevrilir, kelimeler bölünmeden yazılır ve metin VGA çıkışında her karede yeniden çizilir</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;color:#B4460F">6 · KART SİSTEMİ</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Token’lar karakterlere çevrilir, kelimeler bölünmeden yazılır ve metin VGA output’unda her frame’de yeniden çizilir</h2>
 </div>
 <div style="display:flex;gap:40px;align-items:start">
 <div style="flex:1;display:flex;flex-direction:column;gap:14px">
@@ -11,22 +11,22 @@
 </div>
 <div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px">
 <p style="font-size:24px;font-weight:600;color:#2A5C9A">Terminal</p>
-<p style="font-size:24px;line-height:1.4">Bir kelime 80. sütunu aşacaksa yarım kelime alt satıra taşınır. Ekran dolunca satırlar dairesel tamponda kayar (scroll).</p>
+<p style="font-size:24px;line-height:1.4">Bir kelime 80. sütunu aşacaksa yarım kelime alt satıra taşınır. Ekran dolunca satırlar dairesel buffer’da kayar (scroll).</p>
 </div>
 <div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #B4460F;padding:6px 0px 6px 22px">
 <p style="font-size:24px;font-weight:600;color:#B4460F">vga_text</p>
-<p style="font-size:24px;line-height:1.4">Ekran 640 × 480 çözünürlükte, 60 Hz ve 25 MHz piksel hızıyla çizilir; 80 × 30 karakter ve 8 × 16 piksellik font kullanılır. Üç kademeli pipeline metin RAM’ini, font ROM’unu ve piksel çıkışını sırayla işler.</p>
+<p style="font-size:24px;line-height:1.4">Ekran 640 × 480 resolution’da, 60 Hz ve 25 MHz pixel clock’uyla çizilir; 80 × 30 karakter ve 8 × 16 pixel’lik font kullanılır. Üç stage’li pipeline metin RAM’ini, font ROM’unu ve pixel output’unu sırayla işler.</p>
 </div>
 <div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #B4460F;padding:6px 0px 6px 22px">
-<p style="font-size:24px;font-weight:600;color:#B4460F">Durum satırı</p>
-<p style="font-size:24px;line-height:1.4">token/s değeri, f_clk / cycle_per_token olarak sıralı bir bölücüyle hesaplanır; sayılar bin2bcd ile onluk sisteme çevrilir.</p>
+<p style="font-size:24px;font-weight:600;color:#B4460F">Status line</p>
+<p style="font-size:24px;line-height:1.4">token/s değeri, f_clk / cycle_per_token olarak sequential bir divider ile hesaplanır; sayılar bin2bcd ile onluk sisteme çevrilir.</p>
 </div>
 </div>
 <div style="width:640px;display:flex;flex-direction:column;gap:10px">
 <img src="/_blob/2fd2df7e35b857239021549d15783181" alt="stories260K modelinin VGA ekranı: başlık satırı, kelime kaydırmalı hikâye metni ve durum satırı" style="width:640px;height:480px;object-fit:contain;border-radius:8px">
-<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil.</b> VGA pinlerinden alınan kare; satır sonlarında kelimeler bölünmemiştir.</p>
+<p style="font-size:24px;line-height:1.4;color:#5A6474"><b>Şekil.</b> VGA pinlerinden alınan frame; satır sonlarında kelimeler bölünmemiştir.</p>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">29 · Karpathy modelleri FPGA’de · board/nexys_a7/lm_gen.sv (W_* durumları), vga_text.sv, bin2bcd.sv</p>
-<aside>Ekran tarafında üç iş var. Detokenizer, token numarasını karakterlere çeviriyor. Bunun için iki ROM kullanıyoruz: biri her token’ın karakter dizisinin nerede başladığını ve kaç karakter olduğunu, diğeri karakterlerin kendisini tutuyor. names modellerinde her token bir harf; stories260K’da bir token “ the” gibi birkaç karakter olabiliyor. Terminal bu karakterleri 80 sütunluk bir metin alanına yazıyor. İlk sürümde kelimeler satır sonunda ortadan bölünüyordu; şimdi bir kelime 80. sütunu aşacaksa yazılmış yarısı alt satıra taşınıyor. Şekilde satır sonlarına bakarsanız hiçbir kelimenin bölünmediğini görürsünüz. Ekran dolunca satırlar dairesel bir tamponda kayıyor. vga_text, 640 çarpı 480 çözünürlükte, saniyede 60 kare, her karede metin RAM’ini baştan okuyup font ROM’undan pikselleri çiziyor; üç kademeli bir pipeline. En alttaki durum satırındaki token/s değerini bir bölücüyle hesaplıyor ve sayıları bin2bcd modülüyle onluğa çeviriyoruz. Bu kare de pinlerden yakalandı ve referansla piksel piksel aynı.</aside>
+<aside>Ekran tarafında üç iş var. Detokenizer, token numarasını karakterlere çeviriyor. Bunun için iki ROM kullanıyoruz: biri her token’ın karakter dizisinin nerede başladığını ve kaç karakter olduğunu, diğeri karakterlerin kendisini tutuyor. names modellerinde her token bir harf; stories260K’da bir token “ the” gibi birkaç karakter olabiliyor. Terminal bu karakterleri 80 sütunluk bir metin alanına yazıyor. İlk sürümde kelimeler satır sonunda ortadan bölünüyordu; şimdi bir kelime 80. sütunu aşacaksa yazılmış yarısı alt satıra taşınıyor. Şekilde satır sonlarına bakarsanız hiçbir kelimenin bölünmediğini görürsünüz. Ekran dolunca satırlar dairesel bir buffer’da kayıyor. vga_text, 640 çarpı 480 resolution’da, saniyede 60 frame, her frame’de metin RAM’ini baştan okuyup font ROM’undan pixel’leri çiziyor; üç stage’li bir pipeline. En alttaki status line’daki token/s değerini bir bölücüyle hesaplıyor ve sayıları bin2bcd modülüyle onluğa çeviriyoruz. Bu frame de pinlerden yakalandı ve referansla pixel pixel aynı.</aside>
 </section>

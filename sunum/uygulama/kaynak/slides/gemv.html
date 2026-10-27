@@ -1,7 +1,7 @@
 <section id="gemv" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">5 · Engine</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">GEMV biriminde her cycle’da bir giriş sekiz hatta yayınlanır ve sekiz çıkış aynı anda birikir</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;color:#B4460F">5 · ENGINE</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">GEMV unit’inde her cycle’da bir input sekiz lane’e broadcast edilir ve sekiz output aynı anda birikir</h2>
 </div>
 <div style="display:flex;gap:44px;align-items:start">
 <div style="display:flex;gap:18px;align-items:center">
@@ -21,14 +21,14 @@
 </div>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:12px">
-<p style="font-size:24px;line-height:1.4"><b>Şekil.</b> Sekiz satırlık bir çıkış bloğu (turuncu) ve giriş vektörü (mavi). Koyu sütunlar işlenmiş girişleri, açık sütun bu cycle’daki girişi gösterir. Giriş xᵢ sekiz hatta yayınlanır ve 64 bitlik tek bir weight kelimesi sekiz weight’i birlikte getirir.</p>
+<p style="font-size:24px;line-height:1.4"><b>Şekil.</b> Sekiz satırlık bir output block (turuncu) ve input vector (mavi). Koyu sütunlar işlenmiş input’ları, açık sütun bu cycle’daki input’u gösterir. Input xᵢ sekiz lane’e broadcast edilir ve 64 bitlik tek bir weight word’ü sekiz weight’i birlikte getirir.</p>
 <div style="display:flex;flex-direction:column;gap:8px;background:#F2EFE7;border-radius:12px;padding:18px 26px">
 <p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;color:#14213D">cycle ≈ ⌈n_out / 8⌉ · n_in + sabit</p>
-<p style="font-size:24px;line-height:1.4">gpt2 fc (32 → 128): 16 blok × 32 = 512 cycle.<br>stories260K w1 (64 → 172): 22 blok × 64 = 1 408 cycle.</p>
+<p style="font-size:24px;line-height:1.4">gpt2 fc (32 → 128): 16 block × 32 = 512 cycle.<br>stories260K w1 (64 → 172): 22 block × 64 = 1 408 cycle.</p>
 </div>
-<p style="font-size:24px;line-height:1.4">Bir blok tamamlandığında sekiz akümülatör bir gölge bankasına kopyalanır ve requant birimine sırayla aktarılır; hatlar bu sırada bir sonraki bloğa başlar. Bu nedenle cycle sayısı önceden hesaplanabilir.</p>
+<p style="font-size:24px;line-height:1.4">Bir block tamamlandığında sekiz accumulator bir shadow bank’a kopyalanır ve requant unit’ine sırayla aktarılır; lane’ler bu sırada bir sonraki bloğa başlar. Bu nedenle cycle sayısı önceden hesaplanabilir.</p>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">22 · Karpathy modelleri FPGA’de · output-stationary dataflow (Sze vd., 2017)</p>
-<aside>Hesabın büyük kısmını yapan GEMV birimine yakından bakalım. Soldaki şekil bir weight matrisinin 8 satırlık bir çıkış bloğunu ve giriş vektörünü gösteriyor. Her cycle’da giriş vektörünün bir elemanı, mesela x₃, 8 hattın hepsine birden yayınlanıyor. Aynı cycle’da weight belleğinden 64 bitlik tek bir kelime okunuyor; bu kelimede o girişe ait 8 farklı çıkışın weight’i yan yana duruyor. Her hat kendi weight’ini x ile çarpıp kendi akümülatörüne ekliyor. Giriş vektörü bitince 8 çıkışın akümülatörü hazır. Bu düzenin adı output-stationary: çıkışlar yerinde kalıyor, girişler akıyor. Weight belleği tam bu sırayla yazıldığı için adres basit bir sayaç. Blok bitince 8 akümülatör bir gölge register bankasına kopyalanıyor ve oradan requant birimine tek tek akıyor; bu sırada hatlar bir sonraki 8 çıkışa başlamış oluyor, yani boşluk yok. Cycle sayısı bu yüzden basit: çıkış sayısının 8’e bölümü çarpı giriş sayısı. gpt2’nin 32’den 128’e fc katmanı 16 blok çarpı 32, 512 cycle; stories260K’nın 64’ten 172’ye w1 katmanı 22 blok çarpı 64, 1 408 cycle. Bu yüzden bir modelin token başına cycle sayısı önceden, kağıt üzerinde hesaplanabiliyor.</aside>
+<aside>Hesabın büyük kısmını yapan GEMV unit’ine yakından bakalım. Soldaki şekil bir weight matrix’inin 8 satırlık bir output block’unu ve input vector’ünü gösteriyor. Her cycle’da input vector’ünün bir elemanı, mesela x₃, 8 lane’in hepsine birden broadcast ediliyor. Aynı cycle’da weight memory’sinden 64 bitlik tek bir word okunuyor; bu word’de o input’a ait 8 farklı output’un weight’i yan yana duruyor. Her lane kendi weight’ini x ile çarpıp kendi accumulator’ına ekliyor. Input vector bitince 8 output’un accumulator’ı hazır. Bu düzenin adı output-stationary: output’lar yerinde kalıyor, input’lar akıyor. Weight memory’si tam bu sırayla yazıldığı için address basit bir counter. Block bitince 8 accumulator bir gölge register bankasına kopyalanıyor ve oradan requant unit’ine tek tek akıyor; bu sırada lane’ler bir sonraki 8 output’a başlamış oluyor, yani boşluk yok. Cycle sayısı bu yüzden basit: output sayısının 8’e bölümü çarpı input sayısı. gpt2’nin 32’den 128’e fc layer’ı 16 block çarpı 32, 512 cycle; stories260K’nın 64’ten 172’ye w1 layer’ı 22 block çarpı 64, 1 408 cycle. Bu yüzden bir modelin token başına cycle sayısı önceden, kağıt üzerinde hesaplanabiliyor.</aside>
 </section>

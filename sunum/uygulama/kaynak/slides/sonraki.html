@@ -1,20 +1,20 @@
 <section id="sonraki" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">10 · Sonuç</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Sonraki adımlar öncelik sırasıyla hız, doğrulamanın tamamlanması ve kapsamın genişletilmesidir</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;color:#B4460F">10 · SONUÇ</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Sonraki adımlar öncelik sırasıyla hız, verification’ın tamamlanması ve kapsamın genişletilmesidir</h2>
 </div>
 <div style="display:flex;flex-direction:column;gap:14px">
 <div style="display:flex;gap:24px;align-items:center;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:18px 26px">
 <p style="width:60px;font-family:'Source Serif 4', Georgia, serif;font-size:44px;font-weight:600;color:#B4460F">1</p>
-<p style="flex:1;font-size:24px;line-height:1.4"><b>Engine’e pipeline eklenmesi:</b> tampon okuma ile hesap arasına bir register konacak. Hedef 50 MHz, yani token/s’de iki kat; 18 modelin simülasyonları yeniden geçirilecek.</p>
+<p style="flex:1;font-size:24px;line-height:1.4"><b>Engine’e pipeline eklenmesi:</b> buffer okuma ile hesap arasına bir register konacak. Hedef 50 MHz, yani token/s’de iki kat; 18 modelin simülasyonları yeniden geçirilecek.</p>
 </div>
 <div style="display:flex;gap:24px;align-items:center;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:18px 26px">
 <p style="width:60px;font-family:'Source Serif 4', Georgia, serif;font-size:44px;font-weight:600;color:#B4460F">2</p>
-<p style="flex:1;font-size:24px;line-height:1.4"><b>Yerleştirilen netlist’in simülasyonu:</b> 18 modelin tamamında, gerçek clock ayarı ve gerçek debounce süreleriyle yapılacak.</p>
+<p style="flex:1;font-size:24px;line-height:1.4"><b>Place edilen netlist’in simülasyonu:</b> 18 modelin tamamında, gerçek clock ayarı ve gerçek debounce süreleriyle yapılacak.</p>
 </div>
 <div style="display:flex;gap:24px;align-items:center;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:18px 26px">
 <p style="width:60px;font-family:'Source Serif 4', Georgia, serif;font-size:44px;font-weight:600;color:#2A5C9A">3</p>
-<p style="flex:1;font-size:24px;line-height:1.4"><b>DSP’ler ve bellek düzeni:</b> Yosys hatası geliştiricilere raporlanacak, requant dışındaki çarpıcılar DSP’ye taşınacak; ts_gpt2 ve ts_microgpt’nin tabloları RAMB36’ya uygun biçimde bölünecek.</p>
+<p style="flex:1;font-size:24px;line-height:1.4"><b>DSP’ler ve memory layout:</b> Yosys bug’ı geliştiricilere raporlanacak, requant dışındaki multiplier’lar DSP’ye taşınacak; ts_gpt2 ve ts_microgpt’nin memory’leri RAMB36’ya uygun biçimde bölünecek.</p>
 </div>
 <div style="display:flex;gap:24px;align-items:center;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:18px 26px">
 <p style="width:60px;font-family:'Source Serif 4', Georgia, serif;font-size:44px;font-weight:600;color:#2A5C9A">4</p>
@@ -22,9 +22,9 @@
 </div>
 <div style="display:flex;gap:24px;align-items:center;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:12px;padding:18px 26px">
 <p style="width:60px;font-family:'Source Serif 4', Georgia, serif;font-size:44px;font-weight:600;color:#5A6474">5</p>
-<p style="flex:1;font-size:24px;line-height:1.4"><b>Düşük bitli weight’ler:</b> stories260K için daha uzun bir binary QAT yapılacak ve iki yollu LittleBit donanımda denenecek.</p>
+<p style="flex:1;font-size:24px;line-height:1.4"><b>Low-bit weight’ler:</b> stories260K için daha uzun bir binary QAT yapılacak ve iki path’li LittleBit hardware’de denenecek.</p>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">49 · Karpathy modelleri FPGA’de</p>
-<aside>Sonraki adımları öncelik sırasıyla sıraladım. Birincisi hız: engine’de tampon okuması ile hesabın arasına bir register koymak. Bu, kritik yolu ikiye bölüyor ve hedefimiz 50 megahertz; bu da token/s’de iki kat demek. Bu bir RTL değişikliği olduğu için 18 modelin bütün simülasyonları yeniden geçmeli. İkincisi doğrulamanın son boşluğu: yerleşime giren netlist’i, gerçek clock ayarı ve gerçek debounce süreleriyle, 18 modelin hepsinde simüle etmek. Üçüncüsü DSP blokları: Yosys’teki hatayı geliştiricilere raporlamak ve hatanın görüldüğü requant çarpımı dışındaki çarpıcıları yeniden DSP’ye koymak. Bu hem LUT sayısını düşürür hem Fmax’ı artırır. Aynı adımda yerleşemeyen iki TinyStories modelinin tablolarını, Yosys onları küçük bloklara bölmeyecek şekilde yeniden düzenlemek gerekiyor. Dördüncüsü kapsam: ilk sunumun konusu olan minGPT’nin sıralama demosunu 19. model olarak kart tasarımına eklemek; ekranda girdi dizisini ve sıralanmış çıktıyı göstermek. Beşincisi düşük bit tarafı: stories260K için daha uzun bir binary QAT, çünkü loss son adımlarda hâlâ düşüyordu; ve LittleBit’in iki yollu sürümünü donanımda denemek.</aside>
+<aside>Sonraki adımları öncelik sırasıyla sıraladım. Birincisi hız: engine’de buffer okuması ile hesabın arasına bir register koymak. Bu, critical path’i ikiye bölüyor ve hedefimiz 50 megahertz; bu da token/s’de iki kat demek. Bu bir RTL değişikliği olduğu için 18 modelin bütün simülasyonları yeniden geçmeli. İkincisi verification’ın son boşluğu: placement’a giren netlist’i, gerçek clock ayarı ve gerçek debounce süreleriyle, 18 modelin hepsinde simüle etmek. Üçüncüsü DSP block’ları: Yosys’teki bug’ı geliştiricilere raporlamak ve bug’ın görüldüğü requant multiply’ı dışındaki multiplier’ları yeniden DSP’ye koymak. Bu hem LUT sayısını düşürür hem Fmax’ı artırır. Aynı adımda place edilemeyen iki TinyStories modelinin memory’lerini, Yosys onları küçük block’lara bölmeyecek şekilde yeniden düzenlemek gerekiyor. Dördüncüsü kapsam: ilk sunumun konusu olan minGPT’nin sıralama demosunu 19. model olarak kart tasarımına eklemek; ekranda girdi dizisini ve sıralanmış çıktıyı göstermek. Beşincisi low-bit tarafı: stories260K için daha uzun bir binary QAT, çünkü loss son adımlarda hâlâ düşüyordu; ve LittleBit’in iki path’li sürümünü hardware’de denemek.</aside>
 </section>

@@ -1,15 +1,15 @@
 <section id="sampling" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:24px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">6 · Kart sistemi</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Tamsayı sampling, temperature ve min-p’yi softmax ile aynı tabloyla ve bölme kullanmadan uygular</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;color:#B4460F">6 · KART SİSTEMİ</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Integer sampling, temperature ve min-p’yi softmax ile aynı LUT ile ve division kullanmadan uygular</h2>
 </div>
 <div style="display:flex;gap:36px;align-items:start">
 <div style="width:640px;display:flex;flex-direction:column;gap:12px">
 <div style="display:flex;flex-direction:column;gap:6px;background:#F2EFE7;border-radius:12px;padding:18px 26px">
 <p style="font-family:'Source Serif 4', Georgia, serif;font-size:28px;line-height:1.55;color:#14213D"><i>eₖ</i> = 2^(−(<i>m</i> − <i>lₖ</i>) · <i>c</i>),  <i>c</i> = <i>s</i>_logit · log₂e / <i>τ</i><br>kes: <i>eₖ</i> &lt; 2¹⁵ · 2^(−NCUT)  (min-p)<br>thr = (<i>r</i> · Σ <i>eₖ</i>) ≫ 32,  <i>r</i>: xorshift32</p>
 </div>
-<p style="font-size:24px;line-height:1.4"><b>Bölme gerekmez.</b> Olasılıklar normalize edilmez; bunun yerine eşik, toplamla ölçeklenir. Rastgele sayı 32 bitlik bir kesir gibi davranır: thr / Σe = r / 2³².</p>
-<p style="font-size:24px;line-height:1.4;color:#5A6474">τ anahtarlarla 8 değerden, min-p 4 değerden seçilir; c her τ için sabit noktada saklanır.</p>
+<p style="font-size:24px;line-height:1.4"><b>Division gerekmez.</b> Probability’ler normalize edilmez; bunun yerine threshold, toplamla scale edilir. Random number 32 bitlik bir fraction gibi davranır: thr / Σe = r / 2³².</p>
+<p style="font-size:24px;line-height:1.4;color:#5A6474">τ switch’lerle 8 değerden, min-p 4 değerden seçilir; c her τ için fixed point olarak saklanır.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:10px">
 <p style="font-size:24px;font-weight:600;color:#14213D">Örnek: 4 token, s_logit = 0,05, τ = 0,8, min-p = 1/32</p>
@@ -24,5 +24,5 @@
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">28 · Karpathy modelleri FPGA’de · Aynı algoritma sw/zoo/board.py:pick içinde birebir</p>
-<aside>Bir sonraki token’ı seçmek, yani sampling, normalde temperature ile bölünmüş logit’lerin softmax’ını alıp o dağılımdan rastgele bir örnek çekmek demek. Bunu da integer’a çevirdik. Logit’lerin en büyüğünü çıkarıp farkı c ile çarpıyoruz; c, logit scale’ini, log₂e’yi ve temperature’ı içeren bir sabit. Sonra attention’daki aynı 2’nin kuvveti tablosuyla eₖ’leri buluyoruz. Min-p kuralı, olasılığı en olası token’ın 32’de birinden küçük olanları atıyor; en büyük e her zaman 2 üzeri 15 olduğu için bu basit bir karşılaştırma. Bölmeye hiç gerek yok: olasılıkları normalize etmek yerine rastgele sayıyı toplamla çarpıp 32 bit kaydırıyoruz ve birikimli toplamın bu eşiği ilk aştığı token’ı seçiyoruz. Sağdaki örnek dört token’lı: logit’ler 120, 100, 60 ve 20; scale 0,05, temperature 0,8. Üçüncü ve dördüncü token min-p ile kesiliyor. Kalan iki token’ın olasılıkları 0,7775 ve 0,2225; float hesap 0,7773 ve 0,2227 veriyor, binde birden küçük fark. Rastgele sayı 0,75’e karşılık geliyorsa eşik 31 610 ve ilk token seçiliyor; 0,875’e karşılık geliyorsa ikinci token. Python’daki referans aynı algoritmayı birebir uyguladığı için kartın seçtiği token’lar Python’unkilerle aynı.</aside>
+<aside>Bir sonraki token’ı seçmek, yani sampling, normalde temperature ile bölünmüş logit’lerin softmax’ını alıp o distribution’dan random bir sample çekmek demek. Bunu da integer’a çevirdik. Logit’lerin en büyüğünü çıkarıp farkı c ile çarpıyoruz; c, logit scale’ini, log₂e’yi ve temperature’ı içeren bir sabit. Sonra attention’daki aynı 2’nin kuvveti LUT’uyla eₖ’leri buluyoruz. Min-p kuralı, olasılığı en olası token’ın 32’de birinden küçük olanları atıyor; en büyük e her zaman 2 üzeri 15 olduğu için bu basit bir karşılaştırma. Division’a hiç gerek yok: probability’leri normalize etmek yerine random number’ı toplamla çarpıp 32 bit shift ediyoruz ve birikimli toplamın bu threshold’u ilk aştığı token’ı seçiyoruz. Sağdaki örnek dört token’lı: logit’ler 120, 100, 60 ve 20; scale 0,05, temperature 0,8. Üçüncü ve dördüncü token min-p ile kesiliyor. Kalan iki token’ın probability’leri 0,7775 ve 0,2225; float hesap 0,7773 ve 0,2227 veriyor, binde birden küçük fark. Random number 0,75’e karşılık geliyorsa threshold 31 610 ve ilk token seçiliyor; 0,875’e karşılık geliyorsa ikinci token. Python’daki referans aynı algoritmayı birebir uyguladığı için kartın seçtiği token’lar Python’unkilerle aynı.</aside>
 </section>

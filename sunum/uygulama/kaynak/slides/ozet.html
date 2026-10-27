@@ -1,18 +1,18 @@
 <section id="ozet" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:30px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">Elde edilen sonuçlar</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Dokuz mimari ve hazır eğitilmiş bir model, tek bir FPGA tasarımında bilgisayarsız ve yalnızca tamsayıyla çalıştırıldı</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;color:#B4460F">ELDE EDİLEN SONUÇLAR</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Dokuz mimari ve hazır eğitilmiş bir model, tek bir FPGA tasarımında bilgisayarsız ve yalnızca integer ile çalıştırıldı</h2>
 </div>
 <div style="display:flex;gap:22px">
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:22px 24px">
 <p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">18 / 18</p>
 <p style="font-size:24px;font-weight:600;color:#B4460F">doğruluk</p>
-<p style="font-size:24px;line-height:1.4">Modelin tamamı, kartın tam simülasyonunda Python referansıyla bit düzeyinde aynı sonucu üretti.</p>
+<p style="font-size:24px;line-height:1.4">Modelin tamamı, kartın tam simülasyonunda Python referansıyla bit-exact sonuç üretti.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:22px 24px">
 <p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">16</p>
-<p style="font-size:24px;font-weight:600;color:#2A5C9A">çipe yerleştirme</p>
-<p style="font-size:24px;line-height:1.4">Model çipe yerleştirildi; üçü 50 MHz’te, on üçü 25 MHz’te zamanlama kısıtlarını karşılıyor.</p>
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">placement</p>
+<p style="font-size:24px;line-height:1.4">Model chip’e place edildi; üçü 50 MHz’te, on üçü 25 MHz’te timing constraint’lerini karşılıyor.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:22px 24px">
 <p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">496</p>
@@ -22,12 +22,12 @@
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #B4460F;border-radius:12px;padding:22px 24px">
 <p style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1;color:#14213D">3,6×</p>
 <p style="font-size:24px;font-weight:600;color:#B4460F">hızlanma</p>
-<p style="font-size:24px;line-height:1.4">1 bitlik weight’ler, INT8’e göre token başına hesap süresini 3,6 kata kadar kısalttı.</p>
+<p style="font-size:24px;line-height:1.4">1-bit weight’ler, INT8’e göre token başına hesap süresini 3,6 kata kadar kısalttı.</p>
 </div>
 </div>
 <div style="display:flex;flex-direction:column;gap:8px;background:#14213D;border-radius:12px;padding:22px 30px">
-<p style="font-size:28px;line-height:1.4;color:#FBFBF8">Hesabın hiçbir adımında floating point kullanılmadı. Softmax, normalization ve bir sonraki token’ın seçimi dahil bütün işlemler tamsayıyla yapıldı ve her işlemin değer aralığı matematiksel olarak sınırlandırıldı.</p>
+<p style="font-size:28px;line-height:1.4;color:#FBFBF8">Hesabın hiçbir adımında floating point kullanılmadı. Softmax, normalization ve bir sonraki token’ın seçimi dahil bütün işlemler integer ile yapıldı ve her işlemin range’i matematiksel olarak sınırlandırıldı.</p>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">2 · Karpathy modelleri FPGA’de</p>
-<aside>Sonuçla başlamak istiyorum. Karpathy’nin dil modeli ailesinden dokuz mimariyi ve Karpathy’nin kendi eğittiği stories260K modelini tek bir FPGA tasarımında, hiçbir bilgisayara bağlı olmadan ve yalnızca tamsayı aritmetiğiyle çalıştırdık. Bu çalışmanın dört ölçülebilir sonucu var. Birincisi doğruluk: bu mimarilerden ve onların TinyStories ve düşük bitli sürümlerinden oluşan 18 modelin tamamı, kartın bütününün simülasyonunda Python’daki referansla bit düzeyinde aynı sonucu üretti. İkincisi çipe yerleştirme: 16 model, açık kaynak araçlarla çipe yerleştirildi; üçü 50 megahertzde, on üçü 25 megahertzde zamanlama kısıtlarını karşılıyor. Üçüncüsü hız: Karpathy’nin stories260K modeli saniyede 496 token üretiyor, yani 256 token’lık bir hikâyeyi yarım saniyede yazıyor. Dördüncüsü, hocamın önerdiği düşük bitli weight’ler: 1 bitlik weight’ler token başına hesap süresini 3,6 kata kadar kısalttı. Bütün bunlarda hiçbir adımda floating point yok; softmax, normalization ve bir sonraki token’ın seçimi de dahil her işlem tamsayıyla yapılıyor ve her işlemin değer aralığını matematiksel olarak sınırladık.</aside>
+<aside>Sonuçla başlamak istiyorum. Karpathy’nin language model ailesinden dokuz mimariyi ve Karpathy’nin kendi eğittiği stories260K modelini tek bir FPGA tasarımında, hiçbir bilgisayara bağlı olmadan ve yalnızca integer arithmetic ile çalıştırdık. Bu çalışmanın dört ölçülebilir sonucu var. Birincisi doğruluk: bu mimarilerden ve onların TinyStories ve low-bit sürümlerinden oluşan 18 modelin tamamı, kartın bütününün simülasyonunda Python’daki referansla bit-exact sonuç üretti. İkincisi placement: 16 model, open-source araçlarla chip’e place edildi; üçü 50 megahertzde, on üçü 25 megahertzde timing constraint’lerini karşılıyor. Üçüncüsü hız: Karpathy’nin stories260K modeli saniyede 496 token üretiyor, yani 256 token’lık bir hikâyeyi yarım saniyede yazıyor. Dördüncüsü, hocamın önerdiği low-bit weight’ler: 1-bit weight’ler token başına hesap süresini 3,6 kata kadar kısalttı. Bütün bunlarda hiçbir adımda floating point yok; softmax, normalization ve bir sonraki token’ın seçimi de dahil her işlem integer ile yapılıyor ve her işlemin range’ini matematiksel olarak sınırladık.</aside>
 </section>

@@ -1,7 +1,7 @@
 <section id="lbformul" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:26px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">7 · Düşük bitli weight’ler</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Bunun nedeni, LittleBit’in scale vektörlerinin dar katmanlarda bit bütçesinin büyük kısmını kullanmasıdır</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;color:#B4460F">7 · LOW-BIT WEIGHT’LER</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Bunun nedeni, LittleBit’in scale vector’lerinin dar layer’larda bit bütçesinin büyük kısmını kullanmasıdır</h2>
 </div>
 <div style="display:flex;gap:40px;align-items:start">
 <div style="width:700px;display:flex;flex-direction:column;gap:14px">
@@ -9,22 +9,22 @@
 <p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D">BPW = <i>k</i> · [ <i>r</i>(<i>d</i>ₒ + <i>d</i>ᵢ) + 16(<i>d</i>ₒ + <i>d</i>ᵢ + <i>r</i>) ] / (<i>d</i>ₒ <i>d</i>ᵢ)</p>
 <p style="font-family:'Source Serif 4', Georgia, serif;font-size:30px;line-height:1.5;color:#14213D">binary: 1 + 16 / <i>d</i>ᵢ</p>
 </div>
-<p style="font-size:24px;line-height:1.4">İlk terim işaret bitlerini, ikinci terim 16 bitlik h, g ve ℓ scale vektörlerini sayar; <i>k</i> yol sayısı, <i>r</i> ise rank’tır. Scale’lerin payı katman genişliği <i>d</i> ile 1/<i>d</i> oranında azalır.</p>
+<p style="font-size:24px;line-height:1.4">İlk terim sign bitlerini, ikinci terim 16 bitlik h, g ve ℓ scale vector’lerini sayar; <i>k</i> path sayısı, <i>r</i> ise rank’tır. Scale’lerin payı layer genişliği <i>d</i> ile 1/<i>d</i> oranında azalır.</p>
 <div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #B4460F;padding:6px 0px 6px 22px">
-<p style="font-size:24px;line-height:1.4">Makaledeki 0,1 BPW sonucu 4096 × 4096 boyutlu, r = 86 ve iki yollu bir katmana aittir (0,0998 BPW); bu genişlikte scale payı ihmal edilebilir.</p>
+<p style="font-size:24px;line-height:1.4">Makaledeki 0,1 BPW sonucu 4096 × 4096 boyutlu, r = 86 ve iki path’li bir layer’a aittir (0,0998 BPW); bu genişlikte scale payı ihmal edilebilir.</p>
 </div>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:12px">
 <table style="font-size:24px;color:#3B4456">
-<tr><th style="width:30%;text-align:left;color:#14213D">katman</th><th style="width:16%;text-align:right;color:#14213D">binary</th><th style="width:20%;text-align:right;color:#14213D">yalnız scale</th><th style="width:16%;text-align:right;color:#14213D">r %25, 1 yol</th><th style="width:18%;text-align:right;color:#14213D">r %25, 2 yol</th></tr>
+<tr><th style="width:30%;text-align:left;color:#14213D">layer</th><th style="width:16%;text-align:right;color:#14213D">binary</th><th style="width:20%;text-align:right;color:#14213D">yalnız scale</th><th style="width:16%;text-align:right;color:#14213D">r %25, 1 path</th><th style="width:18%;text-align:right;color:#14213D">r %25, 2 path</th></tr>
 <tr style="background:#F6E3D7"><td>32 × 32 (names)</td><td style="text-align:right">1,50</td><td style="text-align:right">1,00</td><td style="text-align:right">1,63</td><td style="text-align:right">3,25</td></tr>
 <tr><td>64 × 64 (stories)</td><td style="text-align:right">1,25</td><td style="text-align:right">0,50</td><td style="text-align:right">1,06</td><td style="text-align:right">2,13</td></tr>
 <tr><td>172 × 64</td><td style="text-align:right">1,25</td><td style="text-align:right">0,34</td><td style="text-align:right">0,71</td><td style="text-align:right">1,42</td></tr>
 <tr><td>4096 × 4096</td><td style="text-align:right">1,00</td><td style="text-align:right">0,008</td><td style="text-align:right">0,51</td><td style="text-align:right">1,02</td></tr>
 </table>
-<p style="font-size:24px;line-height:1.4"><b>Değerlendirme.</b> 32 genişliğindeki bir katmanda yalnızca scale’ler 1,00 BPW tutar; bu, binary bir katmanın toplam bedelinin üçte ikisidir. LittleBit’in bit bütçesi rank yerine scale’lere gider; binary ise aynı bütçeyle tam rank’lı bir işaret matrisi kullanır.</p>
+<p style="font-size:24px;line-height:1.4"><b>Değerlendirme.</b> 32 genişliğindeki bir layer’da yalnızca scale’ler 1,00 BPW tutar; bu, binary bir layer’ın toplam bedelinin üçte ikisidir. LittleBit’in bit bütçesi rank yerine scale’lere gider; binary ise aynı bütçeyle tam rank’lı bir sign matrix’i kullanır.</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">34 · Karpathy modelleri FPGA’de · Birinci araştırma sorusunun cevabı: küçük modellerde anlamlı alt sınırı katman genişliği belirler</p>
-<aside>Bir önceki slayttaki örüntünün sebebi bu formülde. LittleBit bir katman için iki tür bit harcıyor: binary factor’ların işaret bitleri ve 16 bitlik scale vektörleri, yani h, g ve ℓ. İlk terim rank ile, ikinci terim katmanın boyutlarıyla orantılı. Weight sayısına böldüğümüzde scale’lerin bedeli katman genişliği d ile bir bölü d olarak azalıyor. Sağdaki tablo bunu sayılarla gösteriyor. names modellerindeki 32’ye 32’lik bir katmanda, hiç işaret biti saymadan, yalnızca scale’ler weight başına 1 bit tutuyor; bu, binary bir katmanın toplam 1,5 bitlik bedelinin üçte ikisi. Yani LittleBit’in bit bütçesinin çoğu rank’a değil scale’lere gidiyor; binary ise aynı bütçeyle tam rank’lı bir işaret matrisi kullanıyor. 4096’ya 4096’lık bir LLM katmanında ise yalnız scale’ler 0,008 BPW; tamamen ihmal edilebilir. Makaledeki 0,1 BPW sonucu tam olarak bu genişlikten geliyor: 4096 kare, rank 86, iki yol, 0,0998 BPW. Hocamın sorduğu ilk araştırma sorusunun cevabı bu: küçük modellerde LittleBit’in anlamlı alt sınırını katman genişliği belirliyor ve 64’ün altında binary daha verimli.</aside>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">34 · Karpathy modelleri FPGA’de · Birinci araştırma sorusunun cevabı: küçük modellerde anlamlı alt sınırı layer genişliği belirler</p>
+<aside>Bir önceki slayttaki örüntünün sebebi bu formülde. LittleBit bir layer için iki tür bit harcıyor: binary factor’ların sign bitleri ve 16 bitlik scale vector’leri, yani h, g ve ℓ. İlk terim rank ile, ikinci terim layer’ın boyutlarıyla orantılı. Weight sayısına böldüğümüzde scale’lerin bedeli layer genişliği d ile bir bölü d olarak azalıyor. Sağdaki tablo bunu sayılarla gösteriyor. names modellerindeki 32’ye 32’lik bir layer’da, hiç sign biti saymadan, yalnızca scale’ler weight başına 1 bit tutuyor; bu, binary bir layer’ın toplam 1,5 bitlik bedelinin üçte ikisi. Yani LittleBit’in bit bütçesinin çoğu rank’a değil scale’lere gidiyor; binary ise aynı bütçeyle tam rank’lı bir sign matrix’i kullanıyor. 4096’ya 4096’lık bir LLM layer’ında ise yalnız scale’ler 0,008 BPW; tamamen ihmal edilebilir. Makaledeki 0,1 BPW sonucu tam olarak bu genişlikten geliyor: 4096 kare, rank 86, iki path, 0,0998 BPW. Hocamın sorduğu ilk araştırma sorusunun cevabı bu: küçük modellerde LittleBit’in anlamlı alt sınırını layer genişliği belirliyor ve 64’ün altında binary daha verimli.</aside>
 </section>

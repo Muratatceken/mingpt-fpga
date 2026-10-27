@@ -1,16 +1,16 @@
 <section id="sinir" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">10 · Sonuç</p>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;color:#B4460F">10 · SONUÇ</p>
 <h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Çalışmanın sınırları: kanıtlanan ve henüz kanıtlanmayan noktalar</h2>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
 <div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #B4460F;border-radius:12px;padding:20px 26px">
 <h3 style="font-size:30px;font-weight:600;color:#14213D">Fiziksel kart testi yapılmadı</h3>
-<p style="font-size:24px;line-height:1.4">Kanıt, simülasyona ve zamanlama analizine dayanır. Yerleşimden sonraki son devre simüle edilemedi; nextpnr bu devreyi Verilog olarak yazamıyor.</p>
+<p style="font-size:24px;line-height:1.4">Kanıt, simülasyona ve timing analysis’e dayanır. Place and route sonrasındaki son circuit simüle edilemedi; nextpnr bu circuit’i Verilog olarak yazamıyor.</p>
 </div>
 <div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #B4460F;border-radius:12px;padding:20px 26px">
 <h3 style="font-size:30px;font-weight:600;color:#14213D">Fmax değerleri yaklaşıktır</h3>
-<p style="font-size:24px;line-height:1.4">nextpnr’ın gecikme modeli topluluk tarafından çıkarılmıştır ve Vivado’nun sonucu farklı olabilir. Çarpıcılar LUT’larla kurulduğu için devre, Vivado’nun DSP’li devresinden daha yavaş ve daha büyüktür.</p>
+<p style="font-size:24px;line-height:1.4">nextpnr’ın delay modeli topluluk tarafından çıkarılmıştır ve Vivado’nun sonucu farklı olabilir. Multiplier’lar LUT’larla kurulduğu için circuit, Vivado’nun DSP’li circuit’inden daha yavaş ve daha büyüktür.</p>
 </div>
 <div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #2A5C9A;border-radius:12px;padding:20px 26px">
 <h3 style="font-size:30px;font-weight:600;color:#14213D">Kapasite sınırı</h3>
@@ -18,9 +18,9 @@
 </div>
 <div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #2A5C9A;border-radius:12px;padding:20px 26px">
 <h3 style="font-size:30px;font-weight:600;color:#14213D">Tamamlanmayan parçalar</h3>
-<p style="font-size:24px;line-height:1.4">ts_gpt2 ve ts_microgpt çipe yerleştirilemedi. gpt-nano sıralama demosu bu kart tasarımında bulunmuyor. Larq paketiyle sayısal karşılaştırma ve iki yollu LittleBit donanımı henüz yapılmadı.</p>
+<p style="font-size:24px;line-height:1.4">ts_gpt2 ve ts_microgpt chip’e place edilemedi. gpt-nano sıralama demosu bu kart tasarımında bulunmuyor. Larq paketiyle sayısal karşılaştırma ve iki path’li LittleBit hardware’i henüz yapılmadı.</p>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">48 · Karpathy modelleri FPGA’de</p>
-<aside>Sonuçları değerlendirmeden önce sınırları açıkça söylemek istiyorum. Birincisi, fiziksel kart testi yapmadık; bu bir karardı. Kanıtımız simülasyon ve zamanlama analizi. Burada tek boşluk şu: yerleşimden sonraki son devreyi simüle edemiyoruz, çünkü nextpnr onu simüle edilebilir Verilog olarak yazamıyor; o aşama için zamanlama analizine güveniyoruz. İkincisi, ölçtüğümüz Fmax yaklaşık. nextpnr’ın kullandığı gecikme modeli Project X-Ray topluluğunun çipten çıkardığı bir model; Vivado’nun sonucu farklı olabilir. Ayrıca çarpıcılar LUT’larda olduğu için bu devre Vivado’nun DSP’li devresinden daha yavaş ve daha büyük. Üçüncüsü kapasite: çipin 607 kilobaytlık BRAM’i yaklaşık 300 bin parametreye kadar yetiyor. nanoGPT’nin ya da llm.c’nin hazır eğitilmiş modelleri on milyonlarca parametre; onlar için kartın DDR2 belleğinden weight okuyan farklı bir mimari gerekir. Dördüncüsü eksik parçalar: iki TinyStories modeli, ts_gpt2 ve ts_microgpt, bellekleri çok sayıda küçük BRAM bloğuna bölündüğü için yerleşemedi; ilk sunumun konusu olan minGPT’nin sıralama demosu bu kart tasarımında yok, eski hızlandırıcıdaydı; Larq’ın gerçek paketiyle sayısal karşılaştırma yapmadık, çünkü TensorFlow kurmadık; LittleBit’in iki yollu sürümü de donanımda yok, yalnızca tek yollu.</aside>
+<aside>Sonuçları değerlendirmeden önce sınırları açıkça söylemek istiyorum. Birincisi, fiziksel kart testi yapmadık; bu bir karardı. Kanıtımız simülasyon ve timing analysis. Burada tek boşluk şu: placement’tan sonraki son circuit’i simüle edemiyoruz, çünkü nextpnr onu simüle edilebilir Verilog olarak yazamıyor; o aşama için timing analysis’e güveniyoruz. İkincisi, ölçtüğümüz Fmax yaklaşık. nextpnr’ın kullandığı delay modeli Project X-Ray topluluğunun chip’ten çıkardığı bir model; Vivado’nun sonucu farklı olabilir. Ayrıca multiplier’lar LUT’larda olduğu için bu circuit Vivado’nun DSP’li circuit’inden daha yavaş ve daha büyük. Üçüncüsü kapasite: chip’in 607 kilobyte’lık BRAM’i yaklaşık 300 bin parametreye kadar yetiyor. nanoGPT’nin ya da llm.c’nin hazır eğitilmiş modelleri on milyonlarca parametre; onlar için kartın DDR2 memory’sinden weight okuyan farklı bir mimari gerekir. Dördüncüsü eksik parçalar: iki TinyStories modeli, ts_gpt2 ve ts_microgpt, memory’leri çok sayıda küçük BRAM bloğuna bölündüğü için yerleşemedi; ilk sunumun konusu olan minGPT’nin sıralama demosu bu kart tasarımında yok, eski hızlandırıcıdaydı; Larq’ın gerçek paketiyle sayısal karşılaştırma yapmadık, çünkü TensorFlow kurmadık; LittleBit’in iki path’li sürümü de hardware’de yok, yalnızca tek path’li.</aside>
 </section>

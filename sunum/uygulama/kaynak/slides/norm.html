@@ -1,36 +1,36 @@
 <section id="norm" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">3 · Tamsayı aritmetiği</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Tamsayı LayerNorm ve RMSNorm, vektör başına bir karekök ve bir bölme kullanır; çıkışın taşmayacağı ispatlanmıştır</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;color:#B4460F">3 · INTEGER ARITHMETIC</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Integer LayerNorm ve RMSNorm, vector başına bir square root ve bir division kullanır; output’un overflow olmayacağı ispatlanmıştır</h2>
 </div>
 <div style="display:flex;gap:10px;align-items:center">
 <div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">SUM</p><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#14213D">s = Σ xᵢ</p></div>
 <x-shape kind="arrow-right" style="width:30px;height:18px;background:#9AA3B2"></x-shape>
 <div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">VAR</p><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#14213D">dᵢ = N·xᵢ − s<br>Q = Σ dᵢ² + E</p></div>
 <x-shape kind="arrow-right" style="width:30px;height:18px;background:#9AA3B2"></x-shape>
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#B4460F">SQRT</p><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#14213D">rt = ⌊√Q⌋</p><p style="font-size:24px;color:#5A6474">sıralı devre</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#B4460F">SQRT</p><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#14213D">rt = ⌊√Q⌋</p><p style="font-size:24px;color:#5A6474">sequential circuit</p></div>
 <x-shape kind="arrow-right" style="width:30px;height:18px;background:#9AA3B2"></x-shape>
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#B4460F">DIV</p><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#14213D">inv = ⌊K / rt⌋</p><p style="font-size:24px;color:#5A6474">sıralı bölücü</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#B4460F">DIV</p><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#14213D">inv = ⌊K / rt⌋</p><p style="font-size:24px;color:#5A6474">sequential divider</p></div>
 <x-shape kind="arrow-right" style="width:30px;height:18px;background:#9AA3B2"></x-shape>
 <div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#FEFEFC;border:1px solid #E2DFD6;border-radius:10px;padding:16px 18px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">OUT</p><p style="font-family:'IBM Plex Mono', 'Courier New', monospace;font-size:24px;color:#14213D">zᵢ = (dᵢ·inv) ≫ k</p></div>
 </div>
 <div style="display:flex;gap:24px">
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px">
-<p style="font-size:24px;font-weight:600;color:#2A5C9A">Kayıpsız tamsayı işlemler</p>
-<p style="font-size:24px;line-height:1.4">dᵢ = N(xᵢ − μ) bölme gerektirmez ve bilgi kaybetmez. RMSNorm’da s = 0 alınır; aynı birim iki normalization’ı da hesaplar.</p>
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">Lossless integer işlemler</p>
+<p style="font-size:24px;line-height:1.4">dᵢ = N(xᵢ − μ) division gerektirmez ve bilgi kaybetmez. RMSNorm’da s = 0 alınır; aynı unit iki normalization’ı da hesaplar.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;border-left:6px solid #B4460F;padding:6px 0px 6px 22px">
-<p style="font-size:24px;font-weight:600;color:#B4460F">Taşma olmaz (Samuelson)</p>
-<p style="font-size:24px;line-height:1.4">|xᵢ − μ| ≤ σ√(N − 1) olduğundan çıkışın büyüklüğü veriden bağımsız olarak sınırlıdır; kalibrasyon gerekmez.</p>
+<p style="font-size:24px;font-weight:600;color:#B4460F">Overflow olmaz (Samuelson)</p>
+<p style="font-size:24px;line-height:1.4">|xᵢ − μ| ≤ σ√(N − 1) olduğundan output’un büyüklüğü veriden bağımsız olarak sınırlıdır; kalibrasyon gerekmez.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px">
-<p style="font-size:24px;font-weight:600;color:#2A5C9A">γ ve β katlanır</p>
-<p style="font-size:24px;line-height:1.4">W(γ ⊙ ẑ + β) + b = (W · diag γ) ẑ + (Wβ + b). Donanım yalnızca ẑ’yi hesaplar.</p>
+<p style="font-size:24px;font-weight:600;color:#2A5C9A">γ ve β fold edilir</p>
+<p style="font-size:24px;line-height:1.4">W(γ ⊙ ẑ + β) + b = (W · diag γ) ẑ + (Wβ + b). Hardware yalnızca ẑ’yi hesaplar.</p>
 </div>
 </div>
 <div style="display:flex;flex-direction:column;gap:6px;background:#F2EFE7;border-radius:12px;padding:18px 28px">
-<p style="font-size:24px;line-height:1.4"><b>Maliyet.</b> NORM, gpt2’de cycle’ların %14’ünü, QK-norm nedeniyle nanochat’te %33’ünü kullanır. Karekök ve bölme yavaştır, ancak her vektör için yalnızca bir kez çalışır.</p>
+<p style="font-size:24px;line-height:1.4"><b>Maliyet.</b> NORM, gpt2’de cycle’ların %14’ünü, QK-norm nedeniyle nanochat’te %33’ünü kullanır. Square root ve division yavaştır, ancak her vector için yalnızca bir kez çalışır.</p>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">15 · Karpathy modelleri FPGA’de · rtl/isqrt_seq.sv, rtl/zoo/zdiv.sv</p>
-<aside>Normalization katmanları, yani LayerNorm ve RMSNorm, ortalama, varyans, karekök ve bölme gerektiriyor. Bunları tamsayıyla beş aşamada hesaplıyoruz. Önce elemanlar toplanıyor. Ardından her eleman N ile çarpılıp toplamdan çıkarılıyor: bu, N çarpı x eksi ortalama demek, ancak bölme gerekmiyor ve hiçbir bilgi kaybolmuyor. Bu farkların kareleri toplanıp epsilon’un karşılığı olan sabit ekleniyor. Sonra bu toplamın tamsayı karekökü bit bit, sıralı bir devreyle alınıyor; ardından sabit bir K bu köke bölünüyor. Son aşamada her fark bu tersle çarpılıp kaydırılıyor. RMSNorm’da ortalama çıkarılmıyor; aynı birimde toplam sıfır alınıyor. Bu tasarımın önemli bir garantisi var: Samuelson eşitsizliğine göre her elemanın ortalamadan uzaklığı en fazla sigma çarpı kök N eksi 1’dir. Dolayısıyla normalize edilmiş çıkışın büyüklüğü veriden bağımsız olarak sınırlı; çıkış formatını bu sınıra göre seçtiğimizde ne kalibrasyon gerekiyor ne de doyma oluşuyor. Üçüncü nokta, LayerNorm’un gain’i ve bias’ı arkasından gelen Linear’ın weight ve bias’ına matematiksel olarak katlanıyor; donanım yalnızca normalize edilmiş vektörü hesaplıyor. Maliyete bakıldığında NORM, gpt2’de cycle’ların yüzde 14’ünü, QK-norm nedeniyle nanochat’te yüzde 33’ünü kullanıyor.</aside>
+<aside>Normalization layer’ları, yani LayerNorm ve RMSNorm, mean, variance, square root ve division gerektiriyor. Bunları integer ile beş aşamada hesaplıyoruz. Önce elemanlar toplanıyor. Ardından her eleman N ile çarpılıp toplamdan çıkarılıyor: bu, N çarpı x eksi ortalama demek, ancak division gerekmiyor ve hiçbir bilgi kaybolmuyor. Bu farkların kareleri toplanıp epsilon’un karşılığı olan sabit ekleniyor. Sonra bu toplamın integer square root’u bit bit, sequential bir circuit ile alınıyor; ardından sabit bir K bu köke bölünüyor. Son aşamada her fark bu tersle çarpılıp shift ediliyor. RMSNorm’da ortalama çıkarılmıyor; aynı unit’te toplam sıfır alınıyor. Bu tasarımın önemli bir garantisi var: Samuelson eşitsizliğine göre her elemanın ortalamadan uzaklığı en fazla sigma çarpı kök N eksi 1’dir. Dolayısıyla normalize edilmiş output’un büyüklüğü veriden bağımsız olarak sınırlı; output formatını bu sınıra göre seçtiğimizde ne kalibrasyon gerekiyor ne de saturation oluşuyor. Üçüncü nokta, LayerNorm’un gain’i ve bias’ı arkasından gelen Linear’ın weight ve bias’ına matematiksel olarak fold ediliyor; hardware yalnızca normalize edilmiş vector’ü hesaplıyor. Maliyete bakıldığında NORM, gpt2’de cycle’ların yüzde 14’ünü, QK-norm nedeniyle nanochat’te yüzde 33’ünü kullanıyor.</aside>
 </section>

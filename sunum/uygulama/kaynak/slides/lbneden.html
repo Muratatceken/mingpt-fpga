@@ -1,7 +1,7 @@
 <section id="lbneden" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">7 · Düşük bitli weight’ler</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">1 bitlik weight’ler belleği sekiz kat küçültür ve çarpma işlemini toplama ile çıkarmaya dönüştürür</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;color:#B4460F">7 · LOW-BIT WEIGHT’LER</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">1-bit weight’ler memory’si sekiz kat küçültür ve çarpma işlemini toplama ile çıkarmaya dönüştürür</h2>
 </div>
 <div style="display:flex;gap:28px">
 <div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FEFEFC;border:1px solid #E2DFD6;border-top:6px solid #2A5C9A;border-radius:12px;padding:22px 28px">
@@ -16,13 +16,13 @@
 <div style="display:flex;gap:28px">
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#F2EFE7;border-radius:12px;padding:20px 26px">
 <p style="font-size:24px;font-weight:600;color:#14213D">Hocamızın önerdiği iki kaynak</p>
-<p style="font-size:24px;line-height:1.4"><b>LittleBit</b> (Lee vd., NeurIPS 2025), weight matrisini low-rank binary factor’larla temsil ederek weight başına 1 bitin altına iner.<br><b>Larq</b>, binary sinir ağları için bir kütüphanedir; quantizer’ları Bi-Real Net ve TWN yöntemlerini içerir.</p>
+<p style="font-size:24px;line-height:1.4"><b>LittleBit</b> (Lee vd., NeurIPS 2025), weight matrix’ini low-rank binary factor’larla temsil ederek weight başına 1 bitin altına iner.<br><b>Larq</b>, binary sinir ağları için bir kütüphanedir; quantizer’ları Bi-Real Net ve TWN yöntemlerini içerir.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;border-left:6px solid #B4460F;padding:6px 0px 6px 24px">
-<p style="font-size:24px;font-weight:600;color:#B4460F">Eğitim ile çıkarımın ayrılması</p>
-<p style="font-size:24px;line-height:1.4">FPGA’de eğitim yapılmaz. Düşük bitli weight’ler Mac’te QAT ile öğrenilir ve FPGA yalnızca sonucu çalıştırır. Literatürdeki uygulamaya uygun olarak embedding ve output head INT8 kalır.</p>
+<p style="font-size:24px;font-weight:600;color:#B4460F">Training ile inference’ın ayrılması</p>
+<p style="font-size:24px;line-height:1.4">FPGA’de training yapılmaz. Low-bit weight’ler Mac’te QAT ile öğrenilir ve FPGA yalnızca sonucu çalıştırır. Literatürdeki uygulamaya uygun olarak embedding ve output head INT8 kalır.</p>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">31 · Karpathy modelleri FPGA’de · docs/06_dusuk_bit.md</p>
-<aside>Bu bölüm, hocamın önerdiği iki kaynağın, LittleBit makalesinin ve Larq kütüphanesinin, projede nasıl kullanıldığını anlatıyor. Önce motivasyon. Soldaki INT8 örneği daha önce gördüğümüz dot product: üç çarpma. Sağda aynı weight’leri yalnızca işaretleriyle ve tek bir scale ile temsil ediyoruz: artı, eksi, artı. Artı bir ile çarpmak sayıyı olduğu gibi almak, eksi bir ile çarpmak işaretini çevirmek demek. Yani 12 artı 7 artı 30, 49; sonra bir kez scale ile çarpıyoruz. Matris-vektör çarpımının ağır kısmında hiç çarpma kalmıyor ve her weight 8 yerine 1 bit. LittleBit bunu bir adım ileri götürüp weight matrisini low-rank binary factor’lara ayırarak weight başına 1 bitin altına iniyor; Larq ise binary ağlar için bir kütüphane ve Bi-Real Net, ternary weight networks gibi bilinen quantizer’ları içeriyor. Kural değişmedi: FPGA’de eğitim yok. Düşük bitli weight’leri Mac’te quantization-aware training ile öğreniyoruz, FPGA yalnızca sonucu çalıştırıyor. Literatürdeki gibi embedding ve output head INT8 kalıyor.</aside>
+<aside>Bu bölüm, hocamın önerdiği iki kaynağın, LittleBit makalesinin ve Larq kütüphanesinin, projede nasıl kullanıldığını anlatıyor. Önce motivasyon. Soldaki INT8 örneği daha önce gördüğümüz dot product: üç çarpma. Sağda aynı weight’leri yalnızca sign’larıyla ve tek bir scale ile temsil ediyoruz: artı, eksi, artı. Artı bir ile çarpmak sayıyı olduğu gibi almak, eksi bir ile çarpmak sign’ını çevirmek demek. Yani 12 artı 7 artı 30, 49; sonra bir kez scale ile çarpıyoruz. Matrix-vector multiplication’ın ağır kısmında hiç çarpma kalmıyor ve her weight 8 yerine 1 bit. LittleBit bunu bir adım ileri götürüp weight matrix’ini low-rank binary factor’lara ayırarak weight başına 1 bitin altına iniyor; Larq ise binary ağlar için bir kütüphane ve Bi-Real Net, ternary weight networks gibi bilinen quantizer’ları içeriyor. Kural değişmedi: FPGA’de training yok. Low-bit weight’leri Mac’te quantization-aware training ile öğreniyoruz, FPGA yalnızca sonucu çalıştırıyor. Literatürdeki gibi embedding ve output head INT8 kalıyor.</aside>
 </section>

@@ -1,7 +1,7 @@
 <section id="ornek" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:24px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">2 · Model ailesi</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Aynı devre, BRAM’deki modele göre isim ya da hikâye üretir; iki ekran görüntüsü de kartın VGA çıkışından alındı</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;color:#B4460F">2 · MODEL AİLESİ</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Aynı circuit, BRAM’deki modele göre isim ya da hikâye üretir; iki ekran görüntüsü de kartın VGA output’undan alındı</h2>
 </div>
 <div style="display:flex;gap:40px">
 <div style="flex:1;display:flex;flex-direction:column;gap:10px">
@@ -13,6 +13,6 @@
 <p style="font-size:24px;color:#14213D"><b>stories260K</b> (TinyStories): 256 token, token başına 50 397 cycle</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">10 · Karpathy modelleri FPGA’de · Kareler simülasyonda VGA pinlerinden alındı; referans ekranla piksel farkı yoktur</p>
-<aside>Bunlar kartın VGA çıkışından alınmış iki kare. Fotoğraf değiller: kartın bütününü simüle ederken VGA pinlerinden, yani kırmızı, yeşil, mavi ve senkron sinyallerinden yakaladığımız kareler. Python’daki referans ekranla karşılaştırıldığında aralarında tek bir piksel farkı yok. Soldaki gpt2 modeli names.txt üzerinde eğitildiği için alt alta yeni isimler üretiyor; bu koşuda 196 token, token başına 8 713 cycle. Sağdaki Karpathy’nin stories260K modeli “Once upon a time, there was a little girl named Lily” diye başlayan 256 token’lık bir hikâye yazıyor; token başına 50 397 cycle. Üstteki satır model başlığı; alttaki durum satırı token sayısını, hızı, cycle sayısını, sampling ayarlarını ve kart üstü kontrolün sonucunu gösteriyor. “check OK” ifadesi, kartın Python ile aynı token’ları ürettiğini gösteriyor. Durum satırındaki token/s değeri 50 megahertz varsayımıyla hesaplanıyor; yerleşim bölümünde gerçek clock frekansını göstereceğim. İki ekranı da aynı devre üretiyor; değişen yalnızca BRAM’deki model.</aside>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">10 · Karpathy modelleri FPGA’de · Frame’ler simülasyonda VGA pinlerinden alındı; referans ekranla pixel farkı yoktur</p>
+<aside>Bunlar kartın VGA output’undan alınmış iki frame. Fotoğraf değiller: kartın bütününü simüle ederken VGA pinlerinden, yani kırmızı, yeşil, mavi ve sync signal’lerinden yakaladığımız frame’ler. Python’daki referans ekranla karşılaştırıldığında aralarında tek bir pixel farkı yok. Soldaki gpt2 modeli names.txt üzerinde eğitildiği için alt alta yeni isimler üretiyor; bu koşuda 196 token, token başına 8 713 cycle. Sağdaki Karpathy’nin stories260K modeli “Once upon a time, there was a little girl named Lily” diye başlayan 256 token’lık bir hikâye yazıyor; token başına 50 397 cycle. Üstteki satır model başlığı; alttaki status line token sayısını, hızı, cycle sayısını, sampling ayarlarını ve on-board check’in sonucunu gösteriyor. “check OK” ifadesi, kartın Python ile aynı token’ları ürettiğini gösteriyor. Status line’daki token/s değeri 50 megahertz varsayımıyla hesaplanıyor; placement bölümünde gerçek clock frequency’sini göstereceğim. İki ekranı da aynı circuit üretiyor; değişen yalnızca BRAM’deki model.</aside>
 </section>

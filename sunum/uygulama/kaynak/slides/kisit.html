@@ -1,30 +1,30 @@
 <section id="kisit" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:30px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">1 · Hedef</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Tasarımı dört kısıt belirledi: işlemci, floating point ve dış bellek kullanılmıyor; tek bir clock var</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;color:#B4460F">1 · HEDEF</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Tasarımı dört kısıt belirledi: CPU, floating point ve external memory kullanılmıyor; tek bir clock var</h2>
 </div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
 <div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #2A5C9A;border-radius:12px;padding:20px 26px">
-<h3 style="font-size:30px;font-weight:600;color:#14213D">İşlemci bulunmuyor</h3>
-<p style="font-size:24px;line-height:1.4">Üretim döngüsü, sampling, detokenizer ve ekran sürücüsü birer donanım durum makinesi olarak tasarlandı.</p>
+<h3 style="font-size:30px;font-weight:600;color:#14213D">CPU bulunmuyor</h3>
+<p style="font-size:24px;line-height:1.4">Generation loop, sampling, detokenizer ve display driver’ı birer hardware state machine olarak tasarlandı.</p>
 </div>
 <div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #2A5C9A;border-radius:12px;padding:20px 26px">
 <h3 style="font-size:30px;font-weight:600;color:#14213D">Floating point kullanılmıyor</h3>
-<p style="font-size:24px;line-height:1.4">DSP48 blokları tamsayı çarpıcılarıdır. Bütün hesap INT8 ve INT16 ile yapılır; üstel fonksiyon, karekök ve bölme de tamsayıdır.</p>
+<p style="font-size:24px;line-height:1.4">DSP48 block’ları integer multiplier’larıdır. Bütün hesap INT8 ve INT16 ile yapılır; exponential, square root ve division da integer’dır.</p>
 </div>
 <div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #B4460F;border-radius:12px;padding:20px 26px">
-<h3 style="font-size:30px;font-weight:600;color:#14213D">Model çip içindeki BRAM’e sığmalı</h3>
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Model chip içindeki BRAM’e sığmalı</h3>
 <p style="font-size:24px;line-height:1.4">stories260K’nın weight’leri 254 KB, KV cache’i 80 KB tutar; toplam 607 KB’ın altında kalır. Karşılaştırma için GPT-2 124M, 124 MB gerektirirdi.</p>
 </div>
 <div style="display:flex;flex-direction:column;gap:8px;background:#FEFEFC;border:1px solid #E2DFD6;border-left:6px solid #B4460F;border-radius:12px;padding:20px 26px">
-<h3 style="font-size:30px;font-weight:600;color:#14213D">Tek clock ile senkron tasarım</h3>
-<p style="font-size:24px;line-height:1.4">MMCM, 100 MHz’ten çekirdek clock’unu (50 ya da 25 MHz) üretir. VGA’nın 25 MHz piksel hızı aynı clock’tan bir enable sinyaliyle türetilir.</p>
+<h3 style="font-size:30px;font-weight:600;color:#14213D">Tek clock ile synchronous design</h3>
+<p style="font-size:24px;line-height:1.4">MMCM, 100 MHz’ten core clock’unu (50 ya da 25 MHz) üretir. VGA’nın 25 MHz pixel clock’u aynı clock’tan bir enable signal’iyle türetilir.</p>
 </div>
 </div>
 <div style="display:flex;flex-direction:column;gap:6px;background:#F2EFE7;border-radius:12px;padding:20px 28px">
 <p style="font-size:24px;font-weight:600;color:#14213D">Sonuç</p>
-<p style="font-size:24px;line-height:1.4">Modeller küçüktür (50 bin ile 260 bin parametre), ancak sistem eksiksizdir: bir bilgisayarın yapacağı her işi çip kendisi yapar. Dış bellek bulunmadığı için bellek gecikmesi yoktur ve her işlemin cycle sayısı önceden bilinir.</p>
+<p style="font-size:24px;line-height:1.4">Modeller küçüktür (50 bin ile 260 bin parametre), ancak sistem eksiksizdir: bir bilgisayarın yapacağı her işi chip kendisi yapar. External memory bulunmadığı için memory delay’i yoktur ve her işlemin cycle sayısı önceden bilinir.</p>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">6 · Karpathy modelleri FPGA’de</p>
-<aside>Tasarımı dört kısıt belirledi. Birincisi işlemcinin bulunmaması: bir bilgisayarda birkaç satır Python olan üretim döngüsü, sampling, token’ın karakterlere çevrilmesi ve ekrana yazma, burada her biri bir donanım durum makinesi olarak tasarlandı. İkincisi floating point kullanılmaması: çipteki DSP blokları tamsayı çarpıcılarıdır; floating point toplama ve çarpma LUT’larla kurulabilir ama çok pahalıdır. Bu yüzden bütün hesabı INT8 ve INT16 ile yaptık; üstel fonksiyon, karekök ve bölme de dahil. Üçüncüsü dış bellek kullanılmaması. Bu bilinçli bir tercih: model çip içine sığdığı sürece bellek gecikmesi olmuyor ve her işlemin süresi önceden bilinebiliyor. Sayılarla bakarsak, stories260K’nın 260 bin weight’i birer bayt olarak yaklaşık 254 kilobayt; 256 token’lık context için KV cache 80 kilobayt. Toplam 607 kilobaytın rahatça altında. Karşılaştırma için GPT-2’nin 124 milyon parametreli sürümü 124 megabayt gerektirirdi ve ancak DDR ile çalıştırılabilirdi. Dördüncüsü tek clock: 100 megahertzlik osilatörden bir MMCM ile çekirdek clock’unu üretiyoruz; VGA’nın piksel hızını da ayrı bir clock yerine aynı clock’tan bir enable sinyaliyle türetiyoruz. Böylece clock domain geçişi problemi hiç oluşmuyor.</aside>
+<aside>Tasarımı dört kısıt belirledi. Birincisi CPU’nun bulunmaması: bir bilgisayarda birkaç satır Python olan generation loop, sampling, token’ın karakterlere çevrilmesi ve ekrana yazma, burada her biri bir hardware state machine olarak tasarlandı. İkincisi floating point kullanılmaması: chip’teki DSP block’ları integer multiplier’larıdır; floating point toplama ve çarpma LUT’larla kurulabilir ama çok pahalıdır. Bu yüzden bütün hesabı INT8 ve INT16 ile yaptık; exponential, square root ve division da dahil. Üçüncüsü external memory kullanılmaması. Bu bilinçli bir tercih: model chip içine sığdığı sürece memory delay’i olmuyor ve her işlemin süresi önceden bilinebiliyor. Sayılarla bakarsak, stories260K’nın 260 bin weight’i birer byte olarak yaklaşık 254 kilobyte; 256 token’lık context için KV cache 80 kilobyte. Toplam 607 kilobyte’ın rahatça altında. Karşılaştırma için GPT-2’nin 124 milyon parametreli sürümü 124 megabyte gerektirirdi ve ancak DDR ile çalıştırılabilirdi. Dördüncüsü tek clock: 100 megahertzlik oscillator’dan bir MMCM ile core clock’unu üretiyoruz; VGA’nın pixel clock’unu da ayrı bir clock yerine aynı clock’tan bir enable signal’iyle türetiyoruz. Böylece clock domain geçişi problemi hiç oluşmuyor.</aside>
 </section>

@@ -1,13 +1,13 @@
 <section id="amac" style="background:#FBFBF8;color:#3B4456;font-family:'IBM Plex Sans', Arial, sans-serif;padding:104px 128px 150px;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:10px">
-<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#B4460F">1 · Hedef</p>
-<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Amaç, eğitilmiş bir dil modelini bir bilgisayara bağlı olmadan doğrudan FPGA’nin içinde çalıştırmaktır</h2>
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;color:#B4460F">1 · HEDEF</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:52px;font-weight:600;line-height:1.15;color:#14213D">Amaç, eğitilmiş bir language model’i bir bilgisayara bağlı olmadan doğrudan FPGA’nin içinde çalıştırmaktır</h2>
 </div>
 <div style="display:flex;gap:28px">
 <div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#F2EFE7;border-radius:12px;padding:22px 26px">
-<h3 style="font-size:30px;font-weight:600;color:#5A6474">Yaygın yaklaşım: host sürücülü</h3>
+<h3 style="font-size:30px;font-weight:600;color:#5A6474">Yaygın yaklaşım: host-driven</h3>
 <div style="display:flex;align-items:center;gap:14px">
-<div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #C9C4B8;border-radius:10px;padding:14px 16px"><p style="font-size:24px;font-weight:600;color:#14213D">Bilgisayar</p><p style="font-size:24px;line-height:1.35">üretim döngüsü, sampling, metin</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #C9C4B8;border-radius:10px;padding:14px 16px"><p style="font-size:24px;font-weight:600;color:#14213D">Bilgisayar</p><p style="font-size:24px;line-height:1.35">generation loop, sampling, metin</p></div>
 <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><x-shape kind="arrow-right" style="width:60px;height:22px;background:#9AA3B2"></x-shape><p style="font-size:24px;color:#5A6474">UART</p><x-shape kind="arrow-left" style="width:60px;height:22px;background:#9AA3B2"></x-shape></div>
 <div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#FEFEFC;border:1px solid #C9C4B8;border-radius:10px;padding:14px 16px"><p style="font-size:24px;font-weight:600;color:#14213D">FPGA</p><p style="font-size:24px;line-height:1.35">tek bir hesap adımı</p></div>
 </div>
@@ -28,14 +28,14 @@
 <x-shape kind="arrow-right" style="width:40px;height:22px;background:#B4460F"></x-shape>
 <p style="font-size:24px;font-weight:600;color:#14213D">VGA</p>
 </div>
-<p style="font-size:24px;line-height:1.4">Weight’ler bitstream ile BRAM’e yüklenir. Üretim döngüsü, sampling, metne çevirme ve ekrana yazma çipin içinde gerçekleşir.</p>
+<p style="font-size:24px;line-height:1.4">Weight’ler bitstream ile BRAM’e yüklenir. Generation loop, sampling, metne çevirme ve ekrana yazma chip’in içinde gerçekleşir.</p>
 </div>
 </div>
 <div style="display:flex;gap:24px">
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">Yalnızca çıkarım</p><p style="font-size:24px;line-height:1.4">FPGA eğitilmiş modeli çalıştırır; eğitim ve QAT bilgisayarda yapılır.</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">Yalnızca inference</p><p style="font-size:24px;line-height:1.4">FPGA eğitilmiş modeli çalıştırır; training ve QAT bilgisayarda yapılır.</p></div>
 <div style="flex:1;display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">Yalnızca Karpathy modelleri</p><p style="font-size:24px;line-height:1.4">makemore, minGPT, microgpt, llama2.c ve nanochat depoları.</p></div>
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">Mac üzerinde doğrulama</p><p style="font-size:24px;line-height:1.4">Kartın tamamı simülasyonla doğrulanır; fiziksel kart testi kapsam dışıdır.</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;border-left:6px solid #2A5C9A;padding:6px 0px 6px 22px"><p style="font-size:24px;font-weight:600;color:#2A5C9A">Mac üzerinde verification</p><p style="font-size:24px;line-height:1.4">Kartın tamamı simülasyonla doğrulanır; fiziksel kart testi kapsam dışıdır.</p></div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#5A6474">4 · Karpathy modelleri FPGA’de</p>
-<aside>Hedefimizi iki yaklaşımı karşılaştırarak anlatmak istiyorum. FPGA hızlandırıcılarında yaygın olan yaklaşım soldaki: bir bilgisayar seri port üzerinden FPGA’ye her token için komut gönderir, FPGA bir hesap adımını yapar, bilgisayar sonucu okur, bir sonraki token’ı kendisi seçer ve metni kendisi ekrana yazar. Bu düzende FPGA yalnızca bir hesaplayıcıdır; dışarıdan bakıldığında model bilgisayarda çalışıyormuş gibi görünür. Biz bu yaklaşımı bilinçli olarak seçmedik. Sağdaki tasarımımızda modelin weight’leri bitstream ile birlikte çipin BRAM’ine yükleniyor; engine, sampling, token’ın metne çevrilmesi ve ekrana yazılması çipin içinde gerçekleşiyor ve sonuç doğrudan VGA monitöre gidiyor. Çalışmanın kapsamını üç ilkeyle sınırladık: FPGA yalnızca çıkarım yapıyor, eğitim bilgisayarda; yalnızca Karpathy’nin depolarındaki modelleri kullanıyoruz; doğrulamayı ise fiziksel kart yerine Mac üzerinde, kartın tamamını simüle ederek yapıyoruz.</aside>
+<aside>Hedefimizi iki yaklaşımı karşılaştırarak anlatmak istiyorum. FPGA hızlandırıcılarında yaygın olan yaklaşım soldaki: bir bilgisayar seri port üzerinden FPGA’ye her token için komut gönderir, FPGA bir hesap adımını yapar, bilgisayar sonucu okur, bir sonraki token’ı kendisi seçer ve metni kendisi ekrana yazar. Bu düzende FPGA yalnızca bir hesaplayıcıdır; dışarıdan bakıldığında model bilgisayarda çalışıyormuş gibi görünür. Biz bu yaklaşımı bilinçli olarak seçmedik. Sağdaki tasarımımızda modelin weight’leri bitstream ile birlikte chip’in BRAM’ine yükleniyor; engine, sampling, token’ın metne çevrilmesi ve ekrana yazılması chip’in içinde gerçekleşiyor ve sonuç doğrudan VGA monitöre gidiyor. Çalışmanın kapsamını üç ilkeyle sınırladık: FPGA yalnızca inference yapıyor, training bilgisayarda; yalnızca Karpathy’nin depolarındaki modelleri kullanıyoruz; verification’ı ise fiziksel kart yerine Mac üzerinde, kartın tamamını simüle ederek yapıyoruz.</aside>
 </section>
