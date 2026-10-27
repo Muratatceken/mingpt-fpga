@@ -1,0 +1,174 @@
+[
+ {
+  "kind": "mux1",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 516.0,
+  "cells": {
+   "FDRE": 381,
+   "LUT2": 1,
+   "LUT3": 120,
+   "LUT4": 1,
+   "LUT6": 23
+  }
+ },
+ {
+  "kind": "mux1",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 440.9,
+  "cells": {
+   "FDRE": 381,
+   "LUT2": 1,
+   "LUT3": 120,
+   "LUT4": 1,
+   "LUT6": 23
+  }
+ },
+ {
+  "kind": "mux4",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 469.7,
+  "cells": {
+   "FDRE": 616,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT6": 142
+  }
+ },
+ {
+  "kind": "mux4",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 394.5,
+  "cells": {
+   "FDRE": 616,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT6": 142
+  }
+ },
+ {
+  "kind": "mux8",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 377.9,
+  "cells": {
+   "FDRE": 1092,
+   "LUT2": 1,
+   "LUT3": 119,
+   "LUT4": 1,
+   "LUT6": 261
+  }
+ },
+ {
+  "kind": "mux8",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 420.7,
+  "cells": {
+   "FDRE": 1092,
+   "LUT2": 1,
+   "LUT3": 119,
+   "LUT4": 1,
+   "LUT6": 261
+  }
+ },
+ {
+  "kind": "dep1",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 396.2,
+  "cells": {
+   "FDRE": 261,
+   "LUT2": 1,
+   "LUT4": 3,
+   "LUT5": 1,
+   "LUT6": 141
+  }
+ },
+ {
+  "kind": "dep1",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 336.4,
+  "cells": {
+   "FDRE": 261,
+   "LUT2": 1,
+   "LUT4": 3,
+   "LUT5": 1,
+   "LUT6": 141
+  }
+ },
+ {
+  "kind": "dep2",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 241.9,
+  "cells": {
+   "FDRE": 261,
+   "LUT4": 2,
+   "LUT5": 7,
+   "LUT6": 256
+  }
+ },
+ {
+  "kind": "dep2",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 275.4,
+  "cells": {
+   "FDRE": 261,
+   "LUT4": 2,
+   "LUT5": 7,
+   "LUT6": 256
+  }
+ },
+ {
+  "kind": "dep3",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 188.9,
+  "cells": {
+   "FDRE": 261,
+   "LUT5": 10,
+   "LUT6": 373
+  }
+ },
+ {
+  "kind": "dep3",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 194.4,
+  "cells": {
+   "FDRE": 261,
+   "LUT4": 2,
+   "LUT5": 11,
+   "LUT6": 372
+  }
+ },
+ {
+  "kind": "dep4",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 151.5,
+  "cells": {
+   "FDRE": 261,
+   "LUT5": 12,
+   "LUT6": 490
+  }
+ },
+ {
+  "kind": "dep4",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 155.8,
+  "cells": {
+   "FDRE": 261,
+   "LUT4": 5,
+   "LUT5": 13,
+   "LUT6": 488
+  }
+ }
+]

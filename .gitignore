@@ -26,3 +26,6 @@ model/zoo/lowbit/*/*.pt
 
 # Claude Code worktrees
 .claude/
+
+# Loghub samples (scripts/get_loghub.sh)
+data/loghub/

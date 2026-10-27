@@ -175,6 +175,20 @@ make zoo-sim      # on modelin bit-exact RTL simülasyonu (+ hikâye üretimi)
 make zoo-synth    # simülasyon + Yosys sentezi (genel ve özelleşmiş motor)
 ```
 
+**5) Faz 0: feedback-constrained sequence modeller (`sw/fbseq/`):** pencereli feedforward, input-gated
+Boolean recurrence (keep/set, toggle, 2- ve 3-bitlik bloklar), GRU ve microgpt; cebirsel görevler
+(flag, parity, mod 3, A5) ve Loghub'da 256 byte'lık bağımsız paketlerde byte LM, sözlüklü zstd'ye karşı.
+```bash
+bash scripts/get_loghub.sh && python3 sw/fbseq/fbseq.py base     # gzip / xz / zstd (+dict) baseline'ları
+python3 sw/fbseq/fbseq.py synth && python3 sw/fbseq/fbseq.py bytes   # CPU (Mac)
+python3 sw/fbseq/loop_bench.py                                   # döngü devrelerinin Fmax'i (nextpnr)
+```
+Colab GPU'da (A100) tek komut, bir notebook hücresine:
+```
+!git clone -q --depth 1 https://github.com/Muratatceken/mingpt-fpga.git 2>/dev/null; cd mingpt-fpga && git pull -q && bash scripts/colab_faz0.sh
+```
+Sonuçlar `model/fbseq/gpu/*.json` ve `/content/faz0_results.zip`'te; tablolar hücrenin çıktısında.
+
 ## Yol haritası
 
 - [x] Eğitim, katlama, kalibrasyon, INT8/INT16 kuantizasyon
