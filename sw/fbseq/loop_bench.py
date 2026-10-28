@@ -11,6 +11,9 @@ feed-forward network; the state is XOR-reduced in two registered stages onto one
   mux8   s'_j = d_j[s_blk]   (3-bit blocks)        candidate B, kb = 3 (LUT6 pair + MUXF7)
   dep1   s'_j = f_j(5 random state bits, d_j)      state-dependent logic, 1 LUT level
   dep2 / dep3 / dep4                               the same with 2 / 3 / 4 LUT levels (GRU-like)
+  a5exact  hand-built A5 tracker: per bit LUT5(3 block bits, 2 input bits)  (controls.py a5)
+  a5c7     smallest block-local A5 realization: V4 cosets (4 bits, LUT6) + A4 cosets (3 bits, LUT5)
+  a5sat6   6-bit A5 realization from the SAT search (theory_sat.py): each bit LUT6(4 state, 2 control)
 """
 import argparse
 import json
@@ -33,7 +36,25 @@ set_property IOSTANDARD LVCMOS33 [get_ports led]
 
 def verilog(kind, S, rnd):
     """the benchmark circuit as Verilog text"""
-    if kind == "mux1":
+    if kind == "a5sat6":                      # 6-bit A5 realization found by theory_sat.py (model/fbseq/sat_a5.json)
+        from theory_sat import a5
+        sol = [r for r in json.load(open(os.path.join(ROOT, "model", "fbseq", "sat_a5.json")))
+               if r["S"] == 6 and r["result"] == "sat"][0]
+        _, step6, _ = a5()
+        enc6 = [int(e[::-1], 2) for e in sol["encoding"]]                    # bit b of the code = e[b]
+        copies = S // 6
+        S, nd = copies * 6, 2 * copies
+    elif kind == "a5c7":                        # smallest block-local A5 realization (theory_sat.best_block_local(6))
+        from theory_sat import best_block_local, coset_blocks
+        blocks7, _ = coset_blocks(best_block_local(6)[2])
+        copies = S // 7
+        S, nd = copies * 7, 2 * copies
+    elif kind == "a5exact":                   # hand-built A5 tracker (controls.a5_tracker): 5 blocks of 3 bits
+        from controls import a5_tracker
+        tt = a5_tracker()[0]
+        copies = S // 15
+        S, nd = copies * 15, 2 * copies
+    elif kind == "mux1":
         nd = 2 * S
     elif kind in ("mux4", "mux8"):
         kb = 2 if kind == "mux4" else 3
@@ -44,10 +65,53 @@ def verilog(kind, S, rnd):
     init = "".join(rnd.choice("0123456789abcdef") for _ in range((nd + 3) // 4))
     v = [f"module bench(input clk, output reg led);",
          f"  reg [{nd - 1}:0] d = {nd}'h{init};",
-         f"  reg [{S - 1}:0] s = 0;",
+         f"  reg [{S - 1}:0] s = {S}'b" + ("".join(format(j, "03b") for j in reversed(range(5))) * (S // 15)
+                                            if kind == "a5exact" else
+                                            "".join(format(bl["label"][tuple(range(5))], f"0{bl['bits']}b")
+                                                    for bl in reversed(blocks7)) * (S // 7)
+                                            if kind == "a5c7" else "0") + ";",            # a5sat6: e(identity) = 0
          f"  always @(posedge clk) d <= {{d[{nd - 2}:0], d[{nd - 1}]}};      // tables: no logic"]
     nxt = []
-    if kind == "mux1":
+    if kind == "a5sat6":
+        code = {c: p for p, c in enumerate(enc6)}
+        for c in range(S // 6):
+            for j, dep in enumerate(sol["deps"]):
+                tt = [0] * 64                                                 # index: {dep bits, x1, x0}
+                for cur, p in code.items():
+                    for x in range(4):
+                        nxt_bit = ((enc6[step6[x][p]] >> j) & 1) if x < 3 else ((cur >> j) & 1)
+                        idx = 0
+                        for i in dep:
+                            idx = (idx << 1) | ((cur >> i) & 1)
+                        tt[(idx << 2) | x] = nxt_bit
+                v.append(f"  localparam [63:0] TS{c}_{j} = 64'b" + "".join(str(t) for t in reversed(tt)) + ";")
+                sel = "{" + ",".join(f"s[{6 * c + i}]" for i in dep) + f",d[{2 * c + 1}],d[{2 * c}]" + "}"
+                nxt.append(f"TS{c}_{j}[{sel}]")
+    elif kind == "a5c7":
+        for c in range(S // 7):
+            off = 7 * c
+            for bl in blocks7:
+                nb = bl["bits"]
+                Q = 2 ** (nb + 2)
+                for k in range(nb):                  # truth table over (block bits, control): unused codes hold
+                    tt = []
+                    for idx in range(Q):
+                        st, x = idx >> 2, idx & 3
+                        nx = bl["next"][x][st] if (st < bl["index"] and x < 3) else st
+                        tt.append((nx >> k) & 1)
+                    name = f"T{c}_{off}_{k}"
+                    v.append(f"  localparam [{Q - 1}:0] {name} = {Q}'b" + "".join(str(t) for t in reversed(tt)) + ";")
+                    sel = "{" + ",".join(f"s[{off + i}]" for i in reversed(range(nb))) + f",d[{2 * c + 1}],d[{2 * c}]" + "}"
+                    nxt.append(f"{name}[{sel}]")
+                off += nb
+    elif kind == "a5exact":
+        for k in range(3):
+            v.append(f"  localparam [31:0] TA{k} = 32'b" + "".join(str(tt[k][i]) for i in reversed(range(32))) + ";")
+        for blk in range(S // 3):
+            c = blk // 5
+            idx = "{" + ",".join(f"s[{blk * 3 + i}]" for i in (2, 1, 0)) + f",d[{2 * c + 1}],d[{2 * c}]" + "}"
+            nxt += [f"TA{k}[{idx}]" for k in range(3)]
+    elif kind == "mux1":
         nxt = [f"s[{j}] ? d[{2 * j}] : d[{2 * j + 1}]" for j in range(S)]
     elif kind in ("mux4", "mux8"):
         Q = 2 ** kb

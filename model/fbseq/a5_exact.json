@@ -1,0 +1,35 @@
+{
+ "exhaustive_ok": true,
+ "sequences": 2000,
+ "length": 1024,
+ "accuracy": 1.0,
+ "loop": "per state bit: LUT5(3 state bits of its block, 2 input bits), one level",
+ "fmax": [
+  {
+   "kind": "a5exact",
+   "S": 120,
+   "seed": 1,
+   "fmax_mhz": 423.7,
+   "cells": {
+    "FDRE": 157,
+    "LUT2": 1,
+    "LUT4": 1,
+    "LUT5": 120,
+    "LUT6": 23
+   }
+  },
+  {
+   "kind": "a5exact",
+   "S": 120,
+   "seed": 2,
+   "fmax_mhz": 442.7,
+   "cells": {
+    "FDRE": 157,
+    "LUT2": 1,
+    "LUT4": 1,
+    "LUT5": 120,
+    "LUT6": 23
+   }
+  }
+ ]
+}

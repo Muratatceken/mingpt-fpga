@@ -1,0 +1,26 @@
+[
+ {
+  "kind": "a5sat6",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 453.9,
+  "cells": {
+   "FDRE": 181,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT6": 143
+  }
+ },
+ {
+  "kind": "a5sat6",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 455.6,
+  "cells": {
+   "FDRE": 181,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT6": 143
+  }
+ }
+]

@@ -139,9 +139,12 @@ def write_atomic(path, data, mode="w"):
 def chrome_pdf(src_html, out_pdf):
     prof = tempfile.mkdtemp(prefix="chrome-prof-")
     tmp = out_pdf + ".tmp.pdf"
-    subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--no-pdf-header-footer", f"--user-data-dir={prof}",
-                    "--virtual-time-budget=15000", f"--print-to-pdf={tmp}", "file://" + os.path.abspath(src_html)],
-                   check=True, capture_output=True)
+    r = subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--no-pdf-header-footer", f"--user-data-dir={prof}",
+                        "--virtual-time-budget=15000", f"--print-to-pdf={tmp}", "file://" + os.path.abspath(src_html)],
+                       capture_output=True, text=True)
+    # Chrome >= 156 may exit non-zero after writing the PDF ("Teardown watchdog expired"): trust the file
+    if not (os.path.exists(tmp) and os.path.getsize(tmp) > 0):
+        raise RuntimeError(f"Chrome did not write {tmp} (exit {r.returncode}):\n{r.stderr[-2000:]}")
     os.replace(tmp, out_pdf)
 
 

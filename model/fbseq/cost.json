@@ -1,0 +1,57 @@
+{
+ "A_window8": {
+  "params": 100113,
+  "macs_per_byte": 95480,
+  "feedback": "none"
+ },
+ "A_window16": {
+  "params": 101017,
+  "macs_per_byte": 96444,
+  "feedback": "none"
+ },
+ "A_window32": {
+  "params": 100937,
+  "macs_per_byte": 97432,
+  "feedback": "none"
+ },
+ "B_setkeep": {
+  "params": 99168,
+  "macs_per_byte": 94080,
+  "feedback": "one 2:1 mux per state bit"
+ },
+ "B_full": {
+  "params": 99168,
+  "macs_per_byte": 94080,
+  "feedback": "one 2:1 mux per state bit"
+ },
+ "B_block2": {
+  "params": 99328,
+  "macs_per_byte": 93824,
+  "feedback": "one LUT6 (4:1 mux)"
+ },
+ "B_block3": {
+  "params": 98628,
+  "macs_per_byte": 92208,
+  "feedback": "LUT6 pair (8:1 mux)"
+ },
+ "C_gru": {
+  "params": 98877,
+  "macs_per_byte": 89900,
+  "feedback": "whole GRU cell (arithmetic)"
+ },
+ "D_microgpt": {
+  "params": 99920,
+  "macs_per_byte": 120520,
+  "feedback": "none (KV cache in memory)"
+ },
+ "B_setkeep_w8": {
+  "params": 99776,
+  "macs_per_byte": 94720,
+  "feedback": "one 2:1 mux per state bit"
+ },
+ "B_full_w8": {
+  "params": 99776,
+  "macs_per_byte": 94720,
+  "feedback": "one 2:1 mux per state bit"
+ }
+}

@@ -16,8 +16,10 @@ Candidates
                  kb=2, kb=3    any map of 4 / 8 states (contain Z3 / A5)
   C  gru       sw/zoo RNN(cell="gru"): state-dependent gates, the whole cell inside the loop
   D  microgpt  sw/zoo MicroGPT: attention over the packet (KV cache)
-B is trained with soft (multilinear) transitions, then with hard 0/1 states and straight-through
-gradients; it is evaluated hard, i.e. as the finite-state machine the hardware would run.
+B is trained with soft transitions (kb=1: affine in the state bit; kb>1: a distribution over the block's
+states, the probabilistic automaton), then with hard 0/1 tables and straight-through gradients; it is
+evaluated hard, i.e. as the finite-state machine the hardware would run. (Up to the commit after 985fbba
+kb>1 used a bit-wise multilinear relaxation, whose Jacobian can exceed 1: the byte runs diverged to NaN.)
 """
 import argparse
 import gzip
@@ -85,22 +87,45 @@ class Gated(nn.Module):
         return torch.cat(embs, -1)
 
     def tables(self, d):
-        """gate output -> per-step coefficients of the loop: kb=1: s' = b + c*s; kb>1: Moebius
-        coefficients K of the 2^kb-entry table, s'_j = sum_q K[j,q] * prod_{i in q} s_i"""
+        """gate output -> what the loop needs: kb=1: s' = b + c*s, returned as (b, c); kb>1: the table
+        d[j, q] = P(next bit j = 1 | block state q), shape (B, T, S/kb, kb, 2^kb)"""
         d = torch.sigmoid(d)
         if self.hard:
             d = ste(d)
+        return self.split(d)
+
+    def split(self, d):
         B, T, S, kb = d.shape[0], d.shape[1], self.S, self.kb
         if kb == 1:
             d = d.view(B, T, S, 2)
             if self.mode == "setkeep":                   # s' = g ? u : s  ->  b = g*u, c = 1-g
                 return d[..., 0] * d[..., 1], 1 - d[..., 0]
             return d[..., 1], d[..., 0] - d[..., 1]      # s' = s ? a : b  ->  b, c = a-b
-        K = d.view(B, T, S // kb, kb, 2 ** kb)
-        for i in range(kb):
-            K = K.reshape(B, T, S // kb, kb, 2 ** (kb - 1 - i), 2, 2 ** i)
-            K = torch.stack([K[..., 0, :], K[..., 1, :] - K[..., 0, :]], -2)
-        return (K.reshape(B, T, S // kb, kb, 2 ** kb),)
+        return (d.view(B, T, S // kb, kb, 2 ** kb),)
+
+    def run(self, tab, B, T):
+        """the loop over the sequence -> states (B, T, S). kb>1: each block keeps a distribution p over its
+        2^kb states, p' = M p with M[q', q] = prod_j P(bit j of q' | q) column-stochastic (stable for long
+        sequences); the bits passed on are E[bit j]. With hard tables p is one-hot: the Boolean machine."""
+        tab = [x.unbind(1) for x in tab]                             # per-step views (cheap backward)
+        if self.kb == 1:
+            s, out = tab[0][0].new_zeros(B, self.S), []
+            for t in range(T):                                       # the only sequential part: the loop
+                s = tab[0][t] + tab[1][t] * s
+                out.append(s)
+            return torch.stack(out, 1)
+        kb, N, Q = self.kb, self.S // self.kb, 2 ** self.kb
+        bits = ((torch.arange(Q)[None, :] >> torch.arange(kb)[:, None]) & 1).to(tab[0][0])   # (kb, Q)
+        nb = bits.bool()[:, :, None]                                  # (kb, Q', 1)
+        p = tab[0][0].new_zeros(B, N, Q)
+        p[..., 0] = 1.0                                              # every block starts in state 0
+        out = []
+        for t in range(T):
+            d = tab[0][t]                                            # (B, N, kb, Q)
+            M = torch.where(nb, d[..., :, None, :], 1 - d[..., :, None, :]).prod(-3)   # (B, N, Q', Q)
+            p = torch.einsum("bnij,bnj->bni", M, p)
+            out.append(torch.einsum("bnq,jq->bnj", p, bits).reshape(B, self.S))
+        return torch.stack(out, 1)
 
     def forward(self, idx):
         B, T = idx.shape
@@ -108,20 +133,9 @@ class Gated(nn.Module):
         states, below = [], None
         for l in range(self.L):
             tab = self.tables(self.gate[l](win if below is None else torch.cat([win, below], -1)))   # all t at once
-            tab = [x.unbind(1) for x in tab]                         # per-step views (cheap backward)
-            s, out = win.new_zeros(B, self.S), []
-            for t in range(T):                                       # the only sequential part: the loop
-                if self.kb == 1:
-                    s = tab[0][t] + tab[1][t] * s
-                else:
-                    sb = s.view(B, self.S // self.kb, self.kb)
-                    m = sb.new_ones(B, self.S // self.kb, 1)
-                    for i in range(self.kb):                         # monomials prod_{i in q} s_i
-                        m = torch.cat([m, m * sb[..., i:i + 1]], -1)
-                    s = torch.einsum("bnq,bnjq->bnj", m, tab[0][t]).reshape(B, self.S)
-                out.append(s)
-            below = torch.stack(out, 1)
+            below = self.run(tab, B, T)
             states.append(below)
+        self.last_states = states
         return self.head(torch.cat([win] + states, -1))
 
 

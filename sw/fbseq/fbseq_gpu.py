@@ -9,8 +9,8 @@ Differences from fbseq.py (CPU)
   * B: the loop is evaluated as an associative scan over the sequence (log2 T steps):
       kb = 1  s_t = b_t + c_t * s_{t-1}, composed as (c, b) pairs (keep / set / toggle are all affine);
       kb > 1  the block state is a distribution over its 2^kb states, p_t = M_t p_{t-1}, composed as
-              matrix products: the probabilistic relaxation of the automaton (the CPU version relaxes
-              bit-wise). With hard 0/1 tables both are the same finite-state machine (checked by `check`).
+              matrix products: the probabilistic relaxation of the automaton, as in fbseq.Gated.run;
+              soft and hard outputs equal the CPU loop's (checked by `check`).
   * C: torch.nn.GRU (cuDNN) instead of the makemore cell, width matched to the same budget
   * several jobs share the GPU (--jobs), TF32 matmuls
 Defaults keep the CPU protocol (batch, steps) so the two runs are comparable; three seeds.
@@ -246,7 +246,7 @@ def summary():
 
 
 def check():
-    """GatedScan (scan) == fbseq.Gated (loop) with hard tables, for every kb, on random weights"""
+    """GatedScan (scan) == fbseq.Gated (loop), soft and hard, for every kb, on random weights"""
     torch.manual_seed(0)
     for kb, mode in ((1, "setkeep"), (1, "full"), (2, "full"), (3, "full")):
         a = cpu.Gated(7, 5, S=12, L=2, kb=kb, mode=mode, w=2)
@@ -256,11 +256,12 @@ def check():
             for g in m.gate:
                 g[-1].bias.data.normal_(0, 3)                        # tables far from the identity
         b.load_state_dict(a.state_dict())
-        a.hard = b.hard = True
         x = torch.randint(0, 7, (4, 50))
-        ok = torch.allclose(a(x), b(x), atol=1e-5)
-        print(f"kb={kb} {mode:7s} scan == loop (hard): {ok}")
-        assert ok
+        for hard in (False, True):
+            a.hard = b.hard = hard
+            ok = torch.allclose(a(x), b(x), atol=1e-4)
+            print(f"kb={kb} {mode:7s} scan == loop ({'hard' if hard else 'soft'}): {ok}")
+            assert ok
 
 
 def main():
