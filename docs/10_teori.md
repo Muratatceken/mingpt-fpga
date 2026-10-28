@@ -212,19 +212,19 @@ Test edilebilir öngörüleri:
 
 Δ_hard = 0,185 bpb. Soft model state'leri sürekli kullanıyor: ortalama min(s, 1−s) değeri 0,16–0,21. Yani soft model ile Boolean makine aynı fonksiyon sınıfında değil.
 
-**Hard-forward eğitim (ilk tur):** Eğitim baştan Boolean forward ile, backward'da sigmoid surrogate ve eğim tavlamasıyla yapıldı. Sonuç 1,418 / 1,418 bpb (2 seed): pencere 8 modelini (1,453) geçti, soft modele 0,02 yaklaştı. Gumbel-ST (τ 1 → 0,25) 1,69'da kaldı. Bu, Kim'in (2026, arXiv 2603.14157) düşük sıcaklıkta Gumbel-ST çöküşü bulgusuyla uyumlu.
+**Hard-forward eğitim** (Loghub, set/keep, 2 seed):
 
-İlk turda iki hata vardı; düzeltilmiş tur çalışıyor, sonuçları `docs/09_faz0.md`'ye girecek:
+- baştan Boolean forward, backward'da sigmoid(a·l), a 1'den 5'e (eğim tavlaması): **1,418 bpb**. Pencere 8 modelini (1,453) geçiyor, soft modele 0,02 kalıyor.
+- sade Hard-ST (a = 1): 1,545.
+- Gumbel-ST (τ 1 → 0,25): 1,685. Kim'in (2026, arXiv 2603.14157) düşük sıcaklıkta Gumbel-ST çöküşü bulgusuyla uyumlu.
+- toggle'lı model: eğim tavlamasıyla 1,462.
 
-- "hardst" yöntemi de eğim tavlaması kullanmış; iki yöntem birebir aynı çıktı.
-- A5 koşuları eski, bit bit relaxation ile yapılmış.
-
-**A5 trainability:**
+**A5 trainability** (3-bit blok, 4 seed, kararlı relaxation):
 
 - Elle kurulan devre %100 (representability).
-- Standart soft→hard eğitimde seed'e bağlı büyük fark: bir seed 0,984'e ulaşırken diğerleri 0,09–0,32'de kaldı.
-- 8 000 adımlık uzun eğitim yardım etmedi.
-- 0,32 ≈ 1/3; bu, Zhang & Li'nin (2026) "coset izleme" ara aşamasıyla uyumlu bir teşhis.
+- soft→hard: seed'lerin yarısı %100'e ve tam uzunluk genellemesine ulaşıyor. Diğer ikisi 1/3 civarındaki coset aşamasında takılıyor (Zhang & Li 2026); birinde model 0,25'i bulduktan sonra 0,09'a geriliyor.
+- Baştan hard (Hard-ST ve eğim tavlaması): 8 koşunun hiçbiri 0,13'ü geçemiyor.
+- **Keşif ile uyum arasında bir ödünleşim var:** dil modelinde baştan Boolean eğitim en iyisi, durum izlemede ise soft aşama çözümü keşfetmek için şart.
 
 **Literatürdeki reçeteler:**
 
