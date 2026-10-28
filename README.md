@@ -81,6 +81,7 @@ tamsayı referansla **bit-exact**; RTL, referansla token token aynı 200 tokenl�
 8. [docs/08_case_arastirmasi.pdf](docs/08_case_arastirmasi.pdf): **Case araştırması**: projenin çözdüğü problem (deterministik LM ile kayıpsız telemetri/log sıkıştırma; aynı modelle anomali tespiti), mevcut çözümler, farkımız, başarı kriterleri ve rota.
 9. [docs/09_faz0.pdf](docs/09_faz0.pdf): **Faz 0 sonuçları**: döngü derinliği ve Fmax, cebirsel görevler, A5 gerçekleştirmeleri, Loghub byte LM (sözlüklü zstd'ye karşı), soft–hard farkı ve hard-aware eğitim.
 10. [docs/10_teori.pdf](docs/10_teori.pdf): **Teori çerçevesi**: geri besleme kısıtlı sıralı hesaplama; realizability (A5 için tek LUT seviyesinde en az 6 bit, block-local 7 bit), learnability (soft–hard farkı, hard-forward eğitim) ve stability (hata rekürsiyonu, 𝔽₂ eşitliği); literatürdeki konum.
+11. [docs/11_ilerleme_raporu.pdf](docs/11_ilerleme_raporu.pdf): **İlerleme raporu (27–28 Ekim 2026)**: case arayışından geri besleme kısıtlı sıralı hesaplamaya; kronoloji, sonuçlar, iddia edilebilenler, hatalar ve düzeltmeler, sıradaki işler.
 
 **Tarihsel gelişim raporu (PDF):** [report/gelisim/gelisim_raporu.pdf](report/gelisim/gelisim_raporu.pdf): 12–27 Ekim arasında projenin evre evre gelişimi (kararlar, sayılar, hatalar, dersler). `make gelisim` ile yeniden üretilir.
 
