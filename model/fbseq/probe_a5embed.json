@@ -1,0 +1,7 @@
+{
+ "state_decode_acc256": 1.0,
+ "head_only_acc64": 1.0,
+ "head_only_acc256": 1.0,
+ "head_steps": 1500,
+ "note": "exact tables written into fbseq.Gated(kb=3, S=24, L=2) gate MLPs; blocks 0-2 hold r(j)=p^-1(j)"
+}

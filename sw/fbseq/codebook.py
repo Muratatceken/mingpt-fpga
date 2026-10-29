@@ -33,7 +33,7 @@ OUT = os.path.join(cpu.ROOT, "model", "fbseq")
 
 
 class Codebook(cpu.Gated):
-    def __init__(self, V, n_out, S=24, L=2, kb=3, m=8, w=1, n_embd=16, n_hidden=64, n_head=64):
+    def __init__(self, V, n_out, S=24, L=2, kb=3, m=8, w=1, n_embd=16, n_hidden=64, n_head=64, init="random"):
         super().__init__(V, n_out, S=S, L=L, kb=kb, mode="full", w=w, n_embd=n_embd, n_hidden=n_hidden, n_head=n_head)
         N, Q = S // kb, 2 ** kb
         self.m, self.N = m, N
@@ -42,8 +42,11 @@ class Codebook(cpu.Gated):
                                                 nn.Linear(n_hidden, N * m)) for l in range(L))
         bits = ((torch.arange(Q)[None, :] >> torch.arange(kb)[:, None]) & 1).float()      # (kb, Q)
         self.register_buffer("qbits", bits, persistent=False)
-        cb = 3.0 * (2 * torch.randint(0, 2, (L, N, m, kb, Q)).float() - 1)               # random maps ...
-        cb[:, :, 0] = 6.0 * bits - 3.0                                                    # ... entry 0: identity
+        if init == "identity":                                                            # every entry near identity
+            cb = (6.0 * bits - 3.0).expand(L, N, m, kb, Q) + 0.5 * torch.randn(L, N, m, kb, Q)
+        else:
+            cb = 3.0 * (2 * torch.randint(0, 2, (L, N, m, kb, Q)).float() - 1)           # random maps ...
+            cb[:, :, 0] = 6.0 * bits - 3.0                                                # ... entry 0: identity
         self.cb = nn.Parameter(cb)
         self.layer_idx = 0
 
@@ -92,7 +95,7 @@ def a5_job(job):
     torch.manual_seed(job["seed"])
     rng = np.random.default_rng(job["seed"])
     n_in, n_out = cpu.TASKS["a5"]
-    model = Codebook(n_in, n_out, S=24, L=2, kb=3, m=job["m"])
+    model = Codebook(n_in, n_out, S=24, L=2, kb=3, m=job["m"], init=job.get("init", "random"))
     erng = np.random.default_rng(1000 + job["seed"])
     ev = {L: [torch.as_tensor(a) for a in cpu.task("a5", 256, L, erng)] for L in (64, 256)}
 
@@ -104,7 +107,8 @@ def a5_job(job):
         return {L: float((model(x)[..., :n_out].argmax(-1) == y).float().mean()) for L, (x, y) in ev.items()}
     t0 = time.time()
     curve, gn, bad = ha.train(model, job["method"], batch, n_out, job["steps"], 3e-3, acc, 250)
-    return dict(task="a5", model=f"codebook_k3_m{job['m']}", method=job["method"], seed=job["seed"], steps=job["steps"],
+    return dict(task="a5", model=f"codebook_k3_m{job['m']}_{job.get('init', 'random')}", method=job["method"],
+                seed=job["seed"], steps=job["steps"],
                 params=cpu.n_params(model), curve=[(s, round(a[64], 3), round(a[256], 3)) for s, a in curve],
                 last_acc256=round(curve[-1][1][256], 4), best_acc256=round(max(a[256] for _, a in curve), 4),
                 grad_norm_mean=round(float(np.mean(gn)), 4), nonfinite_steps=bad, seconds=round(time.time() - t0, 1))
@@ -148,10 +152,12 @@ def main():
     ap.add_argument("--seeds", default="0,1,2,3")
     ap.add_argument("--m", type=int, default=8)
     ap.add_argument("--methods", default="softhard,slope")
+    ap.add_argument("--init", default="random", choices=["random", "identity"])
     ap.add_argument("--steps", type=int, default=3000)
     ap.add_argument("--jobs", type=int, default=4)
     a = ap.parse_args()
-    jobs = [dict(seed=int(s), m=a.m, steps=a.steps, method=me) for me in a.methods.split(",") for s in a.seeds.split(",")]
+    jobs = [dict(seed=int(s), m=a.m, steps=a.steps, method=me, init=a.init)
+            for me in a.methods.split(",") for s in a.seeds.split(",")]
     fn = a5_job if a.what == "a5" else bytes_job
     path = os.path.join(OUT, f"codebook_{a.what}.json")
     out = json.load(open(path)) if os.path.exists(path) else []

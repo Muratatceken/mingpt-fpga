@@ -132,6 +132,9 @@ def bytes_job(job):
     hard_eval(model)
     with torch.no_grad():
         final = bpb(model, Xva, Yva)
+    if job.get("save"):
+        os.makedirs(os.path.dirname(job["save"]), exist_ok=True)
+        torch.save(dict(state=model.state_dict(), spec=cpu.BYTE_MODELS[job["model"]], method=job["method"]), job["save"])
     return dict(model=job["model"], method=job["method"], seed=job["seed"], steps=job["steps"],
                 bpb_hard=round(final, 4), curve=[(s, round(v, 4)) for s, v in curve],
                 best_check=round(min(v for _, v in curve), 4), grad_norm_mean=round(float(np.mean(gn)), 4),
@@ -173,11 +176,14 @@ def main():
     ap.add_argument("--models", default="B_setkeep,B_full")
     ap.add_argument("--steps", type=int, default=0)
     ap.add_argument("--jobs", type=int, default=4)
+    ap.add_argument("--save", action="store_true", help="byte models: keep the weights in build/fbseq/ckpt/")
     a = ap.parse_args()
     seeds = [int(s) for s in a.seeds.split(",")]
     methods = a.methods.split(",")
     if a.what == "bytes":
-        jobs = [dict(model=m, method=me, seed=s, steps=a.steps or 3000)
+        ck = os.path.join(cpu.ROOT, "build", "fbseq", "ckpt")
+        jobs = [dict(model=m, method=me, seed=s, steps=a.steps or 3000,
+                     save=os.path.join(ck, f"{m}_{me}_s{s}.pt") if a.save else None)
                 for m in a.models.split(",") for me in methods for s in seeds]
         fn, path = bytes_job, os.path.join(OUT, "hardaware_bytes.json")
     else:

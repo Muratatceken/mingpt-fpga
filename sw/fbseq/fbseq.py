@@ -251,19 +251,27 @@ def synth_job(job):
 
 
 # ----------------------------------------------------------------------------- byte data (Loghub)
-def loghub():
-    """train / val packets: each log file split at the line nearest 80 %, cut into 256-byte packets"""
+def loghub(test=False):
+    """train / val packets: each log file split at the line nearest 80 %, cut into 256-byte packets.
+    test=True: the last 20 % is split again at its middle line -> (train, val, test, files); val + test
+    together are the val set of every earlier run"""
     d = os.path.join(ROOT, "data", "loghub")
     files = sorted(f for f in os.listdir(d) if f.endswith(".log"))
     if not files:
         sys.exit("data/loghub is empty: run scripts/get_loghub.sh")
-    tr, va = [], []
+    tr, va, te = [], [], []
     for f in files:
         b = open(os.path.join(d, f), "rb").read()
         cut = b.rfind(b"\n", 0, int(0.8 * len(b))) + 1
-        for part, dst in ((b[:cut], tr), (b[cut:], va)):
+        parts = [(b[:cut], tr), (b[cut:], va)]
+        if test:
+            mid = b.rfind(b"\n", 0, cut + (len(b) - cut) // 2) + 1
+            parts = [(b[:cut], tr), (b[cut:mid], va), (b[mid:], te)]
+        for part, dst in parts:
             n = len(part) // PACKET
             dst.append(np.frombuffer(part[:n * PACKET], dtype=np.uint8).reshape(n, PACKET))
+    if test:
+        return np.concatenate(tr), np.concatenate(va), np.concatenate(te), files
     return np.concatenate(tr), np.concatenate(va), files
 
 
