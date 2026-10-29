@@ -1,5 +1,87 @@
 [
  {
+  "model": "B_block2",
+  "method": "slope",
+  "seed": 0,
+  "steps": 3000,
+  "bpb_hard": 1.6795,
+  "curve": [
+   [
+    500,
+    3.1758
+   ],
+   [
+    1000,
+    2.243
+   ],
+   [
+    1500,
+    1.9038
+   ],
+   [
+    2000,
+    1.7774
+   ],
+   [
+    2500,
+    1.7041
+   ],
+   [
+    3000,
+    1.686
+   ]
+  ],
+  "best_check": 1.686,
+  "grad_norm_mean": 0.4027,
+  "nonfinite_steps": 0,
+  "gate_saturation": [
+   0.3397,
+   0.2344
+  ],
+  "seconds": 3402.2
+ },
+ {
+  "model": "B_block3",
+  "method": "slope",
+  "seed": 0,
+  "steps": 3000,
+  "bpb_hard": 2.2371,
+  "curve": [
+   [
+    500,
+    3.2735
+   ],
+   [
+    1000,
+    2.6583
+   ],
+   [
+    1500,
+    2.41
+   ],
+   [
+    2000,
+    2.303
+   ],
+   [
+    2500,
+    2.2699
+   ],
+   [
+    3000,
+    2.2404
+   ]
+  ],
+  "best_check": 2.2404,
+  "grad_norm_mean": 0.5183,
+  "nonfinite_steps": 0,
+  "gate_saturation": [
+   0.3354,
+   0.1717
+  ],
+  "seconds": 6012.4
+ },
+ {
   "model": "B_full",
   "method": "hardst",
   "seed": 0,
@@ -165,6 +247,88 @@
  },
  {
   "model": "B_setkeep",
+  "method": "gumbel",
+  "seed": 0,
+  "steps": 3000,
+  "bpb_hard": 1.6905,
+  "curve": [
+   [
+    500,
+    2.8612
+   ],
+   [
+    1000,
+    2.0546
+   ],
+   [
+    1500,
+    1.8356
+   ],
+   [
+    2000,
+    1.7413
+   ],
+   [
+    2500,
+    1.7107
+   ],
+   [
+    3000,
+    1.6984
+   ]
+  ],
+  "best_check": 1.6984,
+  "grad_norm_mean": 0.2054,
+  "nonfinite_steps": 0,
+  "gate_saturation": [
+   0.6796,
+   0.5509
+  ],
+  "seconds": 426.0
+ },
+ {
+  "model": "B_setkeep",
+  "method": "gumbel",
+  "seed": 1,
+  "steps": 3000,
+  "bpb_hard": 1.6799,
+  "curve": [
+   [
+    500,
+    2.8177
+   ],
+   [
+    1000,
+    2.0266
+   ],
+   [
+    1500,
+    1.8159
+   ],
+   [
+    2000,
+    1.7304
+   ],
+   [
+    2500,
+    1.6945
+   ],
+   [
+    3000,
+    1.6851
+   ]
+  ],
+  "best_check": 1.6851,
+  "grad_norm_mean": 0.2003,
+  "nonfinite_steps": 0,
+  "gate_saturation": [
+   0.6816,
+   0.585
+  ],
+  "seconds": 424.9
+ },
+ {
+  "model": "B_setkeep",
   "method": "hardst",
   "seed": 0,
   "steps": 3000,
@@ -284,7 +448,7 @@
    0.2154,
    0.1565
   ],
-  "seconds": 732.4
+  "seconds": 864.1
  },
  {
   "model": "B_setkeep",

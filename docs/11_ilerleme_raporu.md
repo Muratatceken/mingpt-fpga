@@ -22,7 +22,7 @@
 | İlk teori sonucu | **Var:** A5 için tek LUT seviyesinde en az state, sıkı biçimde 6 bit (SAT tanığı ve bilgi alt sınırı). Tanığın yapısı: coset core + fiber toggle'ları |
 | Gerçek veride kalite | Boolean model, doğru eğitimle pencere modelini geçiyor. 100 KB sözlüklü zstd'ye göre eşit koşullarda %7–14 daha az bit (GRU %15–21). Önceki %25 / %32, ideal LM kod uzunluğunu zstd'nin başlıklı dosya boyutuyla karşılaştırıyordu |
 | Literatürdeki konum | Üç hatlı tarama yapıldı; rakipler ve boşluklar belirlendi |
-| Çalışmakta | 2-bit ve 3-bit bloklarla Loghub; Gumbel-ST'nin yeniden üretimi. Transition codebook bitti: olumsuz |
+| Son biten | Transition codebook: olumsuz. 2-bit / 3-bit bloklar Loghub'da set/keep'in gerisinde (1,680 / 2,237). Gumbel-ST birebir yeniden üretildi |
 
 ---
 
@@ -101,7 +101,7 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
    - D(t), farklı bit oranı: %6 ile %12 arasında; t ≈ 8–16'da doyuyor.
 5. **GRU bellek ufku** (`gru_horizon.json`): 128 byte'ta sıfırlama 1,39, 64'te 1,58. 64–128 byte ötesindeki bilgi işe yarıyor; ölçümde karışık etkenler var (§5).
 6. **Hard-aware eğitim** (`hardaware_*.json`):
-   - **Loghub:** baştan Boolean forward ve eğim tavlamasıyla **1,418** (pencere 8: 1,453; soft referans: 1,398; iki seed). Sade Hard-ST 1,545, Gumbel-ST 1,685 (ilk koşu arşivi `model/fbseq/archive/`; yeniden üretimi sürüyor). **H3 kısmen tuttu.**
+   - **Loghub:** baştan Boolean forward ve eğim tavlamasıyla **1,418** (pencere 8: 1,453; soft referans: 1,398; iki seed). Sade Hard-ST 1,545, Gumbel-ST 1,685 (ilk koşu arşivi `model/fbseq/archive/`; düzeltilmiş kodla birebir yeniden üretildi). 2-bit ve 3-bit bloklar 1,680 ve 2,237 (1 seed; eşit bütçede gate ağı daralıyor, etkiler ayrılmadı). **H3 kısmen tuttu.**
    - **A5:** softhard 4 koşunun 2'si, test edilen 64 ve 256 uzunlukta %100; baştan hard 8 koşunun hiçbiri 0,13'ü geçmiyor.
    - **Ödünleşim (denenen reçetelerle):** dil modelinde baştan Boolean en iyi; A5'te başarılı olan yalnız softhard. Başka reçetelerin başarısız olacağı gösterilmedi.
 
@@ -179,7 +179,7 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 | Bellek ile dayanıklılık | Genel | Yalnız bağımsız 1-bit keep/toggle; majority karşı örneği, 60 durum için ≥ 10 bit |
 | A2 | "Her çevrim tek LUT ve tek register" | Her çevrimde #LUT = #register (tek seviyeli F) |
 | Fiziksel Pareto | "6 bit Pareto ucunda" | 6 bit, iki yerleştirmede ~455 MHz; 7 ve 15 bitle aynı hız ölçeğinde |
-| Gumbel 1,685 | Kaynaksız | İlk koşu arşivi `model/fbseq/archive/`; yeniden üretimi sürüyor |
+| Gumbel 1,685 | Kaynaksız | İlk koşu arşivi `model/fbseq/archive/`; düzeltilmiş kodla birebir yeniden üretildi |
 | %25 daha az bit | İdeal LM ile başlıklı zstd | Eşit koşullarda %7–14 (aşağıda) |
 
 **Denetimin ötesinde bizim bulduklarımız:**
@@ -245,12 +245,11 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 
 ## 6. Çalışan ve sıradaki işler
 
-**Çalışıyor:**
+**Bitti:**
 
-- 2-bit ve 3-bit bloklar, eğim tavlamasıyla Loghub'da;
-- Gumbel-ST'nin düzeltilmiş kodla yeniden üretimi.
-
-**Bitti:** transition codebook, olumsuz. A5'te 24 koşunun en iyisi 0,12; Loghub 2,07–2,16 bpb.
+- transition codebook, olumsuz: A5'te 24 koşunun en iyisi 0,12; Loghub 2,07–2,16 bpb;
+- 2-bit ve 3-bit bloklar, Loghub'da eğim tavlamasıyla: 1,680 ve 2,237 (set/keep 1,418);
+- Gumbel-ST'nin yeniden üretimi: birebir aynı.
 
 **Öncelik sırasıyla sıradakiler:**
 

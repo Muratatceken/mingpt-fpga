@@ -338,9 +338,13 @@ Aynı parametrede fark işaret değiştiriyor. Hangi forward'la eğitilirse mode
 - Sade Hard-ST (a = 1): 1,545.
 - Gumbel-ST (τ 1 → 0,25): 1,685 (1,6905 ve 1,6799).
   - Kaynak: ilk koşu, `model/fbseq/archive/hardaware_bytes_run1.json`. O koşudaki eğim hatası yalnız Hard-ST'yi etkiliyordu; Gumbel'in surrogate ölçeği 1/τ olduğu için etkilenmedi.
-  - Düzeltilmiş kodla yeniden üretim sürüyor.
+  - Düzeltilmiş kodla yeniden üretildi: 1,6905 ve 1,6799, birebir aynı (`hardaware_bytes.json`).
   - Kim'in (2026, arXiv 2603.14157) düşük sıcaklıkta Gumbel-ST çöküşü bulgusuyla uyumlu.
 - Toggle'lı model: eğim tavlamasıyla 1,462.
+- 2-bit ve 3-bit bloklar, eğim tavlamasıyla (1 seed): **1,680** ve **2,237**.
+  - Boolean sıralama Loghub'da ifade gücünün tersine dönüyor: set/keep 1,418 < toggle 1,462 < 2-bit 1,680 < 3-bit 2,237.
+  - İki karışık etken var. Eşit (~100K) parametre bütçesinde blok büyüdükçe gate ağı daralıyor (gizli genişlik 80 → 48 → 26). Ayrıca gate ağının çıkışı büyüyor: state biti başına 2, 4 ve 8 tablo logit'i (2^kb durumun her biri için bir değer).
+  - Yani "log verisi grup benzeri durum izlemeye ihtiyaç duymuyor" sonucu henüz çıkarılamaz. Ayırmak için gate genişliği sabit tutulmalı ya da set/keep katmanı ile küçük bir blok katmanı birleştirilmeli.
 
 **Not (Gumbel).** 1[(l+n)/τ > 0] = 1[l+n > 0]. τ'yu düşürmek forward'daki gürültüyü azaltmaz, yalnız backward surrogate'ini değiştirir. Uygulamamız standart Gumbel-ST: logistic gürültü, yani iki Gumbel'in farkı; forward'da sabit gürültü. Gürültünün kendisini sönümleyen bir varyant denenmedi.
 
