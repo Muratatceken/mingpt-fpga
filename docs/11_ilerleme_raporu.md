@@ -19,7 +19,7 @@
 | Hocanın case sorusu | **Cevaplandı:** deterministik dil modeliyle kayıpsız telemetri ve log sıkıştırma; yan case olarak aynı modelle anomali tespiti |
 | Yeni araştırma yönü | **Belirlendi:** geri besleme kısıtlı (feedback-constrained) sıralı hesaplama. Döngüdeki mantık derinliği tasarımın merkez değişkeni |
 | Faz 0 (fizibilite) | **Büyük ölçüde tamam:** 4 hipotezden ikisi tuttu, biri kısmen tuttu, biri Faz 1'e kaldı |
-| İlk teori sonucu | **Var:** A5 için tek LUT seviyesinde en az state, sıkı biçimde 6 bit (SAT tanığı ve bilgi alt sınırı). Tanığın yapısı: coset core + fiber toggle'ları |
+| İlk teori sonucu | **Var:** A5 için tek LUT seviyesinde en az state, sıkı biçimde 6 bit (SAT tanığı ve bilgi alt sınırı). Tanığın yapısı coset core + fiber toggle'ları; bu yapı SAT'sız ve başka gruplarda da alt sınırı veriyor |
 | Gerçek veride kalite | Boolean model, doğru eğitimle pencere modelini geçiyor. 100 KB sözlüklü zstd'ye göre eşit koşullarda %7–14 daha az bit (GRU %15–21). Önceki %25 / %32, ideal LM kod uzunluğunu zstd'nin başlıklı dosya boyutuyla karşılaştırıyordu |
 | Literatürdeki konum | Üç hatlı tarama yapıldı; rakipler ve boşluklar belirlendi |
 | Son biten | Transition codebook: olumsuz. 2-bit / 3-bit bloklar Loghub'da set/keep'in gerisinde (1,680 / 2,237). Gumbel-ST birebir yeniden üretildi |
@@ -184,7 +184,7 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 
 **Denetimin ötesinde bizim bulduklarımız:**
 
-- **SAT tanığının yapısı genellendi.** Tanık, 15 durumlu bir coset core (V4'ün coset'leri) ve iki koşullu toggle'dan oluşuyor; bunu denetim fark etti. Biz bunu bir lemmaya çevirdik: H ≅ Z₂ᵏ için ⌈log₂[G:H]⌉ + k bit, tek seviye. A5'te bu 6 bit; lemma K = 7 ile her etiketlemede çalışıyor. K = 6 ise ancak özel etiketlemelerle mümkün: 10 000 rastgele deneme hiçbir K = 6 etiketlemesi bulmadı, SAT buldu.
+- **SAT tanığının yapısı genellendi.** Tanık, 15 durumlu bir coset core (V4'ün coset'leri) ve iki koşullu toggle'dan oluşuyor; bunu denetim fark etti. Biz bunu bir lemmaya çevirdik: H ≅ Z₂ᵏ için tek seviyede S = ⌈log₂|G|⌉ bit, yani her zaman alt sınır; fan-in ≤ S − k + 1 + w. Transversal seçimi 𝔽₂ üzerinde lineer bir sistem; çözülünce fan-in S + w − k'ya iniyor. A5'te 300 etiketlemenin 300'ü fan-in 6 verdi; SAT'ın 6 344 saniyesine karşı milisaniyeler. PSL(2,7) 8 bit / fan-in 8, A6 9 / 9. S₄'te 5 bit / fan-in 4'e kadar iniyor (`core_fiber.py`). İlk sürümdeki "K = 6 yalnız özel etiketlemelerle" ifadesi yanlıştı: nadir olan rastgele transversal'in doğru çıkmasıydı.
 - **zstd başlığı.** zstd her 256 byte'lık pakete 10 byte frame başlığı yazıyor; bu ~0,31 bpb ediyor. LM'ye coder sonlandırması eklenip zstd'den başlığın çıkarılabilir kısmı düşüldüğünde avantaj B için %7–14, GRU için %15–21. Ayrıntı `docs/09` §4.
 - **Checkpoint probe'larında iki ölçüm hatası.** Head'i yeniden eğitme, eğitimdeki reçeteyi kullanmıyordu. Gecikmeli okumada "yakın byte'lardan zaten tahmin edilebilir" kontrolü yoktu. İkisi düzeltildi ve yeniden koşuldu (`docs/10` §8).
 
@@ -253,7 +253,7 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 
 **Öncelik sırasıyla sıradakiler:**
 
-1. Coset core + fiber'ı başka gruplarda denemek (S₄, PSL(2,7)); K = c + w etiketlemelerinin koşulu.
+1. Gauge çözülebilirliğinin ispatı ve "minimum state'te fan-in S + w − r₂(G)" sanısı; A5 için K = 5.
 2. A5'i güvenilir öğrenmek: PD-SSM reçetesi, CAGE, curriculum; amaç seed başarı oranını %50'den yukarı çekmek. Başarısız koşularda iç durumun coset yapısına bakmak.
 3. Problem C'nin genelleşmesi:
    - K = 5 ve K = 4 için block-local olmayan SAT;
@@ -292,6 +292,7 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 | `sw/fbseq/codebook.py` | Transition codebook |
 | `sw/fbseq/probes.py` | A5 çözümünü öğrenilen sınıfa yazma; checkpoint probe'ları |
 | `sw/fbseq/witness_check.py` | SAT tanığının ve karşı örneklerin bağımsız denetimi; coset core + fiber |
+| `sw/fbseq/core_fiber.py` | Coset core + fiber, gauge'un lineer çözümü; Z₂³, Z₈, S₄, A₅, PSL(2,7), A₆ |
 | `model/fbseq/archive/` | İlk hard-aware koşusunun kayıtları (Gumbel 1,685'in kaynağı) |
 | `scripts/get_loghub.sh`, `scripts/colab_faz0.sh`, `scripts/cpu_baseline.sh` | Veri, Colab, CPU baseline |
 | `model/fbseq/*.json` | Bütün sonuçlar |

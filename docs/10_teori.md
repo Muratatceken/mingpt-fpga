@@ -7,7 +7,7 @@
 - genel tek seviyeli gerçekleştirmede 6 bit; bu, LUT6 ile bile sıkı;
 - bağımsız dense bloklarla (kontrol yalnız harften, w = 2) K = 6'da 7 bit, K = 5'te 9 bit.
 
-6 bitlik çözümün yapısı da anlaşıldı: 15 durumlu bir coset core ve iki koşullu toggle. Input-gated yapıda discretization hatası döngü tarafından büyütülemez. Loghub'da hard modelin eski soft referansa göre açığı eğitimle 0,185'ten 0,02 bpb'ye indi (1,583 → 1,418; soft referans 1,398; farklı eğitimlerin karşılaştırması). Kalan fark, Boolean bitlerin sızdıran belleği temsil edememesiyle tutarlıdır; bu bir hipotez.
+6 bitlik çözümün yapısı da anlaşıldı: 15 durumlu bir coset core ve iki koşullu toggle. Bu yapı, transversal lineer çözülünce aynı fan-in'i SAT'sız ve başka gruplarda da veriyor (A5'te 6, PSL(2,7)'de 8, A6'da 9 bit; hepsi alt sınırda). Input-gated yapıda discretization hatası döngü tarafından büyütülemez. Loghub'da hard modelin eski soft referansa göre açığı eğitimle 0,185'ten 0,02 bpb'ye indi (1,583 → 1,418; soft referans 1,398; farklı eğitimlerin karşılaştırması). Kalan fark, Boolean bitlerin sızdıran belleği temsil edememesiyle tutarlıdır; bu bir hipotez.
 
 **Bağımsız denetim (29 Ekim).** Belge dışarıdan denetlendi ve denetimin bütün sayısal kontrolleri burada yeniden üretildi (`sw/fbseq/witness_check.py` → `witness_check.json`). Çıkan düzeltmeler ilgili bölümlere işlendi: §2, §3, §5.1, §5.3–5.5, §7, §8.
 
@@ -32,7 +32,7 @@ Literatür taraması Ekim 2026 sonunda üç hatta yapıldı. "Bulunamadı" ifade
 | Bilgi alt sınırı | Grup elemanını izlemek için S ≥ ⌈log₂\|G\|⌉ | **Bilinen** (Myhill–Nerode) |
 | **A5, bağımsız dense bloklar** | Kontrol yalnız harften (w = 2). Tek seviyede en az state: K = 6 için **7 bit**, K = 5 için **9 bit**; K = 4'te imkânsız | **Bizim** (alt grup taraması ile ispat) |
 | **A5, genel** | K = 6 ile **6 bit**, yani alt sınır. Sınır sıkı. | **Bizim** (SAT tanığı + alt sınır; tanık 1 080 koşulla bağımsız denetlendi) |
-| **Coset core + fiber** | Elementary abelian 2-alt grup H ≅ Z₂ᵏ ile ⌈log₂[G:H]⌉ + k bit, tek seviye: core coset'i, fiber koşullu toggle'lar. A5'te V4 ile 6 bit, K = 7; K = 6 yalnız özel etiketlemelerle | **Bizim** (yapı denetimde fark edildi; lemma ve ispat bizde) |
+| **Coset core + fiber** | H ≅ Z₂ᵏ ile tek seviyede S = ⌈log₂\|G\|⌉ (alt sınır), fan-in ≤ S − k + 1 + w. Transversal 𝔽₂ üzerinde lineer çözülünce A5, PSL(2,7), A6'da fan-in S + w − r₂ (A5'te 6, SAT'sız) | **Bizim** (yapı denetimde fark edildi; lemma ve ispat bizde; gauge sonucu gözlem) |
 | Fiziksel karşılık | Yalnız state döngüsü, iki seed ortalaması: 6 bit 455 MHz, 7 bit 458 MHz, 15 bit 433 MHz, öğrenilen 3-bit bloklar 399 MHz. 6, 7 ve 15 bit aynı hız ölçeğinde | **Bizim** ölçüm |
 | Öğrenilen sınıfta temsil | Doğru A5 çözümü, eğitilen mimarinin içine yazıldığında %100 (yalnız head eğitildi) | **Bizim** |
 | A5'in basit grup genellemesi | Yörünge argümanı: her basit grup için blok boyutuna göre bir alt sınır | Eleştirel okumadan; genelleme ve ispat bizde |
@@ -229,14 +229,40 @@ Her şey eski state ve harften hesaplandığı için döngü tek seviyedir. (cor
 
 *Taslak.* Bir coset'e dönen kelimeler fiber'da t⁻¹Ht ile çarpma etkisi yapar. Toggle koşulu bu etkinin XOR'la bir sabit olmasını gerektirir. Bu yüzden coset içindeki fiber kodu, H'nin 𝔽₂ᵏ'ye bir izomorfizmi artı bir ötelemedir. Komşu coset'ler arasında tek bitlik toggle'lar bu izomorfizmin değişmesine izin vermez; core grafiği bağlantılı olduğundan izomorfizm her yerde aynıdır. Ötelemeler transversal seçimine karşılık gelir.
 
+**Gözlem: state her zaman alt sınırda.** [G:H] = |G| / 2ᵏ olduğundan c + k = ⌈log₂|G| − k⌉ + k = ⌈log₂|G|⌉. Yani lemma, Z₂ᵏ alt grubu olan her grupta Myhill–Nerode sınırına ulaşıyor. H = {1} alındığında (k = 0) bu, tek dense blok demek: fan-in S + w. Lemmanın kazancı fan-in'de: en büyük k, yani grubun 2-rank'i r₂(G) seçilirse fan-in S + w'dan S − r₂ + 1 + w'ya iner.
+
+**Gauge: transversal seçimi lineer bir problem.** t_k yerine h_k·t_k alınırsa, k coset'indeki fiber kodu δ(h_k) kadar kayar. Bir fiber fonksiyoneli ℓ için flip şu olur:
+
+f(k, a) = ℓ(γ(k, a)) ⊕ β(k) ⊕ β(k′), β(k) ∈ 𝔽₂ serbest.
+
+"Flip yalnız D core bitlerine bakıyor" koşulu f(k, a) = g(kod_D(k), a) demektir; bu (β, g) bilinmeyenlerinde 𝔽₂ üzerinde lineer bir denklem sistemi. Etiketleme sabitken sistem Gauss eliminasyonuyla kesin çözülür. Çözümden transversal ve taban okunur; kod sonra kaba kuvvetle yeniden doğrulanır (`core_fiber.py`).
+
 **A5'te sonuç.** H = V4 ile c = 4, k = 2, yani S = 6 = alt sınır.
 
 - Lemma bu 6 biti her etiketlemede **K = 7** ile veriyor.
 - K = 6 için her fiber flip'inin 4 core bitinden yalnız 3'üne bağlı olması gerekiyor.
-- Beş V4, rastgele coset etiketlemesi, transversal ve taban ile 10 000 deneme yapıldı. Hiçbiri K = 6'ya inmedi; hepsinde flip'ler 4 core bitinin tamamına bağlı.
-- Yani SAT'ın bulduğu tanık, aynı yapı ailesinin seyrek bir üyesi. Rastgele denemeler ailenin tamamını taramadığı için bu, K = 6 etiketlemelerinin sayısı hakkında bir ölçüm değil.
+- **Rastgele transversal ile:** 10 000 denemenin hiçbiri K = 6'ya inmedi. Ailede simulated annealing de (8 × 20 000 adım) bulamadı.
+- **Gauge çözülünce:** rastgele 300 coset etiketlemesinin **300'ü** K = 6 veriyor. SAT'ın 6 344 saniyede bulduğu sonuca milisaniyeler içinde ulaşılıyor. SAT tanığının kendisi de bu ailenin üyesi: aile onu birebir üretiyor.
+- Önceki sürümdeki "K = 6 yalnız özel etiketlemelerle" ifadesi bu yüzden yanlıştı. Nadir olan etiketleme değil, doğru transversal; o da lineer olarak bulunuyor.
 
-Bu, A5'in ötesine genellenmiş bir teorem değildir. Doğal soru, hangi G ve H için K = c + w ile yetinen bir etiketlemenin bulunduğudur (§5.5).
+**Başka gruplar** (`core_fiber.json`; harfler iki üreteç ve identity, w = 2; Z8'de tek üreteç, w = 1):
+
+| Grup | \|G\| | S = ⌈log₂\|G\|⌉ | r₂ | Dense fan-in | Lemma | Rastgele transversal | Gauge çözülmüş (300 etiketleme) |
+|---|---|---|---|---|---|---|---|
+| Z₂³ | 8 | 3 | 3 | 5 | 3 | 3 | 3 (300/300) |
+| Z₈ | 8 | 3 | 1 | 4 | 4 | 4 | 4 (300/300) |
+| S₄ | 24 | 5 | 2 | 7 | 6 | 5 (9/300) | **4** (5/300), 5 (277/300) |
+| A₅ | 60 | 6 | 2 | 8 | 7 | 7 | **6** (300/300) |
+| PSL(2,7) | 168 | 8 | 2 | 10 | 9 | 9 | **8** (300/300) |
+| A₆ | 360 | 9 | 2 | 11 | 10 | 10 | **9** (300/300) |
+
+Okuma:
+
+- **Kontrol grupları beklendiği gibi.** Z₂³'te her bit kendi kendini toggle'lıyor (fan-in 1 + w). Z₈'de 2-rank 1 ve kazanç yok: ikili sayacın en üst biti bütün alt bitlere bakmak zorunda.
+- **Basit gruplarda (A₅, PSL(2,7), A₆)** gauge çözülünce fan-in **S + w − r₂**'ye iniyor, yani core'un kendi fan-in'ine. Fiber artık darboğaz değil.
+- **S₄'te bir adım daha aşağı (4).** Core'un 6 durumu 3 bitin 8 koduna seyrek yerleşiyor. Etiketlemelerin ~%2'sinde her core biti yalnız 2 core bitine bakıyor; bu dört alt grubun hepsinde oluyor, normal V4'e özgü değil. Basit gruplarda 300 etiketlemenin hiçbirinde toplam fan-in c + w'nın altına inmedi. Core etiketlemesi ayrıca aranmadı.
+
+**Durum.** Lemma ve "her kod lemmadan gelir" önermesi ispatlı. Gauge sonucu bir gözlem, ispat yok. Üç basit grupta sistem 900 etiketlemenin hepsinde çözüldü; S₄'te 300'ün 282'sinde çözüldü, yani her etiketlemede çözülmüyor. Doğal sanı: minimum state'te fan-in S + w − r₂(G) her grupta ulaşılabilir. Bunun altına inmek core'un fan-in'ini düşürmeyi gerektiriyor. A5 için K = 5'in mümkün olup olmadığı açık (§5.5, madde 1).
 
 ### 5.4 Fiziksel karşılık
 XC7A100T üzerinde, 120 bitlik state'e kopyalanarak ölçüldü (Yosys + nextpnr-himbaechel, iki seed):
@@ -271,7 +297,7 @@ Yani bu sınıf A5'i temsil edebiliyor; eğitimde görülen başarısızlık bir
    - Paralel LUT güncellemesinin bir tersinir kapı dizisine eşdeğer olduğu da ayrıca gösterilmeliydi.
 
    Sonuç: tam 2^S kod ve K < S fan-in ile tek permütasyonlar için bir parite engeli olup olmadığı açık bir soru.
-7. Coset core + fiber (§5.3): hangi G ve H ≅ Z₂ᵏ için fiber flip'lerinin c − 1 core bitine indiği bir etiketleme var? H abelian değilse fiber, H'nin bütün elemanlarını harf olarak alan bir alt makinedir (§3 uyarısı); bunun maliyeti?
+7. Coset core + fiber (§5.3): gauge sistemi basit gruplarda her etiketlemede çözülür mü, S₄'te neden bazen çözülmüyor? Core'un fan-in'i, basit gruplarda S − r₂ + w'nın altına inebilir mi? H abelian değilse fiber, H'nin bütün elemanlarını harf olarak alan bir alt makinedir (§3 uyarısı); bunun maliyeti?
 
 ---
 
@@ -509,7 +535,7 @@ Ayrıntılı künyeler: `docs/08_case_arastirmasi.md`, `paper/related_work_2026.
 ---
 
 ## 10. Sonraki adımlar
-1. Coset core + fiber'ı başka gruplarda denemek (S₄, PSL(2,7)) ve K = c + w ile yetinen etiketlemelerin koşulunu bulmak (§5.5, madde 7).
+1. Gauge çözülebilirliğinin ispatı ve fan-in S + w − r₂ sanısı (§5.3, §5.5 madde 7); A5 için K = 5 (SAT ya da core'un kod araması).
 2. K = 5 ve K = 4 için block-local olmayan SAT; S₄, mod 5 ve mod 7 ile §6'daki sanının testi.
 3. A5'i güvenilir öğrenmek: codebook bu haliyle başarısız. Sıradakiler: PD-SSM reçetesi, CAGE, curriculum; başarısız koşularda iç durumun coset yapısını incelemek.
 4. Hard-aware finalistlerin daha fazla seed'le tekrarı ve leave-one-system-out değerlendirme.

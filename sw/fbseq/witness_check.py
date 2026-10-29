@@ -9,7 +9,8 @@ shares no code with theory_sat.py; items follow an external audit of docs/10, 28
 2. core_fiber  structure of that witness: a closed 4-bit core whose 15 reachable values are the right cosets
                V4 p, and 2 fiber bits that each update as s_j' = s_j XOR f_j(core, letter).
 3. lemma       the same shape from any V4, transversal, core labeling and V4 basis (coset core + Z2
-               toggles), one LUT level; over random choices, how often the fiber fan-in drops from 1 + 4 + 2 to 6.
+               toggles), one LUT level; over random choices, how often the fiber fan-in drops from 1 + 4 + 2 to 6
+               (never: random transversals miss it; core_fiber.py solves the transversal exactly and gets 6).
 4. block_local beta_{K,w} for independent dense blocks with fixed letter control (w = 2), by subgroup closure.
 5. counterexamples  CNOT keeps a wire and is odd; right multiplication on a partial point base is not local,
                the inverse code r = p^-1 is.
