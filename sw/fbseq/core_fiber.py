@@ -45,8 +45,23 @@ def closure(gens):
     return sorted(G)
 
 
+def gf8_mul(a, b):
+    """GF(8) = GF(2)[t] / (t^3 + t + 1), elements as 3-bit ints"""
+    r = 0
+    for i in range(3):
+        if (b >> i) & 1:
+            r ^= a << i
+    for i in (4, 3):
+        if (r >> i) & 1:
+            r ^= 0b1011 << (i - 3)
+    return r
+
+
 def groups():
     inv7 = {x: pow(x, 5, 7) for x in range(1, 7)}
+    inv8 = {x: next(y for y in range(1, 8) if gf8_mul(x, y) == 1) for x in range(1, 8)}
+    psl8_a = tuple([gf8_mul(2, x) ^ 1 for x in range(8)] + [8])      # x -> t x + 1 on P1(F8), 8 = infinity
+    psl8_b = tuple([8] + [inv8[x] for x in range(1, 8)] + [0])       # x -> 1/x
     psl_a = tuple(list(range(1, 7)) + [0, 7])                         # x -> x + 1 on P1(F7), 7 = infinity
     psl_b = tuple([7] + [(-inv7[x]) % 7 for x in range(1, 7)] + [0])  # x -> -1/x
     return {
@@ -56,6 +71,7 @@ def groups():
         "A5": [(1, 2, 3, 4, 0), (1, 2, 0, 3, 4)],                    # fbseq.A5_TABLE
         "PSL(2,7)": [psl_a, psl_b],
         "A6": [(1, 2, 3, 4, 0, 5), (0, 2, 3, 4, 5, 1)],                # two 5-cycles
+        "PSL(2,8)": [psl8_a, psl8_b],
     }
 
 

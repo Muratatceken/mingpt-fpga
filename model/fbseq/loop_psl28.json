@@ -1,0 +1,94 @@
+[
+ {
+  "kind": "gc:PSL(2,8)_K6",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 455.6,
+  "cells": {
+   "FDRE": 161,
+   "LUT2": 2,
+   "LUT3": 1,
+   "LUT4": 10,
+   "LUT5": 1,
+   "LUT6": 132
+  }
+ },
+ {
+  "kind": "gc:PSL(2,8)_K6",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 457.2,
+  "cells": {
+   "FDRE": 161,
+   "LUT2": 2,
+   "LUT3": 1,
+   "LUT4": 10,
+   "LUT5": 1,
+   "LUT6": 132
+  }
+ },
+ {
+  "kind": "gc:PSL(2,8)_K7",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 401.1,
+  "cells": {
+   "FDRE": 165,
+   "LUT2": 16,
+   "LUT4": 3,
+   "LUT5": 29,
+   "LUT6": 197,
+   "MUXF7": 55,
+   "MUXF8": 3
+  }
+ },
+ {
+  "kind": "gc:PSL(2,8)_K7",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 433.7,
+  "cells": {
+   "FDRE": 165,
+   "LUT2": 16,
+   "LUT4": 3,
+   "LUT5": 29,
+   "LUT6": 197,
+   "MUXF7": 55,
+   "MUXF8": 3
+  }
+ },
+ {
+  "kind": "gc:PSL(2,8)_K8",
+  "S": 117,
+  "seed": 1,
+  "fmax_mhz": 349.3,
+  "cells": {
+   "FDRE": 164,
+   "LUT1": 117,
+   "LUT2": 55,
+   "LUT3": 5,
+   "LUT4": 19,
+   "LUT5": 36,
+   "LUT6": 405,
+   "MUXF7": 223,
+   "MUXF8": 98
+  }
+ },
+ {
+  "kind": "gc:PSL(2,8)_K8",
+  "S": 117,
+  "seed": 2,
+  "fmax_mhz": 334.1,
+  "cells": {
+   "FDRE": 164,
+   "LUT1": 117,
+   "LUT2": 55,
+   "LUT3": 5,
+   "LUT4": 19,
+   "LUT5": 36,
+   "LUT6": 405,
+   "MUXF7": 223,
+   "MUXF8": 98
+  }
+ }
+]

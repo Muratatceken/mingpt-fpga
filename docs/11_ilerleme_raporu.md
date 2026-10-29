@@ -19,7 +19,7 @@
 | Hocanın case sorusu | **Cevaplandı:** deterministik dil modeliyle kayıpsız telemetri ve log sıkıştırma; yan case olarak aynı modelle anomali tespiti |
 | Yeni araştırma yönü | **Belirlendi:** geri besleme kısıtlı (feedback-constrained) sıralı hesaplama. Döngüdeki mantık derinliği tasarımın merkez değişkeni |
 | Faz 0 (fizibilite) | **Büyük ölçüde tamam:** 4 hipotezden ikisi tuttu, biri kısmen tuttu, biri Faz 1'e kaldı |
-| İlk teori sonucu | **Var:** A5 için tek LUT seviyesinde en az state, sıkı biçimde 6 bit (SAT tanığı ve bilgi alt sınırı). Birleşik yapı (blok core + fiber), S₄, A₅, PSL(2,7) ve A₆'da alt sınırı SAT'sız ve tek LUT6 seviyesinde veriyor. FPGA'de fan-in 6'yı aşmak Fmax'i 1,5–2,9 kat düşürüyor |
+| İlk teori sonucu | **Var:** A5 için tek LUT seviyesinde en az state, sıkı biçimde 6 bit (SAT tanığı ve bilgi alt sınırı). Birleşik yapı (blok core + fiber), S₄, A₅, PSL(2,7) ve A₆'da alt sınırı SAT'sız ve tek LUT6 seviyesinde veriyor; PSL(2,8)'de vermiyor. FPGA'de fan-in 6'yı aşmak Fmax'i 1,5–2,9 kat düşürüyor |
 | Gerçek veride kalite | Boolean model, doğru eğitimle pencere modelini geçiyor. 100 KB sözlüklü zstd'ye göre eşit koşullarda %7–14 daha az bit (GRU %15–21). Önceki %25 / %32, ideal LM kod uzunluğunu zstd'nin başlıklı dosya boyutuyla karşılaştırıyordu |
 | Literatürdeki konum | Üç hatlı tarama yapıldı; rakipler ve boşluklar belirlendi |
 | Son biten | Transition codebook: olumsuz. 2-bit / 3-bit bloklar Loghub'da set/keep'in gerisinde (1,680 / 2,237). Gumbel-ST birebir yeniden üretildi |
@@ -188,7 +188,7 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 - **zstd başlığı.** zstd her 256 byte'lık pakete 10 byte frame başlığı yazıyor; bu ~0,31 bpb ediyor. LM'ye coder sonlandırması eklenip zstd'den başlığın çıkarılabilir kısmı düşüldüğünde avantaj B için %7–14, GRU için %15–21. Ayrıntı `docs/09` §4.
 - **Checkpoint probe'larında iki ölçüm hatası.** Head'i yeniden eğitme, eğitimdeki reçeteyi kullanmıyordu. Gecikmeli okumada "yakın byte'lardan zaten tahmin edilebilir" kontrolü yoktu. İkisi düzeltildi ve yeniden koşuldu (`docs/10` §8).
 
-### 2.9 Teori: birleşik yapı ve dört grupta FPGA ölçümü (29 Ekim akşam)
+### 2.9 Teori: birleşik yapı ve beş grupta FPGA ölçümü (29 Ekim akşam)
 `docs/10` §5.3–5.4; kod `sw/fbseq/core_fiber.py`, `realize.py`, `loop_bench.py` (gc: türü).
 
 - **Birleşik yapı.** Core, H ≅ Z₂ᵏ'yi içeren alt grupların coset bloklarından kuruluyor (∩Oᵢ = H). Fiber, Z₂ᵏ toggle'larından oluşuyor ve gauge'u 𝔽₂ üzerinde lineer çözülüyor. Doğruluğu ispatlı. Bağımsız bloklar ve tek core + fiber bu yapının özel durumları.
@@ -200,12 +200,14 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
   | A₅ | 6 | 7 (önce 9) | 6 |
   | PSL(2,7) | 8 | **8** | 8 |
   | A₆ | 9 | 12 | **9** (önce 10) |
+  | PSL(2,8) | 9 | – | 12 (9 bit ancak K = 8'de) |
 
-  Dört grubun hepsinde bilgi alt sınırı tek LUT6 seviyesinde gerçekleşiyor. A5'te K = 5 ile 6 bitin mümkün olup olmadığını SAT ile arıyoruz.
+  Beş grubun dördünde bilgi alt sınırı tek LUT6 seviyesinde gerçekleşiyor. PSL(2,8)'de gerçekleşmiyor: indeksi ≤ 16 olan alt grupları yalnız nokta stabilizer'ları ve bunların kesişimleri Z₂ᵏ değil. A5'te K = 5 ile 6 bitin mümkün olup olmadığını SAT ile arıyoruz.
 - **FPGA (XC7A100T, ~120 bit, iki seed).** Aynı state'te fan-in 6'yı aşmanın ciddi bir fiziksel bedeli var:
   - A6, 9 bitte: fan-in 11'de 156 MHz ve 6 229 LUT; fan-in 6'da 450 MHz ve 142 LUT.
   - PSL(2,7), 8 bitte: fan-in 10'da 197 MHz; fan-in 5'te 451 MHz.
   - K ≤ 6 olan tasarımların hepsi 420–540 MHz aralığında. Bu sınıfın içinde, daha çok bit kullanan ama tamamen yerel positional kod en hızlısı (~535 MHz).
+  - PSL(2,8)'de en az state'li tasarım en yavaşı: 9 bit / fan-in 8 342 MHz, 12 bit / fan-in 6 456 MHz.
   - Sonuç: teori donanımda iki aşamalı karşılık buluyor. Önce LUT6 eşiği, sonra state ile yerellik arasında bir ödünleşim.
 
 ---
@@ -302,7 +304,8 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 | `7c61c46` | Bağımsız denetimin düzeltmeleri, `witness_check.py`, coset core + fiber lemması, codebook ve probe sonuçları, zstd başlığı |
 | `03af542` | Bloklar Loghub'da, Gumbel-ST'nin yeniden üretimi |
 | `f1b7ab2` | Gauge'un lineer çözümü; A5'te fan-in 6 SAT'sız |
-| (bu commit) | Birleşik yapı, dört grupta alt sınır; fan-in'in FPGA'deki bedeli |
+| `50fe26b` | Birleşik yapı, dört grupta alt sınır; fan-in'in FPGA'deki bedeli |
+| (bu commit) | PSL(2,8): yapının sınırı ve fiziksel ödünleşim |
 
 | Dosya | Görev |
 |---|---|

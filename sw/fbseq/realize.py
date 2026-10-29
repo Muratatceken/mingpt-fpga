@@ -261,7 +261,7 @@ def main():
     for res in R:
         Gr = Group(cf.groups()[res["group"]])
         for K, b in res["results"].items():
-            if b and K in ("5", "6"):
+            if b and int(K) >= 5:
                 specs.append(dict(name=f"{res['group']}_K{K}", group=res["group"], code="realize", S=b["S"], w=Gr.w,
                                   letters=len(Gr.letters), fanin=b["fanin"], deps=b["deps"], codes=b["codes"],
                                   start=b["codes"][0], step=[[Gr.mul[p][x] for x in Gr.letters] for p in range(Gr.N)]))
