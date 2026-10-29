@@ -1,0 +1,330 @@
+[
+ {
+  "model": "B_setkeep",
+  "method": "gumbel",
+  "seed": 0,
+  "steps": 3000,
+  "bpb_hard": 1.6905,
+  "curve": [
+   [
+    500,
+    2.8612
+   ],
+   [
+    1000,
+    2.0546
+   ],
+   [
+    1500,
+    1.8356
+   ],
+   [
+    2000,
+    1.7413
+   ],
+   [
+    2500,
+    1.7107
+   ],
+   [
+    3000,
+    1.6984
+   ]
+  ],
+  "best_check": 1.6984,
+  "grad_norm_mean": 0.2054,
+  "nonfinite_steps": 0,
+  "gate_saturation": [
+   0.6796,
+   0.5509
+  ],
+  "seconds": 1219.1
+ },
+ {
+  "model": "B_setkeep",
+  "method": "gumbel",
+  "seed": 1,
+  "steps": 3000,
+  "bpb_hard": 1.6799,
+  "curve": [
+   [
+    500,
+    2.8177
+   ],
+   [
+    1000,
+    2.0266
+   ],
+   [
+    1500,
+    1.8159
+   ],
+   [
+    2000,
+    1.7304
+   ],
+   [
+    2500,
+    1.6945
+   ],
+   [
+    3000,
+    1.6851
+   ]
+  ],
+  "best_check": 1.6851,
+  "grad_norm_mean": 0.2003,
+  "nonfinite_steps": 0,
+  "gate_saturation": [
+   0.6816,
+   0.585
+  ],
+  "seconds": 3940.7
+ },
+ {
+  "model": "B_setkeep",
+  "method": "hardst",
+  "seed": 0,
+  "steps": 3000,
+  "bpb_hard": 1.4186,
+  "curve": [
+   [
+    500,
+    2.6454
+   ],
+   [
+    1000,
+    1.7945
+   ],
+   [
+    1500,
+    1.5827
+   ],
+   [
+    2000,
+    1.4976
+   ],
+   [
+    2500,
+    1.4386
+   ],
+   [
+    3000,
+    1.4272
+   ]
+  ],
+  "best_check": 1.4272,
+  "grad_norm_mean": 0.2722,
+  "nonfinite_steps": 0,
+  "gate_saturation": [
+   0.2154,
+   0.1565
+  ],
+  "seconds": 3673.3
+ },
+ {
+  "model": "B_setkeep",
+  "method": "hardst",
+  "seed": 1,
+  "steps": 3000,
+  "bpb_hard": 1.4176,
+  "curve": [
+   [
+    500,
+    2.6473
+   ],
+   [
+    1000,
+    1.8259
+   ],
+   [
+    1500,
+    1.608
+   ],
+   [
+    2000,
+    1.5048
+   ],
+   [
+    2500,
+    1.4478
+   ],
+   [
+    3000,
+    1.4275
+   ]
+  ],
+  "best_check": 1.4275,
+  "grad_norm_mean": 0.2695,
+  "nonfinite_steps": 0,
+  "gate_saturation": [
+   0.1976,
+   0.1612
+  ],
+  "seconds": 3641.3
+ },
+ {
+  "model": "B_setkeep",
+  "method": "slope",
+  "seed": 0,
+  "steps": 3000,
+  "bpb_hard": 1.4186,
+  "curve": [
+   [
+    500,
+    2.6454
+   ],
+   [
+    1000,
+    1.7945
+   ],
+   [
+    1500,
+    1.5827
+   ],
+   [
+    2000,
+    1.4976
+   ],
+   [
+    2500,
+    1.4386
+   ],
+   [
+    3000,
+    1.4272
+   ]
+  ],
+  "best_check": 1.4272,
+  "grad_norm_mean": 0.2722,
+  "nonfinite_steps": 0,
+  "gate_saturation": [
+   0.2154,
+   0.1565
+  ],
+  "seconds": 723.2
+ },
+ {
+  "model": "B_setkeep",
+  "method": "slope",
+  "seed": 1,
+  "steps": 3000,
+  "bpb_hard": 1.4176,
+  "curve": [
+   [
+    500,
+    2.6473
+   ],
+   [
+    1000,
+    1.8259
+   ],
+   [
+    1500,
+    1.608
+   ],
+   [
+    2000,
+    1.5048
+   ],
+   [
+    2500,
+    1.4478
+   ],
+   [
+    3000,
+    1.4275
+   ]
+  ],
+  "best_check": 1.4275,
+  "grad_norm_mean": 0.2695,
+  "nonfinite_steps": 0,
+  "gate_saturation": [
+   0.1976,
+   0.1612
+  ],
+  "seconds": 609.9
+ },
+ {
+  "model": "B_setkeep",
+  "method": "softhard",
+  "seed": 0,
+  "steps": 3000,
+  "bpb_hard": 1.5829,
+  "curve": [
+   [
+    500,
+    2.9489
+   ],
+   [
+    1000,
+    2.7358
+   ],
+   [
+    1500,
+    2.7896
+   ],
+   [
+    2000,
+    2.7776
+   ],
+   [
+    2500,
+    1.6244
+   ],
+   [
+    3000,
+    1.5922
+   ]
+  ],
+  "best_check": 1.5922,
+  "grad_norm_mean": 0.2572,
+  "nonfinite_steps": 0,
+  "gate_saturation": [
+   0.5516,
+   0.4389
+  ],
+  "seconds": 847.5
+ },
+ {
+  "model": "B_setkeep",
+  "method": "softhard",
+  "seed": 1,
+  "steps": 3000,
+  "bpb_hard": 1.5522,
+  "curve": [
+   [
+    500,
+    2.7815
+   ],
+   [
+    1000,
+    2.4988
+   ],
+   [
+    1500,
+    2.5561
+   ],
+   [
+    2000,
+    2.6402
+   ],
+   [
+    2500,
+    1.5948
+   ],
+   [
+    3000,
+    1.5608
+   ]
+  ],
+  "best_check": 1.5608,
+  "grad_norm_mean": 0.2466,
+  "nonfinite_steps": 0,
+  "gate_saturation": [
+   0.5602,
+   0.4808
+  ],
+  "seconds": 851.3
+ }
+]

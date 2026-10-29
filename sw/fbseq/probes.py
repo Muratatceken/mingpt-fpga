@@ -145,15 +145,16 @@ def head_retrain(m, Xtr, Ytr, Xva, Yva, Xte, Yte, steps=3000):
             torch.nn.init.zeros_(layer.bias)
     for p in m.head.parameters():
         p.requires_grad_(True)
-    opt = torch.optim.AdamW(m.head.parameters(), lr=3e-3, weight_decay=0.01)
+    opt = torch.optim.AdamW(m.head.parameters(), lr=3e-3, betas=(0.9, 0.99), weight_decay=0.01)
     g = torch.Generator().manual_seed(1)
-    for step in range(steps):
+    for step in range(steps):                                       # the recipe of hardaware.train
         for gr in opt.param_groups:
-            gr["lr"] = 3e-3 * (0.03 + 0.97 * 0.5 * (1 + math.cos(math.pi * step / steps)))
+            gr["lr"] = 3e-3 * min(1.0, (step + 1) / 200) * (0.03 + 0.97 * 0.5 * (1 + math.cos(math.pi * step / steps)))
         ix = torch.randint(0, len(Xtr), (32,), generator=g)
         loss = F.cross_entropy(m(Xtr[ix])[..., :256].reshape(-1, 256), Ytr[ix].reshape(-1))
         opt.zero_grad()
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(m.head.parameters(), 1.0)
         opt.step()
     return dict(bpb_val_head_retrained=round(bpb_of(m, Xva, Yva), 4), bpb_test_head_retrained=round(bpb_of(m, Xte, Yte), 4))
 
@@ -211,17 +212,15 @@ def flips(m, X, Y, n_pkt=128, t0=32, bits=24, seed=0):
 
 def delayed_readout(m, Xtr, Xva, ks=(1, 2, 4, 8, 16, 32, 64, 128), n_tr=600, n_va=300, steps=400):
     """linear probe from the concatenated hard states at t to the byte at t - k (window excluded):
-    what the state still carries about the past"""
+    what the state still carries about the past.  Control: the same probe from the window features alone
+    (the last w bytes), i.e. how much of x_{t-k} is predictable from the recent bytes anyway"""
     with torch.no_grad():
-        _, st_tr = layer_states(m, Xtr[:n_tr])
-        _, st_va = layer_states(m, Xva[:n_va])
+        w_tr, st_tr = layer_states(m, Xtr[:n_tr])
+        w_va, st_va = layer_states(m, Xva[:n_va])
     S_tr, S_va = torch.cat(st_tr, -1), torch.cat(st_va, -1)
-    res = {}
-    for k in ks:
-        def pairs(S, X):
-            return S[:, k:].reshape(-1, S.shape[-1]), X[:, 1:X.shape[1] - k + 1].reshape(-1)   # input x_{t-k}
-        a, ya = pairs(S_tr, Xtr[:n_tr])
-        b, yb = pairs(S_va, Xva[:n_va])
+    torch.manual_seed(0)
+
+    def probe(a, ya, b, yb):
         lin = torch.nn.Linear(a.shape[1], 257)
         opt = torch.optim.Adam(lin.parameters(), lr=1e-2)
         for _ in range(steps):
@@ -231,9 +230,18 @@ def delayed_readout(m, Xtr, Xva, ks=(1, 2, 4, 8, 16, 32, 64, 128), n_tr=600, n_v
             loss.backward()
             opt.step()
         with torch.no_grad():
-            acc = float((lin(b).argmax(-1) == yb).float().mean())
-            unigram = float((yb == torch.mode(ya).values).float().mean())
-        res[str(k)] = dict(acc=round(acc, 4), majority=round(unigram, 4))
+            return float((lin(b).argmax(-1) == yb).float().mean())
+    res = {}
+    for k in ks:
+        def pairs(S, X):
+            return S[:, k:].reshape(-1, S.shape[-1]), X[:, 1:X.shape[1] - k + 1].reshape(-1)   # input x_{t-k}
+        a, ya = pairs(S_tr, Xtr[:n_tr])
+        b, yb = pairs(S_va, Xva[:n_va])
+        wa, _ = pairs(w_tr, Xtr[:n_tr])
+        wb, _ = pairs(w_va, Xva[:n_va])
+        unigram = float((yb == torch.mode(ya).values).float().mean())
+        res[str(k)] = dict(acc=round(probe(a, ya, b, yb), 4), window_only=round(probe(wa, ya, wb, yb), 4),
+                           majority=round(unigram, 4))
     return res
 
 

@@ -1,0 +1,202 @@
+{
+ "sat6": {
+  "distinct_codes": 60,
+  "max_state_fanin": 4,
+  "exhaustive_checks": 1080,
+  "passed": true
+ },
+ "core_fiber": {
+  "core_bits": [
+   0,
+   1,
+   2,
+   5
+  ],
+  "fiber_bits": [
+   3,
+   4
+  ],
+  "reachable_core_values": 15,
+  "stabilizer": [
+   [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   [
+    1,
+    0,
+    2,
+    4,
+    3
+   ],
+   [
+    3,
+    4,
+    2,
+    0,
+    1
+   ],
+   [
+    4,
+    3,
+    2,
+    1,
+    0
+   ]
+  ],
+  "core_classes_are_right_cosets": true,
+  "fiber": {
+   "3": {
+    "toggle_given_core_and_letter": true,
+    "core_bits_read": [
+     0,
+     2,
+     5
+    ],
+    "fanin": 6,
+    "flip_fraction": "18/45"
+   },
+   "4": {
+    "toggle_given_core_and_letter": true,
+    "core_bits_read": [
+     0,
+     1,
+     2
+    ],
+    "fanin": 6,
+    "flip_fraction": "6/45"
+   }
+  }
+ },
+ "lemma": {
+  "construction": "4-bit coset core (fan-in <= 4 + 2) + 2 fiber toggles (fan-in <= 1 + 4 + 2)",
+  "one_level_and_toggle_checked": true,
+  "tries": 10000,
+  "fraction_with_K6": 0.0,
+  "best": {
+   "fanin": [
+    6,
+    6,
+    6,
+    6,
+    7,
+    7
+   ],
+   "core_bits_read": [
+    [
+     0,
+     1,
+     2,
+     3
+    ],
+    [
+     0,
+     1,
+     2,
+     3
+    ],
+    [
+     0,
+     1,
+     2,
+     3
+    ],
+    [
+     0,
+     1,
+     2,
+     3
+    ],
+    [
+     0,
+     1,
+     2,
+     3
+    ],
+    [
+     0,
+     1,
+     2,
+     3
+    ]
+   ]
+  }
+ },
+ "block_local": {
+  "subgroups": 59,
+  "orders": {
+   "1": 1,
+   "2": 15,
+   "3": 10,
+   "4": 5,
+   "5": 6,
+   "6": 10,
+   "10": 6,
+   "12": 5,
+   "60": 1
+  },
+  "beta_K_w2": {
+   "4": null,
+   "5": {
+    "bits": 9,
+    "subgroup_orders": [
+     10,
+     10,
+     12
+    ]
+   },
+   "6": {
+    "bits": 7,
+    "subgroup_orders": [
+     5,
+     12
+    ]
+   }
+  }
+ },
+ "counterexamples": {
+  "cnot_keeps_wire_and_is_odd": true,
+  "right_mult_partial_base_not_local": {
+   "p": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "q": [
+    0,
+    3,
+    2,
+    4,
+    1
+   ],
+   "a": [
+    1,
+    2,
+    3,
+    4,
+    0
+   ],
+   "coord": 2,
+   "old": 2,
+   "new": [
+    3,
+    4
+   ]
+  },
+  "inverse_code_local": true
+ },
+ "robustness": {
+  "majority_keeps_and_corrects": true,
+  "single_error_correcting_60_states_min_bits": 10,
+  "shortened_hamming": {
+   "length": 10,
+   "words": 64,
+   "min_distance": 3
+  }
+ }
+}

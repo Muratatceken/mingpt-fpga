@@ -1,6 +1,6 @@
 # İlerleme raporu: case arayışından geri besleme kısıtlı sıralı hesaplamaya
 
-**Kapsam.** 27–28 Ekim 2026 arasında yapılanlar. Başlangıç noktası, hocanın "bu proje hangi problemi çözüyor?" sorusu ve bunun sonucunda araştırmanın "modeli FPGA'ye sığdırmak" yerine "modeli FPGA'nin fiziksel kısıtlarından türetmek" yönüne dönmesi.
+**Kapsam.** 27–28 Ekim 2026 arasında yapılanlar. 29 Ekim'de bağımsız bir denetimden geçti ve düzeltildi (§2.8). Başlangıç noktası, hocanın "bu proje hangi problemi çözüyor?" sorusu ve bunun sonucunda araştırmanın "modeli FPGA'ye sığdırmak" yerine "modeli FPGA'nin fiziksel kısıtlarından türetmek" yönüne dönmesi.
 
 **İlgili belgeler:**
 
@@ -19,10 +19,10 @@
 | Hocanın case sorusu | **Cevaplandı:** deterministik dil modeliyle kayıpsız telemetri ve log sıkıştırma; yan case olarak aynı modelle anomali tespiti |
 | Yeni araştırma yönü | **Belirlendi:** geri besleme kısıtlı (feedback-constrained) sıralı hesaplama. Döngüdeki mantık derinliği tasarımın merkez değişkeni |
 | Faz 0 (fizibilite) | **Büyük ölçüde tamam:** 4 hipotezden ikisi tuttu, biri kısmen tuttu, biri Faz 1'e kaldı |
-| İlk teori sonucu | **Var:** A5 için tek LUT seviyesinde en az state, sıkı biçimde 6 bit (SAT tanığı ve bilgi alt sınırı) |
-| Gerçek veride kalite | Boolean model, doğru eğitimle pencere modelini geçiyor. 100 KB sözlüklü zstd'den %25 daha az bit harcıyor; GRU %32 |
+| İlk teori sonucu | **Var:** A5 için tek LUT seviyesinde en az state, sıkı biçimde 6 bit (SAT tanığı ve bilgi alt sınırı). Tanığın yapısı: coset core + fiber toggle'ları |
+| Gerçek veride kalite | Boolean model, doğru eğitimle pencere modelini geçiyor. 100 KB sözlüklü zstd'ye göre eşit koşullarda %7–14 daha az bit (GRU %15–21). Önceki %25 / %32, ideal LM kod uzunluğunu zstd'nin başlıklı dosya boyutuyla karşılaştırıyordu |
 | Literatürdeki konum | Üç hatlı tarama yapıldı; rakipler ve boşluklar belirlendi |
-| Çalışmakta | Transition codebook (A5 ve Loghub), 2-bit ve 3-bit bloklarla Loghub |
+| Çalışmakta | 2-bit ve 3-bit bloklarla Loghub; Gumbel-ST'nin yeniden üretimi. Transition codebook bitti: olumsuz |
 
 ---
 
@@ -96,14 +96,14 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 
 4. **Soft–hard farkı** (`gap.json`):
    - B'nin soft hali 1,398; pencere modelini geçiyor.
-   - Doğrudan hard 2,77; uyarlanmış hard 1,583; Δ_hard = 0,185.
+   - Aynı ağırlıkla hard 2,77; uyarlanmış hard 1,583. Uyarlanmış hard'ın soft referansa açığı 0,185. Bu bir performans açığı; aynı parametrede discretization farkı soft eğitimden sonra +1,37, uyarlamadan sonra −0,23.
    - Soft state'ler 0 ve 1'den uzak.
    - D(t), farklı bit oranı: %6 ile %12 arasında; t ≈ 8–16'da doyuyor.
 5. **GRU bellek ufku** (`gru_horizon.json`): 128 byte'ta sıfırlama 1,39, 64'te 1,58. 64–128 byte ötesindeki bilgi işe yarıyor; ölçümde karışık etkenler var (§5).
 6. **Hard-aware eğitim** (`hardaware_*.json`):
-   - **Loghub:** baştan Boolean forward ve eğim tavlamasıyla **1,418** (pencere 8: 1,453; soft: 1,398). Sade Hard-ST 1,545, Gumbel-ST 1,685. **H3 kısmen tuttu.**
-   - **A5:** soft→hard seed'lerin yarısı %100; baştan hard 8 koşunun hiçbiri 0,13'ü geçmiyor.
-   - **Ödünleşim:** keşif ile uyum. Dil modelinde baştan Boolean, durum izlemede soft aşama gerekiyor.
+   - **Loghub:** baştan Boolean forward ve eğim tavlamasıyla **1,418** (pencere 8: 1,453; soft referans: 1,398; iki seed). Sade Hard-ST 1,545, Gumbel-ST 1,685 (ilk koşu arşivi `model/fbseq/archive/`; yeniden üretimi sürüyor). **H3 kısmen tuttu.**
+   - **A5:** softhard 4 koşunun 2'si, test edilen 64 ve 256 uzunlukta %100; baştan hard 8 koşunun hiçbiri 0,13'ü geçmiyor.
+   - **Ödünleşim (denenen reçetelerle):** dil modelinde baştan Boolean en iyi; A5'te başarılı olan yalnız softhard. Başka reçetelerin başarısız olacağı gösterilmedi.
 
 ### 2.6 Teori (`docs/10_teori.md`; commit'ler `1c348ab`, `f45da5e`)
 - **Biçimsel model:** K-LUT recurrent devre, block-local yapı, maliyet dörtlüsü (S, D, L, R).
@@ -113,18 +113,20 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
   | Gerçekleştirme | State | Döngü | Fmax (MHz) |
   |---|---|---|---|
   | Öğrenilen, tam tablolu 3-bit bloklar | 24 | 2 seviye | 399 |
-  | Elle, noktasal | 15 | LUT5 | 433 |
-  | Block-local en küçük (V4 + A4 coset'leri; K = 5'te 9 bit; K = 4'te imkânsız) | 7 | LUT6 | 458 |
+  | Elle, ters kod r = p⁻¹ | 15 | LUT5 | 433 |
+  | Bağımsız dense bloklarla en küçük, w = 2 (V4 + A4 coset'leri; K = 5'te 9 bit; K = 4'te imkânsız) | 7 | LUT6 | 458 |
   | SAT, alt sınırda | **6** | LUT6 | 455 |
 
   İspat yolu: Hartmanis–Stearns SP partition'ları, grup makinelerinde alt grupların coset'lerine karşılık gelir; injectivity ⇔ alt grupların kesişimi birim eleman; A5'in 59 alt grubu tarandı. Kod: `sw/fbseq/theory_sat.py`.
 
+  Fmax değerleri yalnız state döngüsünün, iki seed ortalaması. 6, 7 ve 15 bit aynı hız ölçeğinde; iki seed bir sıralama vermiyor.
+
 - **Kararlılık:**
   - hata rekürsiyonu sınırı ve koşullu beklenen değer sınırı;
   - tek bit için 𝔽₂ tam eşitliği;
-  - bloklara genelleme: birleşen map'ler farkı siler, permütasyonlar korur;
+  - bloklara genelleme: birleşen map'ler farkı siler, permütasyonlar durumları ayrı tutar (aynı sonraki kontroller şartıyla);
   - kayba bağlantı (Lipschitz sınırı);
-  - **bellek ile dayanıklılık aynı mekanizmaya bağlı.**
+  - bellek ile dayanıklılığın bağı yalnız bağımsız 1-bit keep/toggle için geçerli. Genel bloklar hata düzeltebilir (majority karşı örneği); 60 durumu tek hatadan düzelten bir kod için en az 10 bit gerekir. Önceki sürüm bunu genelliyordu (§2.8).
 - **Sanı** (literatür ajanının taslağı, kontrol edilmeli): k-bitlik bloklar tam olarak, sözdizimsel monoidinin basit grup bölenleri S_{2^k}'yi bölen dilleri tanır. Test edilebilir öngörüleri var.
 
 ### 2.7 Literatür taraması (üç hat)
@@ -135,9 +137,9 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 - Stearns–Hartmanis 1961 (partition pair: Teorem C'nin çekirdeği);
 - Derby 2001 (CRC state-space dönüşümü: doğrusal durum; doğrusal olmayan genellemesi bulunamadı);
 - Barkalov 2021 (LUT tabanlı FSM);
-- Shende 2003 (parity engeli).
+- Shende 2003 (tersinir devre paritesi; önceki uyarlamamız yanlıştı, §2.8).
 
-**İfade gücü:** Sarrof 2024, Grazzi 2025, Merrill 2024, PD-SSM 2025 (en yakın nöral akraba), Knorozova & Ronca 2024, Zhang & Li 2026 (0,32'nin teşhisi: coset aşaması).
+**İfade gücü:** Sarrof 2024, Grazzi 2025, Merrill 2024, PD-SSM 2025 (en yakın nöral akraba), Knorozova & Ronca 2024, Zhang & Li 2026 (coset aşaması; bizim başarısız koşularımız için yalnız bir hipotez).
 
 **Logic ağları:**
 
@@ -154,6 +156,38 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 - adım bazında discretization gap ölçümü;
 - LUT fan-in kısıtlı en küçük grup gerçekleştirmeleri.
 
+### 2.8 Bağımsız denetim (29 Ekim)
+`docs/10` ve bu rapor dışarıdan denetlendi. Denetimin bütün sayısal kontrolleri burada ayrıca yeniden üretildi: `sw/fbseq/witness_check.py` → `model/fbseq/witness_check.json`. Bu script z3 kullanmıyor ve `theory_sat.py` ile kod paylaşmıyor.
+
+**Doğrulanan çekirdek:**
+
+- 6 bitlik SAT tanığı: 60 farklı kod, 1 080 geçiş koşulunun hepsi.
+- 59 alt grup.
+- Bağımsız dense bloklarla K = 4 imkânsız, K = 5'te 9 bit, K = 6'da 7 bit.
+- Slope sonucu: 1,4186 / 1,4176.
+
+**Düzeltilenler:**
+
+| Konu | Önceki ifade | Düzeltme |
+|---|---|---|
+| Tersinir devre paritesi | "Bir biti hiç değiştirmeyen devre yalnız çift permütasyon üretir" | Yanlış; CNOT karşı örneği. Shende Lemma 11'in koşulu daha güçlü |
+| Sağa çarpma, positional kod | "Mux ile güncellenir" | Kısmi base'de yerel değil; ters kod r = p⁻¹ yerel |
+| β_K | "En küçük state" | Yalnız sabit alfabe kodlaması, harften gelen kontrol ve bağımsız dense bloklar için |
+| Δ_hard = 0,185 → 0,02 | Discretization farkı | Performans açığı (farklı parametre noktaları). Aynı parametrede fark: +1,37 / −0,23 |
+| A5 seed'leri | "Yarısı tam uzunluk genellemesi; diğerleri 1/3'te coset aşamasında" | 2/4, yalnız 64 ve 256 uzunlukta; başarısızlar 0,36 → 0,21 ve 0,25 → 0,09; coset aşaması hipotez |
+| "Soft aşama şart" | Zorunluluk | Denenen reçetelerde softhard 2/4, hard-forward 0/8 |
+| Bellek ile dayanıklılık | Genel | Yalnız bağımsız 1-bit keep/toggle; majority karşı örneği, 60 durum için ≥ 10 bit |
+| A2 | "Her çevrim tek LUT ve tek register" | Her çevrimde #LUT = #register (tek seviyeli F) |
+| Fiziksel Pareto | "6 bit Pareto ucunda" | 6 bit, iki yerleştirmede ~455 MHz; 7 ve 15 bitle aynı hız ölçeğinde |
+| Gumbel 1,685 | Kaynaksız | İlk koşu arşivi `model/fbseq/archive/`; yeniden üretimi sürüyor |
+| %25 daha az bit | İdeal LM ile başlıklı zstd | Eşit koşullarda %7–14 (aşağıda) |
+
+**Denetimin ötesinde bizim bulduklarımız:**
+
+- **SAT tanığının yapısı genellendi.** Tanık, 15 durumlu bir coset core (V4'ün coset'leri) ve iki koşullu toggle'dan oluşuyor; bunu denetim fark etti. Biz bunu bir lemmaya çevirdik: H ≅ Z₂ᵏ için ⌈log₂[G:H]⌉ + k bit, tek seviye. A5'te bu 6 bit; lemma K = 7 ile her etiketlemede çalışıyor. K = 6 ise ancak özel etiketlemelerle mümkün: 10 000 rastgele deneme hiçbir K = 6 etiketlemesi bulmadı, SAT buldu.
+- **zstd başlığı.** zstd her 256 byte'lık pakete 10 byte frame başlığı yazıyor; bu ~0,31 bpb ediyor. LM'ye coder sonlandırması eklenip zstd'den başlığın çıkarılabilir kısmı düşüldüğünde avantaj B için %7–14, GRU için %15–21. Ayrıntı `docs/09` §4.
+- **Checkpoint probe'larında iki ölçüm hatası.** Head'i yeniden eğitme, eğitimdeki reçeteyi kullanmıyordu. Gecikmeli okumada "yakın byte'lardan zaten tahmin edilebilir" kontrolü yoktu. İkisi düzeltildi ve yeniden koşuldu (`docs/10` §8).
+
 ---
 
 ## 3. Bugün ne iddia edebiliriz, neyi edemeyiz?
@@ -162,9 +196,9 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 
 1. Döngüdeki mantık derinliği ile Fmax arasındaki ilişkiyi XC7A100T'de ölçtük.
 2. Boolean blok recurrence'ın ifade gücü sıralaması teoriyle örtüşüyor; ölçtük.
-3. A5 için tek seviyeli fan-in 6 gerçekleştirmenin en küçük state'i tam olarak 6 bit; block-local kısıtla 7 bit. Hepsi doğrulanmış ve place edilmiş.
-4. Gerçek log verisinde Boolean recurrence, doğru eğitimle aynı bütçedeki pencere modelini ve sözlüklü zstd'yi geçiyor. Bu ideal bit maliyeti; model float.
-5. Soft–hard farkı ve adım bazında state ayrışması ölçüldü. Hard-forward ve eğim tavlaması bu farkı büyük ölçüde kapatıyor.
+3. A5 için tek seviyeli fan-in 6 gerçekleştirmenin en küçük state'i tam olarak 6 bit. Bağımsız dense bloklarla (kontrol yalnız harften, w = 2) 7 bit. Hepsi bağımsız olarak doğrulanmış ve place edilmiş. 6 bitlik çözümün yapısı (coset core + fiber) bir lemmaya bağlandı.
+4. Gerçek log verisinde Boolean recurrence, doğru eğitimle aynı bütçedeki pencere modelini ve sözlüklü zstd'yi geçiyor. Eşit koşullarda zstd'ye göre avantaj %7–14. Kapsam: iki seed, ideal bit maliyeti artı tahmini coder maliyeti, aynı dosyaların son %20'si; model float.
+5. Soft–hard farkı ve adım bazında state ayrışması ölçüldü. Hard-forward ve eğim tavlaması, hard modelin soft referansa göre performans açığını 0,185'ten 0,02 bpb'ye indiriyor.
 
 **Edemeyiz (henüz):**
 
@@ -172,7 +206,7 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 2. Gerçek sıkıştırma yok: range coder ve bit-exact encode/decode yapılmadı.
 3. Görülmemiş log sistemlerine genelleme test edilmedi.
 4. Bütün donanım sonuçları simülasyon ve STA'ya dayanıyor; enerji ölçülmedi.
-5. A5'in eğitimle güvenilir biçimde öğrenilmesi çözülmedi (seed'lerin yarısı).
+5. A5'in eğitimle güvenilir biçimde öğrenilmesi çözülmedi: softhard 2/4, hard-forward 0/8, codebook 0/24.
 6. Teoride yeni olan yalnız A5 küçük vakası; genel teorem (Problem C) açık.
 
 ---
@@ -183,7 +217,7 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
   - genel bir teorem (A5'in ötesi);
   - Boolean devreleri güvenilir biçimde eğiten bir yöntem;
   - LUT'a çevrilmiş tam model.
-- **Değerlendirme:** Bugün sağlam bir bitirme ve iyi bir konferans çalışması düzeyindeyiz. Q1 için bu üç eksikten en az ikisinin kapanması gerekiyor.
+- **Değerlendirme:** Bugün sağlam bir bitirme ve iyi bir konferans çalışması düzeyindeyiz. Q1 bir eşik değil, hakeme bağlı bir hedef. Bu eksikler kapandıkça argüman güçlenir; kaçının yeteceğini önceden söyleyemeyiz.
 
 ---
 
@@ -202,6 +236,10 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 | Araştırma ajanı | Kullanıcının derlediği `run.c` binary'lerini kendiliğinden çalıştırdı; repoya yazmadı | Kullanıcıya bildirildi |
 | PDF oluşturucu | Chrome 156 PDF'i yazdıktan sonra hata koduyla çıkıyor | Dosyanın varlığı kontrol ediliyor |
 | Veri | Loghub küçük; test, aynı dosyaların son %20'si | Leave-one-system-out yapılacak |
+| Bağımsız denetim (29 Ekim) | Teori ve raporda kapsam ve ifade hataları | Düzeltildi; §2.8 |
+| zstd karşılaştırması | İdeal LM kod uzunluğu, başlıklı zstd dosya boyutuyla karşılaştırılmıştı | Eşitlendi: %25 → %7–14 |
+| Codebook kuyruğu | Bekleme döngüsü `pgrep` ile kendi komut satırını buluyordu, hiç başlamadı | Elle başlatıldı |
+| Probe'lar | Head yeniden eğitimi farklı reçeteyle; gecikmeli okumada kontrol yoktu | Düzeltildi, yeniden koşuldu |
 
 ---
 
@@ -209,17 +247,19 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 
 **Çalışıyor:**
 
-- transition codebook: A5'te (softhard ve eğim tavlaması, 4 seed) ve Loghub'da (eğim tavlaması, 2 seed);
-- 2-bit ve 3-bit bloklar, eğim tavlamasıyla Loghub'da.
+- 2-bit ve 3-bit bloklar, eğim tavlamasıyla Loghub'da;
+- Gumbel-ST'nin düzeltilmiş kodla yeniden üretimi.
+
+**Bitti:** transition codebook, olumsuz. A5'te 24 koşunun en iyisi 0,12; Loghub 2,07–2,16 bpb.
 
 **Öncelik sırasıyla sıradakiler:**
 
-1. Codebook sonuçları: aynı ifade gücü daha kısa döngüyle, öğrenilebilir mi?
-2. A5'i güvenilir öğrenmek: PD-SSM reçetesi, CAGE, curriculum; amaç seed başarı oranını %50'den yukarı çekmek.
+1. Coset core + fiber'ı başka gruplarda denemek (S₄, PSL(2,7)); K = c + w etiketlemelerinin koşulu.
+2. A5'i güvenilir öğrenmek: PD-SSM reçetesi, CAGE, curriculum; amaç seed başarı oranını %50'den yukarı çekmek. Başarısız koşularda iç durumun coset yapısına bakmak.
 3. Problem C'nin genelleşmesi:
    - K = 5 ve K = 4 için block-local olmayan SAT;
    - S₄, mod 5, mod 7 görevleriyle sanının testi;
-   - β_K ölçüsünün diğer gruplarda hesaplanması.
+   - β_{K,w} ölçüsünün diğer gruplarda hesaplanması.
 4. Kararlılık: tek bit çevirme deneyi ve head'in Lipschitz sabiti.
 5. Faz 1:
    - gate ağlarını ve head'i LUT ağlarına çevirmek;
@@ -238,6 +278,9 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 | `985fbba` | `sw/fbseq` altyapısı, GPU sürümü, Colab script'i, döngü ölçümleri, baseline'lar |
 | `1c348ab` | Teori belgesi, A5 gerçekleştirmeleri, SAT, soft–hard deneyi, kararlı relaxation |
 | `f45da5e` | Faz 0 belgesi, düzeltilmiş hard-aware sonuçları, codebook modeli |
+| `202b576` | Bu rapor |
+| `1ca9f6a` | Eleştirel okumadan düzeltmeler; A5 çözümü öğrenilen sınıfın içinde |
+| (bu commit) | Bağımsız denetimin düzeltmeleri, `witness_check.py`, coset core + fiber lemması, codebook ve probe sonuçları, zstd başlığı |
 
 | Dosya | Görev |
 |---|---|
@@ -248,5 +291,8 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 | `sw/fbseq/hardaware.py` | Hard-forward eğitim yöntemleri |
 | `sw/fbseq/theory_sat.py` | A5 alt grupları, block-local minimum, SAT |
 | `sw/fbseq/codebook.py` | Transition codebook |
+| `sw/fbseq/probes.py` | A5 çözümünü öğrenilen sınıfa yazma; checkpoint probe'ları |
+| `sw/fbseq/witness_check.py` | SAT tanığının ve karşı örneklerin bağımsız denetimi; coset core + fiber |
+| `model/fbseq/archive/` | İlk hard-aware koşusunun kayıtları (Gumbel 1,685'in kaynağı) |
 | `scripts/get_loghub.sh`, `scripts/colab_faz0.sh`, `scripts/cpu_baseline.sh` | Veri, Colab, CPU baseline |
 | `model/fbseq/*.json` | Bütün sonuçlar |

@@ -2,7 +2,14 @@
 
 **Merkezi soru.** *Can we learn hardware-realizable discrete state-transition systems without sacrificing the sequence-modeling capability of their continuous relaxations?*
 
-**Bugünkü merkez iddia** (28 Ekim): Boolean recurrent modellerde durum kapasitesi, geçişlerin yerelliği ve geri besleme derinliği ayrı kısıtlardır. A5'te bunların bit maliyeti kesin olarak ayrıştırılabilir: 6, 7 ve 9 bit; 6 bit tek LUT6 seviyesinde bile sıkıdır. Input-gated yapıda discretization hatası döngü tarafından büyütülemez. Loghub'da geçiş kaybının büyük kısmı eğitimle kapanıyor (1,583 → 1,418; soft 1,398). Kalan fark, Boolean bitlerin sızdıran belleği temsil edememesiyle tutarlıdır; bu bir hipotez.
+**Bugünkü merkez iddia** (29 Ekim): Boolean recurrent modellerde durum kapasitesi, geçişlerin yerelliği ve geri besleme derinliği ayrı kısıtlardır. A5'te bunların bit maliyeti kesin olarak ayrıştırılabilir:
+
+- genel tek seviyeli gerçekleştirmede 6 bit; bu, LUT6 ile bile sıkı;
+- bağımsız dense bloklarla (kontrol yalnız harften, w = 2) K = 6'da 7 bit, K = 5'te 9 bit.
+
+6 bitlik çözümün yapısı da anlaşıldı: 15 durumlu bir coset core ve iki koşullu toggle. Input-gated yapıda discretization hatası döngü tarafından büyütülemez. Loghub'da hard modelin eski soft referansa göre açığı eğitimle 0,185'ten 0,02 bpb'ye indi (1,583 → 1,418; soft referans 1,398; farklı eğitimlerin karşılaştırması). Kalan fark, Boolean bitlerin sızdıran belleği temsil edememesiyle tutarlıdır; bu bir hipotez.
+
+**Bağımsız denetim (29 Ekim).** Belge dışarıdan denetlendi ve denetimin bütün sayısal kontrolleri burada yeniden üretildi (`sw/fbseq/witness_check.py` → `witness_check.json`). Çıkan düzeltmeler ilgili bölümlere işlendi: §2, §3, §5.1, §5.3–5.5, §7, §8.
 
 Bu belge, Faz 0 deneylerinden çıkan teorik çerçeveyi toplar. Beş ana bölümde ilerler:
 
@@ -23,15 +30,16 @@ Literatür taraması Ekim 2026 sonunda üç hatta yapıldı. "Bulunamadı" ifade
 | Zamanlama | Cascade'in iteration bound'u, bileşen döngülerinin maksimumuna eşittir. Bizim mimari sınıfında bu sınıra ulaşılabilir. | **Bilinen** (Leiserson–Saxe 1991, Thm 11); uyarlama |
 | Grup yapıları | m üreteçli G ≤ Sₙ'nin word problem'i tek LUT seviyesinde çözülebilir. Encoding'e göre fan-in ile state arasında bir ödünleşim var. | Parçaları bilinen; biçimsel ifadesi bulunamadı |
 | Bilgi alt sınırı | Grup elemanını izlemek için S ≥ ⌈log₂\|G\|⌉ | **Bilinen** (Myhill–Nerode) |
-| **A5, block-local** | Tek seviyede en az state: K = 6 için **7 bit**, K = 5 için **9 bit**; K = 4'te imkânsız | **Bizim** (alt grup taraması ile ispat) |
-| **A5, genel** | K = 6 ile **6 bit**, yani alt sınır. Sınır sıkı. | **Bizim** (SAT tanığı + alt sınır) |
-| Fiziksel karşılık | 6 bit 455 MHz, 7 bit 458 MHz, 15 bit 433 MHz, öğrenilen 3-bit bloklar 399 MHz | **Bizim** ölçüm |
+| **A5, bağımsız dense bloklar** | Kontrol yalnız harften (w = 2). Tek seviyede en az state: K = 6 için **7 bit**, K = 5 için **9 bit**; K = 4'te imkânsız | **Bizim** (alt grup taraması ile ispat) |
+| **A5, genel** | K = 6 ile **6 bit**, yani alt sınır. Sınır sıkı. | **Bizim** (SAT tanığı + alt sınır; tanık 1 080 koşulla bağımsız denetlendi) |
+| **Coset core + fiber** | Elementary abelian 2-alt grup H ≅ Z₂ᵏ ile ⌈log₂[G:H]⌉ + k bit, tek seviye: core coset'i, fiber koşullu toggle'lar. A5'te V4 ile 6 bit, K = 7; K = 6 yalnız özel etiketlemelerle | **Bizim** (yapı denetimde fark edildi; lemma ve ispat bizde) |
+| Fiziksel karşılık | Yalnız state döngüsü, iki seed ortalaması: 6 bit 455 MHz, 7 bit 458 MHz, 15 bit 433 MHz, öğrenilen 3-bit bloklar 399 MHz. 6, 7 ve 15 bit aynı hız ölçeğinde | **Bizim** ölçüm |
 | Öğrenilen sınıfta temsil | Doğru A5 çözümü, eğitilen mimarinin içine yazıldığında %100 (yalnız head eğitildi) | **Bizim** |
 | A5'in basit grup genellemesi | Yörünge argümanı: her basit grup için blok boyutuna göre bir alt sınır | Eleştirel okumadan; genelleme ve ispat bizde |
 | Bilgi ve kayıp | L_min = H(Y \| Z, W); fazlalık I(Y; H \| Z, W) | **Bilinen** (standart) |
 | İfade gücü | Boolean blok sıralaması: set/keep → star-free; + toggle → Z₂; 2 bit → Z₃; 3 bit → A5 | Sürekli karşılığı bilinen (Sarrof 2024, Grazzi 2025); Boolean ölçümü bizim |
-| Öğrenilebilirlik | Soft–hard farkı 0,185 bpb. Hard-forward eğitim bunu ~0,02'ye indirdi. A5'te seed'e bağlı kararsızlık var. | Ölçüm bizim; yöntemler literatürden |
-| Kararlılık | Hata rekürsiyonu sınırı; 𝔽₂ tam eşitliği; birleşen map'ler farkı siler, permütasyonlar korur; input-gated yapıda hata döngüde büyümez; sızdıran bellek hipotezi | Matematiği standart; input-gated önermesi ve ölçümler bizim |
+| Öğrenilebilirlik | Aynı parametrede hard − soft: soft eğitimden sonra +1,37, hard uyarlamadan sonra −0,23 bpb. Hard modelin eski soft referansa göre açığı 0,185'ten ~0,02'ye indi. A5'te softhard 2/4, hard-forward 0/8, codebook 0/24 | Ölçüm bizim; yöntemler literatürden |
+| Kararlılık | Hata rekürsiyonu sınırı; 𝔽₂ tam eşitliği; birleşen map'ler farkı siler, permütasyonlar durumları ayrı tutar; input-gated yapıda hata döngüde büyümez; sızdıran bellek hipotezi. Bellek–dayanıklılık bağı yalnız bağımsız 1-bit keep/toggle için geçerli; genel bloklar hata düzeltebilir (60 durum için ≥ 10 bit) | Matematiği standart; input-gated önermesi ve ölçümler bizim |
 
 ---
 
@@ -71,7 +79,11 @@ T_IB = max_C (Σ_{v∈C} d(v)) / (Σ_{e∈C} w(e))
 
 bileşenlerin kendi bound'larının maksimumudur. *İspat:* Çevrimsiz bir grafikte bileşenler arası hiçbir kenar bir çevrimin üzerinde olamaz.
 
-**A2 (ulaşılabilirlik).** Her düğümü tek LUT olan ve bileşenler arası yolları ileri yönlü olan sınıfımızda bu sınıra ulaşılabilir. Leiserson–Saxe'nin Theorem 11'i, unit-delay bir devrede Φ ≤ c yapan bir retiming'in var olmasını, G − 1/c grafiğinde negatif ağırlıklı çevrim olmamasına bağlar. Bizde her çevrim tek LUT ve tek register olduğu için c = 1 sağlanır.
+**A2 (ulaşılabilirlik).** Her düğümü tek LUT olan ve bileşenler arası yolları ileri yönlü olan sınıfımızda bu sınıra ulaşılabilir. Leiserson–Saxe'nin Theorem 11'i, unit-delay bir devrede Φ ≤ c yapan bir retiming'in var olmasını, G − 1/c grafiğinde negatif ağırlıklı çevrim olmamasına bağlar. c = 1 için yeterli koşul, her çevrimde en az LUT sayısı kadar register bulunmasıdır.
+
+Tek seviyeli F'de bu koşul eşitlikle sağlanır. Her state bitinin çıkışı tek bir LUT'tan doğrudan register'a gider; bu yüzden bit bağımlılık grafiğindeki her çevrim LUT ve register'dan dönüşümlü geçer ve #LUT = #register olur. Bir çevrim birden fazla LUT içerebilir; örneğin s₀ → s₁ → s₀ iki LUT ve iki register'dır. Bu durum sonucu değiştirmez.
+
+Ideal retiming sonucunun dışında kalanlar ayrıca belirtilmeli: başlangıç durumu, sabit I/O zamanlaması, pipeline register'larının maliyeti ve fiziksel yönlendirme.
 
 Tezde açıkça yazılması gerekenler:
 
@@ -82,7 +94,7 @@ Tezde açıkça yazılması gerekenler:
 
 **İki önemli ayrım** (eleştirel bir okumadan, 28 Ekim):
 
-- **Iteration bound bir alt sınırdır; her devrede ulaşılamaz.** Bölünemeyen düğümlerde fark açılabilir. Örnek: bir çevrimde birim gecikmeli üç düğüm ve iki register. Alt sınır 3/2, ama bir aralıkta iki düğüm bulunmak zorunda olduğundan en iyi değer 2. Bizim sınıfta her çevrim 1 LUT ve 1 register olduğundan alt sınıra ulaşılır.
+- **Iteration bound bir alt sınırdır; her devrede ulaşılamaz.** Bölünemeyen düğümlerde fark açılabilir. Örnek: bir çevrimde birim gecikmeli üç düğüm ve iki register. Alt sınır 3/2, ama bir aralıkta iki düğüm bulunmak zorunda olduğundan en iyi değer 2. Bizim sınıfta her çevrimde LUT ve register sayısı eşit olduğundan (A2) alt sınıra ulaşılır.
 - **Akış işleme hızı, üretim hızı değildir.** "Döngüde tek mux" iddiası girdinin baştan bilindiği durumlar içindir: puanlama ve sıkıştırmada encoder. Metin üretiminde ya da FPGA'de decode'da bir sonraki girdi head'in ve örneklemenin çıktısına bağlıdır; head de döngüye girer. Sıkıştırma case'inde encoder FPGA'de, decoder yerde olduğu için iddia encoder için geçerlidir.
 
 **Konum:** Bilinen sonuçların bir corollary'si; atıflı bir lemma olarak sunulur.
@@ -93,11 +105,17 @@ Tezde açıkça yazılması gerekenler:
 
 m üreteçli G ≤ Sₙ, artı identity harfi (m+1 harf, w = ⌈log₂(m+1)⌉ kontrol biti):
 
-| Encoding | State | Bit başına fan-in | Yerellik |
-|---|---|---|---|
-| Positional, base ile (bir base β₁..β_k'nin görüntüleri) | k·⌈log₂n⌉ | ⌈log₂n⌉ + w (sola çarpmada) | Koordinat başına yerel |
-| One-hot (bit (i,j) = [g(i)=j]) | n² | (m+1) + w | Her iki çarpma yönünde yerel |
-| Sağa çarpma g∘σ, positional | k·⌈log₂n⌉ | m koordinat arasında mux | Yerel değil |
+| Encoding | Güncelleme | State | Bit başına fan-in | Yerellik |
+|---|---|---|---|---|
+| Positional, base ile: e(p) = (p(β₁), …, p(β_k)) | Sola çarpma, p′ = a∘p | k·⌈log₂n⌉ | ⌈log₂n⌉ + w | Koordinat başına yerel: (a∘p)(βᵢ) = a(p(βᵢ)) |
+| Aynı kod | Sağa çarpma, p′ = p∘a | – | – | **Yerel değil:** (p∘a)(βᵢ) = p(a(βᵢ)) ve a(βᵢ) base'de olmayabilir |
+| Ters kod, base ile: r = p⁻¹, e = (r(β₁), …, r(β_k)) | Sağa çarpma | k·⌈log₂n⌉ | ⌈log₂n⌉ + w | Yerel: r′ = a⁻¹∘r |
+| Bütün n koordinat: (p(1), …, p(n)) | Sağa çarpma | n·⌈log₂n⌉ | (m+1) + w | Kopyalama: yeni koordinat i, eski a(i) koordinatından seçilir |
+| One-hot (bit (i,j) = [g(i)=j]) | İki yön | n² | (m+1) + w | Her iki çarpma yönünde yerel |
+
+Sağa çarpmadaki karşı örnek, A5'te (0 tabanlı): p = (0,1,2,3,4), q = (0,3,2,4,1), a = (1,2,3,4,0). Eski koordinatlar eşit, p(2) = q(2) = 2; yenileri farklı, (p∘a)(2) = 3 ve (q∘a)(2) = 4. Kod injective olduğu için p geri çözülebilir, ama bu tek bir mux ile ve aynı fan-in'le yapılamaz.
+
+Görevimiz sağa çarpma (pₜ = pₜ₋₁ ∘ aₜ). §5.4'teki 15 bitlik elle kurulan devre zaten ters kodu, yani r = p⁻¹'in beş koordinatını saklıyor (`controls.py`).
 
 Bütün sonlu basit gruplar 2 üreteçlidir: Steinberg 1962, Aschbacher–Guralnick 1984, Miller; CFSG'ye dayanır. Bu yüzden one-hot encoding ile fan-in 3 + 2 = 5 her basit grup için yeter.
 
@@ -138,9 +156,17 @@ Görev: pₜ = pₜ₋₁ ∘ aₜ, aₜ ∈ {(01234), (012), e}, w = 2. Bu, `fb
 
 SP partition kavramı Hartmanis–Stearns'e (1961–1966) aittir; grup makinelerindeki karşılığı klasiktir. Bizim katkımız, bunun LUT fan-in kısıtıyla birleştirilmesi.
 
-**Sonuç.** Dense block-local gerçekleştirmenin en küçük state'i:
+**Sonuç.** Sabit tutulanlar:
 
-β_K(G) = min Σᵢ ⌈log₂[G : Hᵢ]⌉, koşullar ∩Hᵢ = {1} ve ⌈log₂[G : Hᵢ]⌉ + w ≤ K.
+- alfabe kodlaması c : Σ → {0,1}^w;
+- her bloğun kontrolü yalnız o adımdaki harften gelir; alt katman ya da başka blokların state'i kontrole girmez;
+- bloklar birbirinden bağımsız ve dense.
+
+Bu sınıfta en küçük state:
+
+β_{K,w}(G; Σ, c) = min Σᵢ ⌈log₂[G : Hᵢ]⌉, koşullar ∩Hᵢ = {1} ve ⌈log₂[G : Hᵢ]⌉ + w ≤ K.
+
+Bu varsayımlar gerekli. Tanım 1 daha geniştir: kontrol alt katmanın state'inden üretilebilir ve w_j bitten bite değişebilir. Bir blok başka blokların state'ine bağlı kontrol alırsa, tek başına grup makinesinin bir SP partition'ı olmak zorunda değildir. §5.3'teki 6 bitlik tanık tam olarak bu yüzden sınıfın dışında kalıyor. Aşağıda β_{K,2}, kısaca β_K yazılıyor.
 
 ### 5.2 A5 için değerler
 
@@ -171,14 +197,46 @@ A5 için (μ = 5):
 Bu, §5.2'deki taramayı doğrular ve aynı akıl yürütme her basit grup için çalışır.
 
 ### 5.3 Block-local olmayan: sınır sıkı
-SAT/SMT sorgusu (`theory_sat.py`, z3, 6 344 s): S = 6 ve K = 6 için, her bitin en fazla 4 state bitine ve 2 kontrol bitine bağlı olduğu injective bir encoding **var**. Bağımsız doğrulama:
+SAT/SMT sorgusu (`theory_sat.py`, z3, 6 344 s): S = 6 ve K = 6 için, her bitin en fazla 4 state bitine ve 2 kontrol bitine bağlı olduğu injective bir encoding **var**. Bağımsız doğrulama (`witness_check.py`, z3 kullanmıyor):
 
-- injectivity ve bütün bit/harf koşulları sağlanıyor;
+- 60 kodun hepsi farklı;
+- 60 durum × 3 harf × 6 bit = 1 080 koşulun hepsi sağlanıyor;
 - rastgele dizilerde %100 doğru (300 dizi × 512).
 
-Alt sınır da 6 olduğundan **A5 için tek seviyeli, fan-in 6 gerçekleştirmenin en küçük state'i tam olarak 6 bittir.** Block-local kısıt bu değeri 7'ye çıkarıyor.
+Tam geçiş denetimi, rastgele testten güçlüdür. Geçerli 60 koddan birinde başlayan devre her harfte doğru geçiş yapıyorsa, tümevarımla her sonlu kelimede doğrudur. Kapsam dışında kalanlar: kullanılmayan 4 koddan başlamak ve fiziksel bir hatadan sonra toparlanmak.
 
-Bir notu açıkça yazmak gerekir: genel bir 6 bitlik kodda bir sonraki state biti 6 state bitine ve kontrol bitlerine bağlı olabilir. Bu da tek bir LUT6'ya sığmayabilir. SAT tanığı tam bu engeli aşan bir encoding buluyor: her bit yalnız 4 state bitine ve 2 kontrol bitine bağlı. Yani 6 bitlik minimum **fan-in 6 ve tek seviye kısıtı altında da** geçerli. Block-local kısıtın A5'teki bedeli tam 1 bit.
+Alt sınır da 6 olduğundan **A5 için tek seviyeli, fan-in 6 gerçekleştirmenin en küçük state'i tam olarak 6 bittir.** Bağımsız dense blok kısıtı bu değeri 7'ye çıkarıyor.
+
+Bir notu açıkça yazmak gerekir: genel bir 6 bitlik kodda bir sonraki state biti 6 state bitine ve kontrol bitlerine bağlı olabilir. Bu da tek bir LUT6'ya sığmayabilir. SAT tanığı tam bu engeli aşan bir encoding buluyor: her bit yalnız 4 state bitine ve 2 kontrol bitine bağlı. Yani 6 bitlik minimum **fan-in 6 ve tek seviye kısıtı altında da** geçerli. Bağımsız blok kısıtının A5'teki bedeli tam 1 bit.
+
+**Tanığın yapısı: coset core + fiber** (`witness_check.json`; yapıyı denetim fark etti). Bitler 0'dan numaralanıyor.
+
+- **Core:** (s₀, s₁, s₂, s₅) kapalı bir 4 bitlik çekirdek; bu dört bitin sonraki değeri yalnız kendilerine ve harfe bağlı. Core'un 15 erişilebilir değeri var; her biri V4p biçiminde bir sağ coset. Burada V4, 2. noktayı sabitleyen mertebe 4'lük alt grup: {e, (01)(34), (03)(14), (04)(13)}.
+- **Fiber:** s₃ ve s₄, coset'in içindeki 4 elemanı ayırıyor. Her biri bir toggle: s′ⱼ = sⱼ ⊕ fⱼ(core, harf). s₃'ün flip'i (s₀, s₂, s₅)'e, s₄'ünki (s₀, s₁, s₂)'ye bakıyor. Fan-in: 1 kendi biti + 3 core biti + 2 harf biti = 6.
+
+Sezgi: Bu bir Krohn–Rhodes cascade'i, ama tek LUT seviyesinde. Alt bileşen (fiber), üst bileşenin (core) **eski** değerini okuyor. Senkron bir adımda bu değer zaten register'da hazır olduğundan döngü derinliği artmıyor. Fiber blokları kendi başına SP partition olmadığı için §5.1'deki alt sınır bu yapıya uygulanmıyor.
+
+**Lemma (coset core + Z₂ᵏ fiber).** H ≤ G, H ≅ Z₂ᵏ olsun ve c = ⌈log₂[G:H]⌉ yazalım. Sağa çarpan G makinesinin tek LUT seviyeli, S = c + k bitlik bir gerçekleştirmesi vardır. Fan-in, core bitleri için en fazla c + w, fiber bitleri için en fazla 1 + c + w'dir.
+
+*İspat.* Sağ coset'ler için bir T transversal'i seçilir; her p tek biçimde p = h·t yazılır (h ∈ H, t ∈ T). Bir harf için p∘a = h·(t∘a) olur. t∘a, Ht′ coset'indedir; yani t∘a = γ(t, a)·t′, γ ∈ H.
+
+- Core, coset'i (Ht ↦ Ht′) yalnız kendi değeri ve harfle günceller. Bu, §5.1'deki SP partition'dır.
+- Fiber h ↦ h·γ(t, a) olur. H ≅ 𝔽₂ᵏ koordinatlarında bu, her koordinatın kendi eski değeri ile γ'nın ilgili koordinatının XOR'udur.
+
+Her şey eski state ve harften hesaplandığı için döngü tek seviyedir. (core, fiber) ikilisi p'yi belirlediği için kod injective'dir. ∎
+
+**Önerme (bu biçimdeki her kod lemmadan gelir).** Core'u H'nin coset'lerini kodlayan ve fiber bitleri (core, harf)'e koşullu toggle olan her injective kod, lemmanın inşasıyla elde edilir. Serbestlikler: coset etiketlemesi, transversal ve H'nin 𝔽₂ᵏ tabanı.
+
+*Taslak.* Bir coset'e dönen kelimeler fiber'da t⁻¹Ht ile çarpma etkisi yapar. Toggle koşulu bu etkinin XOR'la bir sabit olmasını gerektirir. Bu yüzden coset içindeki fiber kodu, H'nin 𝔽₂ᵏ'ye bir izomorfizmi artı bir ötelemedir. Komşu coset'ler arasında tek bitlik toggle'lar bu izomorfizmin değişmesine izin vermez; core grafiği bağlantılı olduğundan izomorfizm her yerde aynıdır. Ötelemeler transversal seçimine karşılık gelir.
+
+**A5'te sonuç.** H = V4 ile c = 4, k = 2, yani S = 6 = alt sınır.
+
+- Lemma bu 6 biti her etiketlemede **K = 7** ile veriyor.
+- K = 6 için her fiber flip'inin 4 core bitinden yalnız 3'üne bağlı olması gerekiyor.
+- Beş V4, rastgele coset etiketlemesi, transversal ve taban ile 10 000 deneme yapıldı. Hiçbiri K = 6'ya inmedi; hepsinde flip'ler 4 core bitinin tamamına bağlı.
+- Yani SAT'ın bulduğu tanık, aynı yapı ailesinin seyrek bir üyesi. Rastgele denemeler ailenin tamamını taramadığı için bu, K = 6 etiketlemelerinin sayısı hakkında bir ölçüm değil.
+
+Bu, A5'in ötesine genellenmiş bir teorem değildir. Doğal soru, hangi G ve H için K = c + w ile yetinen bir etiketlemenin bulunduğudur (§5.5).
 
 ### 5.4 Fiziksel karşılık
 XC7A100T üzerinde, 120 bitlik state'e kopyalanarak ölçüldü (Yosys + nextpnr-himbaechel, iki seed):
@@ -186,18 +244,20 @@ XC7A100T üzerinde, 120 bitlik state'e kopyalanarak ölçüldü (Yosys + nextpnr
 | Gerçekleştirme | State | Döngü | Fmax (MHz) |
 |---|---|---|---|
 | Öğrenilen mimari, tam tablolu 3-bit bloklar (8:1 mux) | 24 | 2 seviye | 378 / 421 |
-| Elle, noktasal 5 × 3 bit | 15 | LUT5 | 424 / 443 |
+| Elle, ters kod r = p⁻¹, 5 koordinat × 3 bit | 15 | LUT5 | 424 / 443 |
 | β₆: V4 + A4 coset'leri | 7 | LUT6 / LUT5 | 443 / 473 |
 | SAT, 6 bit | **6** | LUT6 | 454 / 456 |
 
-Bundan çıkan sonuç: Daha kompakt encoding, döngü derinliği ve Fmax açısından bir bedel ödetmedi. Bu küçük vakada maliyet Pareto'sunun ucunda 6 bit, tek seviye ve ~455 MHz var. Tam tablolu öğrenilen mimari ise hem daha fazla bit hem daha uzun döngü kullanıyor: gereğinden esnek. **Transition codebook** fikrinin dayanağı bu.
+Bundan çıkan sonuç: Daha kompakt encoding, ölçülen iki yerleştirmede belirgin bir Fmax bedeli ödetmedi. 6 bitlik mantıksal optimum ~455 MHz'e ulaştı; 7 ve 15 bitlik karşılıklarla aynı hız ölçeğinde. Aralıklar örtüşüyor ve iki seed bir sıralama vermiyor. S, L ve R birlikte karşılaştırılmadan 6 bitlik tasarımın fiziksel Pareto optimumu olduğu söylenemez. Tam tablolu öğrenilen mimari ise hem daha fazla bit hem daha uzun döngü kullanıyor: gereğinden esnek. **Transition codebook** fikrinin dayanağı bu.
+
+**Kapsam.** Bu benchmark yalnız state döngüsünü ölçüyor. Olasılık head'i, model parametreleri ve entropy coder dahil değil. ~455 MHz, tamamlanmış bir sıkıştırıcının byte/s değeri olarak okunmamalı.
 
 **Öğrenilen sınıfın içinde (`probe_a5embed.json`).** Doğru çözüm, eğitilen modelle birebir aynı mimarinin içine yazıldı: 3-bit bloklu `fbseq.Gated`, gate MLP'leri ile. Gate ağlarına tam tablolar yerleştirildi; üç blok r(j) = p⁻¹(j) değerlerini tutuyor (24 bitin 9'u). Sonuç:
 
 - state'ten doğrudan çözülen grup elemanı: %100;
 - yalnız head eğitildiğinde, 64 ve 256 uzunlukta: %100.
 
-Yani bu sınıf A5'i temsil edebiliyor; eğitimde görülen başarısızlık bir öğrenme sorunu.
+Yani bu sınıf A5'i temsil edebiliyor; eğitimde görülen başarısızlık bir öğrenme sorunu. Burada state tablolarının doğruluğu tam (yapı gereği); head'in başarısı ise yalnız test edilen uzunluklar için ölçüldü.
 
 ### 5.5 Açık sorular
 1. K = 5 ve K = 4'te block-local olmayan en küçük state (SAT).
@@ -205,7 +265,13 @@ Yani bu sınıf A5'i temsil edebiliyor; eğitimde görülen başarısızlık bir
 3. Cascade'lerde etkin alfabe (§3 uyarısı) ve injective olmayan encoding'ler (state splitting).
 4. Encoding bulmanın karmaşıklığı. Sabit bir netlist'te en küçük döngü derinliği polinom zamanda bulunuyor (Pan–Liu); zorluk tamamen encoding seçiminde.
 5. Derby'nin (2001) CRC/LFSR için state-space dönüşümüyle döngüyü kısaltmasının doğrusal olmayan genellemesi bulunamadı. Teorem C için doğal bir şablon.
-6. Shende vd. (2003) Lemma 11: tam 2^S kodu kullanan ve her adımda en az bir biti hiç değiştirmeyen devreler yalnız çift permütasyon üretir. Tek permütasyonlu otomatlar için boş bir kod ya da ek bir bit gerekir.
+6. **Düzeltildi: tersinir devre paritesi uygulanamaz.** Önceki sürüm, Shende vd. (2003) Lemma 11'den "her adımda en az bir biti değiştirmeyen devreler yalnız çift permütasyon üretir" sonucunu çıkarıyordu. Bu yanlış.
+   - Karşı örnek: CNOT, F(a, b) = (a, b ⊕ a). a hiç değişmiyor, ama 10 ile 11 yer değiştiriyor; bu tek bir transpozisyon, yani tek permütasyon. Dört kodun hepsi kullanılıyor ve ek bit gerekmiyor.
+   - Lemmanın gerçek koşulu: n hatlı tersinir devrede hiçbir kapı n hattın tamamına dokunmaz. Kapının dışında kalan hat kontrol olarak da okunmaz. Bir biti değiştirmeden kontrol olarak okumak bu koşulu sağlamaz.
+   - Paralel LUT güncellemesinin bir tersinir kapı dizisine eşdeğer olduğu da ayrıca gösterilmeliydi.
+
+   Sonuç: tam 2^S kod ve K < S fan-in ile tek permütasyonlar için bir parite engeli olup olmadığı açık bir soru.
+7. Coset core + fiber (§5.3): hangi G ve H ≅ Z₂ᵏ için fiber flip'lerinin c − 1 core bitine indiği bir etiketleme var? H abelian değilse fiber, H'nin bütün elemanlarını harf olarak alan bir alt makinedir (§3 uyarısı); bunun maliyeti?
 
 ---
 
@@ -219,6 +285,8 @@ Yani bu sınıf A5'i temsil edebiliyor; eğitimde görülen başarısızlık bir
 | + toggle | 1,00 | **1,00** | 0,34 | 0,03 |
 | 2-bit blok | 1,00 | 1,00 | **1,00** | 0,05 |
 | 3-bit blok | 1,00 | 1,00 | 1,00 | **0,32** |
+
+A5 sütunundaki 0,32, üç seed'in ortalaması: 0,12, 0,83 ve 0,02.
 
 **Bilinen karşılıklar:**
 
@@ -243,36 +311,66 @@ Test edilebilir öngörüleri:
 
 ## 7. Öğrenilebilirlik
 
-**Ölçülen fark (Loghub, 256 B paket, set/keep):**
+**İki ayrı ölçü** (denetimden sonra ayrıldı; önceki sürüm ikisini karıştırıyordu):
 
-- soft val 1,398;
-- uyarlamasız hard 2,769;
-- soft→hard uyarlanmış 1,583.
+- **Aynı parametrede discretization farkı:** Δ_disc(θ) = L_hard(θ) − L_soft(θ), aynı veride.
+- **Performans açığı:** hard modelin kaybı ile ayrı eğitilmiş bir soft referansın kaybı arasındaki fark. Farklı parametre noktalarını karşılaştırır.
 
-Δ_hard = 0,185 bpb. Soft model state'leri sürekli kullanıyor: ortalama min(s, 1−s) değeri 0,16–0,21. Yani soft model ile Boolean makine aynı fonksiyon sınıfında değil.
+**Ölçümler** (Loghub, 256 B paket, set/keep, `gap.json`):
+
+| Parametre noktası | Soft bpb | Hard bpb | Δ_disc = hard − soft |
+|---|---|---|---|
+| Soft eğitimden sonra | 1,3976 | 2,7693 | +1,3717 |
+| Hard'a uyarlamadan sonra | 1,8168 | 1,5829 | −0,2339 |
+| Baştan hard-forward, eğim tavlaması (`probe_*.json`, yeni val yarısı) | 2,7501 | 1,2560 | −1,4941 |
+
+Aynı parametrede fark işaret değiştiriyor. Hangi forward'la eğitilirse model o forward'a uyuyor, diğerinde bozuluyor.
+
+Önceki sürümdeki "Δ_hard = 0,185" ise 1,5829 − 1,3976'ydı; yani uyarlanmış hard modelin soft referansa göre **performans açığı**. Soft model state'leri sürekli kullanıyor: ortalama min(s, 1−s) 0,16–0,21. Yani soft model ile Boolean makine aynı fonksiyon sınıfında değil.
 
 **Hard-forward eğitim** (Loghub, set/keep, 2 seed):
 
-- baştan Boolean forward, backward'da sigmoid(a·l), a 1'den 5'e (eğim tavlaması): **1,418 bpb**. Pencere 8 modelini (1,453) geçiyor, soft modele 0,02 kalıyor.
-- sade Hard-ST (a = 1): 1,545.
-- Gumbel-ST (τ 1 → 0,25): 1,685. Kim'in (2026, arXiv 2603.14157) düşük sıcaklıkta Gumbel-ST çöküşü bulgusuyla uyumlu.
-- toggle'lı model: eğim tavlamasıyla 1,462.
+- Baştan Boolean forward, backward'da sigmoid(a·l), a 1'den 5'e (eğim tavlaması): **1,418 bpb** (1,4186 ve 1,4176).
+  - Pencere 8 modelini (1,453) geçiyor.
+  - Eski soft referansa (1,398) açığı 0,02.
+  - Eğitim ve değerlendirme aynı deterministik hard forward'u kullandığı için seçim uyumsuzluğu zaten sıfır. 0,02, eski soft optimuma eşit kalite garantisi değildir.
+  - Kapsam: iki seed; test aynı dosyaların son %20'si; yöntem bu validation üzerinde geliştirildi. Görülmemiş sistemlerde üstünlük henüz gösterilmedi.
+- Sade Hard-ST (a = 1): 1,545.
+- Gumbel-ST (τ 1 → 0,25): 1,685 (1,6905 ve 1,6799).
+  - Kaynak: ilk koşu, `model/fbseq/archive/hardaware_bytes_run1.json`. O koşudaki eğim hatası yalnız Hard-ST'yi etkiliyordu; Gumbel'in surrogate ölçeği 1/τ olduğu için etkilenmedi.
+  - Düzeltilmiş kodla yeniden üretim sürüyor.
+  - Kim'in (2026, arXiv 2603.14157) düşük sıcaklıkta Gumbel-ST çöküşü bulgusuyla uyumlu.
+- Toggle'lı model: eğim tavlamasıyla 1,462.
 
 **Not (Gumbel).** 1[(l+n)/τ > 0] = 1[l+n > 0]. τ'yu düşürmek forward'daki gürültüyü azaltmaz, yalnız backward surrogate'ini değiştirir. Uygulamamız standart Gumbel-ST: logistic gürültü, yani iki Gumbel'in farkı; forward'da sabit gürültü. Gürültünün kendisini sönümleyen bir varyant denenmedi.
 
-**A5 trainability** (3-bit blok, 4 seed, kararlı relaxation):
+**A5 trainability** (3-bit blok, 4 seed, kararlı relaxation, `hardaware_a5.json`; 256 adımda doğruluk):
 
-- Elle kurulan devre %100 (representability).
-- soft→hard: seed'lerin yarısı %100'e ve tam uzunluk genellemesine ulaşıyor. Diğer ikisi 1/3 civarındaki coset aşamasında takılıyor (Zhang & Li 2026); birinde model 0,25'i bulduktan sonra 0,09'a geriliyor.
-- Baştan hard (Hard-ST ve eğim tavlaması): 8 koşunun hiçbiri 0,13'ü geçemiyor.
-- **Keşif ile uyum arasında bir ödünleşim var:** dil modelinde baştan Boolean eğitim en iyisi, durum izlemede ise soft aşama çözümü keşfetmek için şart.
+| softhard seed | En iyi | Son |
+|---|---|---|
+| 0 | 1,0000 | 1,0000 |
+| 1 | 0,3612 | 0,2065 |
+| 2 | 1,0000 | 1,0000 |
+| 3 | 0,2476 | 0,0917 |
 
-**Transition codebook: olumsuz sonuç** (`codebook_*.json`). Her 3-bitlik blok, m = 8 öğrenilmiş dönüşümden birini seçiyor. Rastgele başlangıçla:
+- Elle kurulan devre %100 (representability; tam geçiş denetimi).
+- soft→hard: 4 koşunun 2'si, test edilen 64 ve 256 uzunlukta %100. Bu, bütün uzunluklar için makine eşdeğerliğinin kanıtı değil.
+- Başarısız iki koşu farklı davranıyor: biri en iyi 0,36'dan 0,21'e, diğeri 0,25'ten 0,09'a geriliyor.
+- **Coset aşaması yalnız bir hipotez.** İç temsil Z₃'ün 20 coset'ini ayırıp coset içindeki 3 elemanı ayıramıyorsa, doğruluk 1/3 olur (Zhang & Li 2026). Ama bu ileri yönlü bir çıkarım; doğruluk sayısından temsile geri gidilemez. Bunu sınamak için iç durum kümelerine, SP özelliğine ya da stabilizer'a bakmak gerekir.
+- Baştan hard (Hard-ST ve eğim tavlaması): 8 koşunun hiçbiri 0,13'ü geçmiyor.
+- **Ödünleşim, denenen reçetelerle sınırlı:** dil modelinde baştan Boolean eğitim en iyisi. A5'te softhard 4 koşunun 2'sinde başarılı, iki hard-forward yöntemin 8 koşusunun hiçbirinde değil. Başka reçetelerin, sürelerin ya da başlangıçların başarısız olacağı gösterilmedi; "soft aşama şart" denemez.
 
-- A5: softhard ve eğim tavlaması, 8 koşunun hiçbiri 0,06'yı geçmedi.
-- Loghub: 2,07–2,16 bpb.
+**Transition codebook: olumsuz sonuç** (`codebook_*.json`). Her 3-bitlik blok, m = 8 öğrenilmiş dönüşümden birini seçiyor. A5'te 256 adımda, en iyi değerler:
 
-Teori, A5'in tek seviyede yalnız 3 dönüşümle temsil edilebildiğini söylüyor. Ama dönüşümleri ve seçimi birlikte öğrenmek bu haliyle çalışmadı. Identity'ye yakın başlangıçla tekrar sürüyor.
+| Başlangıç | softhard (4 seed) | Eğim tavlaması (4 seed) |
+|---|---|---|
+| Rastgele | < 0,06 | < 0,06 |
+| Identity'ye yakın | 0,025–0,032 | 0,028–0,029 |
+| Identity'ye yakın, tablo logit'leri × 10 | 0,108–0,117 (son 0,04–0,11) | 0,038–0,046 |
+
+Loghub'da rastgele başlangıçla 2,07–2,16 bpb.
+
+Teori, A5'in tek seviyede yalnız 3 dönüşümle temsil edilebildiğini söylüyor. Ama dönüşümleri ve seçimi birlikte öğrenmek denenen 24 koşunun hiçbirinde çalışmadı. En iyi değer 0,12; şans düzeyinin (1/60 ≈ 0,017) üstünde, %100'ün çok altında. Bu haliyle codebook bir öğrenme yöntemi olarak başarısız. Bir donanım hedefi olarak geçerliliği (§5.4) bundan etkilenmiyor.
 
 **Literatürdeki reçeteler:**
 
@@ -319,12 +417,20 @@ sₜ ⊕ s′ₜ = (∏ᵢ aᵢ)(s₀ ⊕ s′₀)
 
 Fark ilk reset'e kadar korunur, reset'te silinir.
 
-**Bloklara genelleme.** Aynı girdiyle ilerleyen iki yörünge, iki durumu aynı duruma eşleyen bir adımda kalıcı olarak birleşir; permütasyon adımları farkı korur. Krohn–Rhodes diliyle:
+**Bloklara genelleme.** Aynı kontrol dizisiyle ilerleyen iki yörünge, iki durumu aynı duruma eşleyen bir adımda kalıcı olarak birleşir. Permütasyon adımları iki farklı durumu birleştiremez; durumları ayrı tutar, ama Hamming uzaklığını korumak zorunda değildir. Krohn–Rhodes diliyle:
 
 - reset bileşenleri farkı siler;
 - grup bileşenleri farkı taşır.
 
-**Bellek ile dayanıklılık aynı mekanizmaya bağlı.** Uzun hatırlayan bitler, hataları da uzun süre taşır.
+Koşul önemli: "aynı sonraki kontroller". Çok katmanlı devrede alt katmandaki bir hata üst katmanın kontrol dizisini değiştirebilir. Bütün devre için kontrol farkları da hesaba katılmalı.
+
+**Bellek ile dayanıklılık: yalnız bağımsız 1-bit keep/toggle için bağlı.** Önceki sürüm "uzun hatırlayan bitler hataları da uzun süre taşır" diyordu. Bu, bağımsız tek bitlik keep/toggle için doğru: 𝔽₂ eşitliği gereği fark ilk reset'e kadar yaşar. Genel Boolean bloklarda yanlış.
+
+- **Karşı örnek (majority).** Mantıksal 0 = 000, mantıksal 1 = 111, F(s) = (maj(s), maj(s), maj(s)). Geçerli iki kod sonsuza kadar korunur. Herhangi bir bit çevrilirse bir sonraki adımda doğru kod geri gelir. Her çıkış bir LUT3. Sekiz durumun hepsi kontrol edildi.
+- **A5'e bağlanan sınır.** 60 mantıksal durumu her tek bit hatasından düzelten bir d-bit kodun minimum uzaklığı en az 3 olmalı. Yarıçapı 1 olan Hamming topları ayrık olacağından 60·(d+1) ≤ 2^d gerekir. d = 9'da 600 > 512, yani d ≥ 10.
+  - Kısaltılmış [10, 6, 3] Hamming kodu 64 kelime ve minimum uzaklık 3 ile bunu sağlıyor; 60 kelimelik bir alt kümesi yeter.
+  - Yani LUT fan-in'i ve gecikme kısıtı yokken **10 bit tam minimum** (`witness_check.json`).
+- **Hamming sınırı 6 bitlik optimumla çelişmez.** Amaçlar farklı: 6 bit tam temsil için, 10 bit tek hata düzelten state kodu için optimal. Bu sınır, K = 6 ile tek seviyede hata düzelten bir geçiş devresinin var olduğunu göstermez. Bu açık bir soru.
 
 **Kayba bağlantı.** Cross-entropy'nin logit gradyanının ℓ₁ normu en fazla 2. Head'in state'e göre ℓ∞ Lipschitz sabiti L ise:
 
@@ -338,7 +444,32 @@ Bu bölümün matematiği standart araçlardan türetiliyor. Bizim kısmımız, 
 
 **Uyarı (Lipschitz sınırı).** Head'in ölçeği kontrol edilmezse sınır işe yaramaz. Tek bit için z = (M(2s−1), −M(2s−1)) alınırsa bir bitlik fark kayıpta 2M/ln 2 bit değişime yol açar. L, eğitilmiş head için ölçülmelidir.
 
-**Deney** (`probes.py`; sonuçları çalışıyor): Hard modelde tek bir state biti çevrilir. Farkın yaşam süresi, üst katmana yayılması ve bpb'ye etkisi ölçülür. Ayrıca bir lineer probe ile state'in k adım önceki byte'ı ne kadar taşıdığına bakılır (gecikmeli okuma).
+**Deney** (`probes.py` → `probe_B_setkeep_slope_s0.json`): Hard modelde tek bir state biti çevrilir. Farkın yaşam süresi, üst katmana yayılması ve bpb'ye etkisi ölçülür. Ayrıca bir lineer probe ile state'in k adım önceki byte'ı ne kadar taşıdığına bakılır (gecikmeli okuma).
+
+Model: set/keep, eğim tavlaması, seed 0. Değerlendirme yeni val yarısında, eski val'in ilk yarısı (1,256 bpb). İkinci yarı (test) 1,576 bpb veriyor; log dosyalarının sonu daha zor, yani aynı dosyanın içinde bile dağılım kayıyor.
+
+**Tek bit çevirme** (birinci katman, t₀ = 32, 24 bit × 128 paket):
+
+| Ölçü | Değer |
+|---|---|
+| Farkın yaşam süresi, medyan / ortalama | 5 / 23 adım |
+| ≥ 16 / ≥ 64 / paket sonuna kadar (224) yaşayan | %28 / %9,6 / %4,0 |
+| İkinci katmanda bozulan bit, adım başına ortalama (120 bitten) | 0,51 |
+| Paketin geri kalanında Δbpb, ortalama / en kötü | +0,008 / +0,135 |
+
+Bu, input-gated önermesiyle uyumlu: tek bir hata büyümüyor, üst katmana yarım bit kadar sızıyor ve kayba etkisi küçük. Kuyruk ise bellek–dayanıklılık bağını gösteriyor: çevrilen bitlerin %4'ü hatayı paket sonuna kadar taşıyor. Bunlar uzun tutan keep bitleri; bağımsız 1-bit keep/toggle için beklenen davranış bu.
+
+**Gecikmeli okuma** (lineer probe; hedef k adım önceki byte). Kontrol: aynı probe yalnız pencereden (son w = 4 byte). Bu kontrol, log tekrarları yüzünden eski byte'ın yakın bağlamdan zaten ne kadar tahmin edilebildiğini ölçüyor. İlk sürümde bu kontrol yoktu.
+
+| k | 1 | 4 | 8 | 16 | 32 | 64 | 128 |
+|---|---|---|---|---|---|---|---|
+| State | 0,58 | 0,53 | 0,31 | 0,29 | 0,25 | 0,20 | 0,18 |
+| Yalnız pencere | 0,97 | 0,96 | 0,21 | 0,18 | 0,14 | 0,11 | 0,105 |
+| Çoğunluk sınıfı | 0,11 | 0,11 | 0,11 | 0,11 | 0,11 | 0,11 | 0,11 |
+
+k ≤ 4'te hedef pencerenin içinde, bu yüzden kontrol neredeyse tam. k ≥ 8'de state kontrolü her k'da geçiyor; k = 128'de kontrol çoğunluk düzeyine inmişken state 0,18'de kalıyor. Yani Boolean state, pencerenin ötesindeki geçmiş hakkında, yakın bağlamın açıklayamadığı bilgi taşıyor. Bu bilginin harfiyen saklanan byte mı, yoksa satır şablonu gibi bir özet mi olduğunu probe ayıramaz.
+
+**Head'i yeniden eğitme (sonuçsuz).** Gate'ler donduruldu ve head sıfırdan, eğitimdeki reçeteyle 3 000 adım eğitildi. Sonuç 1,461 bpb; orijinal head 1,256. İlk sürüm farklı bir reçete kullanıyordu ve 1,494 vermişti. Fark, state'in bilgi taşımadığı biçiminde okunamaz, çünkü özellikler aynı. Daha olası açıklamalar: 3 000 adım sıfırdan bir head için yetmiyor, ya da ortak eğitimin bulduğu çözüme ayrı eğitimle ulaşılamıyor. Daha uzun eğitimle tekrar edilmeli.
 
 ---
 
@@ -374,8 +505,9 @@ Ayrıntılı künyeler: `docs/08_case_arastirmasi.md`, `paper/related_work_2026.
 ---
 
 ## 10. Sonraki adımlar
-1. K = 5 ve K = 4 için block-local olmayan SAT; S₄, mod 5 ve mod 7 ile §6'daki sanının testi.
-2. Transition codebook: öğrenilen bir modelin her bloğu, keyfi tablo yerine m dönüşümlük bir codebook'tan seçsin. Hem A5'te hem Loghub'da.
-3. Hard-aware eğitimin düzeltilmiş sonuçları ve finalistlerin daha fazla seed'le tekrarı; CAGE eklenmesi.
-4. Kararlılık: tek bit çevirme deneyi ve L sabitinin ölçülmesi.
-5. Gate ağları ve head hâlâ float. LUT ağlarına çevrildiklerinde kalite ve döngü dışı mantığın maliyeti (Faz 1).
+1. Coset core + fiber'ı başka gruplarda denemek (S₄, PSL(2,7)) ve K = c + w ile yetinen etiketlemelerin koşulunu bulmak (§5.5, madde 7).
+2. K = 5 ve K = 4 için block-local olmayan SAT; S₄, mod 5 ve mod 7 ile §6'daki sanının testi.
+3. A5'i güvenilir öğrenmek: codebook bu haliyle başarısız. Sıradakiler: PD-SSM reçetesi, CAGE, curriculum; başarısız koşularda iç durumun coset yapısını incelemek.
+4. Hard-aware finalistlerin daha fazla seed'le tekrarı ve leave-one-system-out değerlendirme.
+5. Kararlılık: L sabitinin ölçülmesi; K = 6 ile tek seviyede hata düzelten bir A5 devresi var mı?
+6. Gate ağları ve head hâlâ float. LUT ağlarına çevrildiklerinde kalite ve döngü dışı mantığın maliyeti (Faz 1).
