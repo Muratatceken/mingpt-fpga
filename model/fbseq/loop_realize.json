@@ -3,78 +3,130 @@
   "kind": "gc:A5_K5",
   "S": 119,
   "seed": 1,
-  "fmax_mhz": 436.7,
+  "fmax_mhz": 618.4,
   "cells": {
-   "FDRE": 174,
+   "FDRE": 178,
    "LUT2": 1,
-   "LUT4": 35,
-   "LUT5": 86,
+   "LUT4": 18,
+   "LUT5": 103,
    "LUT6": 22
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.15,
+   "route_ns": 1.017,
+   "first_net": "s[10]",
+   "feedback": true
   }
  },
  {
   "kind": "gc:A5_K5",
   "S": 119,
   "seed": 2,
-  "fmax_mhz": 419.6,
+  "fmax_mhz": 648.1,
   "cells": {
-   "FDRE": 174,
+   "FDRE": 178,
    "LUT2": 1,
-   "LUT4": 35,
-   "LUT5": 86,
+   "LUT4": 18,
+   "LUT5": 103,
    "LUT6": 22
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.15,
+   "route_ns": 0.943,
+   "first_net": "d[12]",
+   "feedback": false
   }
  },
  {
   "kind": "gc:PSL(2,7)_K5",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 446.4,
+  "fmax_mhz": 675.7,
   "cells": {
-   "FDRE": 171,
+   "FDRE": 175,
    "LUT2": 1,
-   "LUT4": 1,
-   "LUT5": 120,
+   "LUT3": 15,
+   "LUT4": 31,
+   "LUT5": 75,
    "LUT6": 23
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.15,
+   "route_ns": 0.88,
+   "first_net": "d[23]",
+   "feedback": false
   }
  },
  {
   "kind": "gc:PSL(2,7)_K5",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 456.4,
+  "fmax_mhz": 662.7,
   "cells": {
-   "FDRE": 171,
+   "FDRE": 175,
    "LUT2": 1,
-   "LUT4": 1,
-   "LUT5": 120,
+   "LUT3": 15,
+   "LUT4": 31,
+   "LUT5": 75,
    "LUT6": 23
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.15,
+   "route_ns": 0.909,
+   "first_net": "s[1]",
+   "feedback": true
   }
  },
  {
   "kind": "gc:A6_K6",
   "S": 117,
   "seed": 1,
-  "fmax_mhz": 467.5,
+  "fmax_mhz": 696.4,
   "cells": {
-   "FDRE": 164,
+   "FDRE": 168,
    "LUT2": 1,
    "LUT3": 1,
    "LUT4": 1,
-   "LUT6": 139
+   "LUT5": 13,
+   "LUT6": 126
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.125,
+   "route_ns": 0.861,
+   "first_net": "d[4]",
+   "feedback": false
   }
  },
  {
   "kind": "gc:A6_K6",
   "S": 117,
   "seed": 2,
-  "fmax_mhz": 432.7,
+  "fmax_mhz": 575.4,
   "cells": {
-   "FDRE": 164,
+   "FDRE": 168,
    "LUT2": 1,
    "LUT3": 1,
    "LUT4": 1,
-   "LUT6": 139
+   "LUT5": 13,
+   "LUT6": 126
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.125,
+   "route_ns": 1.163,
+   "first_net": "d[7]",
+   "feedback": false
   }
  }
 ]

@@ -3,26 +3,42 @@
   "kind": "a5c7",
   "S": 119,
   "seed": 1,
-  "fmax_mhz": 472.8,
+  "fmax_mhz": 638.2,
   "cells": {
-   "FDRE": 174,
+   "FDRE": 178,
    "LUT2": 1,
    "LUT4": 18,
    "LUT5": 35,
    "LUT6": 90
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.125,
+   "route_ns": 0.992,
+   "first_net": "d[9]",
+   "feedback": false
   }
  },
  {
   "kind": "a5c7",
   "S": 119,
   "seed": 2,
-  "fmax_mhz": 442.7,
+  "fmax_mhz": 589.3,
   "cells": {
-   "FDRE": 174,
+   "FDRE": 178,
    "LUT2": 1,
    "LUT4": 18,
    "LUT5": 35,
    "LUT6": 90
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.125,
+   "route_ns": 1.122,
+   "first_net": "d[1]",
+   "feedback": false
   }
  }
 ]

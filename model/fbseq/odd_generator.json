@@ -1,0 +1,237 @@
+[
+ {
+  "group": "A5",
+  "S": 6,
+  "k": 2,
+  "c": 4,
+  "bound": 6,
+  "max_K": 6,
+  "labelings": 21,
+  "cases": [
+   {
+    "labeling": "gauge_counterexample",
+    "K": 6,
+    "fiber_controls": [
+     [
+      0
+     ],
+     [
+      0
+     ]
+    ],
+    "label": [
+     8,
+     12,
+     5,
+     7,
+     15,
+     1,
+     6,
+     13,
+     2,
+     9,
+     10,
+     0,
+     11,
+     3,
+     14
+    ],
+    "gauge_drop_one_core_bit": {
+     "(1, 0)": [
+      false,
+      false,
+      false,
+      false
+     ],
+     "(0, 1)": [
+      false,
+      false,
+      false,
+      false
+     ],
+     "(1, 1)": [
+      true,
+      true,
+      true,
+      true
+     ]
+    },
+    "gauge_K": 7
+   },
+   {
+    "labeling": "random",
+    "K": 6,
+    "fiber_controls": [
+     [
+      0
+     ],
+     [
+      0
+     ]
+    ]
+   },
+   {
+    "labeling": "random",
+    "K": 6,
+    "fiber_controls": [
+     [
+      0
+     ],
+     [
+      0
+     ]
+    ]
+   }
+  ]
+ },
+ {
+  "group": "PSL(2,7)",
+  "S": 8,
+  "k": 2,
+  "c": 6,
+  "bound": 8,
+  "max_K": 8,
+  "labelings": 20,
+  "cases": [
+   {
+    "labeling": "random",
+    "K": 8,
+    "fiber_controls": [
+     [
+      0
+     ],
+     [
+      0
+     ]
+    ]
+   },
+   {
+    "labeling": "random",
+    "K": 8,
+    "fiber_controls": [
+     [
+      0
+     ],
+     [
+      0
+     ]
+    ]
+   },
+   {
+    "labeling": "random",
+    "K": 8,
+    "fiber_controls": [
+     [
+      0
+     ],
+     [
+      0
+     ]
+    ]
+   }
+  ]
+ },
+ {
+  "group": "A6",
+  "S": 9,
+  "k": 2,
+  "c": 7,
+  "bound": 9,
+  "max_K": 9,
+  "labelings": 20,
+  "cases": [
+   {
+    "labeling": "random",
+    "K": 9,
+    "fiber_controls": [
+     [
+      0
+     ],
+     [
+      0
+     ]
+    ]
+   },
+   {
+    "labeling": "random",
+    "K": 9,
+    "fiber_controls": [
+     [
+      0
+     ],
+     [
+      0
+     ]
+    ]
+   },
+   {
+    "labeling": "random",
+    "K": 9,
+    "fiber_controls": [
+     [
+      0
+     ],
+     [
+      0
+     ]
+    ]
+   }
+  ]
+ },
+ {
+  "group": "PSL(2,8)",
+  "S": 9,
+  "k": 3,
+  "c": 6,
+  "bound": 8,
+  "max_K": 8,
+  "labelings": 20,
+  "cases": [
+   {
+    "labeling": "random",
+    "K": 8,
+    "fiber_controls": [
+     [
+      0
+     ],
+     [
+      0
+     ],
+     [
+      0
+     ]
+    ]
+   },
+   {
+    "labeling": "random",
+    "K": 8,
+    "fiber_controls": [
+     [
+      0
+     ],
+     [
+      0
+     ],
+     [
+      0
+     ]
+    ]
+   },
+   {
+    "labeling": "random",
+    "K": 8,
+    "fiber_controls": [
+     [
+      0
+     ],
+     [
+      0
+     ],
+     [
+      0
+     ]
+    ]
+   }
+  ]
+ }
+]

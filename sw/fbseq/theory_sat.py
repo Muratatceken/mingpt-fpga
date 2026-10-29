@@ -3,6 +3,8 @@ Smallest state for a one-level feedback realization of the A5 word problem (prob
 
     python3 theory_sat.py [--K 4,5,6] [--S 6-15] [--timeout 900]     (needs z3: pip install z3-solver)
                                                                        -> model/fbseq/sat_a5.json
+    python3 theory_sat.py --K 5 --S 6-6 --coding 0,1,2 --out sat_a5_ctrl_a.json
+        control inputs chosen per next bit (|D_j| + |C_j| <= K) for the letter coding a=00, b=01, e=10
 Question: is there an injective encoding e: A5 -> {0,1}^S such that, for every letter a of the task
 alphabet (two generators and the identity, control word of w = 2 bits), every next-state bit j is a
 function of the control word and of at most K - w state bits D_j?  Then each next-state bit is one
@@ -31,42 +33,74 @@ def a5():
     return len(perms), step, index[(0, 1, 2, 3, 4)]
 
 
-def solve(S, K, w=2, timeout=900):
+def solve(S, K, w=2, timeout=900, coding=None, fix=None):
+    """coding=None: every next bit reads both control bits (|D_j| <= K - w).  coding = (c(a), c(b), c(e)), the
+    letters' 2-bit codes: each next bit also chooses which control bits it reads, |D_j| + |C_j| <= K, and
+    pairs with different letters are compared too (codes not listed are don't-care)"""
     import z3
     N, step, ident = a5()
     E = [[z3.Bool(f"e{p}_{b}") for b in range(S)] for p in range(N)]
     D = [[z3.Bool(f"d{j}_{i}") for i in range(S)] for j in range(S)]
+    C = [[z3.Bool(f"c{j}_{i}") for i in range(w)] for j in range(S)]
     s = z3.Solver()
     s.set("timeout", timeout * 1000)
     for b in range(S):                                           # symmetry breaking: e(identity) = 0
         s.add(z3.Not(E[ident][b]))
+    for p, code in enumerate(fix or []):                         # test hook: a fixed encoding
+        for b in range(S):
+            s.add(E[p][b] == bool((code >> b) & 1))
     for j in range(S):
-        s.add(z3.PbLe([(D[j][i], 1) for i in range(S)], K - w))
+        if coding is None:
+            s.add(z3.PbLe([(D[j][i], 1) for i in range(S)], K - w))
+        else:
+            s.add(z3.PbLe([(D[j][i], 1) for i in range(S)] + [(C[j][i], 1) for i in range(w)], K))
     pairs = list(itertools.combinations(range(N), 2))
     for p, q in pairs:                                           # injective
         s.add(z3.Or([z3.Xor(E[p][b], E[q][b]) for b in range(S)]))
+    L = len(step)
     for j in range(S):
-        for p, q in pairs:
+        for p, q in pairs + ([(p, p) for p in range(N)] if coding is not None else []):
             agree = z3.Bool(f"a{j}_{p}_{q}")                     # p, q look the same to bit j
             s.add(agree == z3.And([z3.Implies(D[j][i], E[p][i] == E[q][i]) for i in range(S)]))
-            for st in step:
-                s.add(z3.Implies(agree, E[st[p]][j] == E[st[q]][j]))
+            for x in range(L):
+                for y in range(L):
+                    if x == y and p == q:
+                        continue
+                    if coding is None and x != y:
+                        continue
+                    diff = [i for i in range(w) if ((coding[x] ^ coding[y]) >> i) & 1] if x != y else []
+                    s.add(z3.Implies(z3.And([agree] + [z3.Not(C[j][i]) for i in diff]),
+                                     E[step[x][p]][j] == E[step[y][q]][j]))
     t0 = time.time()
     r = s.check()
     res = dict(S=S, K=K, w=w, result=str(r), seconds=round(time.time() - t0, 1))
+    if coding is not None:
+        res["coding"] = list(coding)
     if r == z3.sat:
         m = s.model()
         res["deps"] = [[i for i in range(S) if z3.is_true(m.eval(D[j][i]))] for j in range(S)]
+        if coding is not None:
+            res["control_deps"] = [[i for i in range(w) if z3.is_true(m.eval(C[j][i]))] for j in range(S)]
         res["encoding"] = ["".join("1" if z3.is_true(m.eval(E[p][b])) else "0" for b in range(S)) for p in range(N)]
         res["verified"] = verify(res, step)
     return res
 
 
 def verify(res, step):
-    """independent check of a solution: injective and every next bit a function of (letter, D_j)"""
+    """independent check of a solution: injective and every next bit a function of (letter, D_j), or with a
+    coding of (the chosen control bits of the letter's code, D_j)"""
     enc = [tuple(int(c) for c in e) for e in res["encoding"]]
     if len(set(enc)) != len(enc):
         return False
+    if "coding" in res:
+        for j, (dep, cd) in enumerate(zip(res["deps"], res["control_deps"])):
+            seen = {}
+            for x, st in enumerate(step):
+                for p, e in enumerate(enc):
+                    key = (tuple(e[i] for i in dep), tuple((res["coding"][x] >> i) & 1 for i in cd))
+                    if seen.setdefault(key, enc[st[p]][j]) != enc[st[p]][j]:
+                        return False
+        return True
     for j, dep in enumerate(res["deps"]):
         for st in step:
             seen = {}
@@ -82,13 +116,16 @@ def main():
     ap.add_argument("--K", default="4,5,6")
     ap.add_argument("--S", default="6-15")
     ap.add_argument("--timeout", type=int, default=900)
+    ap.add_argument("--coding", default="", help="e.g. 0,1,2 = codes of a, b, e: control inputs chosen per bit")
+    ap.add_argument("--out", default="sat_a5.json")
     a = ap.parse_args()
     lo, hi = (int(x) for x in a.S.split("-"))
-    path = os.path.join(ROOT, "model", "fbseq", "sat_a5.json")
+    coding = tuple(int(c) for c in a.coding.split(",")) if a.coding else None
+    path = os.path.join(ROOT, "model", "fbseq", a.out)
     out = json.load(open(path)) if os.path.exists(path) else []
     for K in (int(k) for k in a.K.split(",")):
         for S in range(lo, hi + 1):
-            r = solve(S, K, timeout=a.timeout)
+            r = solve(S, K, timeout=a.timeout, coding=coding)
             print(json.dumps({k: v for k, v in r.items() if k != "encoding"}), flush=True)
             out = [o for o in out if (o["S"], o["K"]) != (S, K)] + [r]
             json.dump(sorted(out, key=lambda o: (o["K"], o["S"])), open(path, "w"), indent=1)

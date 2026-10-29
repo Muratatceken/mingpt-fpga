@@ -5,7 +5,9 @@ different transition circuits, placed and routed on the XC7A100T (Yosys + nextpn
     python3 loop_bench.py [--seeds 1,2] [--S 120]          -> model/fbseq/loop.json
 
 The tables d_t come from a rotating register (no logic), as they would from a pipelined
-feed-forward network; the state is XOR-reduced in two registered stages onto one LED pin.
+feed-forward network; the state is XOR-reduced onto one LED pin with a register after every LUT6, so
+every path outside the state loop is a single LUT (until 29 Oct 2026 the reduction had a 2-3 LUT stage
+that, not the loop, limited Fmax for loops of one LUT level: see the critical path in each result).
   mux1   s'_j = s_j ? a_j : b_j                    candidate B, kb = 1 (keep / set / toggle)
   mux4   s'_j = d_j[s_blk]   (2-bit blocks)        candidate B, kb = 2 (one LUT6)
   mux8   s'_j = d_j[s_blk]   (3-bit blocks)        candidate B, kb = 3 (LUT6 pair + MUXF7)
@@ -169,14 +171,32 @@ def verilog(kind, S, rnd):
     v.append("  always @(posedge clk) begin")
     v += [f"    s[{j}] <= {e};" for j, e in enumerate(nxt)]
     v.append("  end")
-    g = [list(range(i, min(i + 6, S))) for i in range(0, S, 6)]              # registered XOR reduction
-    v.append(f"  reg [{len(g) - 1}:0] x1 = 0;")
-    v.append("  always @(posedge clk) begin")
-    v += [f"    x1[{k}] <= " + " ^ ".join(f"s[{i}]" for i in grp) + ";" for k, grp in enumerate(g)]
-    v.append("    led <= ^x1;")
+    level, stage = [f"s[{i}]" for i in range(S)], 1                         # XOR reduction, one LUT6 per
+    v.append("  always @(posedge clk) begin")                                 # registered stage, so that only
+    body = []                                                                 # the state loop can be deeper
+    while len(level) > 6:
+        g = [level[i:i + 6] for i in range(0, len(level), 6)]
+        v.insert(len(v) - 1, f"  reg [{len(g) - 1}:0] x{stage} = 0;")
+        body += [f"    x{stage}[{k}] <= " + " ^ ".join(grp) + ";" for k, grp in enumerate(g)]
+        level, stage = [f"x{stage}[{k}]" for k in range(len(g))], stage + 1
+    v += body
+    v.append("    led <= " + " ^ ".join(level) + ";")
     v.append("  end")
     v.append("endmodule")
     return "\n".join(v) + "\n", S
+
+
+def critical_path(report):
+    """logic on the worst path of a nextpnr report: LUT and MUXF7/F8 stages, logic and routing delay (ns),
+    and whether it starts and ends at a state register s[] (the feedback loop) or elsewhere"""
+    p = report["critical_paths"][0]
+    seg = p["path"]
+    logic = [x for x in seg if x["type"] == "logic"]
+    mux = sum(1 for x in logic if ".mux" in x["to"]["cell"] or "MUXF" in x["to"]["cell"])
+    nets = [x.get("net", "") for x in seg if x["type"] == "routing"]
+    return dict(luts=len(logic) - mux, muxf=mux, logic_ns=round(sum(x["delay"] for x in logic), 3),
+                route_ns=round(sum(x["delay"] for x in seg if x["type"] == "routing"), 3),
+                first_net=nets[0] if nets else "", feedback=bool(nets) and nets[0].startswith("s["))
 
 
 def run(kind, S, seed):
@@ -203,7 +223,7 @@ def run(kind, S, seed):
             name, n = (p[1], p[0]) if p[0].isdigit() else (p[0], p[1])
             if name.startswith(("LUT", "MUXF", "FD", "CARRY")) and n.isdigit():
                 cells[name] = int(n)
-    return dict(kind=kind, S=S, seed=seed, fmax_mhz=round(fmax, 1), cells=cells)
+    return dict(kind=kind, S=S, seed=seed, fmax_mhz=round(fmax, 1), cells=cells, path=critical_path(rep))
 
 
 def main():

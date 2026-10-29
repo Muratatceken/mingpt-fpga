@@ -4,6 +4,8 @@ Transition codebook (docs/10_teori.md §5.4): each block of kb state bits owns m
 next-state bit is then one LUT over kb + log2 m inputs (kb=3, m=8: LUT6), whatever the transformations are.
 
     python3 codebook.py a5    [--seeds 0,1,2,3] [--m 8]   A5 word problem      -> model/fbseq/codebook_a5.json
+        --init fixed / fixed_distract: the codebook holds the correct A5 maps (frozen; entries 3.. identity or
+        random permutations) and only the choice network and the head learn: choosing vs finding the maps
     python3 codebook.py bytes [--seeds 0,1]     [--m 8]   Loghub byte LM       -> model/fbseq/codebook_bytes.json
 
 Relaxation: the block keeps a distribution p over its states; the step matrix is the mixture
@@ -45,11 +47,25 @@ class Codebook(cpu.Gated):
         self.register_buffer("qbits", bits, persistent=False)
         if init == "identity":                                                            # every entry near identity
             cb = (6.0 * bits - 3.0).expand(L, N, m, kb, Q) + 0.5 * torch.randn(L, N, m, kb, Q)
+        elif init.startswith("fixed"):                    # A5: the correct maps, constructed (probes.a5embed code)
+            gens = [(1, 2, 3, 4, 0), (1, 2, 0, 3, 4), (0, 1, 2, 3, 4)]
+            ginv = [tuple(sorted(range(5), key=lambda i: g[i])) for g in gens]
+            nxt = torch.arange(Q).repeat(L, N, m, 1)                                      # (L, N, m, Q): identity
+            if init == "fixed_distract":                  # entries 3.. : random permutations of the 2^kb codes
+                for idx in np.ndindex(L, N, m):
+                    if idx[2] >= 3:
+                        nxt[idx] = torch.randperm(Q)
+            for n in range(min(3, N)):                    # layer 0, blocks 0-2, entries 0-2: r(n) = p^-1(n) XOR n
+                for x in range(3):
+                    for q in range(Q):
+                        nxt[0, n, x, q] = ginv[x][q ^ n] ^ n if (q ^ n) < 5 else q
+            cb = 6.0 * (2 * ((nxt[..., None, :] >> torch.arange(kb)[:, None]) & 1).float() - 1)   # (L, N, m, kb, Q)
         else:
             cb = 3.0 * (2 * torch.randint(0, 2, (L, N, m, kb, Q)).float() - 1)           # random maps ...
             cb[:, :, 0] = 6.0 * bits - 3.0                                                # ... entry 0: identity
         self.gain = gain                                                                  # table logits = gain * cb:
-        self.cb = nn.Parameter(cb / gain)                                                 # gain > 1 = faster tables
+        self.cb = nn.Parameter(cb / gain, requires_grad=not init.startswith("fixed"))     # gain > 1 = faster tables
+                                                                                          # fixed*: tables frozen
         self.layer_idx = 0
 
     def tables(self, logits):
@@ -155,7 +171,7 @@ def main():
     ap.add_argument("--seeds", default="0,1,2,3")
     ap.add_argument("--m", type=int, default=8)
     ap.add_argument("--methods", default="softhard,slope")
-    ap.add_argument("--init", default="random", choices=["random", "identity"])
+    ap.add_argument("--init", default="random", choices=["random", "identity", "fixed", "fixed_distract"])
     ap.add_argument("--gain", type=float, default=1.0)
     ap.add_argument("--steps", type=int, default=3000)
     ap.add_argument("--jobs", type=int, default=4)

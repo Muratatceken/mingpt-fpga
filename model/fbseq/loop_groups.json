@@ -3,364 +3,560 @@
   "kind": "gc:A5_dense",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 338.1,
+  "fmax_mhz": 327.3,
   "cells": {
-   "FDRE": 181,
-   "LUT1": 1,
-   "LUT2": 27,
-   "LUT3": 3,
-   "LUT4": 7,
-   "LUT5": 33,
-   "LUT6": 527,
-   "MUXF7": 224,
-   "MUXF8": 95
+   "FDRE": 185,
+   "LUT2": 35,
+   "LUT3": 5,
+   "LUT4": 9,
+   "LUT5": 23,
+   "LUT6": 535,
+   "MUXF7": 233,
+   "MUXF8": 101
+  },
+  "path": {
+   "luts": 0,
+   "muxf": 2,
+   "logic_ns": 0.533,
+   "route_ns": 2.072,
+   "first_net": "d[7]",
+   "feedback": false
   }
  },
  {
   "kind": "gc:A5_dense",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 328.9,
+  "fmax_mhz": 338.5,
   "cells": {
-   "FDRE": 181,
-   "LUT1": 1,
-   "LUT2": 27,
-   "LUT3": 3,
-   "LUT4": 7,
-   "LUT5": 33,
-   "LUT6": 527,
-   "MUXF7": 224,
-   "MUXF8": 95
+   "FDRE": 185,
+   "LUT2": 35,
+   "LUT3": 5,
+   "LUT4": 9,
+   "LUT5": 23,
+   "LUT6": 535,
+   "MUXF7": 233,
+   "MUXF8": 101
+  },
+  "path": {
+   "luts": 2,
+   "muxf": 2,
+   "logic_ns": 0.839,
+   "route_ns": 1.665,
+   "first_net": "s[103]",
+   "feedback": true
   }
  },
  {
   "kind": "gc:A5_lemma",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 444.2,
+  "fmax_mhz": 384.2,
   "cells": {
-   "FDRE": 181,
-   "LUT2": 12,
+   "FDRE": 185,
+   "LUT2": 21,
+   "LUT3": 1,
    "LUT4": 16,
-   "LUT5": 42,
-   "LUT6": 177,
-   "MUXF7": 20
+   "LUT5": 27,
+   "LUT6": 193,
+   "MUXF7": 17
+  },
+  "path": {
+   "luts": 3,
+   "muxf": 0,
+   "logic_ns": 0.425,
+   "route_ns": 1.728,
+   "first_net": "s[48]",
+   "feedback": true
   }
  },
  {
   "kind": "gc:A5_lemma",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 397.9,
+  "fmax_mhz": 449.2,
   "cells": {
-   "FDRE": 181,
-   "LUT2": 12,
+   "FDRE": 185,
+   "LUT2": 21,
+   "LUT3": 1,
    "LUT4": 16,
-   "LUT5": 42,
-   "LUT6": 177,
-   "MUXF7": 20
+   "LUT5": 27,
+   "LUT6": 193,
+   "MUXF7": 17
+  },
+  "path": {
+   "luts": 0,
+   "muxf": 1,
+   "logic_ns": 0.314,
+   "route_ns": 1.462,
+   "first_net": "d[28]",
+   "feedback": false
   }
  },
  {
   "kind": "gc:A5_gauge",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 507.4,
+  "fmax_mhz": 632.5,
   "cells": {
-   "FDRE": 181,
+   "FDRE": 185,
    "LUT2": 1,
    "LUT4": 1,
    "LUT6": 143
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.125,
+   "route_ns": 1.006,
+   "first_net": "d[10]",
+   "feedback": false
   }
  },
  {
   "kind": "gc:A5_gauge",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 500,
+  "fmax_mhz": 652.7,
   "cells": {
-   "FDRE": 181,
+   "FDRE": 185,
    "LUT2": 1,
    "LUT4": 1,
    "LUT6": 143
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.125,
+   "route_ns": 0.957,
+   "first_net": "d[30]",
+   "feedback": false
   }
  },
  {
   "kind": "gc:A5_positional",
   "S": 117,
   "seed": 1,
-  "fmax_mhz": 490.7,
+  "fmax_mhz": 618.8,
   "cells": {
-   "FDRE": 164,
+   "FDRE": 168,
    "LUT2": 1,
    "LUT3": 1,
    "LUT4": 1,
    "LUT5": 117,
    "LUT6": 22
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.15,
+   "route_ns": 1.016,
+   "first_net": "d[10]",
+   "feedback": false
   }
  },
  {
   "kind": "gc:A5_positional",
   "S": 117,
   "seed": 2,
-  "fmax_mhz": 465.1,
+  "fmax_mhz": 578.4,
   "cells": {
-   "FDRE": 164,
+   "FDRE": 168,
    "LUT2": 1,
    "LUT3": 1,
    "LUT4": 1,
    "LUT5": 117,
    "LUT6": 22
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.125,
+   "route_ns": 1.154,
+   "first_net": "s[13]",
+   "feedback": true
   }
  },
  {
   "kind": "gc:PSL(2,7)_dense",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 196.7,
+  "fmax_mhz": 194.5,
   "cells": {
-   "FDRE": 171,
-   "LUT1": 38,
-   "LUT2": 251,
-   "LUT3": 47,
-   "LUT4": 229,
-   "LUT5": 778,
-   "LUT6": 2699,
-   "MUXF7": 794,
-   "MUXF8": 224
+   "FDRE": 175,
+   "LUT1": 30,
+   "LUT2": 274,
+   "LUT3": 56,
+   "LUT4": 265,
+   "LUT5": 965,
+   "LUT6": 2562,
+   "MUXF7": 764,
+   "MUXF8": 212
+  },
+  "path": {
+   "luts": 5,
+   "muxf": 0,
+   "logic_ns": 0.65,
+   "route_ns": 4.041,
+   "first_net": "s[83]",
+   "feedback": true
   }
  },
  {
   "kind": "gc:PSL(2,7)_dense",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 197.7,
+  "fmax_mhz": 192.1,
   "cells": {
-   "FDRE": 171,
-   "LUT1": 38,
-   "LUT2": 251,
-   "LUT3": 47,
-   "LUT4": 229,
-   "LUT5": 778,
-   "LUT6": 2699,
-   "MUXF7": 794,
-   "MUXF8": 224
+   "FDRE": 175,
+   "LUT1": 30,
+   "LUT2": 274,
+   "LUT3": 56,
+   "LUT4": 265,
+   "LUT5": 965,
+   "LUT6": 2562,
+   "MUXF7": 764,
+   "MUXF8": 212
+  },
+  "path": {
+   "luts": 6,
+   "muxf": 0,
+   "logic_ns": 0.825,
+   "route_ns": 3.931,
+   "first_net": "s[86]",
+   "feedback": true
   }
  },
  {
   "kind": "gc:PSL(2,7)_lemma",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 298.9,
+  "fmax_mhz": 304.2,
   "cells": {
-   "FDRE": 171,
-   "LUT2": 118,
-   "LUT3": 36,
-   "LUT4": 77,
-   "LUT5": 282,
-   "LUT6": 663,
-   "MUXF7": 191,
-   "MUXF8": 63
+   "FDRE": 175,
+   "LUT2": 100,
+   "LUT3": 29,
+   "LUT4": 47,
+   "LUT5": 154,
+   "LUT6": 722,
+   "MUXF7": 220,
+   "MUXF8": 86
+  },
+  "path": {
+   "luts": 4,
+   "muxf": 0,
+   "logic_ns": 0.55,
+   "route_ns": 2.287,
+   "first_net": "s[11]",
+   "feedback": true
   }
  },
  {
   "kind": "gc:PSL(2,7)_lemma",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 284.9,
+  "fmax_mhz": 272.0,
   "cells": {
-   "FDRE": 171,
-   "LUT2": 118,
-   "LUT3": 36,
-   "LUT4": 77,
-   "LUT5": 282,
-   "LUT6": 663,
-   "MUXF7": 191,
-   "MUXF8": 63
+   "FDRE": 175,
+   "LUT2": 100,
+   "LUT3": 29,
+   "LUT4": 47,
+   "LUT5": 154,
+   "LUT6": 722,
+   "MUXF7": 220,
+   "MUXF8": 86
+  },
+  "path": {
+   "luts": 5,
+   "muxf": 0,
+   "logic_ns": 0.625,
+   "route_ns": 2.601,
+   "first_net": "s[44]",
+   "feedback": true
   }
  },
  {
   "kind": "gc:PSL(2,7)_gauge",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 336.1,
+  "fmax_mhz": 323.5,
   "cells": {
-   "FDRE": 171,
-   "LUT2": 37,
-   "LUT3": 10,
-   "LUT4": 21,
-   "LUT5": 57,
-   "LUT6": 563,
-   "MUXF7": 213,
-   "MUXF8": 72
+   "FDRE": 175,
+   "LUT2": 46,
+   "LUT3": 13,
+   "LUT4": 19,
+   "LUT5": 47,
+   "LUT6": 581,
+   "MUXF7": 238,
+   "MUXF8": 84
+  },
+  "path": {
+   "luts": 2,
+   "muxf": 1,
+   "logic_ns": 0.589,
+   "route_ns": 2.052,
+   "first_net": "d[12]",
+   "feedback": false
   }
  },
  {
   "kind": "gc:PSL(2,7)_gauge",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 330.4,
+  "fmax_mhz": 321.1,
   "cells": {
-   "FDRE": 171,
-   "LUT2": 37,
-   "LUT3": 10,
-   "LUT4": 21,
-   "LUT5": 57,
-   "LUT6": 563,
-   "MUXF7": 213,
-   "MUXF8": 72
+   "FDRE": 175,
+   "LUT2": 46,
+   "LUT3": 13,
+   "LUT4": 19,
+   "LUT5": 47,
+   "LUT6": 581,
+   "MUXF7": 238,
+   "MUXF8": 84
+  },
+  "path": {
+   "luts": 3,
+   "muxf": 0,
+   "logic_ns": 0.4,
+   "route_ns": 2.264,
+   "first_net": "d[16]",
+   "feedback": false
   }
  },
  {
   "kind": "gc:PSL(2,7)_positional",
   "S": 117,
   "seed": 1,
-  "fmax_mhz": 540.0,
+  "fmax_mhz": 634.1,
   "cells": {
-   "FDRE": 164,
+   "FDRE": 168,
    "LUT2": 1,
    "LUT3": 1,
-   "LUT4": 3,
-   "LUT5": 118,
-   "LUT6": 20
+   "LUT4": 1,
+   "LUT5": 117,
+   "LUT6": 22
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.15,
+   "route_ns": 0.977,
+   "first_net": "d[8]",
+   "feedback": false
   }
  },
  {
   "kind": "gc:PSL(2,7)_positional",
   "S": 117,
   "seed": 2,
-  "fmax_mhz": 533.0,
+  "fmax_mhz": 632.9,
   "cells": {
-   "FDRE": 164,
+   "FDRE": 168,
    "LUT2": 1,
    "LUT3": 1,
-   "LUT4": 3,
-   "LUT5": 118,
-   "LUT6": 20
+   "LUT4": 1,
+   "LUT5": 117,
+   "LUT6": 22
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.15,
+   "route_ns": 0.98,
+   "first_net": "d[22]",
+   "feedback": false
   }
  },
  {
   "kind": "gc:A6_dense",
   "S": 117,
   "seed": 1,
-  "fmax_mhz": 156.9,
+  "fmax_mhz": 154.8,
   "cells": {
-   "FDRE": 164,
-   "LUT1": 4,
-   "LUT2": 279,
-   "LUT3": 76,
-   "LUT4": 388,
-   "LUT5": 888,
-   "LUT6": 4594,
-   "MUXF7": 1785,
-   "MUXF8": 477
+   "FDRE": 168,
+   "LUT1": 2,
+   "LUT2": 287,
+   "LUT3": 75,
+   "LUT4": 363,
+   "LUT5": 944,
+   "LUT6": 4561,
+   "MUXF7": 1770,
+   "MUXF8": 505
+  },
+  "path": {
+   "luts": 4,
+   "muxf": 1,
+   "logic_ns": 0.889,
+   "route_ns": 5.122,
+   "first_net": "s[74]",
+   "feedback": true
   }
  },
  {
   "kind": "gc:A6_dense",
   "S": 117,
   "seed": 2,
-  "fmax_mhz": 155.1,
+  "fmax_mhz": 157.8,
   "cells": {
-   "FDRE": 164,
-   "LUT1": 4,
-   "LUT2": 279,
-   "LUT3": 76,
-   "LUT4": 388,
-   "LUT5": 888,
-   "LUT6": 4594,
-   "MUXF7": 1785,
-   "MUXF8": 477
+   "FDRE": 168,
+   "LUT1": 2,
+   "LUT2": 287,
+   "LUT3": 75,
+   "LUT4": 363,
+   "LUT5": 944,
+   "LUT6": 4561,
+   "MUXF7": 1770,
+   "MUXF8": 505
+  },
+  "path": {
+   "luts": 6,
+   "muxf": 0,
+   "logic_ns": 0.825,
+   "route_ns": 5.063,
+   "first_net": "s[5]",
+   "feedback": true
   }
  },
  {
   "kind": "gc:A6_lemma",
   "S": 117,
   "seed": 1,
-  "fmax_mhz": 237.4,
+  "fmax_mhz": 219.3,
   "cells": {
-   "FDRE": 164,
-   "LUT2": 191,
-   "LUT3": 78,
-   "LUT4": 127,
-   "LUT5": 560,
-   "LUT6": 1251,
-   "MUXF7": 384,
-   "MUXF8": 129
+   "FDRE": 168,
+   "LUT1": 2,
+   "LUT2": 203,
+   "LUT3": 79,
+   "LUT4": 173,
+   "LUT5": 532,
+   "LUT6": 1247,
+   "MUXF7": 388,
+   "MUXF8": 124
+  },
+  "path": {
+   "luts": 4,
+   "muxf": 1,
+   "logic_ns": 0.839,
+   "route_ns": 3.271,
+   "first_net": "d[5]",
+   "feedback": false
   }
  },
  {
   "kind": "gc:A6_lemma",
   "S": 117,
   "seed": 2,
-  "fmax_mhz": 241.8,
+  "fmax_mhz": 245.2,
   "cells": {
-   "FDRE": 164,
-   "LUT2": 191,
-   "LUT3": 78,
-   "LUT4": 127,
-   "LUT5": 560,
-   "LUT6": 1251,
-   "MUXF7": 384,
-   "MUXF8": 129
+   "FDRE": 168,
+   "LUT1": 2,
+   "LUT2": 203,
+   "LUT3": 79,
+   "LUT4": 173,
+   "LUT5": 532,
+   "LUT6": 1247,
+   "MUXF7": 388,
+   "MUXF8": 124
+  },
+  "path": {
+   "luts": 5,
+   "muxf": 0,
+   "logic_ns": 0.675,
+   "route_ns": 2.954,
+   "first_net": "s[110]",
+   "feedback": true
   }
  },
  {
   "kind": "gc:A6_gauge",
   "S": 117,
   "seed": 1,
-  "fmax_mhz": 274.8,
+  "fmax_mhz": 291.8,
   "cells": {
-   "FDRE": 164,
-   "LUT2": 92,
-   "LUT3": 58,
-   "LUT4": 48,
-   "LUT5": 137,
-   "LUT6": 1111,
-   "MUXF7": 466,
+   "FDRE": 168,
+   "LUT1": 2,
+   "LUT2": 89,
+   "LUT3": 42,
+   "LUT4": 73,
+   "LUT5": 174,
+   "LUT6": 1130,
+   "MUXF7": 474,
    "MUXF8": 153
+  },
+  "path": {
+   "luts": 4,
+   "muxf": 0,
+   "logic_ns": 0.525,
+   "route_ns": 2.452,
+   "first_net": "d[12]",
+   "feedback": false
   }
  },
  {
   "kind": "gc:A6_gauge",
   "S": 117,
   "seed": 2,
-  "fmax_mhz": 256.9,
+  "fmax_mhz": 267.5,
   "cells": {
-   "FDRE": 164,
-   "LUT2": 92,
-   "LUT3": 58,
-   "LUT4": 48,
-   "LUT5": 137,
-   "LUT6": 1111,
-   "MUXF7": 466,
+   "FDRE": 168,
+   "LUT1": 2,
+   "LUT2": 89,
+   "LUT3": 42,
+   "LUT4": 73,
+   "LUT5": 174,
+   "LUT6": 1130,
+   "MUXF7": 474,
    "MUXF8": 153
+  },
+  "path": {
+   "luts": 3,
+   "muxf": 2,
+   "logic_ns": 0.933,
+   "route_ns": 2.356,
+   "first_net": "s[72]",
+   "feedback": true
   }
  },
  {
   "kind": "gc:A6_positional",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 540.5,
+  "fmax_mhz": 665.3,
   "cells": {
-   "FDRE": 161,
+   "FDRE": 165,
    "LUT2": 1,
-   "LUT4": 43,
-   "LUT5": 81,
-   "LUT6": 21
+   "LUT4": 41,
+   "LUT5": 80,
+   "LUT6": 23
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.15,
+   "route_ns": 0.903,
+   "first_net": "s[78]",
+   "feedback": true
   }
  },
  {
   "kind": "gc:A6_positional",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 526.3,
+  "fmax_mhz": 618.4,
   "cells": {
-   "FDRE": 161,
+   "FDRE": 165,
    "LUT2": 1,
-   "LUT4": 43,
-   "LUT5": 81,
-   "LUT6": 21
+   "LUT4": 41,
+   "LUT5": 80,
+   "LUT6": 23
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.15,
+   "route_ns": 1.017,
+   "first_net": "d[13]",
+   "feedback": false
   }
  }
 ]

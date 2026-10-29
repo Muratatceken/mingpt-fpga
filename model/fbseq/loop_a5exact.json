@@ -1,0 +1,44 @@
+[
+ {
+  "kind": "a5exact",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 651.0,
+  "cells": {
+   "FDRE": 161,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT5": 120,
+   "LUT6": 23
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.15,
+   "route_ns": 0.936,
+   "first_net": "d[6]",
+   "feedback": false
+  }
+ },
+ {
+  "kind": "a5exact",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 724.1,
+  "cells": {
+   "FDRE": 161,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT5": 120,
+   "LUT6": 23
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.15,
+   "route_ns": 0.781,
+   "first_net": "s[90]",
+   "feedback": true
+  }
+ }
+]

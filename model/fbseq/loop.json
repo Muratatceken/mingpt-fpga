@@ -3,172 +3,290 @@
   "kind": "mux1",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 516.0,
+  "fmax_mhz": 666.7,
   "cells": {
-   "FDRE": 381,
+   "FDRE": 385,
    "LUT2": 1,
    "LUT3": 120,
    "LUT4": 1,
    "LUT6": 23
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.125,
+   "route_ns": 0.925,
+   "first_net": "s[79]",
+   "feedback": true
   }
  },
  {
   "kind": "mux1",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 440.9,
+  "fmax_mhz": 669.3,
   "cells": {
-   "FDRE": 381,
+   "FDRE": 385,
    "LUT2": 1,
    "LUT3": 120,
    "LUT4": 1,
    "LUT6": 23
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.15,
+   "route_ns": 0.894,
+   "first_net": "d[111]",
+   "feedback": false
   }
  },
  {
   "kind": "mux4",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 469.7,
+  "fmax_mhz": 707.7,
   "cells": {
-   "FDRE": 616,
+   "FDRE": 620,
    "LUT2": 1,
    "LUT4": 1,
    "LUT6": 142
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.125,
+   "route_ns": 0.838,
+   "first_net": "s[0]",
+   "feedback": true
   }
  },
  {
   "kind": "mux4",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 394.5,
+  "fmax_mhz": 681.2,
   "cells": {
-   "FDRE": 616,
+   "FDRE": 620,
    "LUT2": 1,
    "LUT4": 1,
    "LUT6": 142
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.125,
+   "route_ns": 0.893,
+   "first_net": "s[49]",
+   "feedback": true
   }
  },
  {
   "kind": "mux8",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 377.9,
+  "fmax_mhz": 482.4,
   "cells": {
-   "FDRE": 1092,
+   "FDRE": 1096,
    "LUT2": 1,
    "LUT3": 119,
    "LUT4": 1,
    "LUT6": 261
+  },
+  "path": {
+   "luts": 2,
+   "muxf": 0,
+   "logic_ns": 0.275,
+   "route_ns": 1.348,
+   "first_net": "s[70]",
+   "feedback": true
   }
  },
  {
   "kind": "mux8",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 420.7,
+  "fmax_mhz": 490.4,
   "cells": {
-   "FDRE": 1092,
+   "FDRE": 1096,
    "LUT2": 1,
    "LUT3": 119,
    "LUT4": 1,
    "LUT6": 261
+  },
+  "path": {
+   "luts": 2,
+   "muxf": 0,
+   "logic_ns": 0.275,
+   "route_ns": 1.314,
+   "first_net": "s[67]",
+   "feedback": true
   }
  },
  {
   "kind": "dep1",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 396.2,
+  "fmax_mhz": 364.4,
   "cells": {
-   "FDRE": 261,
+   "FDRE": 265,
    "LUT2": 1,
-   "LUT4": 3,
-   "LUT5": 1,
-   "LUT6": 141
+   "LUT4": 1,
+   "LUT6": 143
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.125,
+   "route_ns": 2.169,
+   "first_net": "s[27]",
+   "feedback": true
   }
  },
  {
   "kind": "dep1",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 336.4,
+  "fmax_mhz": 392.0,
   "cells": {
-   "FDRE": 261,
+   "FDRE": 265,
    "LUT2": 1,
-   "LUT4": 3,
-   "LUT5": 1,
-   "LUT6": 141
+   "LUT4": 1,
+   "LUT6": 143
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.125,
+   "route_ns": 1.976,
+   "first_net": "s[11]",
+   "feedback": true
   }
  },
  {
   "kind": "dep2",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 241.9,
+  "fmax_mhz": 234.8,
   "cells": {
-   "FDRE": 261,
-   "LUT4": 2,
-   "LUT5": 7,
-   "LUT6": 256
+   "FDRE": 265,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT5": 5,
+   "LUT6": 258
+  },
+  "path": {
+   "luts": 2,
+   "muxf": 0,
+   "logic_ns": 0.25,
+   "route_ns": 3.559,
+   "first_net": "s[81]",
+   "feedback": true
   }
  },
  {
   "kind": "dep2",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 275.4,
+  "fmax_mhz": 241.8,
   "cells": {
-   "FDRE": 261,
-   "LUT4": 2,
-   "LUT5": 7,
-   "LUT6": 256
+   "FDRE": 265,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT5": 5,
+   "LUT6": 258
+  },
+  "path": {
+   "luts": 2,
+   "muxf": 0,
+   "logic_ns": 0.25,
+   "route_ns": 3.436,
+   "first_net": "s[55]",
+   "feedback": true
   }
  },
  {
   "kind": "dep3",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 188.9,
+  "fmax_mhz": 176.4,
   "cells": {
-   "FDRE": 261,
-   "LUT5": 10,
+   "FDRE": 265,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT5": 9,
    "LUT6": 373
+  },
+  "path": {
+   "luts": 3,
+   "muxf": 0,
+   "logic_ns": 0.375,
+   "route_ns": 4.844,
+   "first_net": "s[114]",
+   "feedback": true
   }
  },
  {
   "kind": "dep3",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 194.4,
+  "fmax_mhz": 172.7,
   "cells": {
-   "FDRE": 261,
-   "LUT4": 2,
-   "LUT5": 11,
-   "LUT6": 372
+   "FDRE": 265,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT5": 9,
+   "LUT6": 374
+  },
+  "path": {
+   "luts": 3,
+   "muxf": 0,
+   "logic_ns": 0.375,
+   "route_ns": 4.966,
+   "first_net": "s[99]",
+   "feedback": true
   }
  },
  {
   "kind": "dep4",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 151.5,
+  "fmax_mhz": 146.9,
   "cells": {
-   "FDRE": 261,
-   "LUT5": 12,
+   "FDRE": 265,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT5": 11,
    "LUT6": 490
+  },
+  "path": {
+   "luts": 4,
+   "muxf": 0,
+   "logic_ns": 0.5,
+   "route_ns": 5.857,
+   "first_net": "s[77]",
+   "feedback": true
   }
  },
  {
   "kind": "dep4",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 155.8,
+  "fmax_mhz": 155.6,
   "cells": {
-   "FDRE": 261,
-   "LUT4": 5,
-   "LUT5": 13,
-   "LUT6": 488
+   "FDRE": 265,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT5": 12,
+   "LUT6": 491
+  },
+  "path": {
+   "luts": 4,
+   "muxf": 0,
+   "logic_ns": 0.5,
+   "route_ns": 5.478,
+   "first_net": "s[69]",
+   "feedback": true
   }
  }
 ]

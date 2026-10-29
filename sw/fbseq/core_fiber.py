@@ -3,6 +3,7 @@ Coset core + Z2^k fiber realizations of group machines (docs/10 §5.3), for seve
 
     python3 core_fiber.py [--tries 300] [--labelings 300] [--groups A5+S4]   -> model/fbseq/core_fiber.json
     python3 core_fiber.py --export     dense / lemma / gauge / positional codes  -> model/fbseq/group_codes.json
+    python3 core_fiber.py --odd        odd-order-letter construction, K <= c + 2   -> model/fbseq/odd_generator.json
 
 Task: p_t = p_{t-1} o a_t, letters = generators + identity, w = ceil(log2 #letters) control bits.
 Lemma: for H <= G with H ~ Z2^k, write p = h t (t in a transversal of the right cosets H t).  Then
@@ -244,6 +245,101 @@ def solve_label(F, s, label):
             return build(F, s, label, pick[:F.k]), d
 
 
+def odd_transversal(F, s, label):
+    """Construction with an odd-order letter a (Codex audit, 29 Oct 2026): every right coset orbit of a has
+    length |a| (H is a 2-group), so a transversal t0, t0 a, t0 a^2, ... is closed under right multiplication
+    by a; then gamma(x, a) = gamma(x, e) = e and the fiber flips only on the other letter b."""
+    a = F.letters[0]
+    H, cos = F.subs[s], F.cosets[s]
+    where = {z: ci for ci, cs in enumerate(cos) for z in cs}
+    order = next(m for m in range(1, F.N + 1) if _power(a, m) == F.e)
+    assert order % 2 == 1, "the first letter must have odd order"
+    rep = [None] * len(cos)
+    for ci in range(len(cos)):
+        if rep[ci] is None:
+            t = cos[ci][0]
+            for _ in range(order):
+                rep[where[t]] = t
+                t = cp(t, a)
+    span = {F.e: ()}
+    for h in H:
+        if h not in span:
+            span = {z: v + (0,) for z, v in span.items()} | {cp(z, h): v + (1,) for z, v in span.items()}
+    inv = lambda p: tuple(sorted(range(len(p)), key=lambda i: p[i]))
+    E = [None] * F.N
+    for p in F.G:
+        ci = where[p]
+        E[F.idx[p]] = tuple((label[ci] >> b) & 1 for b in range(F.c)) + span[cp(p, inv(rep[ci]))]
+    assert len(set(E)) == F.N
+    return E
+
+
+def _power(a, m):
+    z = tuple(range(len(a)))
+    for _ in range(m):
+        z = cp(z, a)
+    return z
+
+
+def exact_fanin(F, E, coding=None):
+    """per next bit the fewest inputs among the S state bits and the w control bits of the letter code
+    (coding[x] = code of letter x, default x itself) that determine it: control bits are counted only if read"""
+    coding = coding or list(range(len(F.letters)))
+    S, w = len(E[0]), F.w
+    out = []
+    for j in range(S):
+        f = [(E[p], coding[x], E[F.step[p][x]][j]) for p in range(F.N) for x in range(len(F.letters))]
+        for r in range(S + w + 1):
+            hit = None
+            for sub in it.combinations(range(S + w), r):
+                g = {}
+                if all(g.setdefault(tuple(e[i] if i < S else (cx >> (i - S)) & 1 for i in sub), v) == v
+                       for e, cx, v in f):
+                    hit = sub
+                    break
+            if hit is not None:
+                out.append(dict(state=[i for i in hit if i < S], control=[i - S for i in hit if i >= S]))
+                break
+    return out
+
+
+# A5 core labeling (cosets of V4 = {e, (0 2)(3 4), (0 3)(2 4), (0 4)(2 3)} in Family order) on which no gauge lets
+# two independent fiber functionals drop a core bit (Codex audit, 29 Oct 2026, with an XOR-to-0=1 certificate)
+A5_GAUGE_COUNTEREXAMPLE = [8, 12, 5, 7, 15, 1, 6, 13, 2, 9, 10, 0, 11, 3, 14]
+
+
+def odd_study(rng, names=("A5", "PSL(2,7)", "A6", "PSL(2,8)"), labelings=20):
+    """odd-order-letter construction: exact fan-in with control inputs chosen per bit, for random labelings
+    of every max-rank subgroup and for the A5 gauge counterexample -> model/fbseq/odd_generator.json"""
+    out = []
+    for name in names:
+        F = Family(groups()[name])
+        cases = []
+        if name == "A5":
+            s = next(i for i, H in enumerate(F.subs) if sorted(H) == sorted(
+                [(0, 1, 2, 3, 4), (2, 1, 0, 4, 3), (3, 1, 4, 0, 2), (4, 1, 3, 2, 0)]))
+            lab = A5_GAUGE_COUNTEREXAMPLE
+            feas = {str(ell): [gauge(F, s, lab, ell, [b for b in range(F.c) if b != d])[0] is not None
+                               for d in range(F.c)] for ell in [(1, 0), (0, 1), (1, 1)]}
+            cases.append(("gauge_counterexample", s, lab, feas))
+        for _ in range(labelings):
+            s = rng.randrange(len(F.subs))
+            cases.append(("random", s, rng.sample(range(2 ** F.c), len(F.cosets[s])), None))
+        res = []
+        for kind, s, lab, feas in cases:
+            fx = exact_fanin(F, odd_transversal(F, s, lab))
+            fan = [len(d["state"]) + len(d["control"]) for d in fx]
+            r = dict(labeling=kind, K=max(fan), fiber_controls=[d["control"] for d in fx[F.c:]])
+            if feas is not None:
+                r.update(label=lab, gauge_drop_one_core_bit=feas, gauge_K=max(len(d) + F.w for d in
+                                                                          [x["state"] for x in exact_fanin(F, solve_label(F, s, lab)[0])]))
+            res.append(r)
+        out.append(dict(group=name, S=F.S, k=F.k, c=F.c, bound=F.c + 2, max_K=max(r["K"] for r in res),
+                        labelings=len(res), cases=res[:3]))
+        print(json.dumps({k: v for k, v in out[-1].items() if k != "cases"}), flush=True)
+    json.dump(out, open(os.path.join(ROOT, "model", "fbseq", "odd_generator.json"), "w"), indent=1)
+
+
 def deps_all(E, F, j):
     """exact smallest set of state bits that, with the letter, determines next bit j (unused codes free)"""
     f = {(E[p], a): E[F.step[p][a]][j] for p in range(F.N) for a in range(len(F.letters))}
@@ -322,10 +418,13 @@ def main():
     ap.add_argument("--labelings", type=int, default=300)
     ap.add_argument("--groups", default="")
     ap.add_argument("--export", action="store_true", help="only write the loop-bench codes (group_codes.json)")
+    ap.add_argument("--odd", action="store_true", help="only the odd-order-letter construction (odd_generator.json)")
     a = ap.parse_args()
     rng = random.Random(0)
     if a.export:
         return export(rng)
+    if a.odd:
+        return odd_study(rng)
     R = []
     for name, gens in groups().items():
         if a.groups and name not in a.groups.split("+"):

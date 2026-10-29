@@ -81,7 +81,7 @@ Bunun sonucunda:
 ### 2.5 Faz 0 deneyleri
 Ayrıntı `docs/09_faz0.md`'de; özet:
 
-1. **Döngü derinliği** (`loop.json`): tek mux 478, 4:1 mux 432, 8:1 mux 399 MHz. State'e bağlı 1/2/3/4 seviye: 366 / 259 / 192 / 154 MHz. **H1 tuttu.**
+1. **Döngü derinliği** (`loop.json`; 29 Ekim'de düzeltilmiş düzenekle): tek mux 668, 4:1 mux 694, 8:1 mux 486 MHz. State'e bağlı 1/2/3/4 seviye: 378 / 238 / 175 / 151 MHz. İlk ölçümde tek seviyeli döngülerin sınırını çıkış XOR ağacı koyuyordu (§2.10). **H1 tuttu.**
 2. **Cebirsel görevler** (`synth.json`, 3 seed): set/keep → flag; + toggle → parity; 2 bit → mod 3; 3 bit → A5'te 0,32. Sıralama teoriyle bire bir. **H2 tuttu.**
 3. **Byte LM** (`bytes.json`, `base.json`, Loghub, 256 B bağımsız paket):
 
@@ -112,10 +112,12 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 
   | Gerçekleştirme | State | Döngü | Fmax (MHz) |
   |---|---|---|---|
-  | Öğrenilen, tam tablolu 3-bit bloklar | 24 | 2 seviye | 399 |
-  | Elle, ters kod r = p⁻¹ | 15 | LUT5 | 433 |
-  | Bağımsız dense bloklarla en küçük, w = 2 (V4 + A4 coset'leri; K = 5'te 9 bit; K = 4'te imkânsız) | 7 | LUT6 | 458 |
-  | SAT, alt sınırda | **6** | LUT6 | 455 |
+  | Öğrenilen, tam tablolu 3-bit bloklar | 24 | 2 seviye | 486 |
+  | Elle, ters kod r = p⁻¹ | 15 | LUT5 | 688 |
+  | Bağımsız dense bloklarla en küçük, w = 2 (V4 + A4 coset'leri; K = 5'te 9 bit; K = 4'te imkânsız) | 7 | LUT6 | 614 |
+  | SAT, alt sınırda | **6** | LUT6 | 643 |
+
+  Fmax değerleri düzeltilmiş düzenekle (§2.10); ilk ölçümler 399–458 MHz'di ve döngüyü değil çıkış XOR ağacını ölçüyordu.
 
   İspat yolu: Hartmanis–Stearns SP partition'ları, grup makinelerinde alt grupların coset'lerine karşılık gelir; injectivity ⇔ alt grupların kesişimi birim eleman; A5'in 59 alt grubu tarandı. Kod: `sw/fbseq/theory_sat.py`.
 
@@ -203,12 +205,46 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
   | PSL(2,8) | 9 | – | 12 (9 bit ancak K = 8'de) |
 
   Beş grubun dördünde bilgi alt sınırı tek LUT6 seviyesinde gerçekleşiyor. PSL(2,8)'de gerçekleşmiyor: indeksi ≤ 16 olan alt grupları yalnız nokta stabilizer'ları ve bunların kesişimleri Z₂ᵏ değil. A5'te K = 5 ile 6 bitin mümkün olup olmadığını SAT ile arıyoruz.
-- **FPGA (XC7A100T, ~120 bit, iki seed).** Aynı state'te fan-in 6'yı aşmanın ciddi bir fiziksel bedeli var:
-  - A6, 9 bitte: fan-in 11'de 156 MHz ve 6 229 LUT; fan-in 6'da 450 MHz ve 142 LUT.
-  - PSL(2,7), 8 bitte: fan-in 10'da 197 MHz; fan-in 5'te 451 MHz.
-  - K ≤ 6 olan tasarımların hepsi 420–540 MHz aralığında. Bu sınıfın içinde, daha çok bit kullanan ama tamamen yerel positional kod en hızlısı (~535 MHz).
-  - PSL(2,8)'de en az state'li tasarım en yavaşı: 9 bit / fan-in 8 342 MHz, 12 bit / fan-in 6 456 MHz.
-  - Sonuç: teori donanımda iki aşamalı karşılık buluyor. Önce LUT6 eşiği, sonra state ile yerellik arasında bir ödünleşim.
+- **FPGA (XC7A100T, ~120 bit, iki seed; düzeltilmiş düzenek, §2.10).** Aynı state'te fan-in 6'yı aşmanın ciddi bir fiziksel bedeli var:
+  - A6, 9 bitte: fan-in 11'de 156 MHz ve 6 232 LUT; fan-in 6'da 636 MHz ve 142 LUT.
+  - PSL(2,7), 8 bitte: fan-in 10'da 193 MHz; fan-in 5'te 669 MHz.
+  - K ≤ 6 olan tasarımların hepsinde kritik yolda tek LUT var ve Fmax 599–669 MHz; kodlar arasında ayırt edilebilir bir fark yok. İlk ölçümde gördüğüm "positional daha hızlı" farkı düzeneğin artefaktıydı.
+  - PSL(2,8)'de en az state'li tasarım en yavaşı: 9 bit / fan-in 8 317 MHz, 12 bit / fan-in 6 641 MHz.
+  - Sonuç: teorinin donanımdaki karşılığı önce LUT6 eşiği. Eşiğin altında state biti sayısı Fmax'i değil, LUT ve register sayısını etkiliyor.
+
+### 2.10 İkinci denetim: karşı örnekler, yapıcı teorem, ölçüm düzeltmesi (29 Ekim gece)
+Denetim çıktıları burada bağımsız olarak yeniden üretildi; ayrıntı `docs/10` §5.3–5.4 ve §8.
+
+**Düzeltmeler (hepsi doğru, hepsi uygulandı):**
+
+- **"Her grupta fan-in S + w − r₂" sanısı yanlış.**
+  - Z₂'de formül 1 diyor, gerçek 2.
+  - Z₈'de 5 040 kodlamanın hepsinde fan-in 4, formül 3 diyor; burada ayrıca tarandı.
+  - Kendi tablomuzdaki Z₂³ satırı bunu zaten gösteriyordu.
+- **Gauge her etiketlemede bir core bitini düşüremez.**
+  - A5'te sertifikalı bir karşı örnek var: yalnız (1,1) fonksiyoneli uygulanabilir. `gauge()` ile doğrulandı.
+  - 300/300 gözlemi geçerli, ama "her etiketlemede" geçerli değil.
+- **Kontrol girişleri.**
+  - Tanım 1 her çıkışın kontrol bitlerini seçmesine izin veriyor; fan-in sayımım ve SAT sorgum ise iki kontrol bitini her çıkışa zorunlu yazıyordu.
+  - Raporlanan 31 kodun en büyük fan-in'i, kontrol seçilebilir sayılınca da değişmedi.
+  - SAT sorgusu genelleştirildi (`theory_sat.py --coding`). Sağlaması: tek mertebeli inşanın kodu yeni modelde K = 6 ile SAT, eski modelde UNSAT.
+- **kb = 1'de hatanın büyümemesi önermesi daraltıldı.** Döngü hatayı çarparak büyütmüyor, ama dış terimler birikebilir. kb > 1 bloklarda Hamming uzaklığı büyüyebilir.
+- **FPGA ölçüm düzeneği.** Kritik yol analizi gösterdi ki tek seviyeli bütün döngülerde sınırı çıkış XOR ağacı (2–3 LUT) koyuyordu. Düzenek düzeltildi ve bütün ölçümler yeniden koşuldu.
+  - Faz 0'daki yerel tek seviyeli döngüler: 441–516 → 667–708 MHz.
+  - A5 gerçekleştirmeleri: 424–473 → 589–724 MHz.
+  - dep1–dep4 değişmedi; onlar zaten döngüyü ölçüyordu.
+
+**Yeni teorem (denetimden; ispatı burada kontrol edildi).**
+
+- Varsayımlar: G = ⟨a, b⟩, \|a\| tek, H ≅ Z₂ᵏ.
+- Sonuç: her core etiketlemesinde S = ⌈log₂\|G\|⌉ ve K ≤ S + 2 − k.
+- Fikir: a'nın coset yörüngeleri tam \|a\| uzunlukta. Transversal a ile çarpmaya kapalı seçilince fiber yalnız b'de değişiyor, ve bir kontrol bitini okumak yetiyor.
+- Guralnick–Kantor (2000) ile bu, uygun alfabede her sonlu abelyen olmayan basit gruba uzanıyor: K ≤ S + 2 − r₂(G).
+- Kontrol: 81 etiketlemede fan-in tam olarak sınıra eşit çıktı (A5 6, PSL(2,7) 8, A6 9, PSL(2,8) 8). Gauge karşı örneğinde gauge K = 7'de kalıyor, inşa K = 6 veriyor.
+
+**Grup tasarımları yeniden ölçüldü** (§2.9'daki sayılar güncel). K ≤ 6 tasarımları 420–540'tan 599–669 MHz'e çıktı; K > 6 tasarımlarının sınırı zaten döngüydü, değerleri az değişti.
+
+**Öğrenme: doğru codebook donmuşken.** Denetimin önerdiği ayrıştırma deneyi: dönüşümler inşadan sabit, yalnız seçim ağı ve head öğreniyor. Doğru seçimle model grubu birebir izliyor (2048/2048). Buna rağmen 8 koşunun hiçbiri öğrenemedi: en iyi 0,36, son ≤ 0,10. Yani A5'teki öğrenme sorunu yalnız "doğru dönüşümleri bulmak" değil; ayrık recurrence üzerinden seçimin kendisi de bu reçetelerle öğrenilemiyor. Çeldiricili ve m = 3 varyantları sürüyor.
 
 ---
 

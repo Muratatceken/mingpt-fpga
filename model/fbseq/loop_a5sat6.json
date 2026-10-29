@@ -3,24 +3,40 @@
   "kind": "a5sat6",
   "S": 120,
   "seed": 1,
-  "fmax_mhz": 453.9,
+  "fmax_mhz": 664.5,
   "cells": {
-   "FDRE": 181,
+   "FDRE": 185,
    "LUT2": 1,
    "LUT4": 1,
    "LUT6": 143
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.125,
+   "route_ns": 0.93,
+   "first_net": "d[24]",
+   "feedback": false
   }
  },
  {
   "kind": "a5sat6",
   "S": 120,
   "seed": 2,
-  "fmax_mhz": 455.6,
+  "fmax_mhz": 621.5,
   "cells": {
-   "FDRE": 181,
+   "FDRE": 185,
    "LUT2": 1,
    "LUT4": 1,
    "LUT6": 143
+  },
+  "path": {
+   "luts": 1,
+   "muxf": 0,
+   "logic_ns": 0.125,
+   "route_ns": 1.034,
+   "first_net": "d[29]",
+   "feedback": false
   }
  }
 ]

@@ -7,9 +7,16 @@
 - genel tek seviyeli gerçekleştirmede 6 bit; bu, LUT6 ile bile sıkı;
 - bağımsız dense bloklarla (kontrol yalnız harften, w = 2) K = 6'da 7 bit, K = 5'te 9 bit.
 
-6 bitlik çözümün yapısı da anlaşıldı: 15 durumlu bir coset core ve iki koşullu toggle. Bu yapı blok core'larla genelleşiyor. Test edilen beş grubun dördünde (S₄, A₅, PSL(2,7), A₆) bilgi alt sınırı tek LUT6 seviyesinde, SAT'sız gerçekleşiyor. PSL(2,8)'de bu yapıyla alt sınır ancak fan-in 8'de geliyor. Fiziksel olarak fan-in 6, Fmax'te bir eşik: aynı state'te fan-in 11 → 6 ile Fmax 156 → 450 MHz. PSL(2,8)'de 12 bit / fan-in 6, 9 bit / fan-in 8'den hızlı (456'ya karşı 342 MHz). Input-gated yapıda discretization hatası döngü tarafından büyütülemez. Loghub'da hard modelin eski soft referansa göre açığı eğitimle 0,185'ten 0,02 bpb'ye indi (1,583 → 1,418; soft referans 1,398; farklı eğitimlerin karşılaştırması). Kalan fark, Boolean bitlerin sızdıran belleği temsil edememesiyle tutarlıdır; bu bir hipotez.
+6 bitlik çözümün yapısı da anlaşıldı: 15 durumlu bir coset core ve iki koşullu toggle. Bu yapı blok core'larla genelleşiyor. Test edilen beş grubun dördünde (S₄, A₅, PSL(2,7), A₆) bilgi alt sınırı tek LUT6 seviyesinde, SAT'sız gerçekleşiyor. PSL(2,8)'de bu yapıyla alt sınır ancak fan-in 8'de geliyor. Fiziksel olarak fan-in 6, Fmax'te bir eşik: aynı state'te fan-in 11 → 6 ile Fmax 156 → 636 MHz. PSL(2,8)'de 12 bit / fan-in 6, 9 bit / fan-in 8'den hızlı (641'e karşı 317 MHz). Genel bir garanti de var (ikinci denetimden gelen yapıcı teorem): tek mertebeli bir üreteç seçilebiliyorsa her sonlu abelyen olmayan basit grup S = ⌈log₂\|G\|⌉ ve K ≤ S + 2 − r₂(G) ile gerçekleşiyor. kb = 1 input-gated yapıda döngü, discretization hatasını çarparak büyütmez; dış hata terimleri yine birikebilir. Loghub'da hard modelin eski soft referansa göre açığı eğitimle 0,185'ten 0,02 bpb'ye indi (1,583 → 1,418; soft referans 1,398; farklı eğitimlerin karşılaştırması). Kalan fark, Boolean bitlerin sızdıran belleği temsil edememesiyle tutarlıdır; bu bir hipotez.
 
 **Bağımsız denetim (29 Ekim).** Belge dışarıdan denetlendi ve denetimin bütün sayısal kontrolleri burada yeniden üretildi (`sw/fbseq/witness_check.py` → `witness_check.json`). Çıkan düzeltmeler ilgili bölümlere işlendi: §2, §3, §5.1, §5.3–5.5, §7, §8.
+
+**İkinci denetim (29 Ekim akşam).** Bu denetim üç düzeltme ve bir teorem getirdi; hepsi burada ayrıca doğrulandı (`core_fiber.py --odd`, `theory_sat.py --coding`, `loop_bench.critical_path`):
+
+- "Her grupta fan-in S + w − r₂" sanısı yanlış (Z₂, Z₈).
+- Gauge, A5'te her etiketlemede bir core bitini düşüremiyor (sertifikalı karşı örnek).
+- Tek mertebeli üreteçle bir kontrol bitini düşüren yapıcı teorem (§5.3).
+- Fan-in sayımında ve SAT sorgusunda kontrol girişlerinin seçilebilirliği eksikti (Tanım 1 notu). FPGA ölçüm düzeneği ise bir LUT seviyeli döngülerde döngüyü değil kendi çıkış ağacını ölçüyordu (§5.4).
 
 Bu belge, Faz 0 deneylerinden çıkan teorik çerçeveyi toplar. Beş ana bölümde ilerler:
 
@@ -32,16 +39,17 @@ Literatür taraması Ekim 2026 sonunda üç hatta yapıldı. "Bulunamadı" ifade
 | Bilgi alt sınırı | Grup elemanını izlemek için S ≥ ⌈log₂\|G\|⌉ | **Bilinen** (Myhill–Nerode) |
 | **A5, bağımsız dense bloklar** | Kontrol yalnız harften (w = 2). Tek seviyede en az state: K = 6 için **7 bit**, K = 5 için **9 bit**; K = 4'te imkânsız | **Bizim** (alt grup taraması ile ispat) |
 | **A5, genel** | K = 6 ile **6 bit**, yani alt sınır. Sınır sıkı. | **Bizim** (SAT tanığı + alt sınır; tanık 1 080 koşulla bağımsız denetlendi) |
-| **Coset core + fiber** | H ≅ Z₂ᵏ ile tek seviyede S = ⌈log₂\|G\|⌉ (alt sınır), fan-in ≤ S − k + 1 + w. Transversal 𝔽₂ üzerinde lineer çözülünce A5, PSL(2,7), A6'da fan-in S + w − r₂ (A5'te 6, SAT'sız) | **Bizim** (yapı denetimde fark edildi; lemma ve ispat bizde; gauge sonucu gözlem) |
+| **Coset core + fiber** | H ≅ Z₂ᵏ ile tek seviyede S = ⌈log₂\|G\|⌉ (alt sınır), fan-in ≤ S − k + 1 + w. Transversal 𝔽₂ üzerinde lineer çözülünce A5, PSL(2,7), A6'da 300/300 etiketlemede fan-in S + w − r₂. Her etiketlemede değil (A5 karşı örneği); "her grupta" sanısı yanlış (Z₂, Z₈) | **Bizim** (yapı denetimde fark edildi; lemma ve ispat bizde; gauge sonucu gözlem) |
+| **Tek mertebeli üreteç teoremi** | G = ⟨a, b⟩, \|a\| tek: her etiketlemede S = ⌈log₂\|G\|⌉, K ≤ S + 2 − k. Guralnick–Kantor ile her sonlu abelyen olmayan basit grup için uygun alfabede | İkinci denetimden; ispat ve 81 etiketlemede kontrol bizde |
 | **Birleşik yapı (blok core + fiber)** | S₄, A₅, PSL(2,7), A₆'da alt sınır K ≤ 6 ile, tek LUT6 seviyesinde: 5, 6, 8, 9 bit. A₅'te K = 5 ile 7 bit (önce 9). PSL(2,8)'de K = 6'da 12 bit; alt sınır (9) ancak K = 8'de | **Bizim** (yapı ispatlı; minimum, alt sınıra eşit olduğu yerde kesin) |
-| Fan-in'in fiziksel bedeli | Aynı state'te fan-in 6'yı aşınca Fmax 1,5–2,9 kat düşüyor, LUT sayısı 4–44 kat artıyor. K ≤ 6'da 420–540 MHz. PSL(2,8)'de fiziksel optimum en az state değil, fan-in 6 | **Bizim** ölçüm |
-| Fiziksel karşılık | Yalnız state döngüsü, iki seed ortalaması: 6 bit 455 MHz, 7 bit 458 MHz, 15 bit 433 MHz, öğrenilen 3-bit bloklar 399 MHz. 6, 7 ve 15 bit aynı hız ölçeğinde | **Bizim** ölçüm |
+| Fan-in'in fiziksel bedeli | Aynı state'te fan-in 6'yı aşınca Fmax 1,6–4,1 kat düşüyor, LUT sayısı 4–44 kat artıyor. K ≤ 6'da her kodla tek LUT, 599–669 MHz. PSL(2,8)'de fiziksel optimum en az state değil, fan-in 6 | **Bizim** ölçüm (düzeltilmiş düzenek) |
+| Fiziksel karşılık | Yalnız state döngüsü, iki seed ortalaması, düzeltilmiş düzenek (§5.4): 6 bit 643 MHz, 7 bit 614, 15 bit 688, öğrenilen 3-bit bloklar (2 seviye) 486. Tek seviyeli olanlar aynı hız ölçeğinde | **Bizim** ölçüm |
 | Öğrenilen sınıfta temsil | Doğru A5 çözümü, eğitilen mimarinin içine yazıldığında %100 (yalnız head eğitildi) | **Bizim** |
 | A5'in basit grup genellemesi | Yörünge argümanı: her basit grup için blok boyutuna göre bir alt sınır | Eleştirel okumadan; genelleme ve ispat bizde |
 | Bilgi ve kayıp | L_min = H(Y \| Z, W); fazlalık I(Y; H \| Z, W) | **Bilinen** (standart) |
 | İfade gücü | Boolean blok sıralaması: set/keep → star-free; + toggle → Z₂; 2 bit → Z₃; 3 bit → A5 | Sürekli karşılığı bilinen (Sarrof 2024, Grazzi 2025); Boolean ölçümü bizim |
 | Öğrenilebilirlik | Aynı parametrede hard − soft: soft eğitimden sonra +1,37, hard uyarlamadan sonra −0,23 bpb. Hard modelin eski soft referansa göre açığı 0,185'ten ~0,02'ye indi. A5'te softhard 2/4, hard-forward 0/8, codebook 0/24 | Ölçüm bizim; yöntemler literatürden |
-| Kararlılık | Hata rekürsiyonu sınırı; 𝔽₂ tam eşitliği; birleşen map'ler farkı siler, permütasyonlar durumları ayrı tutar; input-gated yapıda hata döngüde büyümez; sızdıran bellek hipotezi. Bellek–dayanıklılık bağı yalnız bağımsız 1-bit keep/toggle için geçerli; genel bloklar hata düzeltebilir (60 durum için ≥ 10 bit) | Matematiği standart; input-gated önermesi ve ölçümler bizim |
+| Kararlılık | Hata rekürsiyonu sınırı; 𝔽₂ tam eşitliği; birleşen map'ler farkı siler, permütasyonlar durumları ayrı tutar; kb = 1 input-gated yapıda döngü hatayı çarparak büyütmez (dış terimler birikebilir; kb > 1'de Hamming uzaklığı büyüyebilir); sızdıran bellek hipotezi. Bellek–dayanıklılık bağı yalnız bağımsız 1-bit keep/toggle için geçerli; genel bloklar hata düzeltebilir (60 durum için ≥ 10 bit) | Matematiği standart; input-gated önermesi ve ölçümler bizim |
 
 ---
 
@@ -54,6 +62,12 @@ Literatür taraması Ekim 2026 sonunda üç hatta yapıldı. "Bulunamadı" ifade
 - Yeni state: s_{t+1} = F(s_t, c_t). F'nin her çıkış biti en fazla K girişli tek bir LUT'tur. LUT'un girdileri, bir D_j ⊆ {1..S} kümesindeki state bitleri ile w_j kontrol bitidir; |D_j| + w_j ≤ K.
 
 Bu durumda döngüdeki mantık derinliği **1 LUT seviyesidir**. Genel durumda F, d seviyeli bir LUT ağıdır; döngü derinliği d olur.
+
+**Fan-in'in sayımı.** Tanım 1'de her çıkış, kontrol bitlerini de seçebilir (w_j ≤ w).
+
+- Bu belgedeki K değerleri, aksi belirtilmedikçe her çıkışın w kontrol bitinin hepsini okuduğu varsayımıyla hesaplandı: |D_j| + w.
+- Kontrol bitleri seçilebilir sayılınca (`core_fiber.exact_fanin`, harf kodları a = 00, b = 01, e = 10), raporlanan 31 kodun hiçbirinin en büyük fan-in'i değişmedi.
+- Ama gauge ve birleşik yapı aramaları ve ilk SAT sorgusu bu serbestliği kullanmıyordu. Bu yüzden bulamadıkları bir şey, genel modelde imkânsız demek değil.
 
 **Tanım 2 (block-local, dense).** State bitleri bloklara ayrılır ve her bitin bağımlılık kümesi kendi bloğunun içinde kalır (D_j ⊆ B(j)). **Dense** ise D_j = B(j), yani her bit bloğunun tamamını okur. Faz 0'daki B modelleri (kb = 1, 2, 3) dense block-local'dir.
 
@@ -264,7 +278,56 @@ Okuma:
 - **Basit gruplarda (A₅, PSL(2,7), A₆)** gauge çözülünce fan-in **S + w − r₂**'ye iniyor, yani core'un kendi fan-in'ine. Fiber artık darboğaz değil.
 - **S₄'te bir adım daha aşağı (4).** Core'un 6 durumu 3 bitin 8 koduna seyrek yerleşiyor. Etiketlemelerin ~%2'sinde her core biti yalnız 2 core bitine bakıyor; bu dört alt grubun hepsinde oluyor, normal V4'e özgü değil. Basit gruplarda 300 etiketlemenin hiçbirinde toplam fan-in c + w'nın altına inmedi. Core etiketlemesi ayrıca aranmadı.
 
-**Durum.** Lemma ve "her kod lemmadan gelir" önermesi ispatlı. Gauge sonucu bir gözlem, ispat yok. Üç basit grupta sistem 900 etiketlemenin hepsinde çözüldü; S₄'te 300'ün 282'sinde çözüldü, yani her etiketlemede çözülmüyor. Tek dense core'la fan-in S + w − r₂(G)'nin altına inilemiyor. Aşağıdaki birleşik yapı bu sınırı aşıyor.
+**Durum.** Lemma ve "her kod lemmadan gelir" önermesi ispatlı. Gauge sonucu bir gözlem, ispat yok. Üç basit grupta sistem 900 etiketlemenin hepsinde çözüldü; S₄'te 300'ün 282'sinde çözüldü.
+
+**Düzeltme 1: "her grupta S + w − r₂" sanısı yanlış** (ikinci denetim; burada yeniden doğrulandı). Önceki bir sürüm, minimum state'te fan-in S + w − r₂(G)'nin her grupta ulaşılabilir olduğunu sanı olarak yazıyordu. Bu yanlış; kendi tablomuzdaki Z₂³ satırı (formül 2, bulunan 3) zaten buna işaret ediyordu.
+
+- **Z₂, harfler {e, toggle}:** S = 1, w = 1, r₂ = 1, formül K = 1. Ama s′ = s ⊕ u iki girişe bakmak zorunda: K = 2.
+- **Z₈, harfler {e, +1}:** formül K = 3. Identity'nin kodu 000'a sabitlenince 7! = 5 040 minimum-bit kodlama kalıyor; hepsinde en büyük fan-in 4. Kontrol bitleri de seçilebilir sayıldı; burada ayrıca tarandı.
+- Denetimde hesaplamadan bağımsız bir ispat da var: K ≤ 3 olsaydı üretecin güncellemesi 𝔽₂³ üzerinde affine bir permütasyon olurdu, ve affine bir permütasyon mertebe 8 olamaz.
+
+**Düzeltme 2: gauge her etiketlemede bir core bitini düşüremez** (A5, sertifikalı karşı örnek; burada `gauge()` ile yeniden doğrulandı).
+
+- Etiketleme: V4 = {e, (0 2)(3 4), (0 3)(2 4), (0 4)(2 3)}, coset etiketleri [8, 12, 5, 7, 15, 1, 6, 13, 2, 9, 10, 0, 11, 3, 14].
+- Dört core bitinden hangisi çıkarılırsa çıkarılsın, yalnız (1,1) fonksiyoneli için sistem çözülüyor; (1,0) ve (0,1) için çözülmüyor. Yani uygulanabilir fonksiyoneller tek boyutlu bir uzayda kalıyor ve iki bağımsız fiber koordinatı seçilemiyor. Gauge burada K = 7'de kalıyor.
+- Denetimin rank karakterizasyonu: core bitleri D için uygulanabilir fonksiyoneller bir alt uzay W_D oluşturur. Fiber'in her koordinatı en fazla d core biti okuyabiliyorsa, gerek ve yeter koşul dim span(∪_{|D| ≤ d} W_D) = k.
+
+**Teorem (tek mertebeli üreteç; ikinci denetimden, ispatı burada kontrol edildi).** Varsayımlar:
+
+- G = ⟨a, b⟩ ve a'nın mertebesi m tek;
+- H ≤ G, H ≅ Z₂ᵏ;
+- harfler {a, b, e}, kodları a = 00, b = 01, e = 10;
+- her çıkış yalnız ihtiyaç duyduğu kontrol bitlerini okuyabilir.
+
+O zaman **her** core etiketlemesi için tek LUT seviyeli bir gerçekleştirme vardır: S = c + k = ⌈log₂\|G\|⌉ ve K ≤ c + 2 = S + 2 − k.
+
+*İspat.*
+
+1. a'nın sağ coset'ler üzerindeki her yörüngesi tam m uzunluğundadır. Ht·aʲ = Ht olsaydı t aʲ t⁻¹ ∈ H olurdu; bu elemanın mertebesi hem tek hem 2'nin kuvveti, yani identity. Dolayısıyla aʲ = e.
+2. Her yörüngede temsilciler t₀, t₀a, …, t₀a^{m−1} seçilir. Transversal sağdan a ile çarpmaya kapalı olur: γ(x, a) = e, ayrıca γ(x, e) = e.
+3. Fiber yalnız b harfinde değişir. u = 1 yalnız b için olduğundan z′_j = z_j ⊕ (u ∧ Γ_j(x, b)). Bu çıkış c core bitine, kendi bitine ve tek bir kontrol bitine bakar: c + 2.
+4. Core çıkışları c state biti ve 2 kontrol bitine bakar: c + 2. ∎
+
+Fark şurada: gauge bir **core bitini** düşürmeye çalışıyor; bu inşa bir **kontrol bitini** düşürüyor. Bu yüzden Düzeltme 2'deki etiketlemede de K = 6 veriyor.
+
+*Doğrulama* (`core_fiber.py --odd` → `odd_generator.json`; fan-in, kontrol bitleri seçilebilir sayılarak, tam ölçüldü):
+
+| Grup | a'nın mertebesi | S | k | Sınır c + 2 | Ölçülen K (her etiketlemede) |
+|---|---|---|---|---|---|
+| A₅ | 5 | 6 | 2 | 6 | 6 (21 etiketleme, karşı örnek dahil) |
+| PSL(2,7) | 7 | 8 | 2 | 8 | 8 (20) |
+| A₆ | 5 | 9 | 2 | 9 | 9 (20) |
+| PSL(2,8) | 7 | 9 | 3 | 8 | 8 (20) |
+
+Bütün durumlarda fiber bitleri yalnız u kontrol bitini okuyor.
+
+**Sonuç (bütün sonlu abelyen olmayan basit gruplar).** Böyle bir grup 2-grubu olamaz, bu yüzden tek asal mertebeli bir a elemanı vardır. Guralnick–Kantor (2000, J. Algebra 234, 743–792) her identity dışı elemanın bir üreteç çiftine tamamlanabildiğini gösteriyor; buradan G = ⟨a, b⟩ olan bir b bulunur. H olarak en büyük elementary abelian 2-alt grup alınır (k = r₂(G)). Sonuç: S = ⌈log₂\|G\|⌉ ve K ≤ S + 2 − r₂(G).
+
+Kapsam:
+
+- Bu, **uygun seçilmiş** bir {e, a, b} alfabesi için bir varlık sonucu. Verilen keyfi bir üreteç çiftini kapsamıyor; alfabeyi değiştirmek bir kelime görevinde bedava değil.
+- Fan-in için bir üst sınır; optimumluk iddiası yok. Birleşik yapı test edilen gruplarda daha iyi (aşağıda).
+- Grup teorisi kısmı klasik. LUT gerçekleştirmesine bağlanmasının literatürde ilk olduğunu iddia etmiyoruz.
 
 **Birleşik yapı: blok core + fiber** (`realize.py` → `realize.json`). İki yapı tek bir şemada birleşiyor.
 
@@ -309,45 +372,47 @@ XC7A100T üzerinde, 120 bitlik state'e kopyalanarak ölçüldü (Yosys + nextpnr
 
 | Gerçekleştirme | State | Döngü | Fmax (MHz) |
 |---|---|---|---|
-| Öğrenilen mimari, tam tablolu 3-bit bloklar (8:1 mux) | 24 | 2 seviye | 378 / 421 |
-| Elle, ters kod r = p⁻¹, 5 koordinat × 3 bit | 15 | LUT5 | 424 / 443 |
-| β₆: V4 + A4 coset'leri | 7 | LUT6 / LUT5 | 443 / 473 |
-| SAT, 6 bit | **6** | LUT6 | 454 / 456 |
+| Öğrenilen mimari, tam tablolu 3-bit bloklar (8:1 mux) | 24 | 2 seviye | 482 / 490 |
+| Elle, ters kod r = p⁻¹, 5 koordinat × 3 bit | 15 | LUT5 | 651 / 724 |
+| β₆: V4 + A4 coset'leri | 7 | LUT6 / LUT5 | 638 / 589 |
+| SAT, 6 bit | **6** | LUT6 | 665 / 622 |
 
-Bundan çıkan sonuç: Daha kompakt encoding, ölçülen iki yerleştirmede belirgin bir Fmax bedeli ödetmedi. 6 bitlik mantıksal optimum ~455 MHz'e ulaştı; 7 ve 15 bitlik karşılıklarla aynı hız ölçeğinde. Aralıklar örtüşüyor ve iki seed bir sıralama vermiyor. S, L ve R birlikte karşılaştırılmadan 6 bitlik tasarımın fiziksel Pareto optimumu olduğu söylenemez. Tam tablolu öğrenilen mimari ise hem daha fazla bit hem daha uzun döngü kullanıyor: gereğinden esnek. **Transition codebook** fikrinin dayanağı bu.
+**Ölçüm düzeltmesi (29 Ekim, ikinci denetimin "gerçek geri besleme yolunu raporlayın" isteği üzerine).** İlk ölçümlerde state, LED'e indirgenirken 2–3 LUT derinliğinde bir XOR aşamasından geçiyordu. Kritik yol analizi gösterdi ki tek seviyeli bütün tasarımlarda sınırı döngü değil bu aşama koyuyordu: eski değerler (378–473 MHz) düzeneğin sınırıydı. Düzenekte artık her LUT'tan sonra register var; döngü dışındaki her yol tek LUT. Yukarıdaki değerler yeni ölçüm, ve her sonuçla birlikte kritik yolun mantığı da kaydediliyor (`loop_*.json`, alan `path`).
 
-**Başka gruplarda fan-in ve Fmax** (`loop_groups.json`, `loop_realize.json`; ~120 bite kopyalanarak, iki seed ortalaması; LUT ve MUXF sayıları 120 bitin toplamı):
+Bundan çıkan sonuç: Daha kompakt encoding, ölçülen iki yerleştirmede belirgin bir Fmax bedeli ödetmedi. 6 bitlik mantıksal optimum ~640 MHz'e ulaştı; 7 ve 15 bitlik karşılıklarla aynı hız ölçeğinde (589–724). Aralıklar örtüşüyor ve iki seed bir sıralama vermiyor. S, L ve R birlikte karşılaştırılmadan 6 bitlik tasarımın fiziksel Pareto optimumu olduğu söylenemez. Tam tablolu öğrenilen mimari ise hem daha fazla bit hem daha uzun döngü kullanıyor: gereğinden esnek. **Transition codebook** fikrinin dayanağı bu.
 
-| Grup | Kod | State | Fan-in | Fmax (MHz) | LUT | MUXF7/8 |
-|---|---|---|---|---|---|---|
-| A₅ | dense | 6 | 8 | 334 | 598 | 319 |
-| | lemma (rastgele transversal) | 6 | 7 | 421 | 247 | 20 |
-| | gauge çözülmüş | 6 | 6 | **504** | 145 | 0 |
-| | birleşik, K = 5 | 7 | 5 | 428 | 144 | 0 |
-| | positional (ters kod, base 3) | 9 | 5 | 478 | 142 | 0 |
-| PSL(2,7) | dense | 8 | 10 | 197 | 4 042 | 1 018 |
-| | lemma | 8 | 9 | 292 | 1 176 | 254 |
-| | gauge | 8 | 8 | 333 | 688 | 285 |
-| | birleşik, K = 5 | 8 | 5 | **451** | 145 | 0 |
-| | positional | 9 | 5 | **537** | 143 | 0 |
-| A₆ | dense | 9 | 11 | 156 | 6 229 | 2 262 |
-| | lemma | 9 | 10 | 240 | 2 207 | 513 |
-| | gauge | 9 | 9 | 266 | 1 446 | 619 |
-| | birleşik, K = 6 | 9 | 6 | **450** | 142 | 0 |
-| | positional | 12 | 5 | **533** | 146 | 0 |
-| PSL(2,8) | birleşik, K = 8 (dense core + Z₂³) | 9 | 8 | 342 | 637 | 321 |
-| | birleşik, K = 7 | 10 | 7 | 417 | 245 | 58 |
-| | birleşik, K = 6 (positional) | 12 | 6 | **456** | 146 | 0 |
+**Başka gruplarda fan-in ve Fmax** (`loop_groups.json`, `loop_realize.json`, `loop_psl28.json`; ~120 bite kopyalanarak, iki seed ortalaması, düzeltilmiş düzenek; LUT ve MUXF sayıları 120 bitin toplamı; "kritik yol" = en yavaş yoldaki mantık, iki seed):
+
+| Grup | Kod | State | Fan-in | Fmax (MHz) | Kritik yol | LUT | MUXF7/8 |
+|---|---|---|---|---|---|---|---|
+| A₅ | dense | 6 | 8 | 333 | 2 MUXF (+2 LUT) | 607 | 334 |
+| | lemma (rastgele transversal) | 6 | 7 | 417 | 3 LUT / LUT + MUXF | 258 | 17 |
+| | gauge çözülmüş | 6 | 6 | **643** | 1 LUT | 145 | 0 |
+| | birleşik, K = 5 | 7 | 5 | 633 | 1 LUT | 144 | 0 |
+| | positional (ters kod, base 3) | 9 | 5 | 599 | 1 LUT | 142 | 0 |
+| PSL(2,7) | dense | 8 | 10 | 193 | 5–6 LUT | 4 152 | 976 |
+| | lemma | 8 | 9 | 288 | 4–5 LUT | 1 052 | 306 |
+| | gauge | 8 | 8 | 322 | 2–3 LUT (+MUXF) | 706 | 322 |
+| | birleşik, K = 5 | 8 | 5 | **669** | 1 LUT | 145 | 0 |
+| | positional | 9 | 5 | 634 | 1 LUT | 142 | 0 |
+| A₆ | dense | 9 | 11 | 156 | 4–6 LUT (+MUXF) | 6 232 | 2 275 |
+| | lemma | 9 | 10 | 232 | 4–5 LUT (+MUXF) | 2 236 | 512 |
+| | gauge | 9 | 9 | 280 | 3–4 LUT (+MUXF) | 1 510 | 627 |
+| | birleşik, K = 6 | 9 | 6 | **636** | 1 LUT | 142 | 0 |
+| | positional | 12 | 5 | 642 | 1 LUT | 145 | 0 |
+| PSL(2,8) | birleşik, K = 8 (dense core + Z₂³) | 9 | 8 | 317 | 2–4 LUT (+MUXF) | 641 | 314 |
+| | birleşik, K = 7 | 10 | 7 | 412 | 1–3 LUT (+MUXF) | 245 | 57 |
+| | birleşik, K = 6 (positional) | 12 | 6 | **641** | 1 LUT | 145 | 0 |
 
 Okuma:
 
-- **Fan-in 6, fiziksel bir eşik.** Aynı state bitinde fan-in 6'yı aşan her adım Fmax'i düşürüyor ve LUT sayısını katlıyor. A6, 9 bitte: fan-in 11 → 6 ile 156 → 450 MHz (2,9 kat) ve 6 229 → 142 LUT (44 kat). Sebep: 6'dan fazla girişli bir fonksiyon LUT6'ya sığmıyor; MUXF7/F8 ya da ikinci bir LUT seviyesi gerekiyor.
-- **Aynı fan-in'de kodlar arasında ~%10 fark var.** A5'in iki farklı 6 bit / fan-in 6 kodu, SAT tanığı ile gauge kodu, 455 ve 504 MHz verdi.
-- **K ≤ 6'nın içinde ise yerellik, bit sayısından daha belirleyici.** K ≤ 6 olan tasarımların hepsi 420–540 MHz aralığında. En hızlısı positional kod: daha çok bit kullanıyor ama her koordinat yalnız kendi 3 bitine bakıyor. Birleşik yapıda fiber bitleri iki bloktan okuyor; bu da yönlendirmeyi uzatıyor. İki seed bu ince sıralama için yeterli değil.
-- **PSL(2,8)'de en az state'li tasarım en yavaşı.** 9 bit / fan-in 8: 342 MHz; 12 bit / fan-in 6: 456 MHz. Fiziksel optimum, LUT6 eşiğinin altında kalan en küçük state.
-- **Yani teorinin donanımdaki karşılığı iki aşamalı.** Önce fan-in ≤ 6 (LUT6 eşiği), sonra en az state ve yerellik arasında bir ödünleşim.
+- **Fan-in 6, fiziksel bir eşik.** K ≤ 6 olan bütün tasarımlar, kod ve state biti ne olursa olsun, kritik yolda tek LUT ile 599–669 MHz veriyor; aralarındaki fark seed gürültüsü düzeyinde. K > 6'da 6'dan fazla girişli fonksiyon LUT6'ya sığmıyor: MUXF7/F8 ya da ek LUT seviyeleri giriyor ve Fmax düşüyor.
+- **Aynı state'te kazanç büyük.** A6, 9 bitte: fan-in 11 → 6 ile 156 → 636 MHz (4,1 kat) ve 6 232 → 142 LUT (44 kat). PSL(2,7), 8 bitte: 193 → 669 MHz (3,5 kat). A5, 6 bitte: 333 → 643 MHz (1,9 kat).
+- **PSL(2,8)'de en az state'li tasarım en yavaşı.** 9 bit / fan-in 8: 317 MHz; 12 bit / fan-in 6: 641 MHz. Fiziksel optimum, LUT6 eşiğinin altında kalan en küçük state.
+- **Geri çekilen yorum.** İlk ölçümde K ≤ 6 tasarımları arasında positional kod daha hızlı görünüyordu ve bunu yerelliğe bağlamıştım. Bu, eski düzeneğin çıkış ağacının bir artefaktıydı. Düzeltilmiş ölçümde K ≤ 6 içinde ayırt edilebilir bir sıralama yok.
+- **Yani teorinin donanımdaki karşılığı:** önce fan-in ≤ 6 (LUT6 eşiği). Bu eşiğin altında, ölçtüğümüz boyutlarda state biti sayısı Fmax'i belirgin biçimde etkilemiyor; yalnız LUT ve register sayısını etkiliyor.
 
-**Kapsam.** Bu benchmark yalnız state döngüsünü ölçüyor. Olasılık head'i, model parametreleri ve entropy coder dahil değil. ~455 MHz, tamamlanmış bir sıkıştırıcının byte/s değeri olarak okunmamalı.
+**Kapsam.** Bu benchmark yalnız state döngüsünü ölçüyor. Olasılık head'i, model parametreleri ve entropy coder dahil değil. ~640 MHz, tamamlanmış bir sıkıştırıcının byte/s değeri olarak okunmamalı.
 
 **Öğrenilen sınıfın içinde (`probe_a5embed.json`).** Doğru çözüm, eğitilen modelle birebir aynı mimarinin içine yazıldı: 3-bit bloklu `fbseq.Gated`, gate MLP'leri ile. Gate ağlarına tam tablolar yerleştirildi; üç blok r(j) = p⁻¹(j) değerlerini tutuyor (24 bitin 9'u). Sonuç:
 
@@ -368,7 +433,7 @@ Yani bu sınıf A5'i temsil edebiliyor; eğitimde görülen başarısızlık bir
    - Paralel LUT güncellemesinin bir tersinir kapı dizisine eşdeğer olduğu da ayrıca gösterilmeliydi.
 
    Sonuç: tam 2^S kod ve K < S fan-in ile tek permütasyonlar için bir parite engeli olup olmadığı açık bir soru.
-7. Coset core + fiber (§5.3): gauge sistemi basit gruplarda her etiketlemede çözülür mü, S₄'te neden bazen çözülmüyor? H abelian değilse fiber, H'nin bütün elemanlarını harf olarak alan bir alt makinedir (§3 uyarısı); bunun maliyeti?
+7. Coset core + fiber (§5.3): gauge her etiketlemede çözülmüyor; A5'te sertifikalı karşı örnek var, rank koşulu Düzeltme 2'de. Açık olan: hangi etiketlemeler çözülüyor, ve kontrol bitlerinin seçilmesiyle birleşen bir gauge ne veriyor? H abelian değilse fiber, H'nin bütün elemanlarını harf olarak alan bir alt makinedir (§3 uyarısı); bunun maliyeti?
 8. Birleşik yapı: hangi gruplarda alt sınır K = 6 ile ulaşılabilir? PSL(2,8) bu yapıyla ulaşamıyor (§5.3). Küçük indeksli alt grupların kesişim yapısına dayanan bir koşul var mı? Genel gerçekleştirme (SAT) PSL(2,8)'de K = 6 ile 9–11 bite inebilir mi? Diğer açık durumlar: A₅'te K = 5'te 6 bit (SAT sürüyor), A₆'da K = 5'te 9–11 bit, ve bütün gruplarda K = 4.
 
 ---
@@ -469,10 +534,19 @@ Aynı parametrede fark işaret değiştiriyor. Hangi forward'la eğitilirse mode
 | Rastgele | < 0,06 | < 0,06 |
 | Identity'ye yakın | 0,025–0,032 | 0,028–0,029 |
 | Identity'ye yakın, tablo logit'leri × 10 | 0,108–0,117 (son 0,04–0,11) | 0,038–0,046 |
+| **Doğru dönüşümler, donmuş** (yalnız seçim ağı ve head öğreniyor) | 0,11–0,36 (son 0,02–0,09) | 0,02–0,10 |
 
 Loghub'da rastgele başlangıçla 2,07–2,16 bpb.
 
 Teori, A5'in tek seviyede yalnız 3 dönüşümle temsil edilebildiğini söylüyor. Ama dönüşümleri ve seçimi birlikte öğrenmek denenen 24 koşunun hiçbirinde çalışmadı. En iyi değer 0,12; şans düzeyinin (1/60 ≈ 0,017) üstünde, %100'ün çok altında. Bu haliyle codebook bir öğrenme yöntemi olarak başarısız. Bir donanım hedefi olarak geçerliliği (§5.4) bundan etkilenmiyor.
+
+**Ayrıştırma: dönüşümler doğru ve donmuşken** (ikinci denetimin önerisi; `codebook.py --init fixed`).
+
+- Kurulum: layer 0'ın 0–2 numaralı blokları, ters kod r(n) = p⁻¹(n) ⊕ n'yi tutuyor. Codebook'un ilk üç girdisi üç harfin doğru dönüşümleri, geri kalanı identity. Tablolar donmuş; yalnız seçim ağı ve head öğreniyor.
+- Doğru seçimle bu model grubu 2048 / 2048 adımda izliyor. Yani model doğru çözümü ifade edebiliyor ve seçim problemi önemsiz görünüyor: harf x → girdi x.
+- Sonuç: 8 koşunun hiçbiri öğrenemedi (softhard en iyi 0,36, son ≤ 0,09; slope ≤ 0,10).
+- Yorum: başarısızlık yalnız doğru dönüşümleri bulmakta değil. Ayrık bir recurrence üzerinden basit bir seçimi gradyanla öğrenmek de bu reçetelerle olmuyor. Darboğaz kredi ataması.
+- Sürüyor: çeldiricili codebook (girdiler 3–7 rastgele permütasyon) ve yalnız üç doğru dönüşümlü codebook (m = 3).
 
 **Literatürdeki reçeteler:**
 
@@ -505,7 +579,13 @@ Bu, ortalama almadan her yörünge için geçerlidir. Her adımda aₜ ≤ ρ < 
 - Bir katmanın içinde εₜ yalnız girdiye ve alt katmanların state'ine bağlıdır; kendi hatasından bağımsızdır. Yukarıdaki sınır ek varsayım gerektirmeden geçerlidir.
 - Katmanlar arasında hata ileri yönde akar: e⁽ˡ⁾ₜ ≤ ρ·e⁽ˡ⁾ₜ₋₁ + L·e⁽ˡ⁻¹⁾ₜ + δ. Alt katman sınırlıysa üst katman da sınırlıdır.
 
-Sonuç: **discretization hatası state döngüsü tarafından büyütülemez.** Aynı yapı paralel scan'i ve tek mux'luk döngüyü de sağlıyordu.
+Sonuç: **kb = 1'de state döngüsü discretization hatasını çarparak büyütmez** (çarpan aₜ ≤ 1). Aynı yapı paralel scan'i ve tek mux'luk döngüyü de sağlıyordu.
+
+Kapsam (ikinci denetimden):
+
+- **Dış terimler birikir.** Her adımda gelen εₜ terimleri toplanır. ρ < 1 ise sınır ε/(1−ρ)'da doyar. ρ = 1 ise geometrik bir plato yoktur; sınır t·ε'a kadar büyüyebilir.
+- **kb > 1 bloklarda Hamming uzaklığı büyüyebilir.** Tablo input-gated ve state'ten bağımsız seçilse bile, blok içindeki map bitleri karıştırır. Örnek: F(x, y, z) = (x, x, x), 000 ile 100 arasındaki 1 bitlik farkı 000 ile 111 arasındaki 3 bitlik farka çevirir.
+- **Dağılım relaxation'ı başka bir metrikte daralır.** Aynı sütun-stokastik M altında L1 (total variation) uzaklığı büyümez. Bu, Hamming uzaklığından farklı bir ölçü ve farklı bir varsayım.
 
 **Sızdıran bellek: temsil farkının olası bir kaynağı.** Soft model sₜ = r·sₜ₋₁ ile (g = 1 − r, u = 0) yavaşça unutabilir; Boolean bit ya tam tutar ya sıfırlar. Bu durumda tam çözüm eₜ = 1 − rᵗ olur. r = 0,999 için e₂₅₆ ≈ 0,23, e₄₀₉₆ ≈ 0,98. Yani adım başına çok küçük bir gate farkı, uzun bir akışta büyük bir fark yaratabilir; bu örnekte sınır tam olarak eşitliktir. Soft state'lerin 0 ve 1'den uzak olması (0,16–0,21) böyle kısmi unutmanın izi olabilir. Boolean dünyada sızdıran belleğin karşılığı **sayaçlardır**: "k adım sonra unut" diyen çok bitli bloklar. Bu bir hipotez.
 
