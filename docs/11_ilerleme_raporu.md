@@ -244,7 +244,14 @@ Denetim çıktıları burada bağımsız olarak yeniden üretildi; ayrıntı `do
 
 **Grup tasarımları yeniden ölçüldü** (§2.9'daki sayılar güncel). K ≤ 6 tasarımları 420–540'tan 599–669 MHz'e çıktı; K > 6 tasarımlarının sınırı zaten döngüydü, değerleri az değişti.
 
-**Öğrenme: doğru codebook donmuşken.** Denetimin önerdiği ayrıştırma deneyi: dönüşümler inşadan sabit, yalnız seçim ağı ve head öğreniyor. Doğru seçimle model grubu birebir izliyor (2048/2048). Buna rağmen 8 koşunun hiçbiri öğrenemedi: en iyi 0,36, son ≤ 0,10. Yani A5'teki öğrenme sorunu yalnız "doğru dönüşümleri bulmak" değil; ayrık recurrence üzerinden seçimin kendisi de bu reçetelerle öğrenilemiyor. Çeldiricili ve m = 3 varyantları sürüyor.
+**Öğrenme: doğru dönüşümleri bulmak mı, seçmek mi?** Denetimin önerdiği ayrıştırma (`docs/10` §7):
+
+- Dönüşümler inşadan sabit, yalnız seçim ağı ve head öğreniyor:
+  - yalnız 3 doğru dönüşüm: softhard 4/4;
+  - yanlış girdiler eklenince 0/8;
+  - aynı şey, kısa dizilerden başlayan curriculum'la: 4/8.
+- Dönüşümler de öğreniliyor: curriculum işe yaramıyor (codebook 0/8 ≤ 0,03; B_block3 softhard 0/4, slope 1/4).
+- Sonuç: seçim kısmı bir eğitim reçetesi sorunu, ve curriculum büyük ölçüde çözüyor. Zor olan geçiş tablolarını bulmak. Bu, yapıcı inşaların pratik değerini artırıyor: dönüşümler teoriden, seçim ve head öğrenmeden.
 
 ---
 
@@ -264,7 +271,7 @@ Denetim çıktıları burada bağımsız olarak yeniden üretildi; ayrıntı `do
 2. Gerçek sıkıştırma yok: range coder ve bit-exact encode/decode yapılmadı.
 3. Görülmemiş log sistemlerine genelleme test edilmedi.
 4. Bütün donanım sonuçları simülasyon ve STA'ya dayanıyor; enerji ölçülmedi.
-5. A5'in eğitimle güvenilir biçimde öğrenilmesi çözülmedi: softhard 2/4, hard-forward 0/8, codebook 0/24.
+5. A5'in eğitimle güvenilir biçimde öğrenilmesi çözülmedi: softhard 2/4, hard-forward 0/8, öğrenilen codebook 0/32. Doğru dönüşümler verilince seçim curriculum'la öğreniliyor (4/8).
 6. Teoride yeni olan yalnız A5 küçük vakası; genel teorem (Problem C) açık.
 
 ---

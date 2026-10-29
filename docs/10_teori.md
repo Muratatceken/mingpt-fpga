@@ -48,7 +48,7 @@ Literatür taraması Ekim 2026 sonunda üç hatta yapıldı. "Bulunamadı" ifade
 | A5'in basit grup genellemesi | Yörünge argümanı: her basit grup için blok boyutuna göre bir alt sınır | Eleştirel okumadan; genelleme ve ispat bizde |
 | Bilgi ve kayıp | L_min = H(Y \| Z, W); fazlalık I(Y; H \| Z, W) | **Bilinen** (standart) |
 | İfade gücü | Boolean blok sıralaması: set/keep → star-free; + toggle → Z₂; 2 bit → Z₃; 3 bit → A5 | Sürekli karşılığı bilinen (Sarrof 2024, Grazzi 2025); Boolean ölçümü bizim |
-| Öğrenilebilirlik | Aynı parametrede hard − soft: soft eğitimden sonra +1,37, hard uyarlamadan sonra −0,23 bpb. Hard modelin eski soft referansa göre açığı 0,185'ten ~0,02'ye indi. A5'te softhard 2/4, hard-forward 0/8, codebook 0/24 | Ölçüm bizim; yöntemler literatürden |
+| Öğrenilebilirlik | Aynı parametrede hard − soft: soft eğitimden sonra +1,37, hard uyarlamadan sonra −0,23 bpb. Hard modelin eski soft referansa göre açığı 0,185'ten ~0,02'ye indi. A5'te softhard 2/4, hard-forward 0/8, öğrenilen codebook 0/32. Doğru dönüşümler donmuşken seçim curriculum'la öğreniliyor (0/8 → 4/8); dönüşümleri bulmak öğrenilemiyor | Ölçüm bizim; yöntemler literatürden |
 | Kararlılık | Hata rekürsiyonu sınırı; 𝔽₂ tam eşitliği; birleşen map'ler farkı siler, permütasyonlar durumları ayrı tutar; kb = 1 input-gated yapıda döngü hatayı çarparak büyütmez (dış terimler birikebilir; kb > 1'de Hamming uzaklığı büyüyebilir); sızdıran bellek hipotezi. Bellek–dayanıklılık bağı yalnız bağımsız 1-bit keep/toggle için geçerli; genel bloklar hata düzeltebilir (60 durum için ≥ 10 bit) | Matematiği standart; input-gated önermesi ve ölçümler bizim |
 
 ---
@@ -540,13 +540,31 @@ Loghub'da rastgele başlangıçla 2,07–2,16 bpb.
 
 Teori, A5'in tek seviyede yalnız 3 dönüşümle temsil edilebildiğini söylüyor. Ama dönüşümleri ve seçimi birlikte öğrenmek denenen 24 koşunun hiçbirinde çalışmadı. En iyi değer 0,12; şans düzeyinin (1/60 ≈ 0,017) üstünde, %100'ün çok altında. Bu haliyle codebook bir öğrenme yöntemi olarak başarısız. Bir donanım hedefi olarak geçerliliği (§5.4) bundan etkilenmiyor.
 
-**Ayrıştırma: dönüşümler doğru ve donmuşken** (ikinci denetimin önerisi; `codebook.py --init fixed`).
+**Ayrıştırma: doğru dönüşümleri bulmak mı, seçmek mi?** (ikinci denetimin önerisi; `codebook.py --init fixed`, `--curriculum`; `hardaware.py --curriculum`)
 
-- Kurulum: layer 0'ın 0–2 numaralı blokları, ters kod r(n) = p⁻¹(n) ⊕ n'yi tutuyor. Codebook'un ilk üç girdisi üç harfin doğru dönüşümleri, geri kalanı identity. Tablolar donmuş; yalnız seçim ağı ve head öğreniyor.
-- Doğru seçimle bu model grubu 2048 / 2048 adımda izliyor. Yani model doğru çözümü ifade edebiliyor ve seçim problemi önemsiz görünüyor: harf x → girdi x.
-- Sonuç: 8 koşunun hiçbiri öğrenemedi (softhard en iyi 0,36, son ≤ 0,09; slope ≤ 0,10).
-- Yorum: başarısızlık yalnız doğru dönüşümleri bulmakta değil. Ayrık bir recurrence üzerinden basit bir seçimi gradyanla öğrenmek de bu reçetelerle olmuyor. Darboğaz kredi ataması.
-- Sürüyor: çeldiricili codebook (girdiler 3–7 rastgele permütasyon) ve yalnız üç doğru dönüşümlü codebook (m = 3).
+Kurulum: layer 0'ın 0–2 numaralı blokları, ters kod r(n) = p⁻¹(n) ⊕ n'yi tutuyor. Codebook'un ilk üç girdisi üç harfin doğru dönüşümleri. Tablolar donmuş; yalnız seçim ağı ve head öğreniyor. Doğru seçimle model grubu 2048 / 2048 adımda izliyor, yani doğru çözümü ifade edebiliyor. Curriculum: eğitim uzunluğu, adımların ilk 2/3'ünde 4'ten 64'e çıkıyor.
+
+| Dönüşümler | Codebook | Eğitim uzunluğu | softhard | slope |
+|---|---|---|---|---|
+| Doğru, donmuş | m = 3, yalnız doğrular | 64 | **4/4** | 0/4 (≤ 0,10) |
+| Doğru, donmuş | m = 8, ek girdiler identity | 64 | 0/4 (en iyi 0,36) | 0/4 (≤ 0,10) |
+| Doğru, donmuş | m = 8, ek girdiler rastgele permütasyon | 64 | 0/4 (≤ 0,13) | 0/4 (≤ 0,10) |
+| Doğru, donmuş | m = 8, ek girdiler identity | 4 → 64 | **3/4** | **1/4** |
+| Öğreniliyor | B_block3 (tam tablo) | 64 | 2/4 | 0/4 (Hard-ST 0/4) |
+| Öğreniliyor | B_block3 (tam tablo) | 4 → 64 | 0/4 (en iyi 0,32) | 1/4 |
+| Öğreniliyor | codebook m = 8, identity'ye yakın başlangıç | 64 | 0/4 | 0/4 |
+| Öğreniliyor | codebook m = 8, identity'ye yakın başlangıç | 4 → 64 | 0/4 (≤ 0,03) | 0/4 (≤ 0,03) |
+
+"k/4": dört seed'in kaçı test edilen 64 ve 256 uzunlukta %100'e ulaştı.
+
+Okuma:
+
+- **İki ayrı zorluk var.**
+  1. *Doğru dönüşümler verilmişken seçimi öğrenmek.* Yalnız doğru girdiler varsa soft keşifle kolay (4/4). Yanlış girdiler eklenince 64 uzunlukta öğrenilmiyor, ama kısa dizilerden başlayınca büyük ölçüde öğreniliyor (0/8 → 4/8). Bu kısmın darboğazı uzun ufuklu kredi ataması.
+  2. *Dönüşümleri bulmak.* Curriculum bunu çözmüyor. Öğrenilen codebook şans düzeyine yakın kalıyor (≤ 0,03). B_block3'te güvenilir bir iyileşme yok: softhard 2/4 → 0/4, slope 0/4 → 1/4. Dört seed'le bu farkların yönü belirsiz.
+- **Baştan hard eğitim keşifte zayıf.** En temiz durumda (m = 3) bile 0/4. Curriculum ile ilk kez başarılı koşular çıkıyor (sabit codebook'ta 1/4, B_block3'te 1/4).
+- **Takılan koşular sık sık ~1/3'te duruyor** (0,32–0,40). Bu, coset hipoteziyle uyumlu, ama doğruluk sayısından temsil çıkarılamaz.
+- **Sonuç.** A5'te öğrenme sorununun en zor kısmı geçiş tablolarının kendisini bulmak. Seçim kısmı, eğitim reçetesiyle (curriculum, temiz hipotez kümesi) çözülebiliyor. Bu da yapıcı inşaların (§5.3) pratik değerini artırıyor: dönüşümler teoriden gelir, seçim ve head öğrenilir.
 
 **Literatürdeki reçeteler:**
 
@@ -690,7 +708,7 @@ Ayrıntılı künyeler: `docs/08_case_arastirmasi.md`, `paper/related_work_2026.
 1. Birleşik yapının genel bir koşulu: hangi G için bilgi alt sınırı K = 6 ile ulaşılabilir (§5.5, madde 8)? A5'te K = 5 için SAT sonucu; daha büyük gruplar (PSL(2,8), A7).
 2. Positional ve birleşik tasarımların Fmax farkının daha çok seed ve yerleşim kısıtıyla ölçülmesi; yerelliğin bir maliyet terimi olarak modele eklenmesi.
 3. S₄, mod 5 ve mod 7 ile §6'daki sanının testi.
-4. A5'i güvenilir öğrenmek: codebook bu haliyle başarısız. Sıradakiler: PD-SSM reçetesi, CAGE, curriculum; başarısız koşularda iç durumun coset yapısını incelemek.
+4. A5'i güvenilir öğrenmek. Seçim kısmı curriculum'la çözülüyor; zor olan dönüşümleri bulmak. Sıradakiler: dönüşümleri yapıcı inşadan alıp yalnız seçim ve head'i öğrenmek (Loghub'da da); PD-SSM reçetesi, CAGE; takılan koşularda iç durumun coset yapısını incelemek.
 5. Hard-aware finalistlerin daha fazla seed'le tekrarı ve leave-one-system-out değerlendirme.
 6. Kararlılık: L sabitinin ölçülmesi; K = 6 ile tek seviyede hata düzelten bir A5 devresi var mı?
 7. Gate ağları ve head hâlâ float. LUT ağlarına çevrildiklerinde kalite ve döngü dışı mantığın maliyeti (Faz 1).

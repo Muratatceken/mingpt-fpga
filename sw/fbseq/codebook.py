@@ -117,15 +117,22 @@ def a5_job(job):
     erng = np.random.default_rng(1000 + job["seed"])
     ev = {L: [torch.as_tensor(a) for a in cpu.task("a5", 256, L, erng)] for L in (64, 256)}
 
-    def batch():
-        x, y = cpu.task("a5", 64, 64, rng)
+    calls = [0]
+
+    def batch():                                  # curriculum: length 4 -> 64 over the first 2/3 of the steps
+        T = 64
+        if job.get("curriculum"):
+            T = int(round(4 * 16 ** min(1.0, calls[0] / (2 * job["steps"] / 3))))
+        calls[0] += 1
+        x, y = cpu.task("a5", 64, T, rng)
         return torch.as_tensor(x), torch.as_tensor(y)
 
     def acc(model):
         return {L: float((model(x)[..., :n_out].argmax(-1) == y).float().mean()) for L, (x, y) in ev.items()}
     t0 = time.time()
     curve, gn, bad = ha.train(model, job["method"], batch, n_out, job["steps"], 3e-3, acc, 250)
-    tag = f"codebook_k3_m{job['m']}_{job.get('init', 'random')}" + (f"_g{job['gain']:g}" if job.get("gain", 1.0) != 1.0 else "")
+    tag = f"codebook_k3_m{job['m']}_{job.get('init', 'random')}" + (f"_g{job['gain']:g}" if job.get("gain", 1.0) != 1.0 else "") \
+        + ("_curr" if job.get("curriculum") else "")
     return dict(task="a5", model=tag, method=job["method"],
                 seed=job["seed"], steps=job["steps"],
                 params=cpu.n_params(model), curve=[(s, round(a[64], 3), round(a[256], 3)) for s, a in curve],
@@ -173,10 +180,11 @@ def main():
     ap.add_argument("--methods", default="softhard,slope")
     ap.add_argument("--init", default="random", choices=["random", "identity", "fixed", "fixed_distract"])
     ap.add_argument("--gain", type=float, default=1.0)
+    ap.add_argument("--curriculum", action="store_true", help="a5: training length 4 -> 64 over 2/3 of the steps")
     ap.add_argument("--steps", type=int, default=3000)
     ap.add_argument("--jobs", type=int, default=4)
     a = ap.parse_args()
-    jobs = [dict(seed=int(s), m=a.m, steps=a.steps, method=me, init=a.init, gain=a.gain)
+    jobs = [dict(seed=int(s), m=a.m, steps=a.steps, method=me, init=a.init, gain=a.gain, curriculum=a.curriculum)
             for me in a.methods.split(",") for s in a.seeds.split(",")]
     fn = a5_job if a.what == "a5" else bytes_job
     path = os.path.join(OUT, f"codebook_{a.what}.json")
