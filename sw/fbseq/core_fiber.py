@@ -2,6 +2,7 @@
 Coset core + Z2^k fiber realizations of group machines (docs/10 §5.3), for several groups.
 
     python3 core_fiber.py [--tries 300] [--labelings 300] [--groups A5+S4]   -> model/fbseq/core_fiber.json
+    python3 core_fiber.py --export     dense / lemma / gauge / positional codes  -> model/fbseq/group_codes.json
 
 Task: p_t = p_{t-1} o a_t, letters = generators + identity, w = ceil(log2 #letters) control bits.
 Lemma: for H <= G with H ~ Z2^k, write p = h t (t in a transversal of the right cosets H t).  Then
@@ -206,6 +207,71 @@ def build(F, s, label, chosen):
     return F.code(dict(s=s, label=label, T=T, order=dual + [h for h in H if h not in dual and h != F.e]))
 
 
+def solve_label(F, s, label):
+    """for a core labeling: the code whose k fiber functionals read the fewest core bits d (gauge solved)"""
+    funcs = [f for f in it.product((0, 1), repeat=F.k) if any(f)]
+    for d in range(F.c + 1):
+        sols = []
+        for ell in funcs:
+            for D in it.combinations(range(F.c), d):
+                r = gauge(F, s, label, ell, D)
+                if r[0] is not None:
+                    sols.append((ell, r))
+                    break
+        pick = []                                                    # k independent functionals among sols
+        for ell, r in sols:
+            cand = [e for e, _ in pick] + [ell]
+            if len({tuple(sum(c * v[i] for c, v in zip(cs, cand)) % 2 for i in range(F.k))
+                    for cs in it.product((0, 1), repeat=len(cand))}) == 2 ** len(cand):
+                pick.append((ell, r))
+        if len(pick) >= F.k:
+            return build(F, s, label, pick[:F.k]), d
+
+
+def deps_all(E, F, j):
+    """exact smallest set of state bits that, with the letter, determines next bit j (unused codes free)"""
+    f = {(E[p], a): E[F.step[p][a]][j] for p in range(F.N) for a in range(len(F.letters))}
+    S = len(E[0])
+    for r in range(S + 1):
+        for sub in it.combinations(range(S), r):
+            g = {}
+            if all(g.setdefault((tuple(code[i] for i in sub), a), v) == v for (code, a), v in f.items()):
+                return list(sub)
+
+
+def positional_inverse(F):
+    """r = p^-1 on a smallest base: r' = a^-1 r is local, each coordinate ceil(log2 n) bits"""
+    n = len(F.e)
+    for k in range(1, n + 1):
+        for base in it.combinations(range(n), k):
+            if sum(all(p[b] == b for b in base) for p in F.G) == 1:
+                nb = math.ceil(math.log2(n))
+                inv = lambda p: tuple(sorted(range(n), key=lambda i: p[i]))
+                return [tuple((inv(p)[b] >> t) & 1 for b in base for t in range(nb)) for p in F.G]
+
+
+def export(rng, names=("A5", "PSL(2,7)", "A6")):
+    """codes for the FPGA loop bench (loop_bench.py kind gc:<group>_<code>) -> model/fbseq/group_codes.json"""
+    specs = []
+    for name in names:
+        F = Family(groups()[name])
+        x = F.random(rng)
+        cands = {"dense": [tuple((v >> b) & 1 for b in range(F.S)) for v in rng.sample(range(2 ** F.S), F.N)],
+                 "lemma": F.code(x),
+                 "gauge": solve_label(F, x["s"], x["label"])[0],
+                 "positional": positional_inverse(F)}
+        for kind, E in cands.items():
+            assert len(set(E)) == F.N
+            D = [deps_all(E, F, j) for j in range(len(E[0]))]
+            spec = dict(name=f"{name}_{kind}", group=name, code=kind, S=len(E[0]), w=F.w, letters=len(F.letters),
+                        fanin=max(len(d) for d in D) + F.w, deps=D,
+                        codes=[sum(b << i for i, b in enumerate(c)) for c in E],
+                        start=sum(b << i for i, b in enumerate(E[0])), step=F.step)
+            print(json.dumps({k: v for k, v in spec.items() if k not in ("codes", "step", "deps")}), flush=True)
+            specs.append(spec)
+    json.dump(specs, open(os.path.join(ROOT, "model", "fbseq", "group_codes.json"), "w"))
+
+
 def study(name, gens, tries, labelings, rng):
     F = Family(gens)
     out = dict(group=name, order=F.N, letters=len(F.letters), w=F.w, S_lower_bound=F.S, two_rank=F.k,
@@ -219,30 +285,12 @@ def study(name, gens, tries, labelings, rng):
             best = fan
     out.update(random_tries=tries, random_best_fanin=max(best),
                random_histogram={str(m): hist[m] for m in sorted(hist)})
-    funcs = [f for f in it.product((0, 1), repeat=F.k) if any(f)]
     best, hist, example = None, {}, None
     for _ in range(labelings):                                       # random labeling, solved gauge
         x = F.random(rng)
         s, label = x["s"], x["label"]
-        chosen, d = None, None
-        for d in range(F.c + 1):                                     # fewest core bits for all k functionals
-            sols = []
-            for ell in funcs:
-                for D in it.combinations(range(F.c), d):
-                    r = gauge(F, s, label, ell, D)
-                    if r[0] is not None:
-                        sols.append((ell, r))
-                        break
-            pick = []                                                # k independent functionals among sols
-            for ell, r in sols:
-                cand = [e for e, _ in pick] + [ell]
-                if len({tuple(sum(c * v[i] for c, v in zip(cs, cand)) % 2 for i in range(F.k))
-                        for cs in it.product((0, 1), repeat=len(cand))}) == 2 ** len(cand):
-                    pick.append((ell, r))
-            if len(pick) >= F.k:
-                chosen = pick[:F.k]
-                break
-        fan, reads = F.fanin(build(F, s, label, chosen))             # brute-force re-check of the code
+        E, d = solve_label(F, s, label)
+        fan, reads = F.fanin(E)                                      # brute-force re-check of the code
         assert max(fan[F.c:]) <= 1 + d + F.w
         hist[max(fan)] = hist.get(max(fan), 0) + 1
         if best is None or max(fan) < max(best):
@@ -257,8 +305,11 @@ def main():
     ap.add_argument("--tries", type=int, default=300)
     ap.add_argument("--labelings", type=int, default=300)
     ap.add_argument("--groups", default="")
+    ap.add_argument("--export", action="store_true", help="only write the loop-bench codes (group_codes.json)")
     a = ap.parse_args()
     rng = random.Random(0)
+    if a.export:
+        return export(rng)
     R = []
     for name, gens in groups().items():
         if a.groups and name not in a.groups.split("+"):

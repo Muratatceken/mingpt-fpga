@@ -7,7 +7,7 @@
 - genel tek seviyeli gerçekleştirmede 6 bit; bu, LUT6 ile bile sıkı;
 - bağımsız dense bloklarla (kontrol yalnız harften, w = 2) K = 6'da 7 bit, K = 5'te 9 bit.
 
-6 bitlik çözümün yapısı da anlaşıldı: 15 durumlu bir coset core ve iki koşullu toggle. Bu yapı, transversal lineer çözülünce aynı fan-in'i SAT'sız ve başka gruplarda da veriyor (A5'te 6, PSL(2,7)'de 8, A6'da 9 bit; hepsi alt sınırda). Input-gated yapıda discretization hatası döngü tarafından büyütülemez. Loghub'da hard modelin eski soft referansa göre açığı eğitimle 0,185'ten 0,02 bpb'ye indi (1,583 → 1,418; soft referans 1,398; farklı eğitimlerin karşılaştırması). Kalan fark, Boolean bitlerin sızdıran belleği temsil edememesiyle tutarlıdır; bu bir hipotez.
+6 bitlik çözümün yapısı da anlaşıldı: 15 durumlu bir coset core ve iki koşullu toggle. Bu yapı blok core'larla genelleşiyor. Test edilen dört grupta (S₄, A₅, PSL(2,7), A₆) bilgi alt sınırı tek LUT6 seviyesinde, SAT'sız gerçekleşiyor. Fiziksel olarak fan-in 6, Fmax'te bir eşik: aynı state'te fan-in 11 → 6 ile Fmax 156 → 450 MHz. Input-gated yapıda discretization hatası döngü tarafından büyütülemez. Loghub'da hard modelin eski soft referansa göre açığı eğitimle 0,185'ten 0,02 bpb'ye indi (1,583 → 1,418; soft referans 1,398; farklı eğitimlerin karşılaştırması). Kalan fark, Boolean bitlerin sızdıran belleği temsil edememesiyle tutarlıdır; bu bir hipotez.
 
 **Bağımsız denetim (29 Ekim).** Belge dışarıdan denetlendi ve denetimin bütün sayısal kontrolleri burada yeniden üretildi (`sw/fbseq/witness_check.py` → `witness_check.json`). Çıkan düzeltmeler ilgili bölümlere işlendi: §2, §3, §5.1, §5.3–5.5, §7, §8.
 
@@ -33,6 +33,8 @@ Literatür taraması Ekim 2026 sonunda üç hatta yapıldı. "Bulunamadı" ifade
 | **A5, bağımsız dense bloklar** | Kontrol yalnız harften (w = 2). Tek seviyede en az state: K = 6 için **7 bit**, K = 5 için **9 bit**; K = 4'te imkânsız | **Bizim** (alt grup taraması ile ispat) |
 | **A5, genel** | K = 6 ile **6 bit**, yani alt sınır. Sınır sıkı. | **Bizim** (SAT tanığı + alt sınır; tanık 1 080 koşulla bağımsız denetlendi) |
 | **Coset core + fiber** | H ≅ Z₂ᵏ ile tek seviyede S = ⌈log₂\|G\|⌉ (alt sınır), fan-in ≤ S − k + 1 + w. Transversal 𝔽₂ üzerinde lineer çözülünce A5, PSL(2,7), A6'da fan-in S + w − r₂ (A5'te 6, SAT'sız) | **Bizim** (yapı denetimde fark edildi; lemma ve ispat bizde; gauge sonucu gözlem) |
+| **Birleşik yapı (blok core + fiber)** | S₄, A₅, PSL(2,7), A₆'nın hepsinde alt sınır K ≤ 6 ile, tek LUT6 seviyesinde: 5, 6, 8, 9 bit. A₅'te K = 5 ile 7 bit (önce 9) | **Bizim** (yapı ispatlı; minimum, alt sınıra eşit olduğu yerde kesin) |
+| Fan-in'in fiziksel bedeli | Aynı state'te fan-in 6'yı aşınca Fmax 1,5–2,9 kat düşüyor, LUT sayısı 4–44 kat artıyor. K ≤ 6'da 420–540 MHz | **Bizim** ölçüm |
 | Fiziksel karşılık | Yalnız state döngüsü, iki seed ortalaması: 6 bit 455 MHz, 7 bit 458 MHz, 15 bit 433 MHz, öğrenilen 3-bit bloklar 399 MHz. 6, 7 ve 15 bit aynı hız ölçeğinde | **Bizim** ölçüm |
 | Öğrenilen sınıfta temsil | Doğru A5 çözümü, eğitilen mimarinin içine yazıldığında %100 (yalnız head eğitildi) | **Bizim** |
 | A5'in basit grup genellemesi | Yörünge argümanı: her basit grup için blok boyutuna göre bir alt sınır | Eleştirel okumadan; genelleme ve ispat bizde |
@@ -262,7 +264,42 @@ Okuma:
 - **Basit gruplarda (A₅, PSL(2,7), A₆)** gauge çözülünce fan-in **S + w − r₂**'ye iniyor, yani core'un kendi fan-in'ine. Fiber artık darboğaz değil.
 - **S₄'te bir adım daha aşağı (4).** Core'un 6 durumu 3 bitin 8 koduna seyrek yerleşiyor. Etiketlemelerin ~%2'sinde her core biti yalnız 2 core bitine bakıyor; bu dört alt grubun hepsinde oluyor, normal V4'e özgü değil. Basit gruplarda 300 etiketlemenin hiçbirinde toplam fan-in c + w'nın altına inmedi. Core etiketlemesi ayrıca aranmadı.
 
-**Durum.** Lemma ve "her kod lemmadan gelir" önermesi ispatlı. Gauge sonucu bir gözlem, ispat yok. Üç basit grupta sistem 900 etiketlemenin hepsinde çözüldü; S₄'te 300'ün 282'sinde çözüldü, yani her etiketlemede çözülmüyor. Doğal sanı: minimum state'te fan-in S + w − r₂(G) her grupta ulaşılabilir. Bunun altına inmek core'un fan-in'ini düşürmeyi gerektiriyor. A5 için K = 5'in mümkün olup olmadığı açık (§5.5, madde 1).
+**Durum.** Lemma ve "her kod lemmadan gelir" önermesi ispatlı. Gauge sonucu bir gözlem, ispat yok. Üç basit grupta sistem 900 etiketlemenin hepsinde çözüldü; S₄'te 300'ün 282'sinde çözüldü, yani her etiketlemede çözülmüyor. Tek dense core'la fan-in S + w − r₂(G)'nin altına inilemiyor. Aşağıdaki birleşik yapı bu sınırı aşıyor.
+
+**Birleşik yapı: blok core + fiber** (`realize.py` → `realize.json`). İki yapı tek bir şemada birleşiyor.
+
+- **Core:** H ≅ Z₂ᵏ'yi içeren O₁, …, O_r alt grupları seçilir; koşul O₁ ∩ … ∩ O_r = H. Blok i, O_i p sağ coset'ini bᵢ = ⌈log₂[G:Oᵢ]⌉ bitte tutar ve yalnız kendisine ve harfe bakar (fan-in bᵢ + w).
+- **Fiber:** H için k toggle biti. Gauge §5.3'teki gibi lineer çözülür; flip'in okuduğu core bitleri D, fan-in 1 + |D| + w.
+- **Toplam:** S = Σbᵢ + k.
+
+*Doğruluk.* ∩ O_i p = (∩ O_i) p = H p olduğu için bloklar birlikte H-coset'ini belirler. Gerisi lemmanın ispatıyla aynı; döngü tek seviye. ∎
+
+Özel durumlar: H = 1 ise bağımsız dense bloklar (β_{K,w}, §5.1). r = 1 ve O₁ = H ise tek dense core + fiber.
+
+**Arama ve doğrulama:**
+
+- Her elementary abelian 2-alt grup sınıfından bir temsilci alındı.
+- En küçük Σbᵢ'yi veren aileler (+1 bit pay, ilk 12 aile) ve aile başına 40 blok etiketlemesi denendi.
+- Bulunan her kod iki yoldan doğrulandı: her bitin bağımlılık kümesi kaba kuvvetle, ve `loop_bench`'in ürettiği Verilog tabloları 3 000 rastgele harfle simülasyonla.
+
+**Bulunan en küçük state** (üst sınırlar; harfler iki üreteç ve identity, w = 2):
+
+| Grup | Alt sınır | K = 4 | K = 5 | K = 6 | K = 7 | Önceki en iyi |
+|---|---|---|---|---|---|---|
+| S₄ | 5 | **5** | **5** | **5** | **5** | β₄ = 5 |
+| A₅ | 6 | – | 7 | **6** | **6** | K = 5'te β = 9 |
+| PSL(2,7) | 8 | – | **8** | **8** | **8** | K = 6'da β = 8; K = 5'te β = 9 |
+| A₆ | 9 | – | 12 | **9** | **9** | K = 6'da β = 10; 9 bit için K = 9 (gauge) |
+
+Kalın değerler alt sınıra eşit, yani o K için kesin minimum. "–", yapının bu K'da bir şey bulmadığı anlamına geliyor; imkânsızlık kanıtı değil. Örneğin A5'te indeksi ≤ 4 olan öz alt grup yok, bu yüzden K = 4'te blok kurulamıyor.
+
+Öne çıkan yapılar:
+
+- **A₅, K = 5, 7 bit:** A4 bloğu (indeks 5, 3 bit) ve D10 bloğu (indeks 6, 3 bit); kesişimleri Z₂, yani 1 fiber biti. Bağımsız bloklarla K = 5'te 9 bit gerekiyordu. 6 bitin K = 5'te mümkün olup olmadığı açık; SAT sürüyor.
+- **PSL(2,7), K = 5, 8 bit = alt sınır:** iki S4 bloğu (indeks 7, 3'er bit), kesişim V4, 2 fiber biti. Her fiber biti en fazla 2 core bitine bakıyor.
+- **A₆, K = 6, 9 bit = alt sınır:** iki S4 bloğu (indeks 15, 4'er bit), kesişim Z₂, 1 fiber biti, en fazla 3 core bitine bakıyor.
+
+Sonuç: test edilen dört grubun hepsinde bilgi alt sınırı, tek LUT seviyesinde ve K ≤ 6 ile, yani state biti başına tek bir LUT6 ile gerçekleşiyor. Bu dört grup için ölçülmüş bir sonuç; genel bir teorem değil.
 
 ### 5.4 Fiziksel karşılık
 XC7A100T üzerinde, 120 bitlik state'e kopyalanarak ölçüldü (Yosys + nextpnr-himbaechel, iki seed):
@@ -275,6 +312,33 @@ XC7A100T üzerinde, 120 bitlik state'e kopyalanarak ölçüldü (Yosys + nextpnr
 | SAT, 6 bit | **6** | LUT6 | 454 / 456 |
 
 Bundan çıkan sonuç: Daha kompakt encoding, ölçülen iki yerleştirmede belirgin bir Fmax bedeli ödetmedi. 6 bitlik mantıksal optimum ~455 MHz'e ulaştı; 7 ve 15 bitlik karşılıklarla aynı hız ölçeğinde. Aralıklar örtüşüyor ve iki seed bir sıralama vermiyor. S, L ve R birlikte karşılaştırılmadan 6 bitlik tasarımın fiziksel Pareto optimumu olduğu söylenemez. Tam tablolu öğrenilen mimari ise hem daha fazla bit hem daha uzun döngü kullanıyor: gereğinden esnek. **Transition codebook** fikrinin dayanağı bu.
+
+**Başka gruplarda fan-in ve Fmax** (`loop_groups.json`, `loop_realize.json`; ~120 bite kopyalanarak, iki seed ortalaması; LUT ve MUXF sayıları 120 bitin toplamı):
+
+| Grup | Kod | State | Fan-in | Fmax (MHz) | LUT | MUXF7/8 |
+|---|---|---|---|---|---|---|
+| A₅ | dense | 6 | 8 | 334 | 598 | 319 |
+| | lemma (rastgele transversal) | 6 | 7 | 421 | 247 | 20 |
+| | gauge çözülmüş | 6 | 6 | **504** | 145 | 0 |
+| | birleşik, K = 5 | 7 | 5 | 428 | 144 | 0 |
+| | positional (ters kod, base 3) | 9 | 5 | 478 | 142 | 0 |
+| PSL(2,7) | dense | 8 | 10 | 197 | 4 042 | 1 018 |
+| | lemma | 8 | 9 | 292 | 1 176 | 254 |
+| | gauge | 8 | 8 | 333 | 688 | 285 |
+| | birleşik, K = 5 | 8 | 5 | **451** | 145 | 0 |
+| | positional | 9 | 5 | **537** | 143 | 0 |
+| A₆ | dense | 9 | 11 | 156 | 6 229 | 2 262 |
+| | lemma | 9 | 10 | 240 | 2 207 | 513 |
+| | gauge | 9 | 9 | 266 | 1 446 | 619 |
+| | birleşik, K = 6 | 9 | 6 | **450** | 142 | 0 |
+| | positional | 12 | 5 | **533** | 146 | 0 |
+
+Okuma:
+
+- **Fan-in 6, fiziksel bir eşik.** Aynı state bitinde fan-in 6'yı aşan her adım Fmax'i düşürüyor ve LUT sayısını katlıyor. A6, 9 bitte: fan-in 11 → 6 ile 156 → 450 MHz (2,9 kat) ve 6 229 → 142 LUT (44 kat). Sebep: 6'dan fazla girişli bir fonksiyon LUT6'ya sığmıyor; MUXF7/F8 ya da ikinci bir LUT seviyesi gerekiyor.
+- **Aynı fan-in'de kodlar arasında ~%10 fark var.** A5'in iki farklı 6 bit / fan-in 6 kodu, SAT tanığı ile gauge kodu, 455 ve 504 MHz verdi.
+- **K ≤ 6'nın içinde ise yerellik, bit sayısından daha belirleyici.** K ≤ 6 olan tasarımların hepsi 420–540 MHz aralığında. En hızlısı positional kod: daha çok bit kullanıyor ama her koordinat yalnız kendi 3 bitine bakıyor. Birleşik yapıda fiber bitleri iki bloktan okuyor; bu da yönlendirmeyi uzatıyor. İki seed bu ince sıralama için yeterli değil.
+- **Yani teorinin donanımdaki karşılığı iki aşamalı.** Önce fan-in ≤ 6 (LUT6 eşiği), sonra en az state ve yerellik arasında bir ödünleşim.
 
 **Kapsam.** Bu benchmark yalnız state döngüsünü ölçüyor. Olasılık head'i, model parametreleri ve entropy coder dahil değil. ~455 MHz, tamamlanmış bir sıkıştırıcının byte/s değeri olarak okunmamalı.
 
@@ -297,7 +361,8 @@ Yani bu sınıf A5'i temsil edebiliyor; eğitimde görülen başarısızlık bir
    - Paralel LUT güncellemesinin bir tersinir kapı dizisine eşdeğer olduğu da ayrıca gösterilmeliydi.
 
    Sonuç: tam 2^S kod ve K < S fan-in ile tek permütasyonlar için bir parite engeli olup olmadığı açık bir soru.
-7. Coset core + fiber (§5.3): gauge sistemi basit gruplarda her etiketlemede çözülür mü, S₄'te neden bazen çözülmüyor? Core'un fan-in'i, basit gruplarda S − r₂ + w'nın altına inebilir mi? H abelian değilse fiber, H'nin bütün elemanlarını harf olarak alan bir alt makinedir (§3 uyarısı); bunun maliyeti?
+7. Coset core + fiber (§5.3): gauge sistemi basit gruplarda her etiketlemede çözülür mü, S₄'te neden bazen çözülmüyor? H abelian değilse fiber, H'nin bütün elemanlarını harf olarak alan bir alt makinedir (§3 uyarısı); bunun maliyeti?
+8. Birleşik yapı: alt sınır her sonlu grupta K = 6 ile mi ulaşılabilir? Hangi alt grup aileleri yetiyor? Açık olanlar: A₅'te K = 5'te 6 bit (SAT sürüyor), A₆'da K = 5'te 9–11 bit, ve bütün gruplarda K = 4.
 
 ---
 
@@ -535,9 +600,10 @@ Ayrıntılı künyeler: `docs/08_case_arastirmasi.md`, `paper/related_work_2026.
 ---
 
 ## 10. Sonraki adımlar
-1. Gauge çözülebilirliğinin ispatı ve fan-in S + w − r₂ sanısı (§5.3, §5.5 madde 7); A5 için K = 5 (SAT ya da core'un kod araması).
-2. K = 5 ve K = 4 için block-local olmayan SAT; S₄, mod 5 ve mod 7 ile §6'daki sanının testi.
-3. A5'i güvenilir öğrenmek: codebook bu haliyle başarısız. Sıradakiler: PD-SSM reçetesi, CAGE, curriculum; başarısız koşularda iç durumun coset yapısını incelemek.
-4. Hard-aware finalistlerin daha fazla seed'le tekrarı ve leave-one-system-out değerlendirme.
-5. Kararlılık: L sabitinin ölçülmesi; K = 6 ile tek seviyede hata düzelten bir A5 devresi var mı?
-6. Gate ağları ve head hâlâ float. LUT ağlarına çevrildiklerinde kalite ve döngü dışı mantığın maliyeti (Faz 1).
+1. Birleşik yapının genel bir koşulu: hangi G için bilgi alt sınırı K = 6 ile ulaşılabilir (§5.5, madde 8)? A5'te K = 5 için SAT sonucu; daha büyük gruplar (PSL(2,8), A7).
+2. Positional ve birleşik tasarımların Fmax farkının daha çok seed ve yerleşim kısıtıyla ölçülmesi; yerelliğin bir maliyet terimi olarak modele eklenmesi.
+3. S₄, mod 5 ve mod 7 ile §6'daki sanının testi.
+4. A5'i güvenilir öğrenmek: codebook bu haliyle başarısız. Sıradakiler: PD-SSM reçetesi, CAGE, curriculum; başarısız koşularda iç durumun coset yapısını incelemek.
+5. Hard-aware finalistlerin daha fazla seed'le tekrarı ve leave-one-system-out değerlendirme.
+6. Kararlılık: L sabitinin ölçülmesi; K = 6 ile tek seviyede hata düzelten bir A5 devresi var mı?
+7. Gate ağları ve head hâlâ float. LUT ağlarına çevrildiklerinde kalite ve döngü dışı mantığın maliyeti (Faz 1).

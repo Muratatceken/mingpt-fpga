@@ -1,0 +1,366 @@
+[
+ {
+  "kind": "gc:A5_dense",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 338.1,
+  "cells": {
+   "FDRE": 181,
+   "LUT1": 1,
+   "LUT2": 27,
+   "LUT3": 3,
+   "LUT4": 7,
+   "LUT5": 33,
+   "LUT6": 527,
+   "MUXF7": 224,
+   "MUXF8": 95
+  }
+ },
+ {
+  "kind": "gc:A5_dense",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 328.9,
+  "cells": {
+   "FDRE": 181,
+   "LUT1": 1,
+   "LUT2": 27,
+   "LUT3": 3,
+   "LUT4": 7,
+   "LUT5": 33,
+   "LUT6": 527,
+   "MUXF7": 224,
+   "MUXF8": 95
+  }
+ },
+ {
+  "kind": "gc:A5_lemma",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 444.2,
+  "cells": {
+   "FDRE": 181,
+   "LUT2": 12,
+   "LUT4": 16,
+   "LUT5": 42,
+   "LUT6": 177,
+   "MUXF7": 20
+  }
+ },
+ {
+  "kind": "gc:A5_lemma",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 397.9,
+  "cells": {
+   "FDRE": 181,
+   "LUT2": 12,
+   "LUT4": 16,
+   "LUT5": 42,
+   "LUT6": 177,
+   "MUXF7": 20
+  }
+ },
+ {
+  "kind": "gc:A5_gauge",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 507.4,
+  "cells": {
+   "FDRE": 181,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT6": 143
+  }
+ },
+ {
+  "kind": "gc:A5_gauge",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 500,
+  "cells": {
+   "FDRE": 181,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT6": 143
+  }
+ },
+ {
+  "kind": "gc:A5_positional",
+  "S": 117,
+  "seed": 1,
+  "fmax_mhz": 490.7,
+  "cells": {
+   "FDRE": 164,
+   "LUT2": 1,
+   "LUT3": 1,
+   "LUT4": 1,
+   "LUT5": 117,
+   "LUT6": 22
+  }
+ },
+ {
+  "kind": "gc:A5_positional",
+  "S": 117,
+  "seed": 2,
+  "fmax_mhz": 465.1,
+  "cells": {
+   "FDRE": 164,
+   "LUT2": 1,
+   "LUT3": 1,
+   "LUT4": 1,
+   "LUT5": 117,
+   "LUT6": 22
+  }
+ },
+ {
+  "kind": "gc:PSL(2,7)_dense",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 196.7,
+  "cells": {
+   "FDRE": 171,
+   "LUT1": 38,
+   "LUT2": 251,
+   "LUT3": 47,
+   "LUT4": 229,
+   "LUT5": 778,
+   "LUT6": 2699,
+   "MUXF7": 794,
+   "MUXF8": 224
+  }
+ },
+ {
+  "kind": "gc:PSL(2,7)_dense",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 197.7,
+  "cells": {
+   "FDRE": 171,
+   "LUT1": 38,
+   "LUT2": 251,
+   "LUT3": 47,
+   "LUT4": 229,
+   "LUT5": 778,
+   "LUT6": 2699,
+   "MUXF7": 794,
+   "MUXF8": 224
+  }
+ },
+ {
+  "kind": "gc:PSL(2,7)_lemma",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 298.9,
+  "cells": {
+   "FDRE": 171,
+   "LUT2": 118,
+   "LUT3": 36,
+   "LUT4": 77,
+   "LUT5": 282,
+   "LUT6": 663,
+   "MUXF7": 191,
+   "MUXF8": 63
+  }
+ },
+ {
+  "kind": "gc:PSL(2,7)_lemma",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 284.9,
+  "cells": {
+   "FDRE": 171,
+   "LUT2": 118,
+   "LUT3": 36,
+   "LUT4": 77,
+   "LUT5": 282,
+   "LUT6": 663,
+   "MUXF7": 191,
+   "MUXF8": 63
+  }
+ },
+ {
+  "kind": "gc:PSL(2,7)_gauge",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 336.1,
+  "cells": {
+   "FDRE": 171,
+   "LUT2": 37,
+   "LUT3": 10,
+   "LUT4": 21,
+   "LUT5": 57,
+   "LUT6": 563,
+   "MUXF7": 213,
+   "MUXF8": 72
+  }
+ },
+ {
+  "kind": "gc:PSL(2,7)_gauge",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 330.4,
+  "cells": {
+   "FDRE": 171,
+   "LUT2": 37,
+   "LUT3": 10,
+   "LUT4": 21,
+   "LUT5": 57,
+   "LUT6": 563,
+   "MUXF7": 213,
+   "MUXF8": 72
+  }
+ },
+ {
+  "kind": "gc:PSL(2,7)_positional",
+  "S": 117,
+  "seed": 1,
+  "fmax_mhz": 540.0,
+  "cells": {
+   "FDRE": 164,
+   "LUT2": 1,
+   "LUT3": 1,
+   "LUT4": 3,
+   "LUT5": 118,
+   "LUT6": 20
+  }
+ },
+ {
+  "kind": "gc:PSL(2,7)_positional",
+  "S": 117,
+  "seed": 2,
+  "fmax_mhz": 533.0,
+  "cells": {
+   "FDRE": 164,
+   "LUT2": 1,
+   "LUT3": 1,
+   "LUT4": 3,
+   "LUT5": 118,
+   "LUT6": 20
+  }
+ },
+ {
+  "kind": "gc:A6_dense",
+  "S": 117,
+  "seed": 1,
+  "fmax_mhz": 156.9,
+  "cells": {
+   "FDRE": 164,
+   "LUT1": 4,
+   "LUT2": 279,
+   "LUT3": 76,
+   "LUT4": 388,
+   "LUT5": 888,
+   "LUT6": 4594,
+   "MUXF7": 1785,
+   "MUXF8": 477
+  }
+ },
+ {
+  "kind": "gc:A6_dense",
+  "S": 117,
+  "seed": 2,
+  "fmax_mhz": 155.1,
+  "cells": {
+   "FDRE": 164,
+   "LUT1": 4,
+   "LUT2": 279,
+   "LUT3": 76,
+   "LUT4": 388,
+   "LUT5": 888,
+   "LUT6": 4594,
+   "MUXF7": 1785,
+   "MUXF8": 477
+  }
+ },
+ {
+  "kind": "gc:A6_lemma",
+  "S": 117,
+  "seed": 1,
+  "fmax_mhz": 237.4,
+  "cells": {
+   "FDRE": 164,
+   "LUT2": 191,
+   "LUT3": 78,
+   "LUT4": 127,
+   "LUT5": 560,
+   "LUT6": 1251,
+   "MUXF7": 384,
+   "MUXF8": 129
+  }
+ },
+ {
+  "kind": "gc:A6_lemma",
+  "S": 117,
+  "seed": 2,
+  "fmax_mhz": 241.8,
+  "cells": {
+   "FDRE": 164,
+   "LUT2": 191,
+   "LUT3": 78,
+   "LUT4": 127,
+   "LUT5": 560,
+   "LUT6": 1251,
+   "MUXF7": 384,
+   "MUXF8": 129
+  }
+ },
+ {
+  "kind": "gc:A6_gauge",
+  "S": 117,
+  "seed": 1,
+  "fmax_mhz": 274.8,
+  "cells": {
+   "FDRE": 164,
+   "LUT2": 92,
+   "LUT3": 58,
+   "LUT4": 48,
+   "LUT5": 137,
+   "LUT6": 1111,
+   "MUXF7": 466,
+   "MUXF8": 153
+  }
+ },
+ {
+  "kind": "gc:A6_gauge",
+  "S": 117,
+  "seed": 2,
+  "fmax_mhz": 256.9,
+  "cells": {
+   "FDRE": 164,
+   "LUT2": 92,
+   "LUT3": 58,
+   "LUT4": 48,
+   "LUT5": 137,
+   "LUT6": 1111,
+   "MUXF7": 466,
+   "MUXF8": 153
+  }
+ },
+ {
+  "kind": "gc:A6_positional",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 540.5,
+  "cells": {
+   "FDRE": 161,
+   "LUT2": 1,
+   "LUT4": 43,
+   "LUT5": 81,
+   "LUT6": 21
+  }
+ },
+ {
+  "kind": "gc:A6_positional",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 526.3,
+  "cells": {
+   "FDRE": 161,
+   "LUT2": 1,
+   "LUT4": 43,
+   "LUT5": 81,
+   "LUT6": 21
+  }
+ }
+]

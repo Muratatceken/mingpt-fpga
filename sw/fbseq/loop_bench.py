@@ -14,6 +14,8 @@ feed-forward network; the state is XOR-reduced in two registered stages onto one
   a5exact  hand-built A5 tracker: per bit LUT5(3 block bits, 2 input bits)  (controls.py a5)
   a5c7     smallest block-local A5 realization: V4 cosets (4 bits, LUT6) + A4 cosets (3 bits, LUT5)
   a5sat6   6-bit A5 realization from the SAT search (theory_sat.py): each bit LUT6(4 state, 2 control)
+  gc:NAME  a group-machine code from core_fiber.py --export (model/fbseq/group_codes.json), e.g.
+           gc:A5_gauge, gc:PSL(2,7)_dense: each bit one truth table over its exact deps and the w letter bits
 """
 import argparse
 import json
@@ -54,6 +56,12 @@ def verilog(kind, S, rnd):
         tt = a5_tracker()[0]
         copies = S // 15
         S, nd = copies * 15, 2 * copies
+    elif kind.startswith("gc:"):              # group-machine code from core_fiber.export
+        spec = next(r for r in json.load(open(os.path.join(ROOT, "model", "fbseq", "group_codes.json")))
+                    if r["name"] == kind[3:])
+        gS, gw = spec["S"], spec["w"]
+        copies = S // gS
+        S, nd = copies * gS, gw * copies
     elif kind == "mux1":
         nd = 2 * S
     elif kind in ("mux4", "mux8"):
@@ -69,7 +77,9 @@ def verilog(kind, S, rnd):
                                             if kind == "a5exact" else
                                             "".join(format(bl["label"][tuple(range(5))], f"0{bl['bits']}b")
                                                     for bl in reversed(blocks7)) * (S // 7)
-                                            if kind == "a5c7" else "0") + ";",            # a5sat6: e(identity) = 0
+                                            if kind == "a5c7" else
+                                            format(spec["start"], f"0{gS}b") * copies
+                                            if kind.startswith("gc:") else "0") + ";",    # a5sat6: e(identity) = 0
          f"  always @(posedge clk) d <= {{d[{nd - 2}:0], d[{nd - 1}]}};      // tables: no logic"]
     nxt = []
     if kind == "a5sat6":
@@ -87,6 +97,28 @@ def verilog(kind, S, rnd):
                 v.append(f"  localparam [63:0] TS{c}_{j} = 64'b" + "".join(str(t) for t in reversed(tt)) + ";")
                 sel = "{" + ",".join(f"s[{6 * c + i}]" for i in dep) + f",d[{2 * c + 1}],d[{2 * c}]" + "}"
                 nxt.append(f"TS{c}_{j}[{sel}]")
+    elif kind.startswith("gc:"):
+        code = {c: p for p, c in enumerate(spec["codes"])}
+        for c in range(copies):
+            for j, dep in enumerate(spec["deps"]):
+                m = len(dep) + gw
+                tt = [0] * 2 ** m                                             # index: {dep bits, letter bits}
+                for idx in range(2 ** m):
+                    x, st = idx & (2 ** gw - 1), idx >> gw
+                    cur = None
+                    for cc, p in code.items():                                # a reachable code with these dep bits
+                        if all(((cc >> i) & 1) == ((st >> (len(dep) - 1 - q)) & 1) for q, i in enumerate(dep)):
+                            cur = cc
+                            break
+                    if cur is None:
+                        continue                                              # unreachable pattern: don't care (0)
+                    p = code[cur]
+                    x = min(x, spec["letters"] - 1)                         # unused letter codes = identity (last)
+                    tt[idx] = (spec["codes"][spec["step"][p][x]] >> j) & 1
+                name = f"G{c}_{j}"
+                v.append(f"  localparam [{2 ** m - 1}:0] {name} = {2 ** m}'b" + "".join(str(t) for t in reversed(tt)) + ";")
+                sel = "{" + ",".join([f"s[{gS * c + i}]" for i in dep] + [f"d[{gw * c + b}]" for b in reversed(range(gw))]) + "}"
+                nxt.append(f"{name}[{sel}]" if dep or gw else name)
     elif kind == "a5c7":
         for c in range(S // 7):
             off = 7 * c
@@ -148,7 +180,7 @@ def verilog(kind, S, rnd):
 
 
 def run(kind, S, seed):
-    out = os.path.join(ROOT, "build", "fbseq", "loop", f"{kind}_s{seed}")
+    out = os.path.join(ROOT, "build", "fbseq", "loop", f"{kind.replace(':', '_').replace('(', '').replace(')', '').replace(',', '')}_s{seed}")
     os.makedirs(out, exist_ok=True)
     text, S = verilog(kind, S, random.Random(1000 + seed))
     open(os.path.join(out, "bench.v"), "w").write(text)
@@ -178,16 +210,17 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", default="1,2")
     ap.add_argument("--S", type=int, default=120)
-    ap.add_argument("--kinds", default="mux1,mux4,mux8,dep1,dep2,dep3,dep4")
+    ap.add_argument("--kinds", default="mux1,mux4,mux8,dep1,dep2,dep3,dep4", help="separated by ';' or ','")
+    ap.add_argument("--out", default="loop.json")
     a = ap.parse_args()
     res = []
-    for kind in a.kinds.split(","):
+    for kind in (a.kinds.split(";") if ";" in a.kinds else a.kinds.split(",")):
         for seed in (int(s) for s in a.seeds.split(",")):
             r = run(kind, a.S, seed)
             print(json.dumps(r), flush=True)
             res.append(r)
     os.makedirs(os.path.join(ROOT, "model", "fbseq"), exist_ok=True)
-    json.dump(res, open(os.path.join(ROOT, "model", "fbseq", "loop.json"), "w"), indent=1)
+    json.dump(res, open(os.path.join(ROOT, "model", "fbseq", a.out), "w"), indent=1)
 
 
 if __name__ == "__main__":

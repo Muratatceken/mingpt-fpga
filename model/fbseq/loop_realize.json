@@ -1,0 +1,80 @@
+[
+ {
+  "kind": "gc:A5_K5",
+  "S": 119,
+  "seed": 1,
+  "fmax_mhz": 436.7,
+  "cells": {
+   "FDRE": 174,
+   "LUT2": 1,
+   "LUT4": 35,
+   "LUT5": 86,
+   "LUT6": 22
+  }
+ },
+ {
+  "kind": "gc:A5_K5",
+  "S": 119,
+  "seed": 2,
+  "fmax_mhz": 419.6,
+  "cells": {
+   "FDRE": 174,
+   "LUT2": 1,
+   "LUT4": 35,
+   "LUT5": 86,
+   "LUT6": 22
+  }
+ },
+ {
+  "kind": "gc:PSL(2,7)_K5",
+  "S": 120,
+  "seed": 1,
+  "fmax_mhz": 446.4,
+  "cells": {
+   "FDRE": 171,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT5": 120,
+   "LUT6": 23
+  }
+ },
+ {
+  "kind": "gc:PSL(2,7)_K5",
+  "S": 120,
+  "seed": 2,
+  "fmax_mhz": 456.4,
+  "cells": {
+   "FDRE": 171,
+   "LUT2": 1,
+   "LUT4": 1,
+   "LUT5": 120,
+   "LUT6": 23
+  }
+ },
+ {
+  "kind": "gc:A6_K6",
+  "S": 117,
+  "seed": 1,
+  "fmax_mhz": 467.5,
+  "cells": {
+   "FDRE": 164,
+   "LUT2": 1,
+   "LUT3": 1,
+   "LUT4": 1,
+   "LUT6": 139
+  }
+ },
+ {
+  "kind": "gc:A6_K6",
+  "S": 117,
+  "seed": 2,
+  "fmax_mhz": 432.7,
+  "cells": {
+   "FDRE": 164,
+   "LUT2": 1,
+   "LUT3": 1,
+   "LUT4": 1,
+   "LUT6": 139
+  }
+ }
+]

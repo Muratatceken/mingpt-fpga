@@ -19,7 +19,7 @@
 | Hocanın case sorusu | **Cevaplandı:** deterministik dil modeliyle kayıpsız telemetri ve log sıkıştırma; yan case olarak aynı modelle anomali tespiti |
 | Yeni araştırma yönü | **Belirlendi:** geri besleme kısıtlı (feedback-constrained) sıralı hesaplama. Döngüdeki mantık derinliği tasarımın merkez değişkeni |
 | Faz 0 (fizibilite) | **Büyük ölçüde tamam:** 4 hipotezden ikisi tuttu, biri kısmen tuttu, biri Faz 1'e kaldı |
-| İlk teori sonucu | **Var:** A5 için tek LUT seviyesinde en az state, sıkı biçimde 6 bit (SAT tanığı ve bilgi alt sınırı). Tanığın yapısı coset core + fiber toggle'ları; bu yapı SAT'sız ve başka gruplarda da alt sınırı veriyor |
+| İlk teori sonucu | **Var:** A5 için tek LUT seviyesinde en az state, sıkı biçimde 6 bit (SAT tanığı ve bilgi alt sınırı). Birleşik yapı (blok core + fiber), S₄, A₅, PSL(2,7) ve A₆'da alt sınırı SAT'sız ve tek LUT6 seviyesinde veriyor. FPGA'de fan-in 6'yı aşmak Fmax'i 1,5–2,9 kat düşürüyor |
 | Gerçek veride kalite | Boolean model, doğru eğitimle pencere modelini geçiyor. 100 KB sözlüklü zstd'ye göre eşit koşullarda %7–14 daha az bit (GRU %15–21). Önceki %25 / %32, ideal LM kod uzunluğunu zstd'nin başlıklı dosya boyutuyla karşılaştırıyordu |
 | Literatürdeki konum | Üç hatlı tarama yapıldı; rakipler ve boşluklar belirlendi |
 | Son biten | Transition codebook: olumsuz. 2-bit / 3-bit bloklar Loghub'da set/keep'in gerisinde (1,680 / 2,237). Gumbel-ST birebir yeniden üretildi |
@@ -188,6 +188,26 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 - **zstd başlığı.** zstd her 256 byte'lık pakete 10 byte frame başlığı yazıyor; bu ~0,31 bpb ediyor. LM'ye coder sonlandırması eklenip zstd'den başlığın çıkarılabilir kısmı düşüldüğünde avantaj B için %7–14, GRU için %15–21. Ayrıntı `docs/09` §4.
 - **Checkpoint probe'larında iki ölçüm hatası.** Head'i yeniden eğitme, eğitimdeki reçeteyi kullanmıyordu. Gecikmeli okumada "yakın byte'lardan zaten tahmin edilebilir" kontrolü yoktu. İkisi düzeltildi ve yeniden koşuldu (`docs/10` §8).
 
+### 2.9 Teori: birleşik yapı ve dört grupta FPGA ölçümü (29 Ekim akşam)
+`docs/10` §5.3–5.4; kod `sw/fbseq/core_fiber.py`, `realize.py`, `loop_bench.py` (gc: türü).
+
+- **Birleşik yapı.** Core, H ≅ Z₂ᵏ'yi içeren alt grupların coset bloklarından kuruluyor (∩Oᵢ = H). Fiber, Z₂ᵏ toggle'larından oluşuyor ve gauge'u 𝔽₂ üzerinde lineer çözülüyor. Doğruluğu ispatlı. Bağımsız bloklar ve tek core + fiber bu yapının özel durumları.
+- **Bulunan en küçük state** (her kod kaba kuvvetle ve Verilog simülasyonuyla doğrulandı):
+
+  | Grup | Alt sınır | K = 5 | K = 6 |
+  |---|---|---|---|
+  | S₄ | 5 | 5 | 5 |
+  | A₅ | 6 | 7 (önce 9) | 6 |
+  | PSL(2,7) | 8 | **8** | 8 |
+  | A₆ | 9 | 12 | **9** (önce 10) |
+
+  Dört grubun hepsinde bilgi alt sınırı tek LUT6 seviyesinde gerçekleşiyor. A5'te K = 5 ile 6 bitin mümkün olup olmadığını SAT ile arıyoruz.
+- **FPGA (XC7A100T, ~120 bit, iki seed).** Aynı state'te fan-in 6'yı aşmanın ciddi bir fiziksel bedeli var:
+  - A6, 9 bitte: fan-in 11'de 156 MHz ve 6 229 LUT; fan-in 6'da 450 MHz ve 142 LUT.
+  - PSL(2,7), 8 bitte: fan-in 10'da 197 MHz; fan-in 5'te 451 MHz.
+  - K ≤ 6 olan tasarımların hepsi 420–540 MHz aralığında. Bu sınıfın içinde, daha çok bit kullanan ama tamamen yerel positional kod en hızlısı (~535 MHz).
+  - Sonuç: teori donanımda iki aşamalı karşılık buluyor. Önce LUT6 eşiği, sonra state ile yerellik arasında bir ödünleşim.
+
 ---
 
 ## 3. Bugün ne iddia edebiliriz, neyi edemeyiz?
@@ -253,7 +273,7 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 
 **Öncelik sırasıyla sıradakiler:**
 
-1. Gauge çözülebilirliğinin ispatı ve "minimum state'te fan-in S + w − r₂(G)" sanısı; A5 için K = 5.
+1. Birleşik yapı için genel koşul: hangi gruplarda bilgi alt sınırı K = 6 ile ulaşılabilir? A5 için K = 5 (SAT sürüyor); daha büyük gruplar.
 2. A5'i güvenilir öğrenmek: PD-SSM reçetesi, CAGE, curriculum; amaç seed başarı oranını %50'den yukarı çekmek. Başarısız koşularda iç durumun coset yapısına bakmak.
 3. Problem C'nin genelleşmesi:
    - K = 5 ve K = 4 için block-local olmayan SAT;
@@ -279,7 +299,10 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 | `f45da5e` | Faz 0 belgesi, düzeltilmiş hard-aware sonuçları, codebook modeli |
 | `202b576` | Bu rapor |
 | `1ca9f6a` | Eleştirel okumadan düzeltmeler; A5 çözümü öğrenilen sınıfın içinde |
-| (bu commit) | Bağımsız denetimin düzeltmeleri, `witness_check.py`, coset core + fiber lemması, codebook ve probe sonuçları, zstd başlığı |
+| `7c61c46` | Bağımsız denetimin düzeltmeleri, `witness_check.py`, coset core + fiber lemması, codebook ve probe sonuçları, zstd başlığı |
+| `03af542` | Bloklar Loghub'da, Gumbel-ST'nin yeniden üretimi |
+| `f1b7ab2` | Gauge'un lineer çözümü; A5'te fan-in 6 SAT'sız |
+| (bu commit) | Birleşik yapı, dört grupta alt sınır; fan-in'in FPGA'deki bedeli |
 
 | Dosya | Görev |
 |---|---|
@@ -292,7 +315,8 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
 | `sw/fbseq/codebook.py` | Transition codebook |
 | `sw/fbseq/probes.py` | A5 çözümünü öğrenilen sınıfa yazma; checkpoint probe'ları |
 | `sw/fbseq/witness_check.py` | SAT tanığının ve karşı örneklerin bağımsız denetimi; coset core + fiber |
-| `sw/fbseq/core_fiber.py` | Coset core + fiber, gauge'un lineer çözümü; Z₂³, Z₈, S₄, A₅, PSL(2,7), A₆ |
+| `sw/fbseq/core_fiber.py` | Coset core + fiber, gauge'un lineer çözümü; Z₂³, Z₈, S₄, A₅, PSL(2,7), A₆; FPGA için kod dışa aktarımı |
+| `sw/fbseq/realize.py` | Birleşik yapı (blok core + fiber): grup ve K başına bulunan en küçük state, doğrulanmış kodlar |
 | `model/fbseq/archive/` | İlk hard-aware koşusunun kayıtları (Gumbel 1,685'in kaynağı) |
 | `scripts/get_loghub.sh`, `scripts/colab_faz0.sh`, `scripts/cpu_baseline.sh` | Veri, Colab, CPU baseline |
 | `model/fbseq/*.json` | Bütün sonuçlar |
