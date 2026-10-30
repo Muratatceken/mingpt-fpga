@@ -204,7 +204,7 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
   | A₆ | 9 | 12 | **9** (önce 10) |
   | PSL(2,8) | 9 | – | 12 (9 bit ancak K = 8'de) |
 
-  Beş grubun dördünde bilgi alt sınırı tek LUT6 seviyesinde gerçekleşiyor. PSL(2,8)'de gerçekleşmiyor: indeksi ≤ 16 olan alt grupları yalnız nokta stabilizer'ları ve bunların kesişimleri Z₂ᵏ değil. A5'te K = 5 ile 6 bitin mümkün olup olmadığını SAT ile arıyoruz.
+  Beş grubun dördünde bilgi alt sınırı tek LUT6 seviyesinde gerçekleşiyor. PSL(2,8)'de gerçekleşmiyor: indeksi ≤ 16 olan alt grupları yalnız nokta stabilizer'ları ve bunların kesişimleri Z₂ᵏ değil. A5'te K = 5 ile 6 bitin mümkün olup olmadığı açık: kontrol girişlerini seçilebilir sayan SAT, üç harf kodlamasında da 6 saatte sonuç vermedi (unknown); kısıtlı sorgu da 4 saatte unknown.
 - **FPGA (XC7A100T, ~120 bit, iki seed; düzeltilmiş düzenek, §2.10).** Aynı state'te fan-in 6'yı aşmanın ciddi bir fiziksel bedeli var:
   - A6, 9 bitte: fan-in 11'de 156 MHz ve 6 232 LUT; fan-in 6'da 636 MHz ve 142 LUT.
   - PSL(2,7), 8 bitte: fan-in 10'da 193 MHz; fan-in 5'te 669 MHz.
@@ -328,7 +328,7 @@ Denetim çıktıları burada bağımsız olarak yeniden üretildi; ayrıntı `do
 
 **Öncelik sırasıyla sıradakiler:**
 
-1. Birleşik yapı için genel koşul: hangi gruplarda bilgi alt sınırı K = 6 ile ulaşılabilir? A5 için K = 5 (SAT sürüyor); daha büyük gruplar.
+1. Birleşik yapı için genel koşul: hangi gruplarda bilgi alt sınırı K = 6 ile ulaşılabilir? A5 için K = 5 (z3 6 saatte unknown; simetri kırmalı CNF ile yeniden); daha büyük gruplar.
 2. A5'i güvenilir öğrenmek: PD-SSM reçetesi, CAGE, curriculum; amaç seed başarı oranını %50'den yukarı çekmek. Başarısız koşularda iç durumun coset yapısına bakmak.
 3. Problem C'nin genelleşmesi:
    - K = 5 ve K = 4 için block-local olmayan SAT;

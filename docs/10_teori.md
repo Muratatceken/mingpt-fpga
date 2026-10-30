@@ -359,7 +359,7 @@ Kalın değerler alt sınıra eşit, yani o K için kesin minimum. "–", yapın
 
 Öne çıkan yapılar:
 
-- **A₅, K = 5, 7 bit:** A4 bloğu (indeks 5, 3 bit) ve D10 bloğu (indeks 6, 3 bit); kesişimleri Z₂, yani 1 fiber biti. Bağımsız bloklarla K = 5'te 9 bit gerekiyordu. 6 bitin K = 5'te mümkün olup olmadığı açık; SAT sürüyor.
+- **A₅, K = 5, 7 bit:** A4 bloğu (indeks 5, 3 bit) ve D10 bloğu (indeks 6, 3 bit); kesişimleri Z₂, yani 1 fiber biti. Bağımsız bloklarla K = 5'te 9 bit gerekiyordu. 6 bitin K = 5'te mümkün olup olmadığı açık. Kontrol girişlerini seçilebilir sayan SAT (`theory_sat.py --coding`, `sat_a5_ctrl_{a,b,e}.json`) 2 bitlik harf kodlamasının üç sınıfında da (ortadaki kod 00'a a, b ya da e) 6 saatte (21 600 s) **unknown** ile bitti; iki kontrol bitini zorunlu sayan kısıtlı sorgu da 4 saatte unknown (`sat_a5.json`). Yani ne bir tanık ne bir imkânsızlık kanıtı var.
 - **PSL(2,7), K = 5, 8 bit = alt sınır:** iki S4 bloğu (indeks 7, 3'er bit), kesişim V4, 2 fiber biti. Her fiber biti en fazla 2 core bitine bakıyor.
 - **A₆, K = 6, 9 bit = alt sınır:** iki S4 bloğu (indeks 15, 4'er bit), kesişim Z₂, 1 fiber biti, en fazla 3 core bitine bakıyor.
 
@@ -422,7 +422,7 @@ Okuma:
 Yani bu sınıf A5'i temsil edebiliyor; eğitimde görülen başarısızlık bir öğrenme sorunu. Burada state tablolarının doğruluğu tam (yapı gereği); head'in başarısı ise yalnız test edilen uzunluklar için ölçüldü.
 
 ### 5.5 Açık sorular
-1. K = 5 ve K = 4'te block-local olmayan en küçük state (SAT).
+1. K = 5 ve K = 4'te block-local olmayan en küçük state. A5, S = 6, K = 5: z3 her üç harf kodlamasında 6 saatte unknown (§5.3). Sorgu bit permütasyonu (6! = 720) ve sol çarpma (60) simetrilerini kırmıyor; bunları kıran bir CNF kodlaması ve CDCL çözücüsü sıradaki deneme.
 2. Genel bir G için β_K ile block-local olmayan minimum arasındaki ilişki. Grup teorisinde yakın kavramlar var (minimal faithful degree, base size); tam olarak bu ölçü bulunamadı.
 3. Cascade'lerde etkin alfabe (§3 uyarısı) ve injective olmayan encoding'ler (state splitting).
 4. Encoding bulmanın karmaşıklığı. Sabit bir netlist'te en küçük döngü derinliği polinom zamanda bulunuyor (Pan–Liu); zorluk tamamen encoding seçiminde.
@@ -434,7 +434,7 @@ Yani bu sınıf A5'i temsil edebiliyor; eğitimde görülen başarısızlık bir
 
    Sonuç: tam 2^S kod ve K < S fan-in ile tek permütasyonlar için bir parite engeli olup olmadığı açık bir soru.
 7. Coset core + fiber (§5.3): gauge her etiketlemede çözülmüyor; A5'te sertifikalı karşı örnek var, rank koşulu Düzeltme 2'de. Açık olan: hangi etiketlemeler çözülüyor, ve kontrol bitlerinin seçilmesiyle birleşen bir gauge ne veriyor? H abelian değilse fiber, H'nin bütün elemanlarını harf olarak alan bir alt makinedir (§3 uyarısı); bunun maliyeti?
-8. Birleşik yapı: hangi gruplarda alt sınır K = 6 ile ulaşılabilir? PSL(2,8) bu yapıyla ulaşamıyor (§5.3). Küçük indeksli alt grupların kesişim yapısına dayanan bir koşul var mı? Genel gerçekleştirme (SAT) PSL(2,8)'de K = 6 ile 9–11 bite inebilir mi? Diğer açık durumlar: A₅'te K = 5'te 6 bit (SAT sürüyor), A₆'da K = 5'te 9–11 bit, ve bütün gruplarda K = 4.
+8. Birleşik yapı: hangi gruplarda alt sınır K = 6 ile ulaşılabilir? PSL(2,8) bu yapıyla ulaşamıyor (§5.3). Küçük indeksli alt grupların kesişim yapısına dayanan bir koşul var mı? Genel gerçekleştirme (SAT) PSL(2,8)'de K = 6 ile 9–11 bite inebilir mi? Diğer açık durumlar: A₅'te K = 5'te 6 bit (SAT 6 saatte unknown), A₆'da K = 5'te 9–11 bit, ve bütün gruplarda K = 4.
 
 ---
 
@@ -741,7 +741,7 @@ Ayrıntılı künyeler: `docs/08_case_arastirmasi.md`, `paper/related_work_2026.
 ---
 
 ## 10. Sonraki adımlar
-1. Birleşik yapının genel bir koşulu: hangi G için bilgi alt sınırı K = 6 ile ulaşılabilir (§5.5, madde 8)? A5'te K = 5 için SAT sonucu; daha büyük gruplar (PSL(2,8), A7).
+1. Birleşik yapının genel bir koşulu: hangi G için bilgi alt sınırı K = 6 ile ulaşılabilir (§5.5, madde 8)? A5'te K = 5'te 6 bit: z3 6 saatte unknown; simetri kırmalı CNF ile yeniden denemek. Daha büyük gruplar (PSL(2,8), A7).
 2. Positional ve birleşik tasarımların Fmax farkının daha çok seed ve yerleşim kısıtıyla ölçülmesi; yerelliğin bir maliyet terimi olarak modele eklenmesi.
 3. S₄, mod 5 ve mod 7 ile §6'daki sanının testi.
 4. A5'i güvenilir öğrenmek. Ayrıştırmayı tamamlamak (oracle seçim, tam 0/1 tablolar, eşleşen curriculum koşulları). Sıradakiler: dönüşümleri yapıcı inşadan alıp yalnız seçim ve head'i öğrenmek (Loghub'da da); PD-SSM reçetesi, CAGE; takılan koşularda iç durumun coset yapısını incelemek.
