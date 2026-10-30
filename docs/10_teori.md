@@ -48,7 +48,7 @@ Literatür taraması Ekim 2026 sonunda üç hatta yapıldı. "Bulunamadı" ifade
 | A5'in basit grup genellemesi | Yörünge argümanı: her basit grup için blok boyutuna göre bir alt sınır | Eleştirel okumadan; genelleme ve ispat bizde |
 | Bilgi ve kayıp | L_min = H(Y \| Z, W); fazlalık I(Y; H \| Z, W) | **Bilinen** (standart) |
 | İfade gücü | Boolean blok sıralaması: set/keep → star-free; + toggle → Z₂; 2 bit → Z₃; 3 bit → A5 | Sürekli karşılığı bilinen (Sarrof 2024, Grazzi 2025); Boolean ölçümü bizim |
-| Öğrenilebilirlik | Aynı parametrede hard − soft: soft eğitimden sonra +1,37, hard uyarlamadan sonra −0,23 bpb. Hard modelin eski soft referansa göre açığı 0,185'ten ~0,02'ye indi. A5'te softhard 2/4, hard-forward 0/8, öğrenilen codebook 0/32. Doğru dönüşümler donmuşken seçim curriculum'la öğreniliyor (0/8 → 4/8); dönüşümleri bulmak öğrenilemiyor | Ölçüm bizim; yöntemler literatürden |
+| Öğrenilebilirlik | Aynı parametrede hard − soft: soft eğitimden sonra +1,37, hard uyarlamadan sonra −0,23 bpb. Hard modelin eski soft referansa göre açığı 0,185'ten ~0,02'ye indi. A5'te softhard 2/4, hard-forward 0/8, öğrenilen codebook 0/32. Doğru dönüşümler donmuş ve identity kopyalıyken curriculum softhard'ı 0/4 → 3/4 çıkarıyor; mekanizma ve tablo keşfi ayrıştırılıyor (oracle seçim) | Ölçüm bizim; yöntemler literatürden |
 | Kararlılık | Hata rekürsiyonu sınırı; 𝔽₂ tam eşitliği; birleşen map'ler farkı siler, permütasyonlar durumları ayrı tutar; kb = 1 input-gated yapıda döngü hatayı çarparak büyütmez (dış terimler birikebilir; kb > 1'de Hamming uzaklığı büyüyebilir); sızdıran bellek hipotezi. Bellek–dayanıklılık bağı yalnız bağımsız 1-bit keep/toggle için geçerli; genel bloklar hata düzeltebilir (60 durum için ≥ 10 bit) | Matematiği standart; input-gated önermesi ve ölçümler bizim |
 
 ---
@@ -555,16 +555,52 @@ Kurulum: layer 0'ın 0–2 numaralı blokları, ters kod r(n) = p⁻¹(n) ⊕ n'
 | Öğreniliyor | codebook m = 8, identity'ye yakın başlangıç | 64 | 0/4 | 0/4 |
 | Öğreniliyor | codebook m = 8, identity'ye yakın başlangıç | 4 → 64 | 0/4 (≤ 0,03) | 0/4 (≤ 0,03) |
 
-"k/4": dört seed'in kaçı test edilen 64 ve 256 uzunlukta %100'e ulaştı.
+"k/4": dört seed'in kaçı test edilen 64 ve 256 uzunlukta yuvarlanmış %100'e ulaştı. Doğruluk dört basamağa yuvarlanıyordu; 256 uzunlukta 1,0000, 65 536 tahminde en fazla 3 hata demek. Kesin sıfır hata bu kayıtlardan gösterilemiyor. Yeni koşularda ham hata sayısı kaydediliyor (`last_wrong`, `min_wrong`). Tablo 48 koşudan oluşuyor: 40 codebook, 8 B_block3.
+
+Okuma (üçüncü denetimden sonra daraltıldı):
+
+- **Eşleşen karşılaştırma.**
+  - Curriculum yalnız "identity kopyalı" codebook'la denendi: softhard 0/4 → 3/4, slope 0/4 → 1/4.
+  - Rastgele permütasyon girdili codebook'la curriculum henüz denenmedi. Önceki sürüm iki ayrı koşulu "0/8 → 4/8" diye havuzluyordu.
+- **Identity kopyaları "yanlış dönüşüm" değil.** Eşit logit'lerde identity'ye düşen ağırlığı 1/3'ten 6/8'e çıkarıyorlar. Yani müdahale yalnız seçenek sayısını değil, başlangıçtaki işlem tercihini de değiştiriyor. Rastgele permütasyonlar ise kullanılmayan kodlara da gidiyor.
+- **Curriculum'un etkisi var, mekanizması izole değil.**
+  - Daha fazla eğitimle açıklanamıyor: curriculum, sabit uzunluğun %56'sı kadar sembol işliyor (6,86 M'ye karşı 12,29 M).
+  - Ama head de birlikte öğreniliyor ve kısa dizilerde hedef dağılımı değişiyor. "Uzun ufuklu kredi ataması" bu yüzden bir hipotez; gösterilmiş değil.
+- **Identity başlangıcında seçime giden gradyan tam sıfır olabilir.** M = Σπᵢ Mᵢ için ∂M/∂z_j = π_j(M_j − M). Bütün prototipler aynı identity ise bu sıfır. Identity'ye yakın başlangıçta hard tabloların hepsi büyük olasılıkla identity'ye yuvarlanıyor (işaret değişimi olasılığı ≤ 3·10⁻⁶). Yani seçim ağı, tablolar farklılaşana kadar bu yoldan öğrenemiyor. Bu, "dönüşümleri bulmak özünde zor" yorumuna karşı test edilebilir bir alternatif.
+- **Donmuş tablolar soft aşamada tam Boolean değildi.** Logit'ler ±6, yani yanlış bit olasılığı 0,0025; 64 adımda bu birikebiliyor. Saf seçim deneyi için tablolar tam 0/1 tutulup yalnız seçim gevşetilmeli (`--exact`).
+- **Eksik köşe: oracle seçim + öğrenilen tablolar.** Seçim harfe sabitlenip yalnız tablolar ve head öğrenilirse tablo keşfi seçimden ayrılır (`--oracle`).
+- **Takılan koşular sık sık ~1/3'te duruyor** (0,32–0,40). Bu, coset hipoteziyle uyumlu, ama doğruluk sayısından temsil çıkarılamaz.
+- **Savunulabilir sonuç.** Teoriden gelen sabit dönüşüm aileleri, denenen kurulumlarda tablo öğreniminden açıkça daha iyi bir başlangıç veriyor. Seçim öğrenimi ise reçeteye ve aday ailesine duyarlı. Tabloların öğrenilememesi, seçimden bağımsız bir sorun (oracle 0/24, üç başlangıçla).
+
+**Tamamlayıcı deneyler** (`learn2/*.log` → `codebook_a5.json`; ham hata sayılarıyla; "sıfır hata" = son modelde 64 ve 256 uzunlukta 0 / 16 384 ve 0 / 65 536 hata):
+
+| Kurulum | softhard | slope |
+|---|---|---|
+| **Oracle seçim + öğrenilen tablolar**, identity'ye yakın başlangıç | 0/4 (≈0,03) | 0/4 (≈0,03) |
+| **Oracle seçim + öğrenilen tablolar**, rastgele başlangıç | 0/4 (≈0,03) | 0/4 (≈0,04) |
+| Doğru tablolar tam 0/1, m = 3 | **4/4 sıfır hata** | – |
+| Doğru tablolar tam 0/1, + identity kopyaları | 0/4 (en iyi 0,35) | – |
+| Aynısı, curriculum | **2/4 sıfır hata** (biri 4 151 hata, biri 0,34) | – |
+| Doğru tablolar tam 0/1, + rastgele permütasyonlar | 0/4 | – |
+| Aynısı, curriculum | 0/4 | – |
+| Doğru tablolar (±6 logit), + rastgele permütasyonlar, curriculum | 0/4 | 0/4 |
+| Öğrenilen codebook, rastgele başlangıç, curriculum | 0/4 | 0/4 |
+| **Oracle seçim + öğrenilen tablolar, küçük logit'li başlangıç** (≈0, doymamış) | 0/4 (≈0,04) | 0/4 (biri 0,54'e tırmanıyor, diğerleri ≤ 0,13) |
+| Öğrenilen codebook, küçük logit'li başlangıç | 0/4 | 0/4 (≤ 0,13) |
+
+Slope zaten baştan hard tablo kullandığı için "tam 0/1" yalnız softhard'ı değiştiriyor.
 
 Okuma:
 
-- **İki ayrı zorluk var.**
-  1. *Doğru dönüşümler verilmişken seçimi öğrenmek.* Yalnız doğru girdiler varsa soft keşifle kolay (4/4). Yanlış girdiler eklenince 64 uzunlukta öğrenilmiyor, ama kısa dizilerden başlayınca büyük ölçüde öğreniliyor (0/8 → 4/8). Bu kısmın darboğazı uzun ufuklu kredi ataması.
-  2. *Dönüşümleri bulmak.* Curriculum bunu çözmüyor. Öğrenilen codebook şans düzeyine yakın kalıyor (≤ 0,03). B_block3'te güvenilir bir iyileşme yok: softhard 2/4 → 0/4, slope 0/4 → 1/4. Dört seed'le bu farkların yönü belirsiz.
-- **Baştan hard eğitim keşifte zayıf.** En temiz durumda (m = 3) bile 0/4. Curriculum ile ilk kez başarılı koşular çıkıyor (sabit codebook'ta 1/4, B_block3'te 1/4).
-- **Takılan koşular sık sık ~1/3'te duruyor** (0,32–0,40). Bu, coset hipoteziyle uyumlu, ama doğruluk sayısından temsil çıkarılamaz.
-- **Sonuç.** A5'te öğrenme sorununun en zor kısmı geçiş tablolarının kendisini bulmak. Seçim kısmı, eğitim reçetesiyle (curriculum, temiz hipotez kümesi) çözülebiliyor. Bu da yapıcı inşaların (§5.3) pratik değerini artırıyor: dönüşümler teoriden gelir, seçim ve head öğrenilir.
+- **Oracle köşesi: seçim verilse bile tablolar öğrenilemiyor** (0/24, üç başlangıçla; çoğu şans düzeyine yakın). Yani codebook'taki başarısızlık, seçim ile tabloların birlikte öğrenilmesindeki bir koordinasyon sorunu ya da seçim gradyanının identity simetrisinde sıfırlanması değil. Kaynak, tablo parametrelemesi / başlangıç / yörünge üzerinden öğrenme.
+- **Seçim kısmı aday ailesine duyarlı.**
+  - Yalnız doğru dönüşümler: kolay (4/4, sıfır hata).
+  - Identity kopyalarıyla: curriculum gerekiyor (2/4 ve 3/4).
+  - Rastgele permütasyon çeldiricileriyle: curriculum dahil 0/12.
+  
+  Curriculum'un yararı yalnız identity kopyalı ailede görüldü.
+- **Tam 0/1 tablolar** (soft aşamada yumuşama yok) sonucu belirgin biçimde değiştirmedi: identity kopyalılarda 0/4 → 0/4, curriculum'la 3/4 → 2/4.
+- **Codebook ile B_block3 arasındaki fark.** Oracle'lı codebook, işlevsel olarak "harfe göre tablo seçen" bir B_block3'e denk; ama B_block3 bazen öğreniyor (2/4), codebook hiç öğrenmiyor. Fark parametrelemede. Codebook tabloları ±3 logit'le, yani doymuş sigmoid'le başlıyor (türev ~0,045). B_block3'ün tabloları ise gate ağından ~0 logit'le, yani maksimum belirsizlikle başlıyor. Küçük logit'li başlangıç bunu ayırdı: doygunluk tek başına açıklama değil. Oracle'la bir slope koşusu 0,54'e kadar basamak basamak tırmanıyor, ama hiçbir koşu başarıya ulaşmıyor. Kalan fark şu: codebook'ta tablolar doğrudan parametre, B_block3'te ise paylaşılan bir gate ağından üretiliyor (aşırı parametreleme). Bu bir hipotez.
 
 **Literatürdeki reçeteler:**
 
@@ -708,7 +744,7 @@ Ayrıntılı künyeler: `docs/08_case_arastirmasi.md`, `paper/related_work_2026.
 1. Birleşik yapının genel bir koşulu: hangi G için bilgi alt sınırı K = 6 ile ulaşılabilir (§5.5, madde 8)? A5'te K = 5 için SAT sonucu; daha büyük gruplar (PSL(2,8), A7).
 2. Positional ve birleşik tasarımların Fmax farkının daha çok seed ve yerleşim kısıtıyla ölçülmesi; yerelliğin bir maliyet terimi olarak modele eklenmesi.
 3. S₄, mod 5 ve mod 7 ile §6'daki sanının testi.
-4. A5'i güvenilir öğrenmek. Seçim kısmı curriculum'la çözülüyor; zor olan dönüşümleri bulmak. Sıradakiler: dönüşümleri yapıcı inşadan alıp yalnız seçim ve head'i öğrenmek (Loghub'da da); PD-SSM reçetesi, CAGE; takılan koşularda iç durumun coset yapısını incelemek.
+4. A5'i güvenilir öğrenmek. Ayrıştırmayı tamamlamak (oracle seçim, tam 0/1 tablolar, eşleşen curriculum koşulları). Sıradakiler: dönüşümleri yapıcı inşadan alıp yalnız seçim ve head'i öğrenmek (Loghub'da da); PD-SSM reçetesi, CAGE; takılan koşularda iç durumun coset yapısını incelemek.
 5. Hard-aware finalistlerin daha fazla seed'le tekrarı ve leave-one-system-out değerlendirme.
 6. Kararlılık: L sabitinin ölçülmesi; K = 6 ile tek seviyede hata düzelten bir A5 devresi var mı?
 7. Gate ağları ve head hâlâ float. LUT ağlarına çevrildiklerinde kalite ve döngü dışı mantığın maliyeti (Faz 1).

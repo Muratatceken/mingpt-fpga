@@ -163,11 +163,20 @@ def a5_job(job):
         x, y = cpu.task("a5", 64, T, rng)
         return torch.as_tensor(x), torch.as_tensor(y)
 
+    wrong = []                                    # exact wrong counts per evaluation, {L: (wrong, total)}
+
     def acc(model):
-        return {L: float((model(x)[..., :n_out].argmax(-1) == y).float().mean()) for L, (x, y) in ev.items()}
+        out, w = {}, {}
+        for L, (x, y) in ev.items():
+            hit = model(x)[..., :n_out].argmax(-1) == y
+            out[L], w[L] = float(hit.float().mean()), (int((~hit).sum()), int(hit.numel()))
+        wrong.append(w)
+        return out
     t0 = time.time()
     curve, gn, bad = train(model, job["method"], batch, n_out, job["steps"], 3e-3, acc, 250)
     return dict(task="a5", model="B_block3" + ("_curr" if job.get("curriculum") else ""), method=job["method"],
+                last_wrong={str(L): wrong[-1][L] for L in ev}, min_wrong={str(L): min(w[L] for w in wrong) for L in ev},
+                zero_error_both_last=all(wrong[-1][L][0] == 0 for L in ev),
                 seed=job["seed"], steps=job["steps"],
                 curve=[(s, round(a[64], 3), round(a[256], 3)) for s, a in curve],
                 last_acc256=round(curve[-1][1][256], 4), best_acc256=round(max(a[256] for _, a in curve), 4),

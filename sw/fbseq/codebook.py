@@ -36,7 +36,7 @@ OUT = os.path.join(cpu.ROOT, "model", "fbseq")
 
 class Codebook(cpu.Gated):
     def __init__(self, V, n_out, S=24, L=2, kb=3, m=8, w=1, n_embd=16, n_hidden=64, n_head=64, init="random",
-                 gain=1.0):
+                 gain=1.0, exact=False, oracle=False):
         super().__init__(V, n_out, S=S, L=L, kb=kb, mode="full", w=w, n_embd=n_embd, n_hidden=n_hidden, n_head=n_head)
         N, Q = S // kb, 2 ** kb
         self.m, self.N = m, N
@@ -45,7 +45,9 @@ class Codebook(cpu.Gated):
                                                 nn.Linear(n_hidden, N * m)) for l in range(L))
         bits = ((torch.arange(Q)[None, :] >> torch.arange(kb)[:, None]) & 1).float()      # (kb, Q)
         self.register_buffer("qbits", bits, persistent=False)
-        if init == "identity":                                                            # every entry near identity
+        if init == "small":                               # unsaturated start: logits ~ 0 (tables ~ 1/2, like B_block3)
+            cb = 0.1 * torch.randn(L, N, m, kb, Q)
+        elif init == "identity":                                                          # every entry near identity
             cb = (6.0 * bits - 3.0).expand(L, N, m, kb, Q) + 0.5 * torch.randn(L, N, m, kb, Q)
         elif init.startswith("fixed"):                    # A5: the correct maps, constructed (probes.a5embed code)
             gens = [(1, 2, 3, 4, 0), (1, 2, 0, 3, 4), (0, 1, 2, 3, 4)]
@@ -67,6 +69,8 @@ class Codebook(cpu.Gated):
         self.cb = nn.Parameter(cb / gain, requires_grad=not init.startswith("fixed"))     # gain > 1 = faster tables
                                                                                           # fixed*: tables frozen
         self.layer_idx = 0
+        self.exact = exact                          # frozen tables kept exactly 0/1 also in the soft phase
+        self.oracle = oracle                        # choice fixed to the letter: entry x for input symbol x
 
     def tables(self, logits):
         """choice logits (B, T, N*m) -> step matrices M_t (B, T, N, Q, Q)"""
@@ -80,6 +84,10 @@ class Codebook(cpu.Gated):
         if hard:
             pi = pi + (F.one_hot(z.argmax(-1), m).float() - pi).detach()
             D = D + ((D > 0.5).float() - D).detach()
+        if self.exact:
+            D = (self.cb[self.layer_idx] > 0).float()
+        if self.oracle:
+            pi = F.one_hot(z.argmax(-1), m).float()
         nb = self.qbits.bool()[:, :, None]                                                # (kb, Q', 1)
         Mk = torch.where(nb, D[..., :, None, :], 1 - D[..., :, None, :]).prod(-3)          # (N, m, Q', Q)
         return (torch.einsum("btnk,nkij->btnij", pi, Mk),)
@@ -101,7 +109,12 @@ class Codebook(cpu.Gated):
         states, below = [], None
         for l in range(self.L):
             self.layer_idx = l
-            tab = self.tables(self.gate[l](win if below is None else torch.cat([win, below], -1)))
+            if self.oracle:                         # every block of every layer takes entry x_t (no choice net)
+                z = 20.0 * (2 * F.one_hot(idx, self.m).float() - 1)                           # (B, T, m)
+                logits = z[:, :, None, :].expand(B, T, self.N, self.m).reshape(B, T, self.N * self.m)
+            else:
+                logits = self.gate[l](win if below is None else torch.cat([win, below], -1))
+            tab = self.tables(logits)
             below = self.run(tab, B, T)
             states.append(below)
         self.last_states = states
@@ -113,7 +126,8 @@ def a5_job(job):
     torch.manual_seed(job["seed"])
     rng = np.random.default_rng(job["seed"])
     n_in, n_out = cpu.TASKS["a5"]
-    model = Codebook(n_in, n_out, S=24, L=2, kb=3, m=job["m"], init=job.get("init", "random"), gain=job.get("gain", 1.0))
+    model = Codebook(n_in, n_out, S=24, L=2, kb=3, m=job["m"], init=job.get("init", "random"), gain=job.get("gain", 1.0),
+                     exact=job.get("exact", False), oracle=job.get("oracle", False))
     erng = np.random.default_rng(1000 + job["seed"])
     ev = {L: [torch.as_tensor(a) for a in cpu.task("a5", 256, L, erng)] for L in (64, 256)}
 
@@ -127,17 +141,27 @@ def a5_job(job):
         x, y = cpu.task("a5", 64, T, rng)
         return torch.as_tensor(x), torch.as_tensor(y)
 
+    wrong = []                                    # exact wrong counts per evaluation, {L: (wrong, total)}
+
     def acc(model):
-        return {L: float((model(x)[..., :n_out].argmax(-1) == y).float().mean()) for L, (x, y) in ev.items()}
+        out, w = {}, {}
+        for L, (x, y) in ev.items():
+            hit = model(x)[..., :n_out].argmax(-1) == y
+            out[L], w[L] = float(hit.float().mean()), (int((~hit).sum()), int(hit.numel()))
+        wrong.append(w)
+        return out
     t0 = time.time()
     curve, gn, bad = ha.train(model, job["method"], batch, n_out, job["steps"], 3e-3, acc, 250)
     tag = f"codebook_k3_m{job['m']}_{job.get('init', 'random')}" + (f"_g{job['gain']:g}" if job.get("gain", 1.0) != 1.0 else "") \
+        + ("_exact" if job.get("exact") else "") + ("_oracle" if job.get("oracle") else "") \
         + ("_curr" if job.get("curriculum") else "")
     return dict(task="a5", model=tag, method=job["method"],
                 seed=job["seed"], steps=job["steps"],
                 params=cpu.n_params(model), curve=[(s, round(a[64], 3), round(a[256], 3)) for s, a in curve],
                 last_acc256=round(curve[-1][1][256], 4), best_acc256=round(max(a[256] for _, a in curve), 4),
-                grad_norm_mean=round(float(np.mean(gn)), 4), nonfinite_steps=bad, seconds=round(time.time() - t0, 1))
+                grad_norm_mean=round(float(np.mean(gn)), 4), nonfinite_steps=bad, seconds=round(time.time() - t0, 1),
+                last_wrong={str(L): wrong[-1][L] for L in ev}, min_wrong={str(L): min(w[L] for w in wrong) for L in ev},
+                zero_error_both_last=all(wrong[-1][L][0] == 0 for L in ev))
 
 
 def bytes_job(job):
@@ -178,13 +202,16 @@ def main():
     ap.add_argument("--seeds", default="0,1,2,3")
     ap.add_argument("--m", type=int, default=8)
     ap.add_argument("--methods", default="softhard,slope")
-    ap.add_argument("--init", default="random", choices=["random", "identity", "fixed", "fixed_distract"])
+    ap.add_argument("--init", default="random", choices=["random", "identity", "small", "fixed", "fixed_distract"])
     ap.add_argument("--gain", type=float, default=1.0)
     ap.add_argument("--curriculum", action="store_true", help="a5: training length 4 -> 64 over 2/3 of the steps")
+    ap.add_argument("--exact", action="store_true", help="fixed*: tables exactly 0/1 in the soft phase too")
+    ap.add_argument("--oracle", action="store_true", help="a5: choice fixed to the letter (entry x); tables learn")
     ap.add_argument("--steps", type=int, default=3000)
     ap.add_argument("--jobs", type=int, default=4)
     a = ap.parse_args()
-    jobs = [dict(seed=int(s), m=a.m, steps=a.steps, method=me, init=a.init, gain=a.gain, curriculum=a.curriculum)
+    jobs = [dict(seed=int(s), m=a.m, steps=a.steps, method=me, init=a.init, gain=a.gain, curriculum=a.curriculum,
+                 exact=a.exact, oracle=a.oracle)
             for me in a.methods.split(",") for s in a.seeds.split(",")]
     fn = a5_job if a.what == "a5" else bytes_job
     path = os.path.join(OUT, f"codebook_{a.what}.json")

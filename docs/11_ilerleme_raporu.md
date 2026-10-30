@@ -244,14 +244,24 @@ Denetim çıktıları burada bağımsız olarak yeniden üretildi; ayrıntı `do
 
 **Grup tasarımları yeniden ölçüldü** (§2.9'daki sayılar güncel). K ≤ 6 tasarımları 420–540'tan 599–669 MHz'e çıktı; K > 6 tasarımlarının sınırı zaten döngüydü, değerleri az değişti.
 
-**Öğrenme: doğru dönüşümleri bulmak mı, seçmek mi?** Denetimin önerdiği ayrıştırma (`docs/10` §7):
+**Öğrenme: doğru dönüşümleri bulmak mı, seçmek mi?** Denetimin önerdiği ayrıştırma (`docs/10` §7; 48 koşu: 40 codebook + 8 B_block3):
 
 - Dönüşümler inşadan sabit, yalnız seçim ağı ve head öğreniyor:
   - yalnız 3 doğru dönüşüm: softhard 4/4;
-  - yanlış girdiler eklenince 0/8;
-  - aynı şey, kısa dizilerden başlayan curriculum'la: 4/8.
-- Dönüşümler de öğreniliyor: curriculum işe yaramıyor (codebook 0/8 ≤ 0,03; B_block3 softhard 0/4, slope 1/4).
-- Sonuç: seçim kısmı bir eğitim reçetesi sorunu, ve curriculum büyük ölçüde çözüyor. Zor olan geçiş tablolarını bulmak. Bu, yapıcı inşaların pratik değerini artırıyor: dönüşümler teoriden, seçim ve head öğrenmeden.
+  - + 5 identity kopyası: 0/4, curriculum'la 3/4 (slope 0/4 → 1/4);
+  - + 5 rastgele permütasyon: 0/4 (curriculum henüz denenmedi).
+- Dönüşümler de öğreniliyor: curriculum'la codebook 0/8 (≤ 0,03); B_block3 softhard 0/4, slope 1/4.
+- **Üçüncü denetimden sonra yorum daraltıldı.**
+  - Identity kopyaları başlangıçtaki identity ağırlığını 1/3'ten 3/4'e çıkarıyor.
+  - Curriculum %56 sembolle çalışıyor; etkisi gerçek ama mekanizması izole değil.
+  - Identity başlangıcında seçim gradyanı tam sıfır olabiliyor.
+  - Donmuş tablolar soft aşamada tam Boolean değildi.
+  - "%100" yuvarlanmış bir değer (256'da ≤ 3 hata).
+- **Tamamlayıcı deneyler** (72 koşu, ham hata sayılarıyla):
+  - **Oracle seçim + öğrenilen tablolar: 0/24** (identity, rastgele ve küçük logit'li başlangıç). Tablolar, seçim verilse bile öğrenilemiyor. Yani sorun seçim–tablo koordinasyonu değil; tablo parametrelemesi.
+  - Tam 0/1 sabit tablolarla seçim: m = 3 4/4 sıfır hata; identity kopyalı 0/4, curriculum'la 2/4 sıfır hata; rastgele permütasyonlu, curriculum dahil 0/12.
+  - Curriculum'un yararı yalnız identity kopyalı ailede görüldü.
+  - Doymuş sigmoid başlangıcı tek başına açıklama değil. Codebook (doğrudan tablo parametreleri) ile B_block3 (gate ağından üretilen tablolar, 2/4) arasındaki fark parametrelemede; bu bir hipotez.
 
 ---
 
