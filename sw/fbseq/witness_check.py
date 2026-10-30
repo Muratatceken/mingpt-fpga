@@ -6,6 +6,9 @@ shares no code with theory_sat.py; items follow an external audit of docs/10, 28
 
 1. sat6        the S = 6, K = 6 SAT witness: 60 distinct codes, every next bit a function of its <= 4 state
                bits D_j and the letter, checked exhaustively (60 states x 3 letters x 6 bits).
+1b. sat5       every S = 6, K = 5 witness (one per letter coding) with control inputs chosen per bit (theory_sat.py --coding --core 4):
+               60 distinct codes, every next bit a function of its state bits D_j and of the control bits C_j it
+               reads, |D_j| + |C_j| <= 5, exhaustively and across letters; bits 0..3 a V4-coset core.
 2. core_fiber  structure of that witness: a closed 4-bit core whose 15 reachable values are the right cosets
                V4 p, and 2 fiber bits that each update as s_j' = s_j XOR f_j(core, letter).
 3. lemma       the same shape from any V4, transversal, core labeling and V4 basis (coset core + Z2
@@ -60,6 +63,37 @@ def sat6():
                 assert seen.setdefault(k, E[step(p, a)][j]) == E[step(p, a)][j]
                 n += 1
     return E, D, {"distinct_codes": 60, "max_state_fanin": max(map(len, D)), "exhaustive_checks": n, "passed": True}
+
+
+def sat5():
+    return [sat5_one(v) for v in json.load(open(os.path.join(ROOT, "model/fbseq/sat_a5_k5.json")))
+            if v["S"] == 6 and v["K"] == 5 and v["result"] == "sat"]
+
+
+def sat5_one(sol):
+    E = [tuple(map(int, s)) for s in sol["encoding"]]
+    D, C, code = sol["deps"], sol["control_deps"], sol["coding"]
+    assert len(set(E)) == 60 and all(len(d) + len(c) <= 5 for d, c in zip(D, C))
+    n, toggle = 0, []
+    for j, (d, c) in enumerate(zip(D, C)):
+        seen, flip = {}, {}
+        for a in range(3):
+            for p in range(60):
+                k = (tuple(E[p][i] for i in d), tuple((code[a] >> i) & 1 for i in c))
+                v = E[step(p, a)][j]
+                assert seen.setdefault(k, v) == v
+                kf = (tuple(E[p][i] for i in d if i != j), k[1])
+                flip.setdefault(kf, set()).add(v ^ E[p][j])
+                n += 1
+        toggle.append(j in d and all(len(f) == 1 for f in flip.values()))
+    v4 = [(0, 1, 2, 3, 4), (1, 0, 3, 2, 4), (2, 3, 0, 1, 4), (3, 2, 1, 0, 4)]  # fixes point 4
+    core = {tuple(sorted(IDX[cp(h, G[p])] for h in v4)): E[p][:4] for p in range(60)}
+    assert all(E[q][:4] == E[p][:4] for p in range(60) for q in (IDX[cp(h, G[p])] for h in v4))
+    unchanged = [[a for a in range(3) if all(E[step(p, a)][j] == E[p][j] for p in range(60))] for j in range(6)]
+    return {"distinct_codes": 60, "coding": code, "fanin": [len(d) + len(c) for d, c in zip(D, C)],
+            "state_deps": D, "control_deps": C, "exhaustive_checks": n, "core_bits": [0, 1, 2, 3],
+            "core_values": len(set(core.values())), "core_closed": all(set(D[j]) <= {0, 1, 2, 3} for j in range(4)),
+            "toggle_shaped": toggle, "letters_leaving_bit_unchanged": unchanged, "passed": True}
 
 
 def core_fiber(E, D):
@@ -211,7 +245,7 @@ def main():
     ap.add_argument("--tries", type=int, default=1000)
     a = ap.parse_args()
     E, D, r1 = sat6()
-    R = {"sat6": r1, "core_fiber": core_fiber(E, D), "lemma": lemma(a.tries), "block_local": block_local(),
+    R = {"sat6": r1, "sat5": sat5(), "core_fiber": core_fiber(E, D), "lemma": lemma(a.tries), "block_local": block_local(),
          "counterexamples": counterexamples(), "robustness": robustness()}
     path = os.path.join(ROOT, "model", "fbseq", "witness_check.json")
     json.dump(R, open(path, "w"), indent=1)

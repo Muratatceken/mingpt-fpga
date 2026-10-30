@@ -4,7 +4,7 @@
 
 **Bugünkü merkez iddia** (29 Ekim): Boolean recurrent modellerde durum kapasitesi, geçişlerin yerelliği ve geri besleme derinliği ayrı kısıtlardır. A5'te bunların bit maliyeti kesin olarak ayrıştırılabilir:
 
-- genel tek seviyeli gerçekleştirmede 6 bit; bu, LUT6 ile bile sıkı;
+- genel tek seviyeli gerçekleştirmede 6 bit; bu, LUT6 ile ve kontrol girişleri seçilebilir sayılınca fan-in 5 ile bile sıkı;
 - bağımsız dense bloklarla (kontrol yalnız harften, w = 2) K = 6'da 7 bit, K = 5'te 9 bit.
 
 6 bitlik çözümün yapısı da anlaşıldı: 15 durumlu bir coset core ve iki koşullu toggle. Bu yapı blok core'larla genelleşiyor. Test edilen beş grubun dördünde (S₄, A₅, PSL(2,7), A₆) bilgi alt sınırı tek LUT6 seviyesinde, SAT'sız gerçekleşiyor. PSL(2,8)'de bu yapıyla alt sınır ancak fan-in 8'de geliyor. Fiziksel olarak fan-in 6, Fmax'te bir eşik: aynı state'te fan-in 11 → 6 ile Fmax 156 → 636 MHz. PSL(2,8)'de 12 bit / fan-in 6, 9 bit / fan-in 8'den hızlı (641'e karşı 317 MHz). Genel bir garanti de var (ikinci denetimden gelen yapıcı teorem): tek mertebeli bir üreteç seçilebiliyorsa her sonlu abelyen olmayan basit grup S = ⌈log₂\|G\|⌉ ve K ≤ S + 2 − r₂(G) ile gerçekleşiyor. kb = 1 input-gated yapıda döngü, discretization hatasını çarparak büyütmez; dış hata terimleri yine birikebilir. Loghub'da hard modelin eski soft referansa göre açığı eğitimle 0,185'ten 0,02 bpb'ye indi (1,583 → 1,418; soft referans 1,398; farklı eğitimlerin karşılaştırması). Kalan fark, Boolean bitlerin sızdıran belleği temsil edememesiyle tutarlıdır; bu bir hipotez.
@@ -38,7 +38,7 @@ Literatür taraması Ekim 2026 sonunda üç hatta yapıldı. "Bulunamadı" ifade
 | Grup yapıları | m üreteçli G ≤ Sₙ'nin word problem'i tek LUT seviyesinde çözülebilir. Encoding'e göre fan-in ile state arasında bir ödünleşim var. | Parçaları bilinen; biçimsel ifadesi bulunamadı |
 | Bilgi alt sınırı | Grup elemanını izlemek için S ≥ ⌈log₂\|G\|⌉ | **Bilinen** (Myhill–Nerode) |
 | **A5, bağımsız dense bloklar** | Kontrol yalnız harften (w = 2). Tek seviyede en az state: K = 6 için **7 bit**, K = 5 için **9 bit**; K = 4'te imkânsız | **Bizim** (alt grup taraması ile ispat) |
-| **A5, genel** | K = 6 ile **6 bit**, yani alt sınır. Sınır sıkı. | **Bizim** (SAT tanığı + alt sınır; tanık 1 080 koşulla bağımsız denetlendi) |
+| **A5, genel** | K = 6 ile **6 bit**, yani alt sınır. Kontrol girişleri seçilebilir sayılınca (Tanım 1) **K = 5 ile de 6 bit**. K = 4'te, 4 biti bir V4'ün coset'lerine bağlı 6 bitlik kod yok (z3 UNSAT, üç kodlama); genel K = 4 açık. | **Bizim** (SAT tanıkları + alt sınır; tanıklar 1 080'er koşulla bağımsız denetlendi) |
 | **Coset core + fiber** | H ≅ Z₂ᵏ ile tek seviyede S = ⌈log₂\|G\|⌉ (alt sınır), fan-in ≤ S − k + 1 + w. Transversal 𝔽₂ üzerinde lineer çözülünce A5, PSL(2,7), A6'da 300/300 etiketlemede fan-in S + w − r₂. Her etiketlemede değil (A5 karşı örneği); "her grupta" sanısı yanlış (Z₂, Z₈) | **Bizim** (yapı denetimde fark edildi; lemma ve ispat bizde; gauge sonucu gözlem) |
 | **Tek mertebeli üreteç teoremi** | G = ⟨a, b⟩, \|a\| tek: her etiketlemede S = ⌈log₂\|G\|⌉, K ≤ S + 2 − k. Guralnick–Kantor ile her sonlu abelyen olmayan basit grup için uygun alfabede | İkinci denetimden; ispat ve 81 etiketlemede kontrol bizde |
 | **Birleşik yapı (blok core + fiber)** | S₄, A₅, PSL(2,7), A₆'da alt sınır K ≤ 6 ile, tek LUT6 seviyesinde: 5, 6, 8, 9 bit. A₅'te K = 5 ile 7 bit (önce 9). PSL(2,8)'de K = 6'da 12 bit; alt sınır (9) ancak K = 8'de | **Bizim** (yapı ispatlı; minimum, alt sınıra eşit olduğu yerde kesin) |
@@ -67,7 +67,7 @@ Bu durumda döngüdeki mantık derinliği **1 LUT seviyesidir**. Genel durumda F
 
 - Bu belgedeki K değerleri, aksi belirtilmedikçe her çıkışın w kontrol bitinin hepsini okuduğu varsayımıyla hesaplandı: |D_j| + w.
 - Kontrol bitleri seçilebilir sayılınca (`core_fiber.exact_fanin`, harf kodları a = 00, b = 01, e = 10), raporlanan 31 kodun hiçbirinin en büyük fan-in'i değişmedi.
-- Ama gauge ve birleşik yapı aramaları ve ilk SAT sorgusu bu serbestliği kullanmıyordu. Bu yüzden bulamadıkları bir şey, genel modelde imkânsız demek değil.
+- Ama gauge ve birleşik yapı aramaları ve ilk SAT sorgusu bu serbestliği kullanmıyordu. Bu yüzden bulamadıkları bir şey, genel modelde imkânsız demek değil. Nitekim kontrol seçimli SAT, A5'te K = 5 ile 6 bit buldu (§5.3).
 
 **Tanım 2 (block-local, dense).** State bitleri bloklara ayrılır ve her bitin bağımlılık kümesi kendi bloğunun içinde kalır (D_j ⊆ B(j)). **Dense** ise D_j = B(j), yani her bit bloğunun tamamını okur. Faz 0'daki B modelleri (kb = 1, 2, 3) dense block-local'dir.
 
@@ -350,20 +350,31 @@ Kapsam:
 | Grup | Alt sınır | K = 4 | K = 5 | K = 6 | K = 7 | K = 8 | Önceki en iyi |
 |---|---|---|---|---|---|---|---|
 | S₄ | 5 | **5** | **5** | **5** | **5** | **5** | β₄ = 5 |
-| A₅ | 6 | – | 7 | **6** | **6** | **6** | K = 5'te β = 9 |
+| A₅ | 6 | – | 7 (SAT: **6**) | **6** | **6** | **6** | K = 5'te β = 9 |
 | PSL(2,7) | 8 | – | **8** | **8** | **8** | **8** | K = 6'da β = 8; K = 5'te β = 9 |
 | A₆ | 9 | – | 12 | **9** | **9** | **9** | K = 6'da β = 10; 9 bit için K = 9 (gauge) |
 | PSL(2,8) | 9 | – | – | 12 | 10 | **9** | – |
 
-Kalın değerler alt sınıra eşit, yani o K için kesin minimum. "–", yapının bu K'da bir şey bulmadığı anlamına geliyor; imkânsızlık kanıtı değil. Örneğin A5'te indeksi ≤ 4 olan öz alt grup yok, bu yüzden K = 4'te blok kurulamıyor.
+Kalın değerler alt sınıra eşit, yani o K için kesin minimum. A₅'te K = 5'teki 6, kontrol girişlerini seçilebilir sayan SAT tanığından geliyor (aşağıda); birleşik yapı iki kontrol bitini her bite yazıyor. "–", yapının bu K'da bir şey bulmadığı anlamına geliyor; imkânsızlık kanıtı değil. Örneğin A5'te indeksi ≤ 4 olan öz alt grup yok, bu yüzden K = 4'te blok kurulamıyor.
 
 Öne çıkan yapılar:
 
-- **A₅, K = 5, 7 bit:** A4 bloğu (indeks 5, 3 bit) ve D10 bloğu (indeks 6, 3 bit); kesişimleri Z₂, yani 1 fiber biti. Bağımsız bloklarla K = 5'te 9 bit gerekiyordu. 6 bitin K = 5'te mümkün olup olmadığı açık. Kontrol girişlerini seçilebilir sayan SAT (`theory_sat.py --coding`, `sat_a5_ctrl_{a,b,e}.json`) 2 bitlik harf kodlamasının üç sınıfında da (ortadaki kod 00'a a, b ya da e) 6 saatte (21 600 s) **unknown** ile bitti; iki kontrol bitini zorunlu sayan kısıtlı sorgu da 4 saatte unknown (`sat_a5.json`). Yani ne bir tanık ne bir imkânsızlık kanıtı var.
+- **A₅, K = 5, 7 bit:** A4 bloğu (indeks 5, 3 bit) ve D10 bloğu (indeks 6, 3 bit); kesişimleri Z₂, yani 1 fiber biti. Bağımsız bloklarla K = 5'te 9 bit gerekiyordu. Kontrol girişleri seçilebilir sayılınca 6 bit yetiyor (aşağıda).
 - **PSL(2,7), K = 5, 8 bit = alt sınır:** iki S4 bloğu (indeks 7, 3'er bit), kesişim V4, 2 fiber biti. Her fiber biti en fazla 2 core bitine bakıyor.
 - **A₆, K = 6, 9 bit = alt sınır:** iki S4 bloğu (indeks 15, 4'er bit), kesişim Z₂, 1 fiber biti, en fazla 3 core bitine bakıyor.
 
 - **PSL(2,8), alt sınıra K = 6'da ulaşılamadı.** Bu yapıyla K = 6'da 12 bit (positional), K = 7'de 10 bit, 9 bit ancak K = 8'de geliyor. 9 bit için Z₂³'ün 63 coset'i 6 bitlik dense bir core'da tutuluyor. Sebep yapısal: PSL(2,8)'de indeksi ≤ 16 olan tek öz alt gruplar 9 nokta stabilizer'ı (2³:7, indeks 9). Bunların kesişimi ya Z₇ ya trivial; hiçbiri Z₂ᵏ değil. Bu yüzden K = 6'da ailede yalnız bağımsız bloklar kalıyor.
+
+**A₅, K = 5: 6 bit, yani alt sınır (30 Ekim).** Tanım 1'de her bit hangi kontrol bitlerini okuyacağını seçebiliyor. Bu sayımla A5, fan-in 5'te de 6 bitle gerçekleşiyor.
+
+- **Arama.** Kısıtsız SAT, 2 bitlik harf kodlamasının üç sınıfında da 6 saatte (21 600 s) unknown'da kaldı (`sat_a5_ctrl_{a,b,e}.json`). Arama "ilk 4 bit V4 p coset'inin fonksiyonu" kısıtıyla daraltılınca z3 tanığı on dakika civarında buldu: b = 00 kodlamasında 578 s, e = 00'da 692 s (`theory_sat.py --coding … --core 4` → `sat_a5_k5.json`). a = 00 kodlamasında 1 saatte unknown. Bu kodlamada hiçbir kontrol biti a'yı {b, e}'den ayırmıyor; bu yüzden aşağıdaki "b'de değişmeyen fiber" tek kontrol bitiyle kurulamıyor. Yapı bilgisi, 6 saatte bitmeyen aramayı on dakikaya indiriyor.
+- **Bağımsız denetim** (`witness_check.py`, `sat5`; z3 kullanmıyor): her tanıkta 60 farklı kod; harfler arası karşılaştırmalar dahil 1 080 koşulun hepsi sağlanıyor; her bitin fan-in'i tam 5.
+- **Yapı (iki tanıkta aynı):**
+  - Core: bitler 0–3, 15 V4 coset'ini tutuyor ve kapalı. Her core biti 3 core bitini ve 2 kontrol bitini okuyor.
+  - Fiber: bitler 4 ve 5 toggle, s′ⱼ = sⱼ ⊕ fⱼ(3 core biti, 1 kontrol biti). Okudukları kontrol biti a'yı {b, e}'den ayırıyor; yani b harfinde fiber hiç değişmiyor. Bu, tek mertebeli üreteç inşasının (§5.3 teoremi) b ile (|b| = 3) kurulmuş hâli. Burada gauge ayrıca bir core bitini düşürüyor. Fan-in: 1 + 3 + 1 = 5.
+- **Sonuç.** A5'te tek seviyede en az state, K = 5'te de K = 6'da da 6 bit. Bir sınır notu: eski sayımda (iki kontrol biti her bite zorunlu) bu kodun fan-in'i 6. O modelde K = 5 ile 6 bit hâlâ açık (kısıtlı SAT 4 saatte unknown).
+- **K = 4.** Aynı kısıtla (4 bit bir V4'ün coset'lerinin fonksiyonu; core bitleri fiber bitlerini de okuyabilir) K = 4'te 6 bit, üç kodlamada da UNSAT (76–109 s, `sat_a5_k4core.json`). Bit permütasyonu ve sol çarpma simetrisi yüzünden bu sonuç, herhangi 4 bitin herhangi bir V4'ün sağ coset'lerinin fonksiyonu olduğu bütün kodları dışlıyor. UNSAT z3'ten geliyor; bağımsız bir sertifika (DRAT) üretilmedi. Coset core'u olmayan 6 bitlik bir K = 4 kodu açık.
+- **Fiziksel karşılık.** K ≤ 6 olan her kod zaten tek LUT6 seviyesinde (§5.4), bu yüzden Fmax'te fark beklenmiyor. Kazanç teorik: alt sınır daha küçük bir fan-in'de de sıkı. Pratikte her bitin LUT6'sında bir giriş boş kalıyor.
 
 Sonuç: test edilen beş grubun dördünde bilgi alt sınırı tek LUT seviyesinde ve K ≤ 6 ile, yani state biti başına tek bir LUT6 ile gerçekleşiyor. PSL(2,8)'de gerçekleşmiyor; en azından bu yapıyla. Genel bir gerçekleştirmenin (SAT) PSL(2,8)'de K = 6 ile 9–11 bite inip inemeyeceği açık. Belirleyici olan, grubun küçük indeksli alt grup ailelerinin kesişim yapısı gibi görünüyor.
 
@@ -422,7 +433,7 @@ Okuma:
 Yani bu sınıf A5'i temsil edebiliyor; eğitimde görülen başarısızlık bir öğrenme sorunu. Burada state tablolarının doğruluğu tam (yapı gereği); head'in başarısı ise yalnız test edilen uzunluklar için ölçüldü.
 
 ### 5.5 Açık sorular
-1. K = 5 ve K = 4'te block-local olmayan en küçük state. A5, S = 6, K = 5: z3 her üç harf kodlamasında 6 saatte unknown (§5.3). Sorgu bit permütasyonu (6! = 720) ve sol çarpma (60) simetrilerini kırmıyor; bunları kıran bir CNF kodlaması ve CDCL çözücüsü sıradaki deneme.
+1. K = 4'te block-local olmayan en küçük state. A5'te K = 5 çözüldü: 6 bit (§5.3). K = 4'te V4 coset core'lu 6 bit yok (z3 UNSAT, sertifikasız); coset core'u olmayan kodlar açık. Kısıtsız sorgu bit permütasyonu (6! = 720) ve sol çarpma (60) simetrilerini kırmıyor; bunları kıran bir CNF kodlaması ve CDCL çözücüsü bir seçenek.
 2. Genel bir G için β_K ile block-local olmayan minimum arasındaki ilişki. Grup teorisinde yakın kavramlar var (minimal faithful degree, base size); tam olarak bu ölçü bulunamadı.
 3. Cascade'lerde etkin alfabe (§3 uyarısı) ve injective olmayan encoding'ler (state splitting).
 4. Encoding bulmanın karmaşıklığı. Sabit bir netlist'te en küçük döngü derinliği polinom zamanda bulunuyor (Pan–Liu); zorluk tamamen encoding seçiminde.
@@ -434,7 +445,7 @@ Yani bu sınıf A5'i temsil edebiliyor; eğitimde görülen başarısızlık bir
 
    Sonuç: tam 2^S kod ve K < S fan-in ile tek permütasyonlar için bir parite engeli olup olmadığı açık bir soru.
 7. Coset core + fiber (§5.3): gauge her etiketlemede çözülmüyor; A5'te sertifikalı karşı örnek var, rank koşulu Düzeltme 2'de. Açık olan: hangi etiketlemeler çözülüyor, ve kontrol bitlerinin seçilmesiyle birleşen bir gauge ne veriyor? H abelian değilse fiber, H'nin bütün elemanlarını harf olarak alan bir alt makinedir (§3 uyarısı); bunun maliyeti?
-8. Birleşik yapı: hangi gruplarda alt sınır K = 6 ile ulaşılabilir? PSL(2,8) bu yapıyla ulaşamıyor (§5.3). Küçük indeksli alt grupların kesişim yapısına dayanan bir koşul var mı? Genel gerçekleştirme (SAT) PSL(2,8)'de K = 6 ile 9–11 bite inebilir mi? Diğer açık durumlar: A₅'te K = 5'te 6 bit (SAT 6 saatte unknown), A₆'da K = 5'te 9–11 bit, ve bütün gruplarda K = 4.
+8. Birleşik yapı: hangi gruplarda alt sınır K = 6 ile ulaşılabilir? PSL(2,8) bu yapıyla ulaşamıyor (§5.3). Küçük indeksli alt grupların kesişim yapısına dayanan bir koşul var mı? Genel gerçekleştirme (SAT) PSL(2,8)'de K = 6 ile 9–11 bite inebilir mi? Diğer açık durumlar: A₅'te K = 4 (K = 5'te 6 bit artık çözüldü, §5.3), A₆'da K = 5'te 9–11 bit, ve bütün gruplarda K = 4.
 
 ---
 
@@ -741,7 +752,7 @@ Ayrıntılı künyeler: `docs/08_case_arastirmasi.md`, `paper/related_work_2026.
 ---
 
 ## 10. Sonraki adımlar
-1. Birleşik yapının genel bir koşulu: hangi G için bilgi alt sınırı K = 6 ile ulaşılabilir (§5.5, madde 8)? A5'te K = 5'te 6 bit: z3 6 saatte unknown; simetri kırmalı CNF ile yeniden denemek. Daha büyük gruplar (PSL(2,8), A7).
+1. Birleşik yapının genel bir koşulu: hangi G için bilgi alt sınırı K = 6 ile ulaşılabilir (§5.5, madde 8)? A5'te K = 5 çözüldü (6 bit). Aynı yapı (kontrol seçimli core + tek mertebeli harfle fiber) diğer gruplarda da fan-in'i düşürüyor mu? Özellikle A₆'da K = 5 (şimdi 12 bit) ve PSL(2,8)'de K = 6 (şimdi 12 bit). Daha büyük gruplar (A7).
 2. Positional ve birleşik tasarımların Fmax farkının daha çok seed ve yerleşim kısıtıyla ölçülmesi; yerelliğin bir maliyet terimi olarak modele eklenmesi.
 3. S₄, mod 5 ve mod 7 ile §6'daki sanının testi.
 4. A5'i güvenilir öğrenmek. Ayrıştırmayı tamamlamak (oracle seçim, tam 0/1 tablolar, eşleşen curriculum koşulları). Sıradakiler: dönüşümleri yapıcı inşadan alıp yalnız seçim ve head'i öğrenmek (Loghub'da da); PD-SSM reçetesi, CAGE; takılan koşularda iç durumun coset yapısını incelemek.

@@ -1,0 +1,41 @@
+[
+ {
+  "S": 6,
+  "K": 4,
+  "w": 2,
+  "result": "unsat",
+  "seconds": 109.4,
+  "coding": [
+   0,
+   1,
+   2
+  ],
+  "core": 4
+ },
+ {
+  "S": 6,
+  "K": 4,
+  "w": 2,
+  "result": "unsat",
+  "seconds": 100.4,
+  "coding": [
+   1,
+   0,
+   2
+  ],
+  "core": 4
+ },
+ {
+  "S": 6,
+  "K": 4,
+  "w": 2,
+  "result": "unsat",
+  "seconds": 76.2,
+  "coding": [
+   1,
+   2,
+   0
+  ],
+  "core": 4
+ }
+]

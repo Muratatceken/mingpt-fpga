@@ -5,6 +5,8 @@ Smallest state for a one-level feedback realization of the A5 word problem (prob
                                                                        -> model/fbseq/sat_a5.json
     python3 theory_sat.py --K 5 --S 6-6 --coding 0,1,2 --out sat_a5_ctrl_a.json
         control inputs chosen per next bit (|D_j| + |C_j| <= K) for the letter coding a=00, b=01, e=10
+    python3 theory_sat.py --K 5 --S 6-6 --coding 1,0,2 --core 4 --out sat_a5_k5.json
+        and bits 0..3 constant on the right cosets V4 p (a coset core, docs/10 §5.3)
 Question: is there an injective encoding e: A5 -> {0,1}^S such that, for every letter a of the task
 alphabet (two generators and the identity, control word of w = 2 bits), every next-state bit j is a
 function of the control word and of at most K - w state bits D_j?  Then each next-state bit is one
@@ -33,10 +35,11 @@ def a5():
     return len(perms), step, index[(0, 1, 2, 3, 4)]
 
 
-def solve(S, K, w=2, timeout=900, coding=None, fix=None):
+def solve(S, K, w=2, timeout=900, coding=None, fix=None, core=0):
     """coding=None: every next bit reads both control bits (|D_j| <= K - w).  coding = (c(a), c(b), c(e)), the
     letters' 2-bit codes: each next bit also chooses which control bits it reads, |D_j| + |C_j| <= K, and
-    pairs with different letters are compared too (codes not listed are don't-care)"""
+    pairs with different letters are compared too (codes not listed are don't-care).  core = c: bits 0..c-1 are
+    a function of the right coset V4 p (V4 fixing point 4), a restriction of the search"""
     import z3
     N, step, ident = a5()
     E = [[z3.Bool(f"e{p}_{b}") for b in range(S)] for p in range(N)]
@@ -49,6 +52,14 @@ def solve(S, K, w=2, timeout=900, coding=None, fix=None):
     for p, code in enumerate(fix or []):                         # test hook: a fixed encoding
         for b in range(S):
             s.add(E[p][b] == bool((code >> b) & 1))
+    if core:                                                     # same element order as a5()
+        perms = [p for p in itertools.permutations(range(5))
+                 if sum(p[i] > p[j] for i in range(5) for j in range(i + 1, 5)) % 2 == 0]
+        index = {p: i for i, p in enumerate(perms)}
+        for p, pp in enumerate(perms):
+            for h in ((1, 0, 3, 2, 4), (2, 3, 0, 1, 4), (3, 2, 1, 0, 4)):
+                for b in range(core):
+                    s.add(E[p][b] == E[index[tuple(h[pp[i]] for i in range(5))]][b])
     for j in range(S):
         if coding is None:
             s.add(z3.PbLe([(D[j][i], 1) for i in range(S)], K - w))
@@ -76,6 +87,8 @@ def solve(S, K, w=2, timeout=900, coding=None, fix=None):
     res = dict(S=S, K=K, w=w, result=str(r), seconds=round(time.time() - t0, 1))
     if coding is not None:
         res["coding"] = list(coding)
+    if core:
+        res["core"] = core
     if r == z3.sat:
         m = s.model()
         res["deps"] = [[i for i in range(S) if z3.is_true(m.eval(D[j][i]))] for j in range(S)]
@@ -117,6 +130,7 @@ def main():
     ap.add_argument("--S", default="6-15")
     ap.add_argument("--timeout", type=int, default=900)
     ap.add_argument("--coding", default="", help="e.g. 0,1,2 = codes of a, b, e: control inputs chosen per bit")
+    ap.add_argument("--core", type=int, default=0, help="bits 0..core-1 constant on the right cosets V4 p")
     ap.add_argument("--out", default="sat_a5.json")
     a = ap.parse_args()
     lo, hi = (int(x) for x in a.S.split("-"))
@@ -125,9 +139,9 @@ def main():
     out = json.load(open(path)) if os.path.exists(path) else []
     for K in (int(k) for k in a.K.split(",")):
         for S in range(lo, hi + 1):
-            r = solve(S, K, timeout=a.timeout, coding=coding)
+            r = solve(S, K, timeout=a.timeout, coding=coding, core=a.core)
             print(json.dumps({k: v for k, v in r.items() if k != "encoding"}), flush=True)
-            out = [o for o in out if (o["S"], o["K"]) != (S, K)] + [r]
+            out = [o for o in out if (o["S"], o["K"], o.get("coding")) != (S, K, r.get("coding"))] + [r]
             json.dump(sorted(out, key=lambda o: (o["K"], o["S"])), open(path, "w"), indent=1)
             if r["result"] == "sat":
                 break                                            # smallest S for this K found

@@ -19,7 +19,7 @@
 | Hocanın case sorusu | **Cevaplandı:** deterministik dil modeliyle kayıpsız telemetri ve log sıkıştırma; yan case olarak aynı modelle anomali tespiti |
 | Yeni araştırma yönü | **Belirlendi:** geri besleme kısıtlı (feedback-constrained) sıralı hesaplama. Döngüdeki mantık derinliği tasarımın merkez değişkeni |
 | Faz 0 (fizibilite) | **Büyük ölçüde tamam:** 4 hipotezden ikisi tuttu, biri kısmen tuttu, biri Faz 1'e kaldı |
-| İlk teori sonucu | **Var:** A5 için tek LUT seviyesinde en az state, sıkı biçimde 6 bit (SAT tanığı ve bilgi alt sınırı). Birleşik yapı (blok core + fiber), S₄, A₅, PSL(2,7) ve A₆'da alt sınırı SAT'sız ve tek LUT6 seviyesinde veriyor; PSL(2,8)'de vermiyor. FPGA'de fan-in 6'yı aşmak Fmax'i 1,5–2,9 kat düşürüyor |
+| İlk teori sonucu | **Var:** A5 için tek LUT seviyesinde en az state, sıkı biçimde 6 bit (SAT tanığı ve bilgi alt sınırı); kontrol girişleri seçilebilir sayılınca fan-in 5'te de 6 bit. Birleşik yapı (blok core + fiber), S₄, A₅, PSL(2,7) ve A₆'da alt sınırı SAT'sız ve tek LUT6 seviyesinde veriyor; PSL(2,8)'de vermiyor. FPGA'de fan-in 6'yı aşmak Fmax'i 1,5–2,9 kat düşürüyor |
 | Gerçek veride kalite | Boolean model, doğru eğitimle pencere modelini geçiyor. 100 KB sözlüklü zstd'ye göre eşit koşullarda %7–14 daha az bit (GRU %15–21). Önceki %25 / %32, ideal LM kod uzunluğunu zstd'nin başlıklı dosya boyutuyla karşılaştırıyordu |
 | Literatürdeki konum | Üç hatlı tarama yapıldı; rakipler ve boşluklar belirlendi |
 | Son biten | Transition codebook: olumsuz. 2-bit / 3-bit bloklar Loghub'da set/keep'in gerisinde (1,680 / 2,237). Gumbel-ST birebir yeniden üretildi |
@@ -199,12 +199,12 @@ Ayrıntı `docs/09_faz0.md`'de; özet:
   | Grup | Alt sınır | K = 5 | K = 6 |
   |---|---|---|---|
   | S₄ | 5 | 5 | 5 |
-  | A₅ | 6 | 7 (önce 9) | 6 |
+  | A₅ | 6 | 7 (önce 9); kontrol seçimli SAT ile 6 | 6 |
   | PSL(2,7) | 8 | **8** | 8 |
   | A₆ | 9 | 12 | **9** (önce 10) |
   | PSL(2,8) | 9 | – | 12 (9 bit ancak K = 8'de) |
 
-  Beş grubun dördünde bilgi alt sınırı tek LUT6 seviyesinde gerçekleşiyor. PSL(2,8)'de gerçekleşmiyor: indeksi ≤ 16 olan alt grupları yalnız nokta stabilizer'ları ve bunların kesişimleri Z₂ᵏ değil. A5'te K = 5 ile 6 bitin mümkün olup olmadığı açık: kontrol girişlerini seçilebilir sayan SAT, üç harf kodlamasında da 6 saatte sonuç vermedi (unknown); kısıtlı sorgu da 4 saatte unknown.
+  Beş grubun dördünde bilgi alt sınırı tek LUT6 seviyesinde gerçekleşiyor. PSL(2,8)'de gerçekleşmiyor: indeksi ≤ 16 olan alt grupları yalnız nokta stabilizer'ları ve bunların kesişimleri Z₂ᵏ değil. A5'te K = 5 ile 6 bit, kontrol seçimli SAT ile bulundu (§2.11).
 - **FPGA (XC7A100T, ~120 bit, iki seed; düzeltilmiş düzenek, §2.10).** Aynı state'te fan-in 6'yı aşmanın ciddi bir fiziksel bedeli var:
   - A6, 9 bitte: fan-in 11'de 156 MHz ve 6 232 LUT; fan-in 6'da 636 MHz ve 142 LUT.
   - PSL(2,7), 8 bitte: fan-in 10'da 193 MHz; fan-in 5'te 669 MHz.
@@ -263,6 +263,15 @@ Denetim çıktıları burada bağımsız olarak yeniden üretildi; ayrıntı `do
   - Curriculum'un yararı yalnız identity kopyalı ailede görüldü.
   - Doymuş sigmoid başlangıcı tek başına açıklama değil. Codebook (doğrudan tablo parametreleri) ile B_block3 (gate ağından üretilen tablolar, 2/4) arasındaki fark parametrelemede; bu bir hipotez.
 
+### 2.11 A5'te fan-in 5 ile 6 bit (30 Ekim)
+`docs/10` §5.3; kod `theory_sat.py --coding … --core 4`, denetim `witness_check.py` (`sat5`).
+
+- **Sonuç.** Kontrol girişleri seçilebilir sayılınca (Tanım 1) A5, fan-in 5 ile 6 bitte gerçekleşiyor. Bilgi alt sınırı 6 olduğu için bu sıkı: A5'te tek seviyede en az state K = 5'te de K = 6'da da 6 bit.
+- **Nasıl bulundu.** Kısıtsız SAT, üç harf kodlamasında da 6 saatte unknown'da kaldı. Arama "ilk 4 bit V4 coset'inin fonksiyonu" kısıtıyla daraltılınca z3 tanığı 578 s (b = 00) ve 692 s (e = 00) içinde buldu. a = 00 kodlamasında 1 saatte unknown: orada hiçbir kontrol biti a'yı {b, e}'den ayırmıyor.
+- **Denetim.** z3 kullanmayan denetleyici her tanıkta 60 farklı kodu ve 1 080 geçiş koşulunun hepsini doğruladı; her bitin fan-in'i tam 5.
+- **Yapı.** 4 bitlik kapalı bir core (15 V4 coset'i, her bit 3 core biti + 2 kontrol biti) ve iki fiber toggle'ı (kendi biti + 3 core biti + 1 kontrol biti). Fiber b harfinde hiç değişmiyor. Yani bu, tek mertebeli üreteç inşasının b ile kurulmuş hâli; gauge ayrıca bir core bitini düşürüyor.
+- **Sınırlar.** Eski sayımda (iki kontrol biti her bite zorunlu) bu kodun fan-in'i 6; o modelde K = 5 ile 6 bit hâlâ açık. K = 4'te V4 coset core'lu 6 bitlik kod yok (z3 UNSAT, üç kodlama, sertifikasız); genel K = 4 açık. K ≤ 6 olan her kod zaten tek LUT6 seviyesinde; Fmax'te fark beklenmiyor, kazanç teorik.
+
 ---
 
 ## 3. Bugün ne iddia edebiliriz, neyi edemeyiz?
@@ -271,7 +280,7 @@ Denetim çıktıları burada bağımsız olarak yeniden üretildi; ayrıntı `do
 
 1. Döngüdeki mantık derinliği ile Fmax arasındaki ilişkiyi XC7A100T'de ölçtük.
 2. Boolean blok recurrence'ın ifade gücü sıralaması teoriyle örtüşüyor; ölçtük.
-3. A5 için tek seviyeli fan-in 6 gerçekleştirmenin en küçük state'i tam olarak 6 bit. Bağımsız dense bloklarla (kontrol yalnız harften, w = 2) 7 bit. Hepsi bağımsız olarak doğrulanmış ve place edilmiş. 6 bitlik çözümün yapısı (coset core + fiber) bir lemmaya bağlandı.
+3. A5 için tek seviyeli fan-in 6 gerçekleştirmenin en küçük state'i tam olarak 6 bit; kontrol girişleri seçilebilir sayılınca fan-in 5'te de 6 bit. Bağımsız dense bloklarla (kontrol yalnız harften, w = 2) 7 bit. Hepsi bağımsız olarak doğrulandı; fan-in 6 ve 7 bitlik tasarımlar ayrıca place edildi, fan-in 5 tanığı edilmedi. 6 bitlik çözümün yapısı (coset core + fiber) bir lemmaya bağlandı.
 4. Gerçek log verisinde Boolean recurrence, doğru eğitimle aynı bütçedeki pencere modelini ve sözlüklü zstd'yi geçiyor. Eşit koşullarda zstd'ye göre avantaj %7–14. Kapsam: iki seed, ideal bit maliyeti artı tahmini coder maliyeti, aynı dosyaların son %20'si; model float.
 5. Soft–hard farkı ve adım bazında state ayrışması ölçüldü. Hard-forward ve eğim tavlaması, hard modelin soft referansa göre performans açığını 0,185'ten 0,02 bpb'ye indiriyor.
 
@@ -281,7 +290,7 @@ Denetim çıktıları burada bağımsız olarak yeniden üretildi; ayrıntı `do
 2. Gerçek sıkıştırma yok: range coder ve bit-exact encode/decode yapılmadı.
 3. Görülmemiş log sistemlerine genelleme test edilmedi.
 4. Bütün donanım sonuçları simülasyon ve STA'ya dayanıyor; enerji ölçülmedi.
-5. A5'in eğitimle güvenilir biçimde öğrenilmesi çözülmedi: softhard 2/4, hard-forward 0/8, öğrenilen codebook 0/32. Doğru dönüşümler verilince seçim curriculum'la öğreniliyor (4/8).
+5. A5'in eğitimle güvenilir biçimde öğrenilmesi çözülmedi: softhard 2/4, hard-forward 0/8, öğrenilen codebook 0/32. Doğru dönüşümler tam 0/1 verilince seçim m = 3'te 4/4 öğreniliyor; identity kopyaları eklenince yalnız curriculum'la (2/4 sıfır hata), rastgele çeldiricilerle hiç (0/12). Seçim verilince de tablolar öğrenilemiyor (oracle, 0/24).
 6. Teoride yeni olan yalnız A5 küçük vakası; genel teorem (Problem C) açık.
 
 ---
@@ -328,7 +337,7 @@ Denetim çıktıları burada bağımsız olarak yeniden üretildi; ayrıntı `do
 
 **Öncelik sırasıyla sıradakiler:**
 
-1. Birleşik yapı için genel koşul: hangi gruplarda bilgi alt sınırı K = 6 ile ulaşılabilir? A5 için K = 5 (z3 6 saatte unknown; simetri kırmalı CNF ile yeniden); daha büyük gruplar.
+1. Birleşik yapı için genel koşul: hangi gruplarda bilgi alt sınırı K = 6 ile ulaşılabilir? A5'te K = 5 çözüldü (6 bit, §2.11). Aynı yapı (kontrol seçimli core + tek mertebeli harfle fiber) A₆'da K = 5'i (şimdi 12 bit) ve PSL(2,8)'de K = 6'yı (şimdi 12 bit) düşürüyor mu? Daha büyük gruplar.
 2. A5'i güvenilir öğrenmek: PD-SSM reçetesi, CAGE, curriculum; amaç seed başarı oranını %50'den yukarı çekmek. Başarısız koşularda iç durumun coset yapısına bakmak.
 3. Problem C'nin genelleşmesi:
    - K = 5 ve K = 4 için block-local olmayan SAT;
@@ -358,7 +367,11 @@ Denetim çıktıları burada bağımsız olarak yeniden üretildi; ayrıntı `do
 | `03af542` | Bloklar Loghub'da, Gumbel-ST'nin yeniden üretimi |
 | `f1b7ab2` | Gauge'un lineer çözümü; A5'te fan-in 6 SAT'sız |
 | `50fe26b` | Birleşik yapı, dört grupta alt sınır; fan-in'in FPGA'deki bedeli |
-| (bu commit) | PSL(2,8): yapının sınırı ve fiziksel ödünleşim |
+| `080e997` | PSL(2,8): yapının sınırı ve fiziksel ödünleşim |
+| `959303d`, `c06d7f5` | İkinci denetim: karşı örnekler, tek mertebeli üreteç teoremi, ölçüm düzeneği; öğrenme ayrıştırması |
+| `f770c61` | Öğrenme ayrıştırması tamamlandı (oracle seçim, ham hata sayıları) |
+| `de5dc8a` | Kontrol seçimli SAT: 6 saatte unknown |
+| (bu commit) | A5'te fan-in 5 ile 6 bit |
 
 | Dosya | Görev |
 |---|---|
@@ -370,7 +383,7 @@ Denetim çıktıları burada bağımsız olarak yeniden üretildi; ayrıntı `do
 | `sw/fbseq/theory_sat.py` | A5 alt grupları, block-local minimum, SAT |
 | `sw/fbseq/codebook.py` | Transition codebook |
 | `sw/fbseq/probes.py` | A5 çözümünü öğrenilen sınıfa yazma; checkpoint probe'ları |
-| `sw/fbseq/witness_check.py` | SAT tanığının ve karşı örneklerin bağımsız denetimi; coset core + fiber |
+| `sw/fbseq/witness_check.py` | SAT tanıklarının (fan-in 6 ve 5) ve karşı örneklerin bağımsız denetimi; coset core + fiber |
 | `sw/fbseq/core_fiber.py` | Coset core + fiber, gauge'un lineer çözümü; Z₂³, Z₈, S₄, A₅, PSL(2,7), A₆; FPGA için kod dışa aktarımı |
 | `sw/fbseq/realize.py` | Birleşik yapı (blok core + fiber): grup ve K başına bulunan en küçük state, doğrulanmış kodlar |
 | `model/fbseq/archive/` | İlk hard-aware koşusunun kayıtları (Gumbel 1,685'in kaynağı) |
