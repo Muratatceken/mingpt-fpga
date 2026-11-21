@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # decision_top (ROM replay -> tokenizer -> policy -> guard -> trace) against sw/decision/hw_ref.py.
-#   scripts/dec_top.sh <model> [lm|rule|fsm|all] [n_scen]
+#   scripts/dec_top.sh <model> [lm|gru|rule|fsm|all] [n_scen]   (lm/gru = the engine running <model>)
 #   <model>: an export under mem/decision/<model> (its zoo_pkg.sv sizes the engine; also needed for rule/fsm builds)
 set -euo pipefail
 PY="${PYTHON:-$(command -v python3)}"
@@ -18,12 +18,13 @@ SRC=("$MEM/zoo_pkg.sv" rtl/zoo/zrom.sv rtl/zoo/zdiv.sv rtl/requant.sv rtl/isqrt_
      tb/tb_dec_top.sv)
 pols="$WHICH"; [ "$WHICH" = all ] && pols="lm rule fsm"
 for p in $pols; do
-  case "$p" in lm) PID=0 ;; rule) PID=1 ;; fsm) PID=2 ;; *) echo "bad policy $p"; exit 1 ;; esac
-  ( cd sw/decision && "$PY" hw_ref.py "$M" "$p" "$NS" >/dev/null )
+  case "$p" in lm|gru|engine) PID=0; HP=lm ;; rule) PID=1; HP=rule ;; fsm) PID=2; HP=fsm ;;
+    *) echo "bad policy $p"; exit 1 ;; esac
+  ( cd sw/decision && "$PY" hw_ref.py "$M" "$HP" "$NS" >/dev/null )
   OBJ="build/decision/obj_top_${M}_${p}"
   mkdir -p "$OBJ"
   verilator --binary --timing --assert -j 0 -Wno-fatal -Wno-lint -Wno-style -Wno-MULTIDRIVEN \
-    "${SRC[@]}" --top-module tb_dec_top -GPOLICY=$PID -GTRACE="\"build/decision/trace_${p}.txt\"" \
+    "${SRC[@]}" --top-module tb_dec_top -GPOLICY=$PID -GTRACE="\"build/decision/trace_${HP}.txt\"" \
     -Mdir "$OBJ" -o Vtb > "$OBJ/build.log" 2>&1 || { tail -30 "$OBJ/build.log"; exit 1; }
   "$OBJ/Vtb" | grep -E "RESULT|PASS|FAIL|MISMATCH|rror" | head -12
 done
