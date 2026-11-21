@@ -40,8 +40,8 @@ class RulePolicy:
         return rule_action(vb, ib, tb, inv)
 
 
-# FSM register widths (documented for RTL): ocn 2b, ocp 1b, swt 2b, swdir 1b, vref 5b, iref 4b, vresp 1b, cresp 1b,
-# rose 1b, vpeak 5b, sens 1b, batt 1b, prev_pl 1b, prev_ib 4b, prev_vb 5b, started 1b, vmin_on 5b -> 41 bits
+# FSM register widths (documented for RTL): ocn 2b, ocp 1b, swt 2b, swdir 1b, vref 5b, iref 4b, vcnt 2b, cresp 1b,
+# rose 1b, vpeak 5b, sens 1b, batt 1b, prev_pl 1b, prev_ib 4b, prev_vb 5b, started 1b, vmin_on 5b -> 42 bits
 SW_WIN = 3          # steps observed after a payload switch
 
 
@@ -56,18 +56,18 @@ class FSMPolicy:
         z = lambda: np.zeros(self.B, dtype=np.int64)
         if idx is None:
             self.ocn, self.ocp, self.swt, self.swdir = z(), z(), z(), z()
-            self.vref, self.iref, self.vresp, self.cresp = z(), z(), z(), z()
+            self.vref, self.iref, self.vcnt, self.cresp = z(), z(), z(), z()
             self.rose, self.vpeak, self.sens, self.batt = z(), z(), z(), z()
             self.vmin_on = np.full(self.B, 31, dtype=np.int64)
             self.prev_pl, self.prev_ib, self.prev_vb, self.started = z(), z(), z(), z()
         else:
-            for k in ("ocn", "ocp", "swt", "swdir", "vref", "iref", "vresp", "cresp", "rose", "vpeak", "sens",
+            for k in ("ocn", "ocp", "swt", "swdir", "vref", "iref", "vcnt", "cresp", "rose", "vpeak", "sens",
                       "batt", "prev_pl", "prev_ib", "prev_vb", "started"):
                 getattr(self, k)[idx] = 0
             self.vmin_on[idx] = 31
 
     def state(self):
-        return np.stack([self.ocn, self.ocp, self.swt, self.swdir, self.vref, self.iref, self.vresp, self.cresp,
+        return np.stack([self.ocn, self.ocp, self.swt, self.swdir, self.vref, self.iref, self.vcnt, self.cresp,
                          self.rose, self.vpeak, self.sens, self.batt, self.prev_pl, self.prev_ib, self.prev_vb, self.started,
                          self.vmin_on],
                         axis=1)
@@ -81,9 +81,10 @@ class FSMPolicy:
         prev_ib = np.where(started == 1, self.prev_ib, ib)
         prev_vb = np.where(started == 1, self.prev_vb, vb)
 
-        # ---- OC event counting (rising edge of I >= 2000 mA)
-        oc_now = (~inv) & (ib >= RULE_I_OC)
-        oc_rise = oc_now & (prev_ib < RULE_I_OC)
+        # ---- OC events: I >= 2000 mA, or a current jump of >= 2 bins while the payload stays on (low severity)
+        jump = (started == 1) & (pl == 1) & (prev_pl == 1) & (~inv) & (ib >= prev_ib + 2)
+        oc_now = (~inv) & ((ib >= RULE_I_OC) | jump)
+        oc_rise = jump | ((~inv) & (ib >= RULE_I_OC) & (prev_ib < RULE_I_OC))
         ocn = np.where(oc_rise, np.minimum(self.ocn + 1, 3), self.ocn)
         ocp = np.where(oc_now, 1, self.ocp)                           # OC recovery pending
 
@@ -93,11 +94,13 @@ class FSMPolicy:
         swdir = np.where(sw, 1 - pl, self.swdir)                       # 1 = switched off
         vref = np.where(sw, prev_vb, self.vref)                        # readings before the switch
         iref = np.where(sw, prev_ib, self.iref)
-        vresp = np.where(sw, 0, self.vresp)
+        vcnt = np.where(sw, 0, self.vcnt)
         cresp = np.where(sw, 0, self.cresp)
         active = (swt > 0) & (~inv)
         cresp = np.where(active & (np.abs(ib - iref) >= 2), 1, cresp)
-        vresp = np.where(active & (np.abs(vb - vref) >= 1), 1, vresp)
+        # V responded = changed bin in >= 2 of the window steps (a single noise flip does not count)
+        vcnt = np.where(active & (np.abs(vb - vref) >= 1), np.minimum(vcnt + 1, 3), vcnt)
+        vresp = (vcnt >= 2).astype(np.int64)
         new_rose = active & (swdir == 1) & (vb >= vref + 2)
         rose = np.where(new_rose, 1, self.rose)
         # peak V while the load is off (restarted at every switch-off)
@@ -131,7 +134,7 @@ class FSMPolicy:
 
         # ---- commit registers
         self.ocn, self.ocp, self.swt, self.swdir = ocn, ocp, swt, swdir
-        self.vref, self.iref, self.vresp, self.cresp = vref, iref, vresp, cresp
+        self.vref, self.iref, self.vcnt, self.cresp = vref, iref, vcnt, cresp
         self.rose, self.vpeak, self.sens, self.batt = rose, vpeak, sens, batt
         self.vmin_on = vmin_on
         self.prev_pl, self.prev_ib, self.started = pl, np.where(inv, prev_ib, ib), np.ones_like(started)

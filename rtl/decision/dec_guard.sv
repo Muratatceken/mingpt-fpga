@@ -51,6 +51,7 @@ module dec_guard
 ) (
   input  logic               clk,
   input  logic               rst_n,
+  input  logic               clear,              // episode reset: mode NORMAL, invalid counter 0
   input  logic               start,              // a new step: observation inputs are stable from here
   input  logic               prop_valid,         // proposal from the policy (one-cycle pulse is enough)
   input  logic [1:0]         prop,
@@ -75,7 +76,7 @@ module dec_guard
                       .tv(tv), .gc(gc), .inv_in(inv_r), .applied(a_n), .mode_new(m_n), .reason(r_n),
                       .inv_out(inv_n));
   always_ff @(posedge clk) begin
-    if (!rst_n) begin
+    if (!rst_n || clear) begin
       busy <= 1'b0; done <= 1'b0; cnt <= '0; inv_r <= '0;
       mode <= M_NORMAL; applied <= A_NORMAL; reason <= R_OK;
     end else begin

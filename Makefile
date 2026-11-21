@@ -153,9 +153,9 @@ dec-test:          # Python unit tests (tokenizer, simulator, guard, labeler, pa
 	$(PYTHON) -m pytest -q tests/decision
 dec-data:          # val + frozen test + training corpus -> data/decision, manifests -> sw/decision/manifests
 	cd sw/decision && $(PYTHON) dataset.py all
-dec-train:         # LR sweep was run first; final: 3 seeds per model at the selected learning rate
-	cd sw/decision && $(PYTHON) train_policy.py --model lm --lrs 3e-3 --seeds 0,1,2 --steps 6000 --device mps
-	cd sw/decision && $(PYTHON) train_policy.py --model gru --lrs 3e-3 --seeds 0,1,2 --steps 6000 --jobs 3
+dec-train:         # 3 seeds per model, lr 1e-3 (best for llama and GRU in the names zoo sweep)
+	cd sw/decision && $(PYTHON) train_policy.py --model lm --lrs 1e-3 --seeds 0,1,2 --steps 6000 --device mps
+	cd sw/decision && $(PYTHON) train_policy.py --model gru --lrs 1e-3 --seeds 0,1,2 --steps 6000 --jobs 3
 dec-pkg:           # rtl/decision/dec_pkg.sv from the contract
 	cd sw/decision && $(PYTHON) gen_rtl_pkg.py
 dec-units:         # guard (exhaustive), tokenizer, rule, FSM, watchdog RTL vs Python  (SIM=icarus for 4-state)

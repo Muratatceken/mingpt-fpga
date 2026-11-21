@@ -1,0 +1,70 @@
+{
+ "fsm": {
+  "yosys": {
+   "lut_logic": 400,
+   "lut_ram": 0,
+   "lut": 400,
+   "ff": 301,
+   "bram": 1.5,
+   "dsp": 3,
+   "carry": 67,
+   "depth": 252,
+   "kind": "fsm",
+   "synth_s": 11
+  }
+ },
+ "guard": {
+  "yosys": {
+   "lut_logic": 61,
+   "lut_ram": 0,
+   "lut": 61,
+   "ff": 44,
+   "bram": 0.0,
+   "dsp": 0,
+   "carry": 12,
+   "depth": 82,
+   "kind": "guard",
+   "synth_s": 5
+  }
+ },
+ "lm_rand_fsm": {
+  "pnr": {
+   "clock_mhz": 50,
+   "met": true,
+   "fmax_mhz": 85.87,
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "82/15850",
+    "IOB33_INBUF_EN": "3/300",
+    "IOB33_OUTBUF": "19/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "22/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB36E1_RAMB36E1": "2/135",
+    "SELMUX2_1": "3/48750",
+    "SLICE_FFX": "309/126800",
+    "SLICE_LUTX": "1398/126800"
+   },
+   "seconds": {
+    "synth": 9,
+    "pnr": 16
+   },
+   "bit": true
+  }
+ },
+ "rule": {
+  "yosys": {
+   "lut_logic": 205,
+   "lut_ram": 0,
+   "lut": 205,
+   "ff": 243,
+   "bram": 1.5,
+   "dsp": 3,
+   "carry": 40,
+   "depth": 223,
+   "kind": "rule",
+   "synth_s": 10
+  }
+ }
+}

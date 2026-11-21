@@ -58,16 +58,17 @@ module dec_fsm
   input  logic [1:0] prev_act,              // action applied at the previous step (NORMAL before step 0)
   output logic [1:0] act
 );
-  // registers (41 bits): see policies.FSMPolicy
+  // registers (42 bits): see policies.FSMPolicy
   logic [1:0]        ocn, swt;
-  logic              ocp, swdir, vresp, cresp, rose, sens, batt, prev_pl, started;
+  logic              ocp, swdir, cresp, rose, sens, batt, prev_pl, started;
+  logic [1:0]        vcnt, n_vcnt;
   logic signed [6:0] vref, iref, vpeak, prev_ib, prev_vb, vmin_on;
   // next state
   logic [1:0]        n_ocn, n_swt;
   logic              n_ocp, n_swdir, n_vresp, n_cresp, n_rose, n_sens, n_batt;
   logic signed [6:0] n_vref, n_iref, n_vpeak, n_vmin;
   logic signed [6:0] vb, ib, tb, p_ib, p_vb, d_i, d_v;
-  logic              inv, pl, p_pl, oc_now, oc_rise, sw, active, new_rose, done_w, low_v, probing;
+  logic              inv, pl, p_pl, oc_now, oc_rise, jump, sw, active, new_rose, done_w, low_v, probing;
   logic [1:0]        a;
   dec_bins u_b (.tok_v(tok_v), .tok_i(tok_i), .tok_t(tok_t), .vb(vb), .ib(ib), .tb(tb), .inv(inv));
 
@@ -83,9 +84,10 @@ module dec_fsm
     p_pl = started ? prev_pl : pl;
     p_ib = started ? prev_ib : ib;
     p_vb = started ? prev_vb : vb;
-    // OC events
-    oc_now  = !inv && int'(ib) >= RULE_I_OC;
-    oc_rise = oc_now && int'(p_ib) < RULE_I_OC;
+    // OC events: I >= 2000 mA, or a current jump of >= 2 bins while the payload stays on
+    jump    = started && pl && p_pl && !inv && (ib >= p_ib + 7'sd2);
+    oc_now  = !inv && (int'(ib) >= RULE_I_OC || jump);
+    oc_rise = jump || (!inv && int'(ib) >= RULE_I_OC && int'(p_ib) < RULE_I_OC);
     n_ocn   = (oc_rise && ocn != 2'd3) ? ocn + 2'd1 : ocn;
     n_ocp   = oc_now ? 1'b1 : ocp;
     // payload switch response tracking
@@ -94,13 +96,14 @@ module dec_fsm
     n_swdir = sw ? !pl : swdir;
     n_vref  = sw ? p_vb : vref;
     n_iref  = sw ? p_ib : iref;
-    n_vresp = sw ? 1'b0 : vresp;
+    n_vcnt  = sw ? 2'd0 : vcnt;
     n_cresp = sw ? 1'b0 : cresp;
     active  = (n_swt != 2'd0) && !inv;
     d_i     = ib - n_iref;
     d_v     = vb - n_vref;
     if (active && (d_i >= 7'sd2 || d_i <= -7'sd2)) n_cresp = 1'b1;
-    if (active && (d_v >= 7'sd1 || d_v <= -7'sd1)) n_vresp = 1'b1;
+    if (active && (d_v >= 7'sd1 || d_v <= -7'sd1) && n_vcnt != 2'd3) n_vcnt = n_vcnt + 2'd1;
+    n_vresp = (n_vcnt >= 2'd2);
     new_rose = active && n_swdir && (vb >= n_vref + 7'sd2);
     n_rose   = new_rose ? 1'b1 : rose;
     n_vpeak  = (sw && !pl) ? smax(vb, 7'sd0) : vpeak;
@@ -131,12 +134,12 @@ module dec_fsm
 
   always_ff @(posedge clk) begin
     if (!rst_n || clear) begin
-      {ocn, swt, ocp, swdir, vresp, cresp, rose, sens, batt, prev_pl, started} <= '0;
+      {ocn, swt, vcnt, ocp, swdir, cresp, rose, sens, batt, prev_pl, started} <= '0;
       {vref, iref, vpeak, prev_ib, prev_vb} <= '0;
       vmin_on <= 7'sd31;
     end else if (step) begin
       ocn <= n_ocn; ocp <= n_ocp; swt <= n_swt; swdir <= n_swdir; vref <= n_vref; iref <= n_iref;
-      vresp <= n_vresp; cresp <= n_cresp; rose <= n_rose; vpeak <= n_vpeak; sens <= n_sens; batt <= n_batt;
+      vcnt <= n_vcnt; cresp <= n_cresp; rose <= n_rose; vpeak <= n_vpeak; sens <= n_sens; batt <= n_batt;
       vmin_on <= n_vmin; prev_pl <= pl; started <= 1'b1;
       prev_ib <= inv ? p_ib : ib;
       prev_vb <= inv ? p_vb : vb;

@@ -36,7 +36,7 @@ module tb_dec_units;
   logic signed [15:0] s_v, s_i, s_t;
   logic s_vv, s_iv, s_tv;
   logic [2:0] s_r;
-  dec_guard #(.WDT(WDT)) u_gs (.clk(clk), .rst_n(rst_n), .start(s_start), .prop_valid(s_pv), .prop(s_prop),
+  dec_guard #(.WDT(WDT)) u_gs (.clk(clk), .rst_n(rst_n), .clear(1'b0), .start(s_start), .prop_valid(s_pv), .prop(s_prop),
                                .v(s_v), .i(s_i), .t(s_t), .vv(s_vv), .iv(s_iv), .tv(s_tv), .gc(s_gc),
                                .done(s_done), .applied(s_a), .mode(s_m), .reason(s_r), .busy(s_busy));
 
