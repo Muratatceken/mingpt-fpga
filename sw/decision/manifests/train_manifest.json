@@ -1,0 +1,16 @@
+{
+ "split": "train",
+ "contract_sha256": "0b1ea82508605a72f9dfbb8c3f0e1ad9c8e463e5fa36c26b79e788067af99b6c",
+ "git": "481298c",
+ "created": "2026-11-21 19:43",
+ "n_episodes": 20630,
+ "X_sha256": "d0a6be8b5125a6672c30189ae87d0639ed10258499435f2c28d03c8321392886",
+ "Y_sha256": "e2e81881efb9571c742c30db0afaa5c2c5c956b36265aa3f8ade1ae633c894a7",
+ "n_labels": 1513070,
+ "label_dist": [
+  684447,
+  45613,
+  241421,
+  541589
+ ]
+}

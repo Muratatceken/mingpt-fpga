@@ -321,14 +321,19 @@ class IntRunner:
                 elif mode == "logit":
                     buf["L"] = requant(acc, L["m0"], L["sh"], 16)
             elif op == "ROPE":
-                buf[o["buf"]] = rope_int(buf[o["buf"]], o["nh"], o["dh"], o["style"], q.rope[0][t], q.rope[1][t])
+                nr = len(q.rope[0])
+                buf[o["buf"]] = rope_int(buf[o["buf"]], o["nh"], o["dh"], o["style"], q.rope[0][t % nr],
+                                         q.rope[1][t % nr])
             elif op == "KVSTORE":
                 l = o["layer"]
                 self.K.setdefault(l, []).append(buf[o["k"]].copy())
                 self.Vc.setdefault(l, []).append(buf[o["v"]].copy())
             elif op == "ATTN":
                 l = o["layer"]
-                buf[o["dst"]] = attn_int(buf[o["q"]], np.array(self.K[l]), np.array(self.Vc[l]), o)
+                K, Vc = np.array(self.K[l]), np.array(self.Vc[l])
+                if o.get("win"):
+                    K, Vc = K[-o["win"]:], Vc[-o["win"]:]
+                buf[o["dst"]] = attn_int(buf[o["q"]], K, Vc, o)
             elif op == "MUL":
                 buf[o["dst"]] = requant(buf[o["a"]] * buf[o["b"]], o["m0"], o["sh"], 8)
             elif op == "GRUUPD":

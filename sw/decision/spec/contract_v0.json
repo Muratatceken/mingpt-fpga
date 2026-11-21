@@ -1,0 +1,108 @@
+{
+  "version": "0.1",
+  "date": "2026-11-21",
+  "description": "Uydu güç alt sistemi karar sözleşmesi: veri, modeller, guard ve RTL için tek kaynak (WP1.3–1.5, docs/21 E2).",
+  "step_s": 1,
+  "channels": {
+    "V": {"unit": "mV", "desc": "batarya gerilimi (ADC kodu)", "range": [5000, 9000]},
+    "I": {"unit": "mA", "desc": "veri yolu yük akımı (faydalı yük + temel tüketim)", "range": [0, 4000]},
+    "T": {"unit": "0.1 C", "desc": "batarya sıcaklığı", "range": [-200, 800]}
+  },
+  "noise": {
+    "low":  {"V_mV": 5,  "I_mA": 5,  "T_dC": 1, "dropout": 0.0},
+    "high": {"V_mV": 20, "I_mA": 20, "T_dC": 3, "dropout": 0.01}
+  },
+  "bins": {
+    "rule": "bin = number of edges <= code (same in Python and RTL)",
+    "V": [6000, 6200, 6400, 6600, 6700, 6800, 6900, 7000, 7100, 7200, 7300, 7400, 7500, 7600, 7800, 8000, 8200],
+    "I": [50, 150, 300, 500, 700, 900, 1100, 1300, 1500, 1700, 2000, 2400, 2800],
+    "T": [-50, 0, 50, 100, 150, 200, 250, 300, 350, 400, 450]
+  },
+  "vocab": {
+    "size": 64,
+    "ACT_BASE": 0, "MODE_BASE": 4, "BOS": 7,
+    "V_BASE": 8, "V_INV": 26, "I_BASE": 27, "I_INV": 41, "T_BASE": 42, "T_INV": 54, "PAD": 63,
+    "step_grammar": ["V", "I", "T", "MODE", "ACT"],
+    "decision_position": "MODE token of the current step (logits read after MODE)"
+  },
+  "actions": [
+    {"id": 0, "name": "NORMAL",      "payload": 1, "hk_mult": 1.0, "mode_after": "NORMAL"},
+    {"id": 1, "name": "YUKU_KAPAT",  "payload": 0, "hk_mult": null, "mode_after": "same"},
+    {"id": 2, "name": "KISITLI_MOD", "payload": 0, "hk_mult": 0.8, "mode_after": "KISITLI"},
+    {"id": 3, "name": "GUVENLI_MOD", "payload": 0, "hk_mult": 0.6, "mode_after": "GUVENLI"}
+  ],
+  "action_severity_order": "id order: NORMAL < YUKU_KAPAT < KISITLI_MOD < GUVENLI_MOD; 'at least X' = max(proposal, X); ties in argmax go to the more severe action",
+  "modes": [
+    {"id": 0, "name": "NORMAL",  "hk_mult": 1.0},
+    {"id": 1, "name": "KISITLI", "hk_mult": 0.8},
+    {"id": 2, "name": "GUVENLI", "hk_mult": 0.6}
+  ],
+  "guard": {
+    "limits_raw": {"V_low_mV": 6400, "I_high_mA": 2800, "T_high_dC": 450},
+    "invalid_persist_steps": 3,
+    "watchdog_cycles_25MHz": 250000,
+    "fallback_on_timeout": "KISITLI_MOD (GUVENLI_MOD if mode is GUVENLI)",
+    "resume_to_mode": "KISITLI",
+    "ground_commands": {"0": "NONE", "1": "RESUME", "2": "FORCE_SAFE"},
+    "priority": [
+      "1 FORCE_SAFE -> GUVENLI_MOD",
+      "2 hard limits: V<V_low or T>=T_high -> GUVENLI_MOD; I>=I_high -> at least YUKU_KAPAT",
+      "3 RESUME (only in GUVENLI and no active limit) -> KISITLI_MOD",
+      "4 watchdog timeout (no valid proposal) -> fallback",
+      "5 invalid sensor for >= invalid_persist_steps consecutive steps -> at least KISITLI_MOD",
+      "6 transition table"
+    ],
+    "transition_table": {
+      "NORMAL":  {"NORMAL": "allow", "YUKU_KAPAT": "allow", "KISITLI_MOD": "allow", "GUVENLI_MOD": "allow"},
+      "KISITLI": {"NORMAL": "allow", "YUKU_KAPAT": "allow", "KISITLI_MOD": "allow", "GUVENLI_MOD": "allow"},
+      "GUVENLI": {"NORMAL": "GUVENLI_MOD", "YUKU_KAPAT": "GUVENLI_MOD", "KISITLI_MOD": "GUVENLI_MOD", "GUVENLI_MOD": "allow"}
+    },
+    "reason_codes": {"0": "OK", "1": "FORCE_SAFE", "2": "LIMIT_V_T", "3": "LIMIT_I", "4": "RESUME", "5": "TIMEOUT", "6": "INVALID", "7": "DENY_SAFE_LATCH"}
+  },
+  "rule": {
+    "desc": "son gözleme bakan eşik kuralı (token düzeyinde)",
+    "order": [
+      "any invalid -> KISITLI_MOD",
+      "V_bin < 4 (V<6600) or T_bin >= 10 (T>=40.0C) -> GUVENLI_MOD",
+      "I_bin >= 11 (I>=2000) -> YUKU_KAPAT",
+      "V_bin < 8 (V<7000) -> KISITLI_MOD",
+      "else NORMAL"
+    ]
+  },
+  "faults": {
+    "OC":  {"desc": "faydalı yükte aşırı akım; geçici (güç döngüsüyle temizlenir) veya kesintili (açıkken 5-40 s aralıklarla tekrarlar)",
+            "severity": {"low": [500, 800], "high": [1000, 1500]}, "unit": "mA",
+            "requirement": {"transient": "payload off until cleared, then NORMAL", "intermittent": "mode >= KISITLI"}},
+    "BAT": {"desc": "batarya kapasite kaybı: gerilim çökmesi rampası dVf, Q x0.2-0.5, R0 x1.3; temizlenmez",
+            "severity": {"low": [200, 300], "high": [400, 600]}, "unit": "mV (dVf final)",
+            "requirement": "mode GUVENLI"},
+    "SEN": {"desc": "takılı gerilim sensörü: okuma = sabit değer + ADC gürültüsü",
+            "severity": {"low": [200, 300], "high": [400, 600]}, "unit": "mV (|gerçek - okunan|)",
+            "requirement": "mode >= KISITLI"},
+    "requirement_grace_steps": 3
+  },
+  "labeler": {
+    "horizon": 60, "horizon_sensitivity": [30, 120],
+    "continuation": "monotone_rule: proposal = max(rule(obs), first_action), through the guard",
+    "continuation_sensitivity": "pure_rule",
+    "safety_true": {"V_min_mV": 6200, "I_max_mA": 3000, "T_max_dC": 500, "SoC_min": 0.05},
+    "cost_order": ["G safety violations", "K unmet fault requirement", "T+S avoidable service loss + unnecessary safe mode"],
+    "tolerance_tau": 1, "tolerance_sensitivity": [0, 3]
+  },
+  "scenarios": {
+    "steps_test": 48,
+    "decision_step": 47,
+    "templates": ["BAT_SEN", "SEN", "OC"],
+    "cell_factors": {"fault": ["BAT_SEN", "SEN", "OC"], "severity": ["low", "high"], "noise": ["low", "high"], "d": [2, 8, 16, 32]},
+    "pairs_per_cell": {"test": 50, "test_D2": 30, "test_D3": 20, "val": 10, "D4_test": 10},
+    "D1_test_unpaired": 1200,
+    "d_definition": "d = t0 - (last step at which any token differs between the two pair members)",
+    "acceptance_min_rate": 0.7,
+    "max_reseed": 20
+  },
+  "model": {
+    "context_effective_tokens": 127, "band_window_per_layer": 64, "n_layer": 2,
+    "rope": {"period": 256, "m": [32, 8, 2, 1], "style": "interleaved"},
+    "engine_T": 256
+  }
+}

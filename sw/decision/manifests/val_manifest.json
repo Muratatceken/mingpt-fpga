@@ -1,0 +1,303 @@
+{
+ "split": "val",
+ "contract_sha256": "0b1ea82508605a72f9dfbb8c3f0e1ad9c8e463e5fa36c26b79e788067af99b6c",
+ "git": "481298c",
+ "created": "2026-11-21 19:30",
+ "n_pairs": 480,
+ "n_scenarios": 960,
+ "seq_sha256": "76f7036c3119b1c3c4f54c2a56eef509c995ae7bd1a158a082ac5a9ebd8e750d",
+ "y_sha256": "16c7a79b14bc774b3cb541615c214ac46a6f6341e24f27f9e7595ab352379f6d",
+ "acc_sha256": "7d8e367733727b173e744d3342048198d406c86503223367e4614b86298398a4",
+ "counts": {
+  "BAT_SEN/D2/low/low/d2": 20,
+  "BAT_SEN/D2/low/low/d8": 20,
+  "BAT_SEN/D2/low/low/d16": 20,
+  "BAT_SEN/D2/low/low/d32": 20,
+  "BAT_SEN/D2/low/high/d2": 20,
+  "BAT_SEN/D2/low/high/d8": 20,
+  "BAT_SEN/D2/low/high/d16": 20,
+  "BAT_SEN/D2/low/high/d32": 20,
+  "BAT_SEN/D2/high/low/d2": 20,
+  "BAT_SEN/D2/high/low/d8": 20,
+  "BAT_SEN/D2/high/low/d16": 20,
+  "BAT_SEN/D2/high/low/d32": 20,
+  "BAT_SEN/D2/high/high/d2": 20,
+  "BAT_SEN/D2/high/high/d8": 20,
+  "BAT_SEN/D2/high/high/d16": 20,
+  "BAT_SEN/D2/high/high/d32": 20,
+  "SEN/D2/low/low/d2": 20,
+  "SEN/D2/low/low/d8": 20,
+  "SEN/D2/low/low/d16": 20,
+  "SEN/D2/low/low/d32": 20,
+  "SEN/D2/low/high/d2": 20,
+  "SEN/D2/low/high/d8": 20,
+  "SEN/D2/low/high/d16": 20,
+  "SEN/D2/low/high/d32": 20,
+  "SEN/D2/high/low/d2": 20,
+  "SEN/D2/high/low/d8": 20,
+  "SEN/D2/high/low/d16": 20,
+  "SEN/D2/high/low/d32": 20,
+  "SEN/D2/high/high/d2": 20,
+  "SEN/D2/high/high/d8": 20,
+  "SEN/D2/high/high/d16": 20,
+  "SEN/D2/high/high/d32": 20,
+  "OC/D2/low/low/d2": 20,
+  "OC/D2/low/low/d8": 20,
+  "OC/D2/low/low/d16": 20,
+  "OC/D2/low/low/d32": 20,
+  "OC/D2/low/high/d2": 20,
+  "OC/D2/low/high/d8": 20,
+  "OC/D2/low/high/d16": 20,
+  "OC/D2/low/high/d32": 20,
+  "OC/D2/high/low/d2": 20,
+  "OC/D2/high/low/d8": 20,
+  "OC/D2/high/low/d16": 20,
+  "OC/D2/high/low/d32": 20,
+  "OC/D2/high/high/d2": 20,
+  "OC/D2/high/high/d8": 20,
+  "OC/D2/high/high/d16": 20,
+  "OC/D2/high/high/d32": 20
+ },
+ "acceptance": {
+  "BAT_SEN/low/low/d2/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "BAT_SEN/low/low/d8/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "BAT_SEN/low/low/d16/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "BAT_SEN/low/low/d32/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "BAT_SEN/low/high/d2/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "BAT_SEN/low/high/d8/D2": {
+   "attempted": 15,
+   "accepted": 12,
+   "rate": 0.8
+  },
+  "BAT_SEN/low/high/d16/D2": {
+   "attempted": 15,
+   "accepted": 13,
+   "rate": 0.867
+  },
+  "BAT_SEN/low/high/d32/D2": {
+   "attempted": 15,
+   "accepted": 12,
+   "rate": 0.8
+  },
+  "BAT_SEN/high/low/d2/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "BAT_SEN/high/low/d8/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "BAT_SEN/high/low/d16/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "BAT_SEN/high/low/d32/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "BAT_SEN/high/high/d2/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "BAT_SEN/high/high/d8/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "BAT_SEN/high/high/d16/D2": {
+   "attempted": 15,
+   "accepted": 13,
+   "rate": 0.867
+  },
+  "BAT_SEN/high/high/d32/D2": {
+   "attempted": 15,
+   "accepted": 12,
+   "rate": 0.8
+  },
+  "SEN/low/low/d2/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "SEN/low/low/d8/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "SEN/low/low/d16/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "SEN/low/low/d32/D2": {
+   "attempted": 15,
+   "accepted": 14,
+   "rate": 0.933
+  },
+  "SEN/low/high/d2/D2": {
+   "attempted": 15,
+   "accepted": 14,
+   "rate": 0.933
+  },
+  "SEN/low/high/d8/D2": {
+   "attempted": 15,
+   "accepted": 11,
+   "rate": 0.733
+  },
+  "SEN/low/high/d16/D2": {
+   "attempted": 15,
+   "accepted": 11,
+   "rate": 0.733
+  },
+  "SEN/low/high/d32/D2": {
+   "attempted": 30,
+   "accepted": 19,
+   "rate": 0.633
+  },
+  "SEN/high/low/d2/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "SEN/high/low/d8/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "SEN/high/low/d16/D2": {
+   "attempted": 15,
+   "accepted": 15,
+   "rate": 1.0
+  },
+  "SEN/high/low/d32/D2": {
+   "attempted": 15,
+   "accepted": 14,
+   "rate": 0.933
+  },
+  "SEN/high/high/d2/D2": {
+   "attempted": 15,
+   "accepted": 14,
+   "rate": 0.933
+  },
+  "SEN/high/high/d8/D2": {
+   "attempted": 15,
+   "accepted": 13,
+   "rate": 0.867
+  },
+  "SEN/high/high/d16/D2": {
+   "attempted": 15,
+   "accepted": 10,
+   "rate": 0.667
+  },
+  "SEN/high/high/d32/D2": {
+   "attempted": 30,
+   "accepted": 14,
+   "rate": 0.467
+  },
+  "OC/low/low/d2/D2": {
+   "attempted": 15,
+   "accepted": 11,
+   "rate": 0.733
+  },
+  "OC/low/low/d8/D2": {
+   "attempted": 15,
+   "accepted": 11,
+   "rate": 0.733
+  },
+  "OC/low/low/d16/D2": {
+   "attempted": 15,
+   "accepted": 14,
+   "rate": 0.933
+  },
+  "OC/low/low/d32/D2": {
+   "attempted": 15,
+   "accepted": 12,
+   "rate": 0.8
+  },
+  "OC/low/high/d2/D2": {
+   "attempted": 15,
+   "accepted": 13,
+   "rate": 0.867
+  },
+  "OC/low/high/d8/D2": {
+   "attempted": 15,
+   "accepted": 13,
+   "rate": 0.867
+  },
+  "OC/low/high/d16/D2": {
+   "attempted": 15,
+   "accepted": 11,
+   "rate": 0.733
+  },
+  "OC/low/high/d32/D2": {
+   "attempted": 15,
+   "accepted": 13,
+   "rate": 0.867
+  },
+  "OC/high/low/d2/D2": {
+   "attempted": 15,
+   "accepted": 13,
+   "rate": 0.867
+  },
+  "OC/high/low/d8/D2": {
+   "attempted": 15,
+   "accepted": 11,
+   "rate": 0.733
+  },
+  "OC/high/low/d16/D2": {
+   "attempted": 15,
+   "accepted": 13,
+   "rate": 0.867
+  },
+  "OC/high/low/d32/D2": {
+   "attempted": 30,
+   "accepted": 22,
+   "rate": 0.733
+  },
+  "OC/high/high/d2/D2": {
+   "attempted": 15,
+   "accepted": 14,
+   "rate": 0.933
+  },
+  "OC/high/high/d8/D2": {
+   "attempted": 15,
+   "accepted": 14,
+   "rate": 0.933
+  },
+  "OC/high/high/d16/D2": {
+   "attempted": 15,
+   "accepted": 13,
+   "rate": 0.867
+  },
+  "OC/high/high/d32/D2": {
+   "attempted": 15,
+   "accepted": 12,
+   "rate": 0.8
+  }
+ }
+}

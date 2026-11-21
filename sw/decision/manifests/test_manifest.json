@@ -1,0 +1,615 @@
+{
+ "split": "test",
+ "contract_sha256": "0b1ea82508605a72f9dfbb8c3f0e1ad9c8e463e5fa36c26b79e788067af99b6c",
+ "git": "481298c",
+ "created": "2026-11-21 19:31",
+ "n_pairs": 2880,
+ "n_scenarios": 5760,
+ "seq_sha256": "c73a4bb9968346b0d3f6e888b8ec24305f0eb6291e2ae9eaec2e8f02ab3c7dc9",
+ "y_sha256": "e087bdc804cc29c1cab64c96478d60b99845d5837832de360e39ed6332549d76",
+ "acc_sha256": "eefbe39687e7d8b8a1db798dcacd6547f0033ba36412ea00238f40cd30f7d36e",
+ "counts": {
+  "BAT_SEN/D2/low/low/d2": 60,
+  "BAT_SEN/D3/low/low/d2": 40,
+  "BAT_SEN/D2/low/low/d8": 60,
+  "BAT_SEN/D3/low/low/d8": 40,
+  "BAT_SEN/D2/low/low/d16": 60,
+  "BAT_SEN/D3/low/low/d16": 40,
+  "BAT_SEN/D2/low/low/d32": 60,
+  "BAT_SEN/D3/low/low/d32": 40,
+  "BAT_SEN/D2/low/high/d2": 60,
+  "BAT_SEN/D3/low/high/d2": 40,
+  "BAT_SEN/D2/low/high/d8": 60,
+  "BAT_SEN/D3/low/high/d8": 40,
+  "BAT_SEN/D2/low/high/d16": 60,
+  "BAT_SEN/D3/low/high/d16": 40,
+  "BAT_SEN/D2/low/high/d32": 60,
+  "BAT_SEN/D3/low/high/d32": 40,
+  "BAT_SEN/D2/high/low/d2": 60,
+  "BAT_SEN/D3/high/low/d2": 40,
+  "BAT_SEN/D2/high/low/d8": 60,
+  "BAT_SEN/D3/high/low/d8": 40,
+  "BAT_SEN/D2/high/low/d16": 60,
+  "BAT_SEN/D3/high/low/d16": 40,
+  "BAT_SEN/D2/high/low/d32": 60,
+  "BAT_SEN/D3/high/low/d32": 40,
+  "BAT_SEN/D2/high/high/d2": 60,
+  "BAT_SEN/D3/high/high/d2": 40,
+  "BAT_SEN/D2/high/high/d8": 60,
+  "BAT_SEN/D3/high/high/d8": 40,
+  "BAT_SEN/D2/high/high/d16": 60,
+  "BAT_SEN/D3/high/high/d16": 40,
+  "BAT_SEN/D2/high/high/d32": 60,
+  "BAT_SEN/D3/high/high/d32": 40,
+  "SEN/D2/low/low/d2": 60,
+  "SEN/D3/low/low/d2": 40,
+  "SEN/D2/low/low/d8": 60,
+  "SEN/D3/low/low/d8": 40,
+  "SEN/D2/low/low/d16": 60,
+  "SEN/D3/low/low/d16": 40,
+  "SEN/D2/low/low/d32": 60,
+  "SEN/D3/low/low/d32": 40,
+  "SEN/D2/low/high/d2": 60,
+  "SEN/D3/low/high/d2": 40,
+  "SEN/D2/low/high/d8": 60,
+  "SEN/D3/low/high/d8": 40,
+  "SEN/D2/low/high/d16": 60,
+  "SEN/D3/low/high/d16": 40,
+  "SEN/D2/low/high/d32": 60,
+  "SEN/D3/low/high/d32": 40,
+  "SEN/D2/high/low/d2": 60,
+  "SEN/D3/high/low/d2": 40,
+  "SEN/D2/high/low/d8": 60,
+  "SEN/D3/high/low/d8": 40,
+  "SEN/D2/high/low/d16": 60,
+  "SEN/D3/high/low/d16": 40,
+  "SEN/D2/high/low/d32": 60,
+  "SEN/D3/high/low/d32": 40,
+  "SEN/D2/high/high/d2": 60,
+  "SEN/D3/high/high/d2": 40,
+  "SEN/D2/high/high/d8": 60,
+  "SEN/D3/high/high/d8": 40,
+  "SEN/D2/high/high/d16": 60,
+  "SEN/D3/high/high/d16": 40,
+  "SEN/D2/high/high/d32": 60,
+  "SEN/D3/high/high/d32": 40,
+  "OC/D2/low/low/d2": 60,
+  "OC/D3/low/low/d2": 40,
+  "OC/D2/low/low/d8": 60,
+  "OC/D3/low/low/d8": 40,
+  "OC/D2/low/low/d16": 60,
+  "OC/D3/low/low/d16": 40,
+  "OC/D2/low/low/d32": 60,
+  "OC/D3/low/low/d32": 40,
+  "OC/D2/low/high/d2": 60,
+  "OC/D3/low/high/d2": 40,
+  "OC/D2/low/high/d8": 60,
+  "OC/D3/low/high/d8": 40,
+  "OC/D2/low/high/d16": 60,
+  "OC/D3/low/high/d16": 40,
+  "OC/D2/low/high/d32": 60,
+  "OC/D3/low/high/d32": 40,
+  "OC/D2/high/low/d2": 60,
+  "OC/D3/high/low/d2": 40,
+  "OC/D2/high/low/d8": 60,
+  "OC/D3/high/low/d8": 40,
+  "OC/D2/high/low/d16": 60,
+  "OC/D3/high/low/d16": 40,
+  "OC/D2/high/low/d32": 60,
+  "OC/D3/high/low/d32": 40,
+  "OC/D2/high/high/d2": 60,
+  "OC/D3/high/high/d2": 40,
+  "OC/D2/high/high/d8": 60,
+  "OC/D3/high/high/d8": 40,
+  "OC/D2/high/high/d16": 60,
+  "OC/D3/high/high/d16": 40,
+  "OC/D2/high/high/d32": 60,
+  "OC/D3/high/high/d32": 40,
+  "SEN/D4/low/low/d0": 240,
+  "SEN/D4/low/high/d0": 240,
+  "SEN/D4/high/low/d0": 240,
+  "SEN/D4/high/high/d0": 240
+ },
+ "acceptance": {
+  "BAT_SEN/low/low/d2/D2": {
+   "attempted": 41,
+   "accepted": 41,
+   "rate": 1.0
+  },
+  "BAT_SEN/low/low/d2/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "BAT_SEN/low/low/d8/D2": {
+   "attempted": 41,
+   "accepted": 41,
+   "rate": 1.0
+  },
+  "BAT_SEN/low/low/d8/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "BAT_SEN/low/low/d16/D2": {
+   "attempted": 41,
+   "accepted": 41,
+   "rate": 1.0
+  },
+  "BAT_SEN/low/low/d16/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "BAT_SEN/low/low/d32/D2": {
+   "attempted": 41,
+   "accepted": 41,
+   "rate": 1.0
+  },
+  "BAT_SEN/low/low/d32/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "BAT_SEN/low/high/d2/D2": {
+   "attempted": 41,
+   "accepted": 39,
+   "rate": 0.951
+  },
+  "BAT_SEN/low/high/d2/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "BAT_SEN/low/high/d8/D2": {
+   "attempted": 41,
+   "accepted": 38,
+   "rate": 0.927
+  },
+  "BAT_SEN/low/high/d8/D3": {
+   "attempted": 28,
+   "accepted": 27,
+   "rate": 0.964
+  },
+  "BAT_SEN/low/high/d16/D2": {
+   "attempted": 41,
+   "accepted": 34,
+   "rate": 0.829
+  },
+  "BAT_SEN/low/high/d16/D3": {
+   "attempted": 28,
+   "accepted": 24,
+   "rate": 0.857
+  },
+  "BAT_SEN/low/high/d32/D2": {
+   "attempted": 41,
+   "accepted": 40,
+   "rate": 0.976
+  },
+  "BAT_SEN/low/high/d32/D3": {
+   "attempted": 28,
+   "accepted": 26,
+   "rate": 0.929
+  },
+  "BAT_SEN/high/low/d2/D2": {
+   "attempted": 41,
+   "accepted": 41,
+   "rate": 1.0
+  },
+  "BAT_SEN/high/low/d2/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "BAT_SEN/high/low/d8/D2": {
+   "attempted": 41,
+   "accepted": 41,
+   "rate": 1.0
+  },
+  "BAT_SEN/high/low/d8/D3": {
+   "attempted": 28,
+   "accepted": 27,
+   "rate": 0.964
+  },
+  "BAT_SEN/high/low/d16/D2": {
+   "attempted": 41,
+   "accepted": 41,
+   "rate": 1.0
+  },
+  "BAT_SEN/high/low/d16/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "BAT_SEN/high/low/d32/D2": {
+   "attempted": 41,
+   "accepted": 41,
+   "rate": 1.0
+  },
+  "BAT_SEN/high/low/d32/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "BAT_SEN/high/high/d2/D2": {
+   "attempted": 41,
+   "accepted": 41,
+   "rate": 1.0
+  },
+  "BAT_SEN/high/high/d2/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "BAT_SEN/high/high/d8/D2": {
+   "attempted": 41,
+   "accepted": 35,
+   "rate": 0.854
+  },
+  "BAT_SEN/high/high/d8/D3": {
+   "attempted": 28,
+   "accepted": 24,
+   "rate": 0.857
+  },
+  "BAT_SEN/high/high/d16/D2": {
+   "attempted": 41,
+   "accepted": 37,
+   "rate": 0.902
+  },
+  "BAT_SEN/high/high/d16/D3": {
+   "attempted": 28,
+   "accepted": 25,
+   "rate": 0.893
+  },
+  "BAT_SEN/high/high/d32/D2": {
+   "attempted": 41,
+   "accepted": 32,
+   "rate": 0.78
+  },
+  "BAT_SEN/high/high/d32/D3": {
+   "attempted": 28,
+   "accepted": 20,
+   "rate": 0.714
+  },
+  "SEN/low/low/d2/D2": {
+   "attempted": 41,
+   "accepted": 41,
+   "rate": 1.0
+  },
+  "SEN/low/low/d2/D3": {
+   "attempted": 28,
+   "accepted": 27,
+   "rate": 0.964
+  },
+  "SEN/low/low/d8/D2": {
+   "attempted": 41,
+   "accepted": 40,
+   "rate": 0.976
+  },
+  "SEN/low/low/d8/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "SEN/low/low/d16/D2": {
+   "attempted": 41,
+   "accepted": 40,
+   "rate": 0.976
+  },
+  "SEN/low/low/d16/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "SEN/low/low/d32/D2": {
+   "attempted": 41,
+   "accepted": 39,
+   "rate": 0.951
+  },
+  "SEN/low/low/d32/D3": {
+   "attempted": 28,
+   "accepted": 24,
+   "rate": 0.857
+  },
+  "SEN/low/high/d2/D2": {
+   "attempted": 41,
+   "accepted": 40,
+   "rate": 0.976
+  },
+  "SEN/low/high/d2/D3": {
+   "attempted": 28,
+   "accepted": 27,
+   "rate": 0.964
+  },
+  "SEN/low/high/d8/D2": {
+   "attempted": 41,
+   "accepted": 36,
+   "rate": 0.878
+  },
+  "SEN/low/high/d8/D3": {
+   "attempted": 28,
+   "accepted": 26,
+   "rate": 0.929
+  },
+  "SEN/low/high/d16/D2": {
+   "attempted": 41,
+   "accepted": 31,
+   "rate": 0.756
+  },
+  "SEN/low/high/d16/D3": {
+   "attempted": 28,
+   "accepted": 25,
+   "rate": 0.893
+  },
+  "SEN/low/high/d32/D2": {
+   "attempted": 82,
+   "accepted": 56,
+   "rate": 0.683
+  },
+  "SEN/low/high/d32/D3": {
+   "attempted": 84,
+   "accepted": 27,
+   "rate": 0.321
+  },
+  "SEN/high/low/d2/D2": {
+   "attempted": 41,
+   "accepted": 40,
+   "rate": 0.976
+  },
+  "SEN/high/low/d2/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "SEN/high/low/d8/D2": {
+   "attempted": 41,
+   "accepted": 41,
+   "rate": 1.0
+  },
+  "SEN/high/low/d8/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "SEN/high/low/d16/D2": {
+   "attempted": 41,
+   "accepted": 40,
+   "rate": 0.976
+  },
+  "SEN/high/low/d16/D3": {
+   "attempted": 28,
+   "accepted": 27,
+   "rate": 0.964
+  },
+  "SEN/high/low/d32/D2": {
+   "attempted": 41,
+   "accepted": 40,
+   "rate": 0.976
+  },
+  "SEN/high/low/d32/D3": {
+   "attempted": 28,
+   "accepted": 27,
+   "rate": 0.964
+  },
+  "SEN/high/high/d2/D2": {
+   "attempted": 41,
+   "accepted": 37,
+   "rate": 0.902
+  },
+  "SEN/high/high/d2/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "SEN/high/high/d8/D2": {
+   "attempted": 41,
+   "accepted": 37,
+   "rate": 0.902
+  },
+  "SEN/high/high/d8/D3": {
+   "attempted": 28,
+   "accepted": 25,
+   "rate": 0.893
+  },
+  "SEN/high/high/d16/D2": {
+   "attempted": 41,
+   "accepted": 33,
+   "rate": 0.805
+  },
+  "SEN/high/high/d16/D3": {
+   "attempted": 28,
+   "accepted": 22,
+   "rate": 0.786
+  },
+  "SEN/high/high/d32/D2": {
+   "attempted": 82,
+   "accepted": 52,
+   "rate": 0.634
+  },
+  "SEN/high/high/d32/D3": {
+   "attempted": 56,
+   "accepted": 21,
+   "rate": 0.375
+  },
+  "OC/low/low/d2/D2": {
+   "attempted": 41,
+   "accepted": 32,
+   "rate": 0.78
+  },
+  "OC/low/low/d2/D3": {
+   "attempted": 56,
+   "accepted": 38,
+   "rate": 0.679
+  },
+  "OC/low/low/d8/D2": {
+   "attempted": 41,
+   "accepted": 38,
+   "rate": 0.927
+  },
+  "OC/low/low/d8/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "OC/low/low/d16/D2": {
+   "attempted": 41,
+   "accepted": 37,
+   "rate": 0.902
+  },
+  "OC/low/low/d16/D3": {
+   "attempted": 28,
+   "accepted": 27,
+   "rate": 0.964
+  },
+  "OC/low/low/d32/D2": {
+   "attempted": 41,
+   "accepted": 31,
+   "rate": 0.756
+  },
+  "OC/low/low/d32/D3": {
+   "attempted": 28,
+   "accepted": 20,
+   "rate": 0.714
+  },
+  "OC/low/high/d2/D2": {
+   "attempted": 41,
+   "accepted": 38,
+   "rate": 0.927
+  },
+  "OC/low/high/d2/D3": {
+   "attempted": 28,
+   "accepted": 25,
+   "rate": 0.893
+  },
+  "OC/low/high/d8/D2": {
+   "attempted": 41,
+   "accepted": 36,
+   "rate": 0.878
+  },
+  "OC/low/high/d8/D3": {
+   "attempted": 28,
+   "accepted": 23,
+   "rate": 0.821
+  },
+  "OC/low/high/d16/D2": {
+   "attempted": 41,
+   "accepted": 35,
+   "rate": 0.854
+  },
+  "OC/low/high/d16/D3": {
+   "attempted": 28,
+   "accepted": 22,
+   "rate": 0.786
+  },
+  "OC/low/high/d32/D2": {
+   "attempted": 41,
+   "accepted": 30,
+   "rate": 0.732
+  },
+  "OC/low/high/d32/D3": {
+   "attempted": 28,
+   "accepted": 24,
+   "rate": 0.857
+  },
+  "OC/high/low/d2/D2": {
+   "attempted": 41,
+   "accepted": 38,
+   "rate": 0.927
+  },
+  "OC/high/low/d2/D3": {
+   "attempted": 28,
+   "accepted": 22,
+   "rate": 0.786
+  },
+  "OC/high/low/d8/D2": {
+   "attempted": 41,
+   "accepted": 36,
+   "rate": 0.878
+  },
+  "OC/high/low/d8/D3": {
+   "attempted": 28,
+   "accepted": 28,
+   "rate": 1.0
+  },
+  "OC/high/low/d16/D2": {
+   "attempted": 41,
+   "accepted": 37,
+   "rate": 0.902
+  },
+  "OC/high/low/d16/D3": {
+   "attempted": 28,
+   "accepted": 26,
+   "rate": 0.929
+  },
+  "OC/high/low/d32/D2": {
+   "attempted": 41,
+   "accepted": 38,
+   "rate": 0.927
+  },
+  "OC/high/low/d32/D3": {
+   "attempted": 28,
+   "accepted": 26,
+   "rate": 0.929
+  },
+  "OC/high/high/d2/D2": {
+   "attempted": 41,
+   "accepted": 35,
+   "rate": 0.854
+  },
+  "OC/high/high/d2/D3": {
+   "attempted": 28,
+   "accepted": 24,
+   "rate": 0.857
+  },
+  "OC/high/high/d8/D2": {
+   "attempted": 41,
+   "accepted": 34,
+   "rate": 0.829
+  },
+  "OC/high/high/d8/D3": {
+   "attempted": 28,
+   "accepted": 26,
+   "rate": 0.929
+  },
+  "OC/high/high/d16/D2": {
+   "attempted": 41,
+   "accepted": 32,
+   "rate": 0.78
+  },
+  "OC/high/high/d16/D3": {
+   "attempted": 56,
+   "accepted": 44,
+   "rate": 0.786
+  },
+  "OC/high/high/d32/D2": {
+   "attempted": 41,
+   "accepted": 32,
+   "rate": 0.78
+  },
+  "OC/high/high/d32/D3": {
+   "attempted": 28,
+   "accepted": 21,
+   "rate": 0.75
+  },
+  "D4/low/low": {
+   "attempted": 120,
+   "accepted": 120,
+   "rate": 1.0
+  },
+  "D4/low/high": {
+   "attempted": 120,
+   "accepted": 120,
+   "rate": 1.0
+  },
+  "D4/high/low": {
+   "attempted": 120,
+   "accepted": 120,
+   "rate": 1.0
+  },
+  "D4/high/high": {
+   "attempted": 120,
+   "accepted": 120,
+   "rate": 1.0
+  }
+ }
+}

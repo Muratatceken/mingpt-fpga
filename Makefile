@@ -9,7 +9,8 @@ RTL    = $(shell cat scripts/files.f)
 
 .PHONY: all model train quantize eval export sim test-arith selftest lint synth report gelisim clean \
         zoo-train zoo-quant zoo-sim zoo-synth zoo-pipeline zoo-fuzz zoo-arith zoo-dse paper \
-        nexys nexys-sim nexys-all nexys-fuzz nexys-icarus nexys-netlist nexys-synth nexys-bit nexys-prog nexys-pnr xc7-toolchain lowbit sunum-yerel cpu-baseline
+        nexys nexys-sim nexys-all nexys-fuzz nexys-icarus nexys-netlist nexys-synth nexys-bit nexys-prog nexys-pnr xc7-toolchain lowbit sunum-yerel cpu-baseline \
+        dec-test dec-data dec-train dec-pkg dec-units dec-export dec-sim dec-top dec-synth dec-pnr dec-eval dec-m1
 
 all: test-arith sim selftest
 
@@ -145,3 +146,31 @@ clean:
 
 sunum-yerel:       # implementasyon sunumu yerelde: sunum/uygulama/{sunum.html, sunum.pdf, konusma_metni.md, .pdf}
 	python3 sunum/yerel_sunum.py sunum/uygulama --pdf
+
+# ---------------- satellite decision stack (sw/decision, rtl/decision; docs/decision) ----------------
+DEC_MODEL ?= lm_s0
+dec-test:          # Python unit tests (tokenizer, simulator, guard, labeler, pairs, band, IR)
+	$(PYTHON) -m pytest -q tests/decision
+dec-data:          # val + frozen test + training corpus -> data/decision, manifests -> sw/decision/manifests
+	cd sw/decision && $(PYTHON) dataset.py all
+dec-train:         # LR sweep was run first; final: 3 seeds per model at the selected learning rate
+	cd sw/decision && $(PYTHON) train_policy.py --model lm --lrs 3e-3 --seeds 0,1,2 --steps 6000 --device mps
+	cd sw/decision && $(PYTHON) train_policy.py --model gru --lrs 3e-3 --seeds 0,1,2 --steps 6000 --jobs 3
+dec-pkg:           # rtl/decision/dec_pkg.sv from the contract
+	cd sw/decision && $(PYTHON) gen_rtl_pkg.py
+dec-units:         # guard (exhaustive), tokenizer, rule, FSM, watchdog RTL vs Python  (SIM=icarus for 4-state)
+	scripts/dec_units.sh
+dec-export:        # INT8 export of a promoted model: make dec-export DEC_MODEL=lm_s0
+	cd sw/decision && $(PYTHON) export_dec.py --run model/decision/$(DEC_MODEL) --name $(DEC_MODEL)
+dec-sim:           # engine-level bit-exactness of the exported model (all 64 logits)
+	scripts/zoo_sim.sh mem/decision/$(DEC_MODEL)
+dec-top:           # decision_top (ROM replay -> engine -> argmax -> guard) vs Python hw_ref
+	scripts/dec_top.sh $(DEC_MODEL)
+dec-synth:         # Yosys resource numbers of the decision tops
+	scripts/dec_synth.sh $(DEC_MODEL)
+dec-pnr:           # nextpnr timing of the decision top
+	scripts/dec_pnr.sh $(DEC_MODEL)
+dec-eval:          # validation-set comparison of the four methods (test split stays closed in Project I)
+	cd sw/decision && $(PYTHON) evaluate_dec.py
+dec-m1:            # M1 specification review package -> docs/decision/M1
+	cd sw/decision && $(PYTHON) m1_package.py

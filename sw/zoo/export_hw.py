@@ -165,7 +165,8 @@ def export(name, seqs, gen=0, gen_start=0, q=None, out=None, quiet=False):
         elif op == "ATTN":
             assert o["dh"] == DH and o["FEXP"] < 64
             prog.append(word(op=OPC[op], src0=BUF[o["q"]], dst=BUF[o["dst"]], aux8=o["layer"], n0=o["nh"],
-                             n1=o["nkv"], n2=o["dh"], n3=o["nh"] // o["nkv"], base1=o["CEXP"], k64=o["FEXP"]))
+                             n1=o["nkv"], n2=o["dh"], n3=o["nh"] // o["nkv"], base1=o["CEXP"], k64=o["FEXP"],
+                             e32=o.get("win", 0)))
         elif op == "MUL":
             n = _len_of(q, o["a"])
             prog.append(word(op=OPC[op], src0=BUF[o["a"]], src1=BUF[o["b"]], dst=BUF[o["dst"]], n0=n,

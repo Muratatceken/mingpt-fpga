@@ -16,7 +16,7 @@ Ops (dict with "op" key):
   GEMV   lin, srcs, dst, mode(o8|radd|lut|logit), act
   ROPE   buf, nh, dh, style(inter|half)
   KVSTORE layer, k, v
-  ATTN   layer, q, dst, nh, nkv, dh, alpha  (scores = alpha * q.k)
+  ATTN   layer, q, dst, nh, nkv, dh, alpha, win?  (scores = alpha * q.k; win>0: keys t-win+1..t only)
   MUL    a, b, dst
   GRUUPD z, hb               HS = (1-z)*HS + z*hb
   COPY   src, dst
@@ -433,7 +433,8 @@ class FloatRunner:
                     buf["L"] = y
                     self.note(("L",), y)
             elif op == "ROPE":
-                c, s = p.rope[0][t], p.rope[1][t]
+                nr = len(p.rope[0])                      # periodic tables (decision models) wrap; t < T otherwise
+                c, s = p.rope[0][t % nr], p.rope[1][t % nr]
                 buf[o["buf"]] = rope_apply(buf[o["buf"]], o["nh"], o["dh"], o["style"], c, s)
             elif op == "KVSTORE":
                 l = o["layer"]
@@ -443,6 +444,8 @@ class FloatRunner:
                 l, nh, nkv, dh = o["layer"], o["nh"], o["nkv"], o["dh"]
                 q = buf[o["q"]]
                 K, Vv = np.array(self.K[l]), np.array(self.Vc[l])
+                if o.get("win"):                         # banded attention: the last `win` keys only
+                    K, Vv = K[-o["win"]:], Vv[-o["win"]:]
                 y = np.zeros(nh * dh)
                 rep = nh // nkv
                 for h in range(nh):

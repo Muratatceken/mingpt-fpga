@@ -382,6 +382,13 @@ module zoo_core
   end
 
   // ---- ATTN ----
+  // banded attention (e32 = win > 0): key rows t-win+1 .. t only; win = 0 keeps the full causal range
+  logic [15:0]        att_j0, dec_j0;
+  always_comb begin
+    att_j0 = (f_e != 32'd0 && 32'(t) >= f_e) ? 16'(32'(t) - f_e + 32'd1) : 16'd0;
+    dec_j0 = (prog_dout[255:224] != 32'd0 && 32'(t) >= prog_dout[255:224])
+             ? 16'(32'(t) - prog_dout[255:224] + 32'd1) : 16'd0;
+  end
   logic signed [23:0] sc;
   logic [8*DH-1:0]    qh;
   logic [24:0]        e_diff;
@@ -686,6 +693,7 @@ module zoo_core
           ir       <= prog_dout;
           ph       <= '0;
           {i, j, c, h, sb, seg, kvh, rc, wb_cnt} <= '0;
+          if (prog_dout[7:0] == OP_ATTN) j <= dec_j0;               // first visible key row
           sub      <= 1'b0;
           iss_done <= 1'b0;
           g_ob     <= '0;
@@ -831,10 +839,10 @@ module zoo_core
             // -------------------------------------------- ATTN
             OP_ATTN: if (EN[10]) begin
               case (ph)
-                4'd0: begin                                        // scores: K rows 0..t
+                4'd0: begin                                        // scores: K rows j0..t
                   s1_v <= 1'b1;
                   s1_j <= j;
-                  if (j == 16'(t)) begin j <= '0; ph <= 4'd1; end
+                  if (j == 16'(t)) begin j <= att_j0; ph <= 4'd1; end
                   else j <= j + 1'b1;
                 end
                 4'd1: begin                                        // last score lands
@@ -842,7 +850,7 @@ module zoo_core
                   att_e <= '0;
                   ph    <= 4'd2;
                 end
-                4'd2: begin                                        // exp + V rows 0..t
+                4'd2: begin                                        // exp + V rows j0..t
                   e1_v <= 1'b1;
                   e1_e <= e_val;
                   if (j == 16'(t)) begin j <= '0; ph <= 4'd3; end
@@ -857,11 +865,11 @@ module zoo_core
                     if (rc == f_n3 - 1'b1) begin rc <= '0; kvh <= kvh + 1'b1; end
                     else rc <= rc + 1'b1;
                     if (h == f_n0 - 1'b1) begin pc <= pc + 1'b1; st <= S_FETCH; end
-                    else begin h <= h + 1'b1; ph <= 4'd0; end
+                    else begin h <= h + 1'b1; ph <= 4'd0; j <= att_j0; end
                   end else j <= j + 1'b1;
                 end
               endcase
-              if (s1_v) a_m <= (s1_j == '0 || sc > a_m) ? sc : a_m;
+              if (s1_v) a_m <= (s1_j == att_j0 || sc > a_m) ? sc : a_m;
               if (e1_v) begin
                 for (int d = 0; d < DH; d++)
                   att_a[d] <= att_a[d] + $signed({1'b0, e1_e}) * $signed(v_rd[8*d +: 8]);
