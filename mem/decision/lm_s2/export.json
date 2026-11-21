@@ -1,0 +1,106 @@
+{
+ "name": "lm_s2",
+ "run": "model/decision/lm_s2",
+ "random": null,
+ "spec": {
+  "cls": "DecisionLlama",
+  "kwargs": {
+   "V": 64,
+   "T": 256,
+   "n_layer": 2,
+   "n_embd": 32,
+   "n_head": 4,
+   "n_kv_head": 2,
+   "hidden": 168,
+   "W": 64
+  }
+ },
+ "contract_sha256": "0b1ea82508605a72f9dfbb8c3f0e1ad9c8e463e5fa36c26b79e788067af99b6c",
+ "calibration": {
+  "source": "train.npz",
+  "n": 300,
+  "rng": 12345,
+  "indices_sha256": "f2f9fd7f2a0f322f410386874af1c316aabd1338b751168423e995da6dd3cbeb"
+ },
+ "agreement_val": {
+  "n": 960,
+  "agree": 0.9947916666666666,
+  "float_acc": 0.8041666666666667,
+  "int_acc": 0.809375,
+  "margin_q05": 0.1685432977857255,
+  "n_disagree": 5,
+  "agree_margin_ge_0p2": 1.0,
+  "n_margin_ge_0p2": 906,
+  "disagreements": [
+   {
+    "j": 692,
+    "template": "OC",
+    "d": 16,
+    "member": "A",
+    "float_act": 2,
+    "int_act": 0,
+    "float_margin": 0.0218,
+    "float_ok": false,
+    "int_ok": true
+   },
+   {
+    "j": 734,
+    "template": "OC",
+    "d": 2,
+    "member": "A",
+    "float_act": 2,
+    "int_act": 0,
+    "float_margin": 0.0153,
+    "float_ok": false,
+    "int_ok": true
+   },
+   {
+    "j": 822,
+    "template": "OC",
+    "d": 8,
+    "member": "A",
+    "float_act": 2,
+    "int_act": 0,
+    "float_margin": 0.1285,
+    "float_ok": false,
+    "int_ok": true
+   },
+   {
+    "j": 826,
+    "template": "OC",
+    "d": 8,
+    "member": "A",
+    "float_act": 2,
+    "int_act": 0,
+    "float_margin": 0.0539,
+    "float_ok": false,
+    "int_ok": true
+   },
+   {
+    "j": 843,
+    "template": "OC",
+    "d": 16,
+    "member": "B",
+    "float_act": 0,
+    "int_act": 2,
+    "float_margin": 0.0494,
+    "float_ok": false,
+    "int_ok": true
+   }
+  ]
+ },
+ "tv": {
+  "n": 8,
+  "lengths": [
+   240,
+   240,
+   240,
+   240,
+   240,
+   240,
+   240,
+   240
+  ]
+ },
+ "seconds": 786.6
+}

@@ -1,0 +1,161 @@
+{
+ "name": "lm_s1",
+ "run": "model/decision/lm_s1",
+ "random": null,
+ "spec": {
+  "cls": "DecisionLlama",
+  "kwargs": {
+   "V": 64,
+   "T": 256,
+   "n_layer": 2,
+   "n_embd": 32,
+   "n_head": 4,
+   "n_kv_head": 2,
+   "hidden": 168,
+   "W": 64
+  }
+ },
+ "contract_sha256": "0b1ea82508605a72f9dfbb8c3f0e1ad9c8e463e5fa36c26b79e788067af99b6c",
+ "calibration": {
+  "source": "train.npz",
+  "n": 300,
+  "rng": 12345,
+  "indices_sha256": "f2f9fd7f2a0f322f410386874af1c316aabd1338b751168423e995da6dd3cbeb"
+ },
+ "agreement_val": {
+  "n": 960,
+  "agree": 0.9895833333333334,
+  "float_acc": 0.7770833333333333,
+  "int_acc": 0.7770833333333333,
+  "margin_q05": 0.14717755098664206,
+  "n_disagree": 10,
+  "agree_margin_ge_0p2": 1.0,
+  "n_margin_ge_0p2": 886,
+  "disagreements": [
+   {
+    "j": 614,
+    "template": "SEN",
+    "d": 16,
+    "member": "A",
+    "float_act": 0,
+    "int_act": 3,
+    "float_margin": 0.058,
+    "float_ok": true,
+    "int_ok": false
+   },
+   {
+    "j": 660,
+    "template": "OC",
+    "d": 8,
+    "member": "A",
+    "float_act": 0,
+    "int_act": 2,
+    "float_margin": 0.0787,
+    "float_ok": true,
+    "int_ok": false
+   },
+   {
+    "j": 661,
+    "template": "OC",
+    "d": 8,
+    "member": "B",
+    "float_act": 0,
+    "int_act": 2,
+    "float_margin": 0.071,
+    "float_ok": false,
+    "int_ok": true
+   },
+   {
+    "j": 714,
+    "template": "OC",
+    "d": 32,
+    "member": "A",
+    "float_act": 2,
+    "int_act": 0,
+    "float_margin": 0.1755,
+    "float_ok": false,
+    "int_ok": true
+   },
+   {
+    "j": 715,
+    "template": "OC",
+    "d": 32,
+    "member": "B",
+    "float_act": 2,
+    "int_act": 0,
+    "float_margin": 0.1755,
+    "float_ok": true,
+    "int_ok": false
+   },
+   {
+    "j": 740,
+    "template": "OC",
+    "d": 8,
+    "member": "A",
+    "float_act": 2,
+    "int_act": 0,
+    "float_margin": 0.0277,
+    "float_ok": false,
+    "int_ok": true
+   },
+   {
+    "j": 836,
+    "template": "OC",
+    "d": 8,
+    "member": "A",
+    "float_act": 2,
+    "int_act": 0,
+    "float_margin": 0.1471,
+    "float_ok": false,
+    "int_ok": true
+   },
+   {
+    "j": 918,
+    "template": "OC",
+    "d": 8,
+    "member": "A",
+    "float_act": 2,
+    "int_act": 0,
+    "float_margin": 0.0047,
+    "float_ok": false,
+    "int_ok": true
+   },
+   {
+    "j": 920,
+    "template": "OC",
+    "d": 16,
+    "member": "A",
+    "float_act": 0,
+    "int_act": 2,
+    "float_margin": 0.0516,
+    "float_ok": true,
+    "int_ok": false
+   },
+   {
+    "j": 928,
+    "template": "OC",
+    "d": 16,
+    "member": "A",
+    "float_act": 0,
+    "int_act": 2,
+    "float_margin": 0.006,
+    "float_ok": true,
+    "int_ok": false
+   }
+  ]
+ },
+ "tv": {
+  "n": 8,
+  "lengths": [
+   240,
+   240,
+   240,
+   240,
+   240,
+   240,
+   240,
+   240
+  ]
+ },
+ "seconds": 803.1
+}

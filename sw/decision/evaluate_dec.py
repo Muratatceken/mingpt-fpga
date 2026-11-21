@@ -1,6 +1,6 @@
 """Validation comparison of the four decision methods (Project I; the test split stays closed until Project II).
 
-    python3 evaluate_dec.py            -> output/decision/val_results.{json,md}, output/decision/fig_val_by_d.png
+    python3 evaluate_dec.py            -> docs/decision/sonuclar/val_results.{json,md}, fig_val_by_d.png
 Per method: scenario accuracy (decision in the acceptable set at t0) and pair discrimination (both members
 right), overall and by template x d, mean and spread over the training seeds, pair-level bootstrap 95 % CI.
 Methods: rule, FSM (token-level, deterministic), GRU and LM (float, every seed in model/decision/runs/v1);
@@ -23,7 +23,7 @@ from policies import FSMPolicy, rule_action  # noqa: E402
 from tokenizer import bins_from_tokens  # noqa: E402
 from train_policy import eval_pairs, load_val  # noqa: E402
 
-OUT = os.path.join(ROOT, "output", "decision")
+OUT = os.path.join(ROOT, "docs", "decision", "sonuclar")
 RUNS = os.path.join(ROOT, "model", "decision", "runs", "v1")
 plt.rcParams.update({"font.family": "Arial", "font.size": 8})
 
@@ -59,6 +59,11 @@ def summarise(pred, acc, meta, rng, nboot=2000):
         by.setdefault(f"all/d{m['d']}", []).append(pair[j])
         by.setdefault(f"noise_{m['noise']}", []).append(pair[j])
     out["by"] = {k: float(np.mean(v)) for k, v in sorted(by.items())}
+    sc = {}
+    for j, m in enumerate(meta):                      # scenario accuracy per pair member, inside the window
+        if m["d"] <= 16:
+            sc.setdefault(f"{m['template']}/{m['member']}", []).append(ok[j])
+    out["member_in_window"] = {k: float(np.mean(v)) for k, v in sorted(sc.items())}
     return out
 
 
@@ -89,6 +94,9 @@ def main():
         v["acc_mean"] = float(a.mean())
         keys = v["seeds"][0]["by"].keys()
         v["by_mean"] = {kk: float(np.mean([s["by"][kk] for s in v["seeds"]])) for kk in keys}
+        keys = v["seeds"][0]["member_in_window"].keys()
+        v["member_in_window_mean"] = {kk: float(np.mean([s["member_in_window"][kk] for s in v["seeds"]]))
+                                      for kk in keys}
     int8 = {}
     for f in glob.glob(os.path.join(ROOT, "mem", "decision", "*", "export.json")):
         e = json.load(open(f))
@@ -117,11 +125,26 @@ def main():
         bd = res[mth]["by_mean"]
         lines.append(f"| {mth} | " + " | ".join(f"{bd[f'{t}/d{d}']:.2f}" for t in ("BAT_SEN", "SEN", "OC")
                                                for d in (2, 8, 16, 32)) + " |")
+    mem_cols = [f"{t}/{u}" for t in ("BAT_SEN", "SEN", "OC") for u in ("A", "B")]
+    lines += ["\n## Pencere içinde (d ≤ 16) üye düzeyinde senaryo doğruluğu\n",
+              "BAT_SEN: A = sensör arızası → KISITLI_MOD, B = batarya kapasite kaybı → GUVENLI_MOD. SEN: A = sağlam → "
+              "NORMAL, B = takılı sensör → KISITLI_MOD. OC: A = tek geçici aşırı akım → NORMAL, B = aralıklı aşırı akım "
+              "→ KISITLI_MOD.\n",
+              "| Yöntem | " + " | ".join(mem_cols) + " |", "|---|" + "---|" * len(mem_cols)]
+    for mth in methods:
+        bd = res[mth]["member_in_window_mean"]
+        lines.append(f"| {mth} | " + " | ".join(f"{bd[c]:.2f}" for c in mem_cols) + " |")
     if int8:
         lines += ["\n## INT8 karar uyuşması (doğrulama kümesi, float ↔ tamsayı)\n",
-                  "| Model | n | Uyuşma | Float doğruluk | INT8 doğruluk |", "|---|---|---|---|---|"]
+                  "Marj: float üst-2 logit farkı. Uyuşmazlıklar ve hangi tarafın kabul edilebilir eylemi seçtiği "
+                  "`mem/decision/<model>/export.json` içinde (`disagreements`).\n",
+                  "| Model | n | Uyuşma | Uyuşmazlık | Marj ≥ 0,2 iken uyuşma | Float doğruluk | INT8 doğruluk |",
+                  "|---|---|---|---|---|---|---|"]
         for k, a in sorted(int8.items()):
-            lines.append(f"| {k} | {a['n']} | {a['agree']:.3f} | {a['float_acc']:.3f} | {a['int_acc']:.3f} |")
+            w = a.get("agree_margin_ge_0p2")
+            ws = f"{w:.3f} (n = {a['n_margin_ge_0p2']})" if w is not None else "—"
+            lines.append(f"| {k} | {a['n']} | {a['agree']:.4f} | {a.get('n_disagree', '—')} | {ws} | "
+                         f"{a['float_acc']:.3f} | {a['int_acc']:.3f} |")
     with open(os.path.join(OUT, "val_results.md"), "w") as f:
         f.write("\n".join(lines) + "\n")
 

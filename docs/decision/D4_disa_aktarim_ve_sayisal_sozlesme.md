@@ -32,7 +32,7 @@ Desteklenmeyen işlem sessizce atlanmaz: `compile_model` bilinmeyen modelde hata
 | RoPE cos/sin | Q1.14; giriş çift normuna göre kalibre | |
 | Softmax | maksimum çıkarma, 256 girişli 2^(−k/256) tablosu, tamsayı bölme | `attn_int` |
 
-Kalibrasyon yalnız **eğitim** bölümünden yapılır: 300 bölüm, rastgele tohum 12345, motor bağlamına (256 token) kırpılmış. İndekslerin sha256'sı `export.json` içindedir; doğrulama ve test verisi ölçekleri belirlemez. Float→INT8 karar uyuşması doğrulama kümesinde ölçülür ve `export.json` içindeki `agreement_val` alanında, float ve INT8 doğruluğuyla birlikte raporlanır (eğitilmiş modellerin değerleri `output/decision/val_results.md`).
+Kalibrasyon yalnız **eğitim** bölümünden yapılır: 300 bölüm, rastgele tohum 12345, motor bağlamına (256 token) kırpılmış. İndekslerin sha256'sı `export.json` içindedir; doğrulama ve test verisi ölçekleri belirlemez. Float→INT8 karar uyuşması doğrulama kümesinde ölçülür ve `export.json` içindeki `agreement_val` alanında, float ve INT8 doğruluğuyla birlikte raporlanır (eğitilmiş modellerin değerleri `docs/decision/sonuclar/val_results.md`).
 
 Doygunluk ile iki'nin tümleyeni sarması aynı değildir: bütün dönüşümler `sat()` ile doyurulur, RTL'de de aynı.
 

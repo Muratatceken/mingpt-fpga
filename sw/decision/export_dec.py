@@ -14,6 +14,7 @@ import os
 import pickle
 import sys
 import time
+from multiprocessing import Pool
 
 import numpy as np
 import torch
@@ -48,21 +49,49 @@ def decide_np(l4):
     return 3 - int(np.argmax(l4[::-1]))
 
 
-def agreement(prog, q, seq, acc, meta, limit=None):
-    """float vs INT8 masked-argmax decision at the decision step of each validation scenario."""
+_W = {}
+
+
+def _init(prog, q, seq, meta):
+    _W.update(prog=prog, q=q, seq=seq, meta=meta)
+
+
+def _one(j):
+    prog, q, seq, meta = _W["prog"], _W["q"], _W["seq"], _W["meta"]
+    pos = 4 + 5 * meta[j]["t0"]
+    fr, ir = FloatRunner(prog), IntRunner(q)
+    for t in range(pos + 1):
+        lf = fr.step(int(seq[j, t]), t)
+        li = ir.step(int(seq[j, t]), t)
+    lf4 = np.asarray(lf[:4], dtype=float)
+    top2 = np.sort(lf4)[::-1]
+    return decide_np(lf4), decide_np(np.asarray(li[:4])), float(top2[0] - top2[1])
+
+
+def agreement(prog, q, seq, acc, meta, limit=None, jobs=1):
+    """float vs INT8 masked-argmax decision at the decision step of each validation scenario.
+    Also: float top-2 logit margin of every disagreement, and agreement when the float margin is >= 0.2."""
     n = len(seq) if limit is None else min(limit, len(seq))
-    same = okf = oki = 0
-    for j in range(n):
-        pos = 4 + 5 * meta[j]["t0"]
-        fr, ir = FloatRunner(prog), IntRunner(q)
-        for t in range(pos + 1):
-            lf = fr.step(int(seq[j, t]), t)
-            li = ir.step(int(seq[j, t]), t)
-        af, ai = decide_np(lf[:4]), decide_np(li[:4])
-        same += af == ai
-        okf += bool(acc[j, af])
-        oki += bool(acc[j, ai])
-    return dict(n=n, agree=same / n, float_acc=okf / n, int_acc=oki / n)
+    if jobs > 1:
+        with Pool(jobs, initializer=_init, initargs=(prog, q, seq, meta)) as p:
+            res = p.map(_one, range(n), chunksize=8)
+    else:
+        _init(prog, q, seq, meta)
+        res = [_one(j) for j in range(n)]
+    af = np.array([r[0] for r in res])
+    ai = np.array([r[1] for r in res])
+    mg = np.array([r[2] for r in res])
+    okf, oki = acc[np.arange(n), af], acc[np.arange(n), ai]
+    dis = np.flatnonzero(af != ai)
+    wide = mg >= 0.2
+    return dict(n=n, agree=float((af == ai).mean()), float_acc=float(okf.mean()), int_acc=float(oki.mean()),
+                margin_q05=float(np.quantile(mg, 0.05)), n_disagree=int(len(dis)),
+                agree_margin_ge_0p2=float((af[wide] == ai[wide]).mean()) if wide.any() else None,
+                n_margin_ge_0p2=int(wide.sum()),
+                disagreements=[dict(j=int(j), template=meta[j]["template"], d=int(meta[j]["d"]),
+                                    member=meta[j]["member"], float_act=int(af[j]), int_act=int(ai[j]),
+                                    float_margin=round(float(mg[j]), 4), float_ok=bool(okf[j]),
+                                    int_ok=bool(oki[j])) for j in dis])
 
 
 def main():
@@ -73,6 +102,7 @@ def main():
     ap.add_argument("--ncal", type=int, default=300)
     ap.add_argument("--ntv", type=int, default=8)
     ap.add_argument("--nagree", type=int, default=None)
+    ap.add_argument("--jobs", type=int, default=3)
     a = ap.parse_args()
     t0 = time.time()
     if a.run:
@@ -100,7 +130,7 @@ def main():
     os.makedirs(os.path.join(ROOT, "build", "decision"), exist_ok=True)
     pickle.dump(q, open(os.path.join(ROOT, "build", "decision", f"{a.name}.qprog.pkl"), "wb"))
     vseq, vy, vacc, vmeta = load_val()
-    ag = agreement(prog, q, vseq, vacc, vmeta, limit=a.nagree)
+    ag = agreement(prog, q, vseq, vacc, vmeta, limit=a.nagree, jobs=a.jobs)
     # golden vectors: validation scenarios (whole prefix up to the decision MODE token, < T = 256)
     tv = []
     for j in range(0, min(len(vseq), 2 * a.ntv), 2):
@@ -113,7 +143,7 @@ def main():
                                  indices_sha256=hashlib.sha256(np.asarray(idx).tobytes()).hexdigest()),
                 agreement_val=ag, tv=dict(n=len(tv), lengths=[len(x) for x in tv]), seconds=round(time.time() - t0, 1))
     json.dump(info, open(os.path.join(out, "export.json"), "w"), indent=1)
-    print(json.dumps(dict(name=a.name, agreement=ag, out=out), indent=1))
+    print(json.dumps(dict(name=a.name, agreement={k: v for k, v in ag.items() if k != "disagreements"}, out=out), indent=1))
 
 
 if __name__ == "__main__":

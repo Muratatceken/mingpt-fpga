@@ -166,11 +166,20 @@ dec-sim:           # engine-level bit-exactness of the exported model (all 64 lo
 	scripts/zoo_sim.sh mem/decision/$(DEC_MODEL)
 dec-top:           # decision_top (ROM replay -> engine -> argmax -> guard) vs Python hw_ref
 	scripts/dec_top.sh $(DEC_MODEL)
-dec-synth:         # Yosys resource numbers of the decision tops
-	scripts/dec_synth.sh $(DEC_MODEL)
-dec-pnr:           # nextpnr timing of the decision top
-	scripts/dec_pnr.sh $(DEC_MODEL)
+dec-synth:         # Yosys resource numbers: guard alone, decision_top with rule / FSM / the engine of DEC_MODEL
+	scripts/dec_synth.sh guard
+	scripts/dec_synth.sh rule $(DEC_MODEL)
+	scripts/dec_synth.sh fsm $(DEC_MODEL)
+	scripts/dec_synth.sh engine $(DEC_MODEL)
+DEC_POL ?= lm
+DEC_MHZ ?= 25
+dec-pnr:           # board self-test place & route (+ bitstream when timing is met): DEC_POL=lm|gru|rule|fsm
+	scripts/dec_pnr.sh $(DEC_MODEL) $(DEC_POL) $(DEC_MHZ)
+dec-netlist:       # gate-level simulation of the netlist dec-pnr placed (LED16_G = every trace hash matched)
+	scripts/dec_netlist_sim.sh $(DEC_MODEL) $(DEC_POL)
 dec-eval:          # validation-set comparison of the four methods (test split stays closed in Project I)
 	cd sw/decision && $(PYTHON) evaluate_dec.py
+dec-finalize:      # after dec-train: promote, export, RTL, board, synthesis, PnR, netlist, evaluation, report
+	scripts/dec_finalize.sh
 dec-m1:            # M1 specification review package -> docs/decision/M1
 	cd sw/decision && $(PYTHON) m1_package.py

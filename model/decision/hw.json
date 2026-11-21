@@ -1,14 +1,14 @@
 {
  "fsm": {
   "yosys": {
-   "lut_logic": 400,
+   "lut_logic": 404,
    "lut_ram": 0,
-   "lut": 400,
-   "ff": 301,
+   "lut": 404,
+   "ff": 302,
    "bram": 1.5,
    "dsp": 3,
-   "carry": 67,
-   "depth": 252,
+   "carry": 68,
+   "depth": 215,
    "kind": "fsm",
    "synth_s": 11
   }
@@ -27,14 +27,28 @@
    "synth_s": 5
   }
  },
- "lm_rand_fsm": {
+ "lm_s0": {
+  "yosys": {
+   "lut_logic": 5671,
+   "lut_ram": 852,
+   "lut": 6523,
+   "ff": 2337,
+   "bram": 18.0,
+   "dsp": 60,
+   "carry": 464,
+   "depth": 2186,
+   "kind": "engine",
+   "synth_s": 388
+  }
+ },
+ "lm_s0_fsm": {
   "pnr": {
-   "clock_mhz": 50,
+   "clock_mhz": 25,
    "met": true,
-   "fmax_mhz": 85.87,
+   "fmax_mhz": 87.76,
    "utilization": {
     "BUFGCTRL": "1/32",
-    "CARRY4": "82/15850",
+    "CARRY4": "80/15850",
     "IOB33_INBUF_EN": "3/300",
     "IOB33_OUTBUF": "19/300",
     "MMCME2_ADV_MMCME2_ADV": "1/6",
@@ -42,13 +56,50 @@
     "PSEUDO_GND": "1/1",
     "PSEUDO_VCC": "1/1",
     "RAMB36E1_RAMB36E1": "2/135",
-    "SELMUX2_1": "3/48750",
+    "SELMUX2_1": "6/48750",
     "SLICE_FFX": "309/126800",
-    "SLICE_LUTX": "1398/126800"
+    "SLICE_LUTX": "1374/126800"
    },
    "seconds": {
-    "synth": 9,
-    "pnr": 16
+    "synth": 8,
+    "pnr": 26
+   },
+   "bit": true
+  },
+  "netlist_sim": {
+   "passed": true,
+   "scenarios": 24,
+   "matched": 24,
+   "cycles": 3006972,
+   "seconds": {
+    "build": 15,
+    "sim": 9
+   }
+  }
+ },
+ "lm_s0_lm": {
+  "pnr": {
+   "clock_mhz": 25,
+   "met": true,
+   "fmax_mhz": 26.52,
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "713/15850",
+    "IOB33_INBUF_EN": "3/300",
+    "IOB33_OUTBUF": "19/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "22/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB18E1_RAMB18E1": "1/270",
+    "RAMB36E1_RAMB36E1": "18/135",
+    "SELMUX2_1": "221/48750",
+    "SLICE_FFX": "2489/126800",
+    "SLICE_LUTX": "28340/126800"
+   },
+   "seconds": {
+    "synth": 1153,
+    "pnr": 521
    },
    "bit": true
   }
@@ -62,9 +113,9 @@
    "bram": 1.5,
    "dsp": 3,
    "carry": 40,
-   "depth": 223,
+   "depth": 191,
    "kind": "rule",
-   "synth_s": 10
+   "synth_s": 24
   }
  }
 }
