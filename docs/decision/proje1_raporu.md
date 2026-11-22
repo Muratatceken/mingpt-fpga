@@ -131,6 +131,7 @@ Her MODE konumunda dört eylem logitinin float ile tamsayı (logit ölçeğiyle 
 | D1.2 en uzun karar ≤ 10 ms (25 MHz) | lm_s0 | 31.278 çevrim = 1,25 ms | geçti |  |
 | S7 kapı düzeyi netlist (kart öz-testi) | gru_s0_gru | 24/24 senaryo eşleşti | geçti |  |
 | S7 kapı düzeyi netlist (kart öz-testi) | lm_s0_fsm | 24/24 senaryo eşleşti | geçti |  |
+| S7 kapı düzeyi netlist (kart öz-testi) | lm_s0_lm | 24/24 senaryo eşleşti | geçti |  |
 | S7 25 MHz zamanlama | gru_s0_gru | Fmax 36,0 MHz | geçti |  |
 | S7 25 MHz zamanlama | lm_s0_fsm | Fmax 87,8 MHz | geçti |  |
 | S7 25 MHz zamanlama | lm_s0_lm | Fmax 26,5 MHz | geçti |  |
@@ -161,6 +162,7 @@ Birim testleri (`make dec-units`): guard 73.728 vektör, tokenlaştırıcı 334,
 [rule] RESULT decision_top policy 1 scenarios 24 steps 1152 errors 0 dec_cycles min 2 max 2
 [fsm] RESULT decision_top policy 2 scenarios 24 steps 1152 errors 0 dec_cycles min 2 max 2
 [lm_s0_fsm netlist] RESULT board policy 2: scenarios 24 matched 24 green 1 red 0 cycles 3006972
+[lm_s0_lm netlist] RESULT board policy 0: scenarios 24 matched 24 green 1 red 0 cycles 47089348
 ```
 
 
@@ -184,8 +186,9 @@ Birim testleri (`make dec-units`): guard 73.728 vektör, tokenlaştırıcı 334,
 |---|---|---|---|---|
 | gru_s0_gru | 24 | 24 | 33069012 | yeşil |
 | lm_s0_fsm | 24 | 24 | 3006972 | yeşil |
+| lm_s0_lm | 24 | 24 | 47089348 | yeşil |
 
-Netlist simülasyonu, nextpnr'a verilen Yosys netlistini (MMCM, BUFG, G/Ç tamponları, BRAM içerikleri dahil) Yosys hücre modelleriyle yalnız pinlerden sürer (`scripts/dec_netlist_sim.sh`).
+Netlist simülasyonu, nextpnr'a verilen Yosys netlistini (MMCM, BUFG, G/Ç tamponları, BRAM içerikleri dahil) Yosys hücre modelleriyle yalnız pinlerden sürer (`scripts/dec_netlist_sim.sh`). Gecikmesiz işlevsel bir simülasyondur; yerleşim sonrası gecikmelerle (SDF) zamanlama simülasyonu yapılmadı, zamanlama yalnız nextpnr raporundan gelir.
 
 
 Kart öz-testleri `-nodsp` ile yerleştirilmiştir (Yosys 0.69'un DSP48E1 işaret genişletme hatası); FSM ve kural tepelerindeki LUT'ların çoğu iz hash'inin 32 bit çarpıcısıdır. Fmax açık kaynak aracın tahminidir; üretici aracı ya da kart ölçümü değildir.

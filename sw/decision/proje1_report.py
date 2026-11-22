@@ -272,7 +272,9 @@ def main():
                         "yeşil" if v["netlist_sim"]["passed"] else "kırmızı")
                        for k, v in hw.items() if "netlist_sim" in v]),
          "\nNetlist simülasyonu, nextpnr'a verilen Yosys netlistini (MMCM, BUFG, G/Ç tamponları, BRAM içerikleri dahil) "
-         "Yosys hücre modelleriyle yalnız pinlerden sürer (`scripts/dec_netlist_sim.sh`).\n",
+         "Yosys hücre modelleriyle yalnız pinlerden sürer (`scripts/dec_netlist_sim.sh`). Gecikmesiz işlevsel bir "
+         "simülasyondur; yerleşim sonrası gecikmelerle (SDF) zamanlama simülasyonu yapılmadı, zamanlama yalnız "
+         "nextpnr raporundan gelir.\n",
          "\nKart öz-testleri `-nodsp` ile yerleştirilmiştir (Yosys 0.69'un DSP48E1 işaret genişletme hatası); FSM ve "
          "kural tepelerindeki LUT'ların çoğu iz hash'inin 32 bit çarpıcısıdır. Fmax açık kaynak aracın tahminidir; "
          "üretici aracı ya da kart ölçümü değildir.\n",

@@ -152,6 +152,16 @@
     "pnr": 521
    },
    "bit": true
+  },
+  "netlist_sim": {
+   "passed": true,
+   "scenarios": 24,
+   "matched": 24,
+   "cycles": 47089348,
+   "seconds": {
+    "build": 128,
+    "sim": 10264
+   }
   }
  },
  "rule": {
