@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # After training (make dec-train): promote the seeds, INT8 export, engine and decision_top RTL checks, board
-# self-test simulation, synthesis, place & route, gate-level netlist simulation, validation evaluation and the
-# Project I report.
+# self-test simulation, synthesis, place & route, gate-level netlist simulation, validation evaluation, INT8 logit
+# drift along the stream and the Project I report.
 #   scripts/dec_finalize.sh                 (all models; log: build/decision/finalize_lm_gru.log)
 #   MODELS=gru scripts/dec_finalize.sh      (one family; log: build/decision/finalize_gru.log)
 # proje1_report.py collects the RESULT lines of every build/decision/finalize_*.log.
@@ -49,5 +49,7 @@ for m in $MODELS; do
   scripts/dec_netlist_sim.sh "$x" "$m" || echo "[$x netlist] FAIL"
 done
 echo "== validation evaluation and report"
-( cd sw/decision && "$PY" evaluate_dec.py > /dev/null && "$PY" proje1_report.py )
+DRIFT="$(for m in $MODELS; do printf '%s_s0,%s_s1,%s_s2,' "$m" "$m" "$m"; done)"
+( cd sw/decision && "$PY" evaluate_dec.py > /dev/null && "$PY" int8_drift.py --models "${DRIFT%,}" \
+  && "$PY" proje1_report.py )
 echo "== done"

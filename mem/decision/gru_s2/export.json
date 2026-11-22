@@ -1,0 +1,136 @@
+{
+ "name": "gru_s2",
+ "run": "model/decision/gru_s2",
+ "random": null,
+ "spec": {
+  "cls": "RNN",
+  "kwargs": {
+   "V": 64,
+   "T": 256,
+   "n_embd": 48,
+   "n_hidden": 82,
+   "cell": "gru"
+  }
+ },
+ "contract_sha256": "0b1ea82508605a72f9dfbb8c3f0e1ad9c8e463e5fa36c26b79e788067af99b6c",
+ "calibration": {
+  "source": "train.npz",
+  "n": 300,
+  "rng": 12345,
+  "indices_sha256": "f2f9fd7f2a0f322f410386874af1c316aabd1338b751168423e995da6dd3cbeb"
+ },
+ "agreement_val": {
+  "n": 960,
+  "agree": 0.9916666666666667,
+  "float_acc": 0.909375,
+  "int_acc": 0.9114583333333334,
+  "margin_q05": 0.2760946778810055,
+  "n_disagree": 8,
+  "agree_margin_ge_0p2": 0.997828447339848,
+  "n_margin_ge_0p2": 921,
+  "disagreements": [
+   {
+    "j": 80,
+    "template": "BAT_SEN",
+    "d": 2,
+    "member": "A",
+    "float_act": 2,
+    "int_act": 3,
+    "float_margin": 0.0906,
+    "float_ok": true,
+    "int_ok": false
+   },
+   {
+    "j": 96,
+    "template": "BAT_SEN",
+    "d": 2,
+    "member": "A",
+    "float_act": 3,
+    "int_act": 2,
+    "float_margin": 0.0638,
+    "float_ok": false,
+    "int_ok": true
+   },
+   {
+    "j": 168,
+    "template": "BAT_SEN",
+    "d": 2,
+    "member": "A",
+    "float_act": 2,
+    "int_act": 0,
+    "float_margin": 0.4227,
+    "float_ok": true,
+    "int_ok": false
+   },
+   {
+    "j": 268,
+    "template": "BAT_SEN",
+    "d": 8,
+    "member": "A",
+    "float_act": 3,
+    "int_act": 2,
+    "float_margin": 0.0309,
+    "float_ok": false,
+    "int_ok": true
+   },
+   {
+    "j": 606,
+    "template": "SEN",
+    "d": 16,
+    "member": "A",
+    "float_act": 0,
+    "int_act": 3,
+    "float_margin": 1.1387,
+    "float_ok": true,
+    "int_ok": false
+   },
+   {
+    "j": 778,
+    "template": "OC",
+    "d": 16,
+    "member": "A",
+    "float_act": 2,
+    "int_act": 0,
+    "float_margin": 0.0282,
+    "float_ok": false,
+    "int_ok": true
+   },
+   {
+    "j": 836,
+    "template": "OC",
+    "d": 8,
+    "member": "A",
+    "float_act": 2,
+    "int_act": 0,
+    "float_margin": 0.0653,
+    "float_ok": false,
+    "int_ok": true
+   },
+   {
+    "j": 864,
+    "template": "OC",
+    "d": 32,
+    "member": "A",
+    "float_act": 2,
+    "int_act": 0,
+    "float_margin": 0.0636,
+    "float_ok": false,
+    "int_ok": true
+   }
+  ]
+ },
+ "tv": {
+  "n": 8,
+  "lengths": [
+   240,
+   240,
+   240,
+   240,
+   240,
+   240,
+   240,
+   240
+  ]
+ },
+ "seconds": 104.7
+}

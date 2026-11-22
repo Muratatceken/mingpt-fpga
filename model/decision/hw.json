@@ -13,6 +13,56 @@
    "synth_s": 11
   }
  },
+ "gru_s0": {
+  "yosys": {
+   "lut_logic": 2444,
+   "lut_ram": 584,
+   "lut": 3028,
+   "ff": 1243,
+   "bram": 13.5,
+   "dsp": 19,
+   "carry": 226,
+   "depth": 755,
+   "kind": "engine",
+   "synth_s": 71
+  }
+ },
+ "gru_s0_gru": {
+  "pnr": {
+   "clock_mhz": 25,
+   "met": true,
+   "fmax_mhz": 35.99,
+   "utilization": {
+    "BUFGCTRL": "1/32",
+    "CARRY4": "319/15850",
+    "IOB33_INBUF_EN": "3/300",
+    "IOB33_OUTBUF": "19/300",
+    "MMCME2_ADV_MMCME2_ADV": "1/6",
+    "PAD": "22/630",
+    "PSEUDO_GND": "1/1",
+    "PSEUDO_VCC": "1/1",
+    "RAMB36E1_RAMB36E1": "14/135",
+    "SELMUX2_1": "76/48750",
+    "SLICE_FFX": "1297/126800",
+    "SLICE_LUTX": "9495/126800"
+   },
+   "seconds": {
+    "synth": 98,
+    "pnr": 101
+   },
+   "bit": true
+  },
+  "netlist_sim": {
+   "passed": true,
+   "scenarios": 24,
+   "matched": 24,
+   "cycles": 33069012,
+   "seconds": {
+    "build": 66,
+    "sim": 1808
+   }
+  }
+ },
  "guard": {
   "yosys": {
    "lut_logic": 61,

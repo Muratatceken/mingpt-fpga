@@ -10,7 +10,7 @@ RTL    = $(shell cat scripts/files.f)
 .PHONY: all model train quantize eval export sim test-arith selftest lint synth report gelisim clean \
         zoo-train zoo-quant zoo-sim zoo-synth zoo-pipeline zoo-fuzz zoo-arith zoo-dse paper \
         nexys nexys-sim nexys-all nexys-fuzz nexys-icarus nexys-netlist nexys-synth nexys-bit nexys-prog nexys-pnr xc7-toolchain lowbit sunum-yerel cpu-baseline \
-        dec-test dec-data dec-train dec-pkg dec-units dec-export dec-sim dec-top dec-synth dec-pnr dec-eval dec-m1
+        dec-test dec-data dec-train dec-pkg dec-units dec-export dec-sim dec-top dec-synth dec-pnr dec-netlist dec-eval dec-drift dec-finalize dec-m1
 
 all: test-arith sim selftest
 
@@ -179,6 +179,8 @@ dec-netlist:       # gate-level simulation of the netlist dec-pnr placed (LED16_
 	scripts/dec_netlist_sim.sh $(DEC_MODEL) $(DEC_POL)
 dec-eval:          # validation-set comparison of the four methods (test split stays closed in Project I)
 	cd sw/decision && $(PYTHON) evaluate_dec.py
+dec-drift:         # float vs INT8 logit error along the stream, every exported model -> docs/decision/sonuclar/int8_drift.json
+	cd sw/decision && $(PYTHON) int8_drift.py
 dec-finalize:      # after dec-train: promote, export, RTL, board, synthesis, PnR, netlist, evaluation, report
 	scripts/dec_finalize.sh
 dec-m1:            # M1 specification review package -> docs/decision/M1

@@ -1,6 +1,6 @@
 # D4.1–D4.4 Model dışa aktarma, sayısal sözleşme, RTL arayüzü ve guard
 
-21 Kasım 2026. Kod: `sw/decision/{export_dec,hw_ref,gen_rtl_pkg,gen_rtl_vectors}.py`, `sw/zoo/{ir,quant,export_hw}.py`, `rtl/zoo/zoo_core.sv`, `rtl/decision/*.sv`.
+21 Kasım 2026 (eğitilmiş modellerle 22 Kasım 2026'da güncellendi). Kod: `sw/decision/{export_dec,hw_ref,gen_rtl_pkg,gen_rtl_vectors}.py`, `sw/zoo/{ir,quant,export_hw}.py`, `rtl/zoo/zoo_core.sv`, `rtl/decision/*.sv`.
 
 ## D4.1 Dışa aktarma sözleşmesi
 
@@ -34,6 +34,8 @@ Desteklenmeyen işlem sessizce atlanmaz: `compile_model` bilinmeyen modelde hata
 
 Kalibrasyon yalnız **eğitim** bölümünden yapılır: 300 bölüm, rastgele tohum 12345, motor bağlamına (256 token) kırpılmış. İndekslerin sha256'sı `export.json` içindedir; doğrulama ve test verisi ölçekleri belirlemez. Float→INT8 karar uyuşması doğrulama kümesinde ölçülür ve `export.json` içindeki `agreement_val` alanında, float ve INT8 doğruluğuyla birlikte raporlanır (eğitilmiş modellerin değerleri `docs/decision/sonuclar/val_results.md`).
 
+Nicemleme hatasının akış boyunca nasıl değiştiği `sw/decision/int8_drift.py` ile ölçülür (`docs/decision/sonuclar/int8_drift.json`). Bantlı LM'de logit hatasının %95'lik değeri ilk adımlardan sonra aynı düzeyde kalıyor (ilk 8 adımdan son 8 adıma 1,1–1,3 kat). GRU'da ise adım sayısıyla büyüyor (2,6–6,3 kat). En olası neden, INT8 Q0.7 durumun her adımın nicemleme hatasını sonraki adıma taşımasıdır. Sayısal sözleşmenin bu maddesi (durumun 16 bit tutulması) Proje II'de yeniden ele alınacak.
+
 Doygunluk ile iki'nin tümleyeni sarması aynı değildir: bütün dönüşümler `sat()` ile doyurulur, RTL'de de aynı.
 
 ## D4.3 RTL arayüzü ve pilot yol
@@ -52,10 +54,12 @@ Doğrulama: `scripts/dec_top.sh <model> all` her politika için Python `hw_ref.p
 | Politika | Adım | Hata | Karar süresi (çevrim) |
 |---|---|---|---|
 | LM (rastgele ağırlık, pilot) | 1.152 | 0 | 27.406 – 31.278 |
+| LM, eğitilmiş (lm_s0) | 1.152 | 0 | 27.406 – 31.278 |
+| GRU, eğitilmiş (gru_s0) | 1.152 | 0 | 20.966 (her kararda aynı) |
 | kural | 1.152 | 0 | 2 |
 | FSM | 1.152 | 0 | 2 |
 
-Eğitilmiş LM ve GRU için aynı tablo `docs/decision/proje1_raporu.md` dosyasındadır.
+Kart öz-testi, yerleşim ve kapı düzeyi netlist sonuçları `docs/decision/proje1_raporu.md` dosyasındadır.
 
 Kart üzerinde bağımsız öz-test (`dec_board_top.sv`): BTNC bütün senaryoları çalıştırır, her bölümün hash'ini Python'ın beklediği değerle karşılaştırır; LED'ler çalışan/eşleşen senaryo sayısını, LED16 yeşil/kırmızı sonucu gösterir. UART ya da host protokolü yoktur.
 
